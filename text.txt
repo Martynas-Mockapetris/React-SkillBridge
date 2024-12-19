@@ -1,0 +1,51 @@
+BLOCK 1: Initial Setup 
+• Project structure & dependencies
+• Basic routing configuration
+• Navigation components
+• Footer components
+• Homepage design & implementation
+
+BLOCK 2: Listing System 
+• Freelancer cards component
+• Listings page grid layout
+• Filter/sort components
+• Search functionality
+• Individual freelancer profile page
+• Skills tag system
+
+BLOCK 3: Authentication 
+• Registration form base structure
+• User/Freelancer role selection tabs
+• Form validation
+• Login system
+• Protected routes setup
+• JWT implementation
+
+BLOCK 4: Profile Management 
+• User profile dashboard
+• Profile edit functionality
+• Portfolio section for freelancers
+• Skills management interface
+• Profile image upload
+
+BLOCK 5: Admin Features 
+• Admin dashboard layout
+• User management table
+• User data editing interface
+• User role management
+• Activity monitoring system
+
+BLOCK 6: Chat System 
+• Chat UI components
+• Real-time messaging setup
+• Chat history display
+• File sharing for contracts
+• Chat encryption
+• Message persistence
+
+BLOCK 7: Final Touches 
+• Error handling
+• Loading states
+• Responsive design
+• Performance optimization
+• Testing implementation
