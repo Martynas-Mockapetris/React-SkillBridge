@@ -1,9 +1,12 @@
+import HeroSection from '../components/Home/HeroSection'
+
+/* Pagrindinis puslapis */
 const Home = () => {
   return (
-    <div>
-      <h1>Welcome to SkillBridge</h1>
-    </div>
-  );
-};
+    <main>
+      <HeroSection />
+    </main>
+  )
+}
 
-export default Home;
+export default Home

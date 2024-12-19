@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 // Bendriniai
 import Navigation from './components/shared/Navigation';
+import Footer from './components/shared/Footer'
 
 // Puslapiai
 import Home from './pages/Home';
@@ -22,6 +23,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>
+      <Footer />
     </>
   );
 }
