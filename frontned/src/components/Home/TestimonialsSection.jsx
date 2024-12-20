@@ -1,4 +1,13 @@
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+
 const TestimonialsSection = () => {
+  const [expandedId, setExpandedId] = useState(null)
+
+  const toggleExpand = (id) => {
+    setExpandedId(expandedId === id ? null : id)
+  }
+
   // Atsiliepimu duomenys
   const testimonialData = [
     {
@@ -46,7 +55,7 @@ const TestimonialsSection = () => {
   return (
     <section className='w-full py-20 bg-primary overflow-hidden'>
       <div className='container mx-auto px-4 relative z-10'>
-        {/* Sekcijos antraste */}
+        {/* Header remains the same */}
         <div className='text-center mb-16'>
           <h2 className='text-4xl font-heading font-bold mb-4'>
             <span className='text-light'>What Our</span>
@@ -55,21 +64,46 @@ const TestimonialsSection = () => {
           <p className='text-light/80 max-w-2xl mx-auto mb-12'>Discover how our platform has transformed businesses and careers through real success stories</p>
         </div>
 
-        {/* Atsiliepimu gridas */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [&>*:nth-last-child(-n+2)]:lg:translate-x-1/2'>
+        {/* Gridas */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [&>*:nth-last-child(-n+2)]:lg:translate-x-1/2 relative'>
           {testimonialData.map((testimonial) => (
-            <div key={testimonial.id} className='bg-light/5 p-6 rounded-lg'>
-              {/* Vartotojo info */}
-              <div className='flex items-center gap-4 mb-4'>
-                <img src={testimonial.image} alt={testimonial.name} className='w-12 h-12 rounded-full object-cover' />
-                <div>
-                  <h3 className='text-light font-medium'>{testimonial.name}</h3>
-                  <p className='text-accent text-sm'>{testimonial.role}</p>
-                  <p className='text-light/60 text-sm'>{testimonial.projectType || testimonial.expertise}</p>
+            <div key={testimonial.id} className='relative'>
+              {/* Testimonial korta */}
+              <motion.div className='bg-light/5 p-6 rounded-lg cursor-pointer' onClick={() => toggleExpand(testimonial.id)}>
+                <div className='flex items-center gap-4 mb-4'>
+                  <img src={testimonial.image} alt={testimonial.name} className='w-12 h-12 rounded-full object-cover' />
+                  <div>
+                    <h3 className='text-light font-medium'>{testimonial.name}</h3>
+                    <p className='text-accent text-sm'>{testimonial.role}</p>
+                    <p className='text-light/60 text-sm'>{testimonial.projectType || testimonial.expertise}</p>
+                  </div>
                 </div>
-              </div>
-              {/* Atsiliepimo tekstas */}
-              <p className='text-light/80'>{testimonial.content}</p>
+                <p className='text-light/80 line-clamp-2'>{testimonial.content}</p>
+              </motion.div>
+
+              {/* Aktyvi korta */}
+              <AnimatePresence>
+                {expandedId === testimonial.id && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 1, y: 0 }}
+                    animate={{ opacity: 1, scale: 1.2, y: -20 }}
+                    exit={{ opacity: 0, scale: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    onClick={() => toggleExpand(null)}
+                    className='absolute top-0 left-0 right-0 bg-primary/55 p-8 rounded-lg
+             shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'>
+                    <div className='flex items-center gap-4 mb-6'>
+                      <img src={testimonial.image} alt={testimonial.name} className='w-16 h-16 rounded-full object-cover' />
+                      <div>
+                        <h3 className='text-light font-medium text-lg'>{testimonial.name}</h3>
+                        <p className='text-accent text-sm'>{testimonial.role}</p>
+                        <p className='text-light/60 text-sm'>{testimonial.projectType || testimonial.expertise}</p>
+                      </div>
+                    </div>
+                    <p className='text-light/90'>{testimonial.content}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>
