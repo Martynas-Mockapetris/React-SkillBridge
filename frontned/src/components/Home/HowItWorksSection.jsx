@@ -62,12 +62,12 @@ const HowItWorksSection = () => {
   return (
     <section className='relative py-20 bg-primary overflow-hidden'>
       {/* Molecular patternas */}
-      {/* Large pattern */}
+      {/* Didelis */}
       <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10'>
         <img src={molecularPattern} alt='' className='w-[550px] h-[550px] rotate-[25deg]' />
       </div>
 
-      {/* Medium patterns */}
+      {/* Vidutiniai */}
       <div className='absolute -left-20 top-20 opacity-20'>
         <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
       </div>
@@ -75,7 +75,7 @@ const HowItWorksSection = () => {
         <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
       </div>
 
-      {/* Small patterns */}
+      {/* Mazi */}
       <div className='absolute left-1/4 top-0 opacity-5'>
         <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
       </div>
