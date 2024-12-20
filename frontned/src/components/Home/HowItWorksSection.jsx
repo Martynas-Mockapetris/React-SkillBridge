@@ -1,6 +1,18 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { FaUser, FaBriefcase } from 'react-icons/fa'
+import {
+  FaUser,
+  FaBriefcase,
+  // Talent icons
+  FaUserCircle,
+  FaSearch,
+  FaHandshake,
+  // Client icons
+  FaFileAlt,
+  FaUserCheck,
+  FaCheckCircle
+} from 'react-icons/fa'
+import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const HowItWorksSection = () => {
   const [activeTab, setActiveTab] = useState('talent')
@@ -9,17 +21,20 @@ const HowItWorksSection = () => {
     {
       number: '01',
       title: 'Create Profile',
-      description: 'Set up your professional profile highlighting your skills and experience'
+      description: 'Set up your professional profile highlighting your skills and experience',
+      icon: <FaUserCircle size={40} />
     },
     {
       number: '02',
       title: 'Browse Opportunities',
-      description: 'Explore curated projects that match your expertise and interests'
+      description: 'Explore curated projects that match your expertise and interests',
+      icon: <FaSearch size={40} />
     },
     {
       number: '03',
       title: 'Start Working',
-      description: 'Connect with clients and begin your successful collaboration'
+      description: 'Connect with clients and begin your successful collaboration',
+      icon: <FaHandshake size={40} />
     }
   ]
 
@@ -27,23 +42,34 @@ const HowItWorksSection = () => {
     {
       number: '01',
       title: 'Post Project',
-      description: 'Share your project details and requirements with our talented community'
+      description: 'Share your project details and requirements with our talented community',
+      icon: <FaFileAlt size={40} />
     },
     {
       number: '02',
       title: 'Review Candidates',
-      description: 'Browse through qualified professionals and select the perfect match'
+      description: 'Browse through qualified professionals and select the perfect match',
+      icon: <FaUserCheck size={40} />
     },
     {
       number: '03',
       title: 'Hire Talent',
-      description: 'Start collaborating with your chosen professional on your project'
+      description: 'Start collaborating with your chosen professional on your project',
+      icon: <FaCheckCircle size={40} />
     }
   ]
 
   return (
-    <section className='py-20 bg-primary'>
-      <div className='container mx-auto px-4'>
+    <section className='relative py-20 bg-primary overflow-hidden'>
+      {/* Molecular patternas */}
+      <div className='absolute -left-20 top-0 opacity-10'>
+        <img src={molecularPattern} alt='' className='w-[600px] h-[600px] rotate-[40deg]' />
+      </div>
+      <div className='absolute right-0 bottom-0 opacity-5'>
+        <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-45deg]' />
+      </div>
+
+      <div className='container mx-auto px-4 relative z-10'>
         {/* Sekcijos antraste */}
         <div className='text-center mb-16'>
           <h2 className='text-4xl font-heading font-bold mb-4'>
@@ -73,15 +99,28 @@ const HowItWorksSection = () => {
               </button>
             </div>
 
-            {/* Turinys su fonu */}
+            {/* Turinys su subtiliu fonu */}
             <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className='bg-gradient-to-b from-light/5 to-light/[0.02] rounded-b-lg p-12'>
-              {/* Zingsniai */}
-              <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className='grid grid-cols-1 md:grid-cols-3 gap-16'>
+              <motion.div key={activeTab} className='grid grid-cols-1 md:grid-cols-3 gap-12 relative'>
                 {(activeTab === 'talent' ? talentSteps : clientSteps).map((step, index) => (
-                  <motion.div key={index} className='text-center' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-                    <div className='text-4xl font-bold text-accent mb-4'>{step.number}</div>
-                    <h3 className='text-xl font-semibold text-light mb-2'>{step.title}</h3>
-                    <p className='text-light/80'>{step.description}</p>
+                  <motion.div key={index} className='relative' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                    <div className='hidden md:block absolute top-28 left-0 w-full h-[1px] bg-accent/20' />
+
+                    {/* Ikona */}
+                    <div className='flex flex-col items-center mb-6'>
+                      <div className='bg-gradient-to-br from-light/10 to-light/5 p-6 rounded-full mb-4 hover:scale-105 transition-all duration-300'>
+                        <div className='text-accent'>{step.icon}</div>
+                      </div>
+                    </div>
+
+                    {/* Turinys */}
+                    <div className='text-center'>
+                      <h3 className='text-xl font-semibold text-light mb-2'>
+                        <span className='text-3xl font-bold text-accent mr-2'>{step.number}</span>
+                        {step.title}
+                      </h3>
+                      <p className='text-light/80'>{step.description}</p>
+                    </div>
                   </motion.div>
                 ))}
               </motion.div>
