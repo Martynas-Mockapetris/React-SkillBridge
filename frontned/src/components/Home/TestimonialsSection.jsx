@@ -55,7 +55,7 @@ const TestimonialsSection = () => {
   return (
     <section className='w-full py-20 bg-primary overflow-hidden'>
       <div className='container mx-auto px-4 relative z-10'>
-        {/* Header remains the same */}
+        {/* Sekcijos antraste */}
         <div className='text-center mb-16'>
           <h2 className='text-4xl font-heading font-bold mb-4'>
             <span className='text-light'>What Our</span>
@@ -66,6 +66,9 @@ const TestimonialsSection = () => {
 
         {/* Gridas */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [&>*:nth-last-child(-n+2)]:lg:translate-x-1/2 relative'>
+          {/* Uzdarom korta bet kur spaudziant */}
+          {expandedId && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className='fixed inset-0 z-40' onClick={() => toggleExpand(null)} />}
+
           {testimonialData.map((testimonial) => (
             <div key={testimonial.id} className='relative'>
               {/* Testimonial korta */}
@@ -91,7 +94,7 @@ const TestimonialsSection = () => {
                     transition={{ duration: 0.3 }}
                     onClick={() => toggleExpand(null)}
                     className='absolute top-0 left-0 right-0 bg-primary/55 p-8 rounded-lg
-             shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'>
+                    shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'>
                     <div className='flex items-center gap-4 mb-6'>
                       <img src={testimonial.image} alt={testimonial.name} className='w-16 h-16 rounded-full object-cover' />
                       <div>
