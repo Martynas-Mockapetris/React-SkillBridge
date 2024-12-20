@@ -1,4 +1,48 @@
 const TestimonialsSection = () => {
+  // Atsiliepimu duomenys
+  const testimonialData = [
+    {
+      id: 1,
+      name: 'Emma Wilson',
+      role: 'Project Owner',
+      projectType: 'E-commerce Website',
+      content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
+      image: 'https://i.pravatar.cc/150?img=1'
+    },
+    {
+      id: 2,
+      name: 'Michael Chen',
+      role: 'Freelance Developer',
+      expertise: 'Full-Stack Development',
+      content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
+      image: 'https://i.pravatar.cc/150?img=8'
+    },
+    {
+      id: 3,
+      name: 'Sarah Johnson',
+      role: 'Project Owner',
+      projectType: 'Mobile App Development',
+      content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
+      image: 'https://i.pravatar.cc/150?img=5'
+    },
+    {
+      id: 4,
+      name: 'David Rodriguez',
+      role: 'Freelance Designer',
+      expertise: 'UI/UX Design',
+      content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
+      image: 'https://i.pravatar.cc/150?img=12'
+    },
+    {
+      id: 5,
+      name: 'Lisa Chang',
+      role: 'Project Owner',
+      projectType: 'Brand Identity Design',
+      content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
+      image: 'https://i.pravatar.cc/150?img=9'
+    }
+  ]
+
   return (
     <section className='w-full py-20 bg-primary overflow-hidden'>
       <div className='container mx-auto px-4 relative z-10'>
@@ -12,11 +56,20 @@ const TestimonialsSection = () => {
         </div>
 
         {/* Atsiliepimu gridas */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-          {/* Laikinos korteles */}
-          {[1, 2, 3, 4, 5, 6].map((item) => (
-            <div key={item} className='bg-light/5 p-6 rounded-lg min-h-[200px] flex items-center justify-center'>
-              <span className='text-light/50'>Testimonial Card {item}</span>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [&>*:nth-last-child(-n+2)]:lg:translate-x-1/2'>
+          {testimonialData.map((testimonial) => (
+            <div key={testimonial.id} className='bg-light/5 p-6 rounded-lg'>
+              {/* Vartotojo info */}
+              <div className='flex items-center gap-4 mb-4'>
+                <img src={testimonial.image} alt={testimonial.name} className='w-12 h-12 rounded-full object-cover' />
+                <div>
+                  <h3 className='text-light font-medium'>{testimonial.name}</h3>
+                  <p className='text-accent text-sm'>{testimonial.role}</p>
+                  <p className='text-light/60 text-sm'>{testimonial.projectType || testimonial.expertise}</p>
+                </div>
+              </div>
+              {/* Atsiliepimo tekstas */}
+              <p className='text-light/80'>{testimonial.content}</p>
             </div>
           ))}
         </div>
