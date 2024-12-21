@@ -68,22 +68,49 @@ const PricingSection = () => {
           {pricingData.map((plan, index) => (
             <motion.div
               key={index}
-              className={`bg-gradient-to-br from-light/5 via-light/0 to-transparent
-             p-10 rounded-lg flex flex-col
-             relative isolate overflow-hidden
-             ${plan.title === 'Full Package' ? 'shadow-lg shadow-accent/10' : ''}`}
+              className={`bg-gradient-to-br from-light/10 via-light/5 to-transparent
+                 p-10 rounded-lg flex flex-col
+                 relative isolate overflow-hidden shadow-lg 
+                 ${plan.title === 'Full Package' ? 'shadow-lg hover:shadow-accent/10' : ''}`}
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+                transition: {
+                  type: 'spring',
+                  duration: 0.8,
+                  delay: index * 0.1,
+                  bounce: 0.3
+                }
+              }}
               whileHover={{
                 scale: 1.02,
                 backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                transition: { duration: 0.2 }
+                transition: {
+                  type: 'tween',
+                  duration: 0.2,
+                  ease: 'easeOut'
+                }
               }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}>
+              viewport={{ once: true, margin: '-50px' }}>
+            
+              {/* Rekomenduojamas planas */}
               {plan.title === 'Full Package' && (
-                <div className='absolute top-5 right-5'>
-                  <span className='bg-accent/20 text-accent text-sm py-1 px-3 rounded-full'>Recommended</span>
-                </div>
+                <motion.div className='absolute top-5 right-5' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}>
+                  <motion.span
+                    className='bg-accent/20 text-accent text-sm py-1 px-3 rounded-full inline-block'
+                    animate={{
+                      scale: [1, 1.05, 1],
+                      opacity: [1, 0.8, 1]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut'
+                    }}>
+                    Recommended
+                  </motion.span>
+                </motion.div>
               )}
 
               <div className='mb-10'>
