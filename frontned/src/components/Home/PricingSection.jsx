@@ -133,7 +133,14 @@ const PricingSection = () => {
               <ul className='text-light/80 space-y-5 mb-10 flex-grow'>
                 {plan.features.map((feature, idx) => (
                   <motion.li key={idx} className='flex items-center gap-3' initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.1 + idx * 0.1 }}>
-                    <FaCheck className='text-accent flex-shrink-0' />
+                    <motion.div
+                      whileHover={{
+                        scale: 1.2,
+                        color: 'rgb(var(--accent))',
+                        transition: { duration: 0.2 }
+                      }}>
+                      <FaCheck className='text-accent flex-shrink-0' />
+                    </motion.div>
                     <span>{feature}</span>
                   </motion.li>
                 ))}
