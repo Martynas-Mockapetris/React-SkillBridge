@@ -96,6 +96,9 @@ npm start
 - Material UI
 - React Router DOM
 - Axios
+- Framer Motion for animations
+- React Icons
+- Custom design patterns
 
 ### Backend
 
@@ -147,6 +150,12 @@ server/
 │   └── utils/
 └── app.js
 ```
+
+## Development Progress
+- ✅ Homepage Hero Section
+- ✅ Homepage Features Overview
+- ✅ Homepage How It Works (Dual Journey)
+- 🚧 Homepage sections (In Progress)
 
 ## Contributing
 
