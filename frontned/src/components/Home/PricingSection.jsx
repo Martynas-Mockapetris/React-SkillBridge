@@ -8,25 +8,29 @@ const PricingSection = () => {
       title: 'Basic',
       price: 'Free',
       description: 'Perfect for exploring the platform',
-      features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access']
+      features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access'],
+      users: '8.4k'
     },
     {
       title: 'Creator Premium',
       price: '€19.99',
       description: 'Perfect for businesses and startups',
-      features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge']
+      features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge'],
+      users: '1.2k'
     },
     {
       title: 'Freelancer Premium',
       price: '€19.99',
       description: 'Perfect for professional freelancers',
-      features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system']
+      features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system'],
+      users: '0.8k'
     },
     {
       title: 'Full Package',
       price: '€29.99',
       description: 'Perfect for agencies and growing freelancers',
-      features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools']
+      features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools'],
+      users: '0.5k'
     }
   ]
 
@@ -93,7 +97,6 @@ const PricingSection = () => {
                 }
               }}
               viewport={{ once: true, margin: '-50px' }}>
-            
               {/* Rekomenduojamas planas */}
               {plan.title === 'Full Package' && (
                 <motion.div className='absolute top-5 right-5' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}>
@@ -115,7 +118,15 @@ const PricingSection = () => {
 
               <div className='mb-10'>
                 <h3 className='text-light text-2xl font-bold mb-6'>{plan.title}</h3>
-                <div className='text-accent text-4xl font-bold mb-4'>{plan.price}</div>
+                <div className='flex items-baseline gap-2 mb-4'>
+                  <div className='text-accent text-4xl font-bold'>{plan.price}</div>
+                  {plan.price !== 'Free' && <div className='text-light/40 text-lg'>/ month</div>}
+                </div>
+                <div className='flex items-center gap-2 mb-4'>
+                  <motion.div className='text-light/40 text-sm' initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.6 + index * 0.1 }}>
+                    <span className='text-accent font-medium'>{plan.users}</span> active users
+                  </motion.div>
+                </div>
                 <p className='text-light/60'>{plan.description}</p>
               </div>
 
