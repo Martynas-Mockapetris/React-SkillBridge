@@ -19,7 +19,13 @@ const TestimonialsSection = () => {
       role: 'Project Owner',
       projectType: 'E-commerce Website',
       content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
-      image: 'https://i.pravatar.cc/150?img=1'
+      image: 'https://i.pravatar.cc/150?img=1',
+      projectDetails: {
+        category: 'Web Development',
+        duration: '3 months',
+        completedDate: 'June 2023'
+      },
+      extendedContent: 'The collaboration tools and project management features made the development process smooth and efficient. Communication was seamless, and the final result exceeded my expectations.'
     },
     {
       id: 2,
@@ -28,7 +34,13 @@ const TestimonialsSection = () => {
       role: 'Freelance Developer',
       expertise: 'Full-Stack Development',
       content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
-      image: 'https://i.pravatar.cc/150?img=8'
+      image: 'https://i.pravatar.cc/150?img=8',
+      projectDetails: {
+        category: 'Mobile Development',
+        duration: '5 months',
+        completedDate: 'August 2023'
+      },
+      extendedContent: "The developer's expertise in React Native and attention to detail resulted in a polished, user-friendly app that our customers love."
     },
     {
       id: 3,
@@ -37,7 +49,13 @@ const TestimonialsSection = () => {
       role: 'Project Owner',
       projectType: 'Mobile App Development',
       content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
-      image: 'https://i.pravatar.cc/150?img=5'
+      image: 'https://i.pravatar.cc/150?img=5',
+      projectDetails: {
+        category: 'Digital Marketing',
+        duration: '4 months',
+        completedDate: 'July 2023'
+      },
+      extendedContent: 'The marketing team provided innovative strategies and maintained transparent communication throughout the campaign duration.'
     },
     {
       id: 4,
@@ -46,7 +64,13 @@ const TestimonialsSection = () => {
       role: 'Freelance Designer',
       expertise: 'UI/UX Design',
       content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
-      image: 'https://i.pravatar.cc/150?img=12'
+      image: 'https://i.pravatar.cc/150?img=12',
+      projectDetails: {
+        category: 'System Design',
+        duration: '6 months',
+        completedDate: 'September 2023'
+      },
+      extendedContent: "The expertise and professionalism of the talent we found through SkillBridge significantly contributed to our project's success."
     },
     {
       id: 5,
@@ -55,7 +79,13 @@ const TestimonialsSection = () => {
       role: 'Project Owner',
       projectType: 'Brand Identity Design',
       content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
-      image: 'https://i.pravatar.cc/150?img=9'
+      image: 'https://i.pravatar.cc/150?img=9',
+      projectDetails: {
+        category: 'Brand Design',
+        duration: '2 months',
+        completedDate: 'May 2023'
+      },
+      extendedContent: "The designer's creative approach and understanding of our vision resulted in a brand identity that truly resonates with our audience."
     }
   ]
 
@@ -110,7 +140,11 @@ const TestimonialsSection = () => {
           {testimonialData.map((testimonial) => (
             <div key={testimonial.id} className='relative'>
               {/* Testimonial korta */}
-              <motion.div className='bg-light/5 p-6 rounded-lg cursor-pointer' onClick={() => toggleExpand(testimonial.id)}>
+              <motion.div
+                className='bg-light/5 p-6 rounded-lg cursor-pointer
+             transition-all duration-300 hover:bg-light/10 
+             hover:shadow-lg hover:-translate-y-1'
+                onClick={() => toggleExpand(testimonial.id)}>
                 <FaQuoteLeft className='text-accent/20 text-4xl absolute top-4 right-4' />
                 <div className='flex items-center gap-4 mb-4'>
                   <img src={testimonial.image} alt={testimonial.name} className='w-12 h-12 rounded-full object-cover' />
@@ -145,7 +179,26 @@ const TestimonialsSection = () => {
                         <p className='text-light/60 text-sm'>{testimonial.projectType || testimonial.expertise}</p>
                       </div>
                     </div>
-                    <p className='text-light/90'>{testimonial.content}</p>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className='mb-6'>
+                      <p className='text-light/90 mb-4'>{testimonial.content}</p>
+                      <p className='text-light/80'>{testimonial.extendedContent}</p>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className='grid grid-cols-4 gap-4 pt-4 border-t border-light/10'>
+                      <div className='col-span-2'>
+                        <p className='text-accent text-sm'>Category</p>
+                        <p className='text-light text-sm'>{testimonial.projectDetails.category}</p>
+                      </div>
+                      <div>
+                        <p className='text-accent text-sm'>Duration</p>
+                        <p className='text-light text-sm'>{testimonial.projectDetails.duration}</p>
+                      </div>
+                      <div>
+                        <p className='text-accent text-sm'>Completed</p>
+                        <p className='text-light text-sm'>{testimonial.projectDetails.completedDate}</p>
+                      </div>
+                    </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
