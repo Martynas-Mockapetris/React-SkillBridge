@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
+import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const TestimonialsSection = () => {
   const [expandedId, setExpandedId] = useState(null)
@@ -64,17 +65,33 @@ const TestimonialsSection = () => {
       <div className={`flex gap-1 ${className}`}>
         {[...Array(5)].map((_, index) => {
           const starValue = index + 1
-          return (
-          <span key={index}>
-            {rating >= starValue ? <FaStar className='text-accent' /> : rating >= starValue - 0.5 ? <FaStarHalfAlt className='text-accent' /> : <FaRegStar className='text-accent/50' />}
-          </span> )
+          return <span key={index}>{rating >= starValue ? <FaStar className='text-accent' /> : rating >= starValue - 0.5 ? <FaStarHalfAlt className='text-accent' /> : <FaRegStar className='text-accent/50' />}</span>
         })}
       </div>
     )
   }
 
   return (
-    <section className='w-full py-20 bg-primary overflow-hidden'>
+    <section className='w-full py-20 bg-primary overflow-hidden relative'>
+      {/* Vidutiniai patternai */}
+      <div className='absolute -left-20 top-40 opacity-20'>
+        <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
+      </div>
+      <div className='absolute -right-20 bottom-20 opacity-15'>
+        <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
+      </div>
+
+      {/* Mazi */}
+      <div className='absolute left-1/4 top-10 opacity-10'>
+        <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
+      </div>
+      <div className='absolute right-1/3 top-1/3 opacity-5'>
+        <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[60deg]' />
+      </div>
+      <div className='absolute left-1/3 bottom-40 opacity-5'>
+        <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-15deg]' />
+      </div>
+
       <div className='container mx-auto px-4 relative z-10'>
         {/* Sekcijos antraste */}
         <div className='text-center mb-16'>
