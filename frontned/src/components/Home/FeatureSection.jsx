@@ -38,13 +38,15 @@ const FeaturesSection = () => {
   ]
 
   return (
-    <section className='relative py-20 bg-primary overflow-hidden'>
+    <section className='relative py-20 bg-primary'>
       {/* Molecular patternas */}
-      <div className='absolute -left-20 top-0 opacity-10'>
-        <img src={molecularPattern} alt='' className='w-[600px] h-[600px] rotate-[40deg]' />
-      </div>
-      <div className='absolute right-0 bottom-0 opacity-5'>
-        <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-45deg]' />
+      <div className='absolute inset-0 overflow-hidden'>
+        <div className='absolute -left-20 top-0 opacity-10'>
+          <img src={molecularPattern} alt='' className='w-[600px] h-[600px] rotate-[40deg]' />
+        </div>
+        <div className='absolute right-0 bottom-0 opacity-5'>
+          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-45deg]' />
+        </div>
       </div>
 
       <div className='container mx-auto px-4 relative z-10'>
