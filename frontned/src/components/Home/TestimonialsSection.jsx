@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FaQuoteLeft } from 'react-icons/fa'
 
 const TestimonialsSection = () => {
   const [expandedId, setExpandedId] = useState(null)
@@ -73,6 +74,7 @@ const TestimonialsSection = () => {
             <div key={testimonial.id} className='relative'>
               {/* Testimonial korta */}
               <motion.div className='bg-light/5 p-6 rounded-lg cursor-pointer' onClick={() => toggleExpand(testimonial.id)}>
+                <FaQuoteLeft className='text-accent/20 text-4xl absolute top-4 right-4' />
                 <div className='flex items-center gap-4 mb-4'>
                   <img src={testimonial.image} alt={testimonial.name} className='w-12 h-12 rounded-full object-cover' />
                   <div>
@@ -95,6 +97,7 @@ const TestimonialsSection = () => {
                     onClick={() => toggleExpand(null)}
                     className='absolute top-0 left-0 right-0 bg-primary/55 p-8 rounded-lg
                     shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'>
+                    <FaQuoteLeft className='text-accent/30 text-5xl absolute top-6 right-6' />
                     <div className='flex items-center gap-4 mb-6'>
                       <img src={testimonial.image} alt={testimonial.name} className='w-16 h-16 rounded-full object-cover' />
                       <div>
