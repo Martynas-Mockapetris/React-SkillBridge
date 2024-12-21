@@ -53,6 +53,7 @@ const PricingSection = () => {
         </div>
       </div>
 
+      {/* Sekcijos antraste */}
       <div className='container mx-auto px-4 relative z-10'>
         <motion.div className='text-center mb-16' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h2 className='text-4xl font-heading font-bold mb-4'>
@@ -62,11 +63,13 @@ const PricingSection = () => {
           <p className='text-light/80 max-w-2xl mx-auto mb-12'>Choose the perfect plan that suits your needs and budget</p>
         </motion.div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
+        {/* Planai */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 max-w-8xl mx-auto'>
           {pricingData.map((plan, index) => (
             <motion.div
               key={index}
-              className='bg-light/5 p-8 rounded-lg flex flex-col'
+              className='bg-light/5 p-10 rounded-lg flex flex-col
+                 relative isolate overflow-hidden'
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               whileHover={{
@@ -75,13 +78,14 @@ const PricingSection = () => {
                 transition: { duration: 0.2 }
               }}
               transition={{ duration: 0.5, delay: index * 0.1 }}>
-              <div className='mb-8'>
-                <h3 className='text-light text-2xl font-bold mb-4'>{plan.title}</h3>
-                <div className='text-accent text-3xl font-bold mb-2'>{plan.price}</div>
+              <div className='mb-10'>
+                <h3 className='text-light text-2xl font-bold mb-6'>{plan.title}</h3>
+                <div className='text-accent text-4xl font-bold mb-4'>{plan.price}</div>
                 <p className='text-light/60'>{plan.description}</p>
               </div>
 
-              <ul className='text-light/80 space-y-4 mb-8 flex-grow'>
+              {/* Savybes */}
+              <ul className='text-light/80 space-y-5 mb-10 flex-grow'>
                 {plan.features.map((feature, idx) => (
                   <motion.li key={idx} className='flex items-center gap-3' initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.1 + idx * 0.1 }}>
                     <FaCheck className='text-accent flex-shrink-0' />
