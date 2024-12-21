@@ -68,7 +68,8 @@ const PricingSection = () => {
           {pricingData.map((plan, index) => (
             <motion.div
               key={index}
-              className={`bg-light/5 p-10 rounded-lg flex flex-col
+              className={`bg-gradient-to-br from-light/5 via-light/0 to-transparent
+             p-10 rounded-lg flex flex-col
              relative isolate overflow-hidden
              ${plan.title === 'Full Package' ? 'shadow-lg shadow-accent/10' : ''}`}
               initial={{ opacity: 0, y: 20 }}
