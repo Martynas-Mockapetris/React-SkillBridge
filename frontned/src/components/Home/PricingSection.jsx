@@ -68,23 +68,29 @@ const PricingSection = () => {
           {pricingData.map((plan, index) => (
             <motion.div
               key={index}
-              className='bg-light/5 p-10 rounded-lg flex flex-col
-                 relative isolate overflow-hidden'
+              className={`bg-light/5 p-10 rounded-lg flex flex-col
+             relative isolate overflow-hidden
+             ${plan.title === 'Full Package' ? 'shadow-lg shadow-accent/10' : ''}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               whileHover={{
                 scale: 1.02,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
                 transition: { duration: 0.2 }
               }}
               transition={{ duration: 0.5, delay: index * 0.1 }}>
+              {plan.title === 'Full Package' && (
+                <div className='absolute top-5 right-5'>
+                  <span className='bg-accent/20 text-accent text-sm py-1 px-3 rounded-full'>Recommended</span>
+                </div>
+              )}
+
               <div className='mb-10'>
                 <h3 className='text-light text-2xl font-bold mb-6'>{plan.title}</h3>
                 <div className='text-accent text-4xl font-bold mb-4'>{plan.price}</div>
                 <p className='text-light/60'>{plan.description}</p>
               </div>
 
-              {/* Savybes */}
               <ul className='text-light/80 space-y-5 mb-10 flex-grow'>
                 {plan.features.map((feature, idx) => (
                   <motion.li key={idx} className='flex items-center gap-3' initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.1 + idx * 0.1 }}>
@@ -94,10 +100,12 @@ const PricingSection = () => {
                 ))}
               </ul>
 
+              {/* Pirkimo mygtukas */}
               <motion.button
-                className='w-full py-3 px-6 rounded-lg border-2 border-accent
-                         text-accent font-medium transition-all duration-300
-                         hover:bg-accent hover:text-primary'
+                className='w-full py-4 px-6 rounded-lg border-2 border-accent
+                   text-accent font-medium 
+                   transition-all duration-300
+                   hover:bg-accent hover:text-primary'
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}>
                 Get Started
