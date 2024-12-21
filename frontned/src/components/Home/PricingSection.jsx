@@ -1,3 +1,5 @@
+import { FaCheck } from 'react-icons/fa'
+
 const PricingSection = () => {
   const pricingData = [
     {
@@ -39,15 +41,31 @@ const PricingSection = () => {
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
           {pricingData.map((plan, index) => (
-            <div key={index} className='bg-light/5 p-8 rounded-lg'>
-              <h3 className='text-light text-2xl font-bold mb-4'>{plan.title}</h3>
-              <div className='text-accent text-3xl font-bold mb-2'>{plan.price}</div>
-              <p className='text-light/60 mb-6'>{plan.description}</p>
-              <ul className='text-light/80 space-y-3'>
+            <div
+              key={index}
+              className='bg-light/5 p-8 rounded-lg flex flex-col
+                          transition-all duration-300 hover:bg-light/10'>
+              <div className='mb-8'>
+                <h3 className='text-light text-2xl font-bold mb-4'>{plan.title}</h3>
+                <div className='text-accent text-3xl font-bold mb-2'>{plan.price}</div>
+                <p className='text-light/60'>{plan.description}</p>
+              </div>
+
+              <ul className='text-light/80 space-y-4 mb-8 flex-grow'>
                 {plan.features.map((feature, idx) => (
-                  <li key={idx}>{feature}</li>
+                  <li key={idx} className='flex items-center gap-3'>
+                    <FaCheck className='text-accent flex-shrink-0' />
+                    <span>{feature}</span>
+                  </li>
                 ))}
               </ul>
+
+              <button
+                className='w-full py-3 px-6 rounded-lg border-2 border-accent
+                               text-accent font-medium transition-all duration-300
+                               hover:bg-accent hover:text-primary'>
+                Get Started
+              </button>
             </div>
           ))}
         </div>
