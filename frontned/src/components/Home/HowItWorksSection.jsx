@@ -119,10 +119,10 @@ const HowItWorksSection = () => {
             {/* Turinys su subtiliu fonu */}
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, x: activeTab === 'talent' ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: activeTab === 'talent' ? 20 : -20 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
               className='bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
               <motion.div key={activeTab} className='grid grid-cols-1 md:grid-cols-3 gap-12 relative'>
                 {(activeTab === 'talent' ? talentSteps : clientSteps).map((step, index) => (
