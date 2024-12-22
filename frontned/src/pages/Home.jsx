@@ -1,3 +1,4 @@
+import ContactSection from '../components/Home/ContactSection'
 import FeaturesSection from '../components/Home/FeatureSection'
 import HeroSection from '../components/Home/HeroSection'
 import HowItWorksSection from '../components/Home/HowItWorksSection'
@@ -13,6 +14,7 @@ const Home = () => {
       <HowItWorksSection />
       <TestimonialsSection />
       <PricingSection />
+      <ContactSection />
     </main>
   )
 }
