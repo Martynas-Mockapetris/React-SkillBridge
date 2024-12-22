@@ -60,13 +60,13 @@ const HowItWorksSection = () => {
   ]
 
   return (
-    <section className='relative py-20 bg-primary'>
-      <div className='absolute inset-0 overflow-hidden'>
+    <section className='w-full py-20 bg-primary relative z-[1]'>
+      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
+        {' '}
         {/* Didelis */}
         <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10'>
           <img src={molecularPattern} alt='' className='w-[550px] h-[550px] rotate-[25deg]' />
         </div>
-
         {/* Vidutiniai */}
         <div className='absolute -left-20 top-20 opacity-20'>
           <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
@@ -74,7 +74,6 @@ const HowItWorksSection = () => {
         <div className='absolute right-0 bottom-40 opacity-5'>
           <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
         </div>
-
         {/* Mazi */}
         <div className='absolute left-1/4 top-0 opacity-5'>
           <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
@@ -118,7 +117,13 @@ const HowItWorksSection = () => {
             </div>
 
             {/* Turinys su subtiliu fonu */}
-            <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className='bg-gradient-to-b from-light/5 to-light/[0.02] rounded-b-lg p-12'>
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: activeTab === 'talent' ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: activeTab === 'talent' ? 20 : -20 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              className='bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
               <motion.div key={activeTab} className='grid grid-cols-1 md:grid-cols-3 gap-12 relative'>
                 {(activeTab === 'talent' ? talentSteps : clientSteps).map((step, index) => (
                   <motion.div key={index} className='relative' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
