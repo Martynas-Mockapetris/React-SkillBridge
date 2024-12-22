@@ -63,21 +63,21 @@ const ContactSection = () => {
       {/* Molecular patternas */}
       <div className='absolute inset-0 overflow-hidden'>
         {/* Vidutiniai patternai */}
-        <div className='absolute -left-20 top-40 opacity-20'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
+        <div className='absolute left-60 bottom-20 opacity-20'>
+          <img src={molecularPattern} alt='' className='w-[450px] h-[450px] rotate-[75deg]' />
         </div>
-        <div className='absolute -right-20 bottom-20 opacity-15'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
+        <div className='absolute -right-10 bottom-60 opacity-15'>
+          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-10deg]' />
         </div>
 
         {/* Mazi patternai */}
-        <div className='absolute left-1/4 top-10 opacity-10'>
+        <div className='absolute left-2/4 top-10 opacity-10'>
           <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
         </div>
-        <div className='absolute right-1/3 top-1/3 opacity-5'>
+        <div className='absolute right-1/8 top-1/3 opacity-5'>
           <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[60deg]' />
         </div>
-        <div className='absolute left-1/3 bottom-40 opacity-5'>
+        <div className='absolute left-1/4 bottom-40 opacity-5'>
           <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-15deg]' />
         </div>
       </div>

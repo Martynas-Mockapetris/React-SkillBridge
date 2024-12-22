@@ -72,9 +72,7 @@ const PricingSection = () => {
           {pricingData.map((plan, index) => (
             <motion.div
               key={index}
-              className={`bg-gradient-to-br from-light/10 via-light/5 to-transparent
-                 p-10 rounded-lg flex flex-col
-                 relative isolate overflow-hidden shadow-lg 
+              className={`bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent p-8 rounded-lg backdrop-blur-sm
                  ${plan.title === 'Full Package' ? 'shadow-lg hover:shadow-accent/10' : ''}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{
