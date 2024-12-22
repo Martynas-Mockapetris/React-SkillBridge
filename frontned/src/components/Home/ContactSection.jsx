@@ -104,12 +104,13 @@ const ContactSection = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className={`w-full bg-light/10 rounded-lg px-4 py-3 text-light
-                    transition-all duration-300 
+                    transition-all duration-300
                     focus:bg-light/20
                     focus:outline-none focus:ring-2 focus:ring-accent/50
                     placeholder:text-light/40
                     focus:placeholder:text-light/60
-            ${errors.name ? 'border-2 border-red-500' : 'border border-light/10'}`}
+                    hover:scale-[1.02] hover:shadow-lg
+                    ${errors.name ? 'border-2 border-red-500' : 'border border-light/10'}`}
                   placeholder='Enter your name'
                 />
                 {errors.name && (
@@ -127,12 +128,13 @@ const ContactSection = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className={`w-full bg-light/10 rounded-lg px-4 py-3 text-light
-                    transition-all duration-300 
+                    transition-all duration-300
                     focus:bg-light/20
                     focus:outline-none focus:ring-2 focus:ring-accent/50
                     placeholder:text-light/40
                     focus:placeholder:text-light/60
-            ${errors.email ? 'border-2 border-red-500' : 'border border-light/10'}`}
+                    hover:scale-[1.02] hover:shadow-lg
+                    ${errors.email ? 'border-2 border-red-500' : 'border border-light/10'}`}
                   placeholder='Enter your email'
                 />
                 {errors.email && (
@@ -151,12 +153,13 @@ const ContactSection = () => {
                 value={formData.subject}
                 onChange={handleChange}
                 className={`w-full bg-light/10 rounded-lg px-4 py-3 text-light
-                    transition-all duration-300 
-                    focus:bg-light/20
-                    focus:outline-none focus:ring-2 focus:ring-accent/50
-                    placeholder:text-light/40
-                    focus:placeholder:text-light/60
-          ${errors.subject ? 'border-2 border-red-500' : 'border border-light/10'}`}
+                  transition-all duration-300
+                  focus:bg-light/20
+                  focus:outline-none focus:ring-2 focus:ring-accent/50
+                  placeholder:text-light/40
+                  focus:placeholder:text-light/60
+                  hover:scale-[1.02] hover:shadow-lg
+                  ${errors.subject ? 'border-2 border-red-500' : 'border border-light/10'}`}
                 placeholder='Enter subject'
               />
               {errors.subject && (
@@ -172,14 +175,14 @@ const ContactSection = () => {
                 name='message'
                 value={formData.message}
                 onChange={handleChange}
-                className={`w-full bg-light/10 rounded-lg px-4 py-3 text-light min-h-[150px]
-                    transition-all duration-300 
-                    focus:bg-light/20
-                    focus:outline-none focus:ring-2 focus:ring-accent/50
-                    placeholder:text-light/40
-                    focus:placeholder:text-light/60
-                    resize-none
-          ${errors.message ? 'border-2 border-red-500' : 'border border-light/10'}`}
+                className={`w-full bg-light/10 rounded-lg px-4 py-3 text-light
+                  transition-all duration-300 min-h-[250px]
+                  focus:bg-light/20
+                  focus:outline-none focus:ring-2 focus:ring-accent/50
+                  placeholder:text-light/40
+                  focus:placeholder:text-light/60
+                  hover:scale-[1.02] hover:shadow-lg resize-none
+                  ${errors.message ? 'border-2 border-red-500' : 'border border-light/10'}`}
                 placeholder='Enter your message'></textarea>
               {errors.message && (
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
