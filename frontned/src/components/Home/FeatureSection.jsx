@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const FeaturesSection = () => {
-  // Korteles su informacija
   const features = [
     {
       icon: <FaHandshake size={24} />,
@@ -38,7 +37,7 @@ const FeaturesSection = () => {
   ]
 
   return (
-    <section className='w-full py-20 bg-primary relative z-[1]'>
+    <section className='w-full py-20 theme-bg relative z-[1]'>
       {/* Molecular patterns */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         <div className='absolute -left-20 top-0 opacity-10'>
@@ -53,10 +52,10 @@ const FeaturesSection = () => {
         {/* Section header */}
         <motion.div className='text-center mb-16' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h2 className='text-4xl font-heading font-bold mb-4'>
-            <span className='text-light'>Why Choose</span>
+            <span className='theme-text'>Why Choose</span>
             <span className='text-accent'> SkillBridge</span>
           </h2>
-          <p className='text-light/80 max-w-2xl mx-auto'>Discover the advantages that make SkillBridge the preferred platform for connecting talent with opportunities</p>
+          <p className='theme-text-secondary max-w-2xl mx-auto'>Discover the advantages that make SkillBridge the preferred platform for connecting talent with opportunities</p>
         </motion.div>
 
         {/* Features grid */}
@@ -64,7 +63,7 @@ const FeaturesSection = () => {
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              className='bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent backdrop-blur-sm p-6 rounded-lg'
+              className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-6 rounded-lg'
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               whileHover={{
@@ -74,8 +73,8 @@ const FeaturesSection = () => {
               }}
               transition={{ duration: 0.3, delay: index * 0.05 }}>
               <div className='text-accent mb-4'>{feature.icon}</div>
-              <h3 className='text-light text-xl font-semibold mb-2'>{feature.title}</h3>
-              <p className='text-light/80'>{feature.description}</p>
+              <h3 className='theme-text text-xl font-semibold mb-2'>{feature.title}</h3>
+              <p className='theme-text-secondary'>{feature.description}</p>
             </motion.div>
           ))}
         </div>
