@@ -3,24 +3,35 @@
 @tailwind utilities;
 
 @layer components {
+  /* Fonu spalvos */
   .theme-bg {
-    @apply transition-colors duration-300;
-    @apply dark:bg-primary bg-light;
+    @apply bg-light dark:bg-primary;
   }
 
+  /* Tekstu spalvos su skirtingais permatomumo lygiais */
   .theme-text {
-    @apply dark:text-light text-primary;
+    @apply text-primary dark:text-light;
   }
 
   .theme-text-secondary {
-    @apply dark:text-light/80 text-primary/80;
+    @apply text-primary/80 dark:text-light/80;
   }
 
+  .theme-text-muted {
+    @apply text-primary/60 dark:text-light/60;
+  }
+
+  /* Remeliu stiliu apibrezimas */
   .theme-border {
-    @apply dark:border-light/50 border-primary/50;
+    @apply border-primary/50 dark:border-light/10;
   }
 
-  .theme-hover {
-    @apply dark:hover:bg-light/5 hover:bg-primary/5;
+  /* Ivesties lauku stiliu apibrezimas */
+  .theme-input {
+    @apply bg-primary/10 dark:bg-light/10;
+  }
+
+  .theme-input-focus {
+    @apply bg-primary/20 dark:bg-light/20;
   }
 }

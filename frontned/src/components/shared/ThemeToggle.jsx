@@ -3,6 +3,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { motion } from 'framer-motion'
 
 const ThemeToggle = () => {
+  // Temu kontrole
   const { isDarkMode, toggleTheme } = useTheme()
 
   return (
