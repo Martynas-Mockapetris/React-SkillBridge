@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* Fonu spalvos */
+  .theme-bg {
+    @apply bg-light dark:bg-primary;
+  }
+
+  /* Tekstu spalvos su skirtingais permatomumo lygiais */
+  .theme-text {
+    @apply text-primary dark:text-light;
+  }
+
+  .theme-text-secondary {
+    @apply text-primary/80 dark:text-light/80;
+  }
+
+  .theme-text-muted {
+    @apply text-primary/60 dark:text-light/60;
+  }
+
+  /* Remeliu stiliu apibrezimas */
+  .theme-border {
+    @apply border-primary/50 dark:border-light/10;
+  }
+
+  /* Ivesties lauku stiliu apibrezimas */
+  .theme-input {
+    @apply bg-primary/10 dark:bg-light/10;
+  }
+
+  .theme-input-focus {
+    @apply bg-primary/20 dark:bg-light/20;
+  }
+}
