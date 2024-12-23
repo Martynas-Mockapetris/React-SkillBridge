@@ -102,9 +102,9 @@ const TestimonialsSection = () => {
   }
 
   return (
-    <section className='w-full py-20 bg-primary relative'>
+    <section className='w-full py-20 theme-bg relative'>
+      {/* Molecular Patterns Background */}
       <div className='absolute inset-0 overflow-hidden'>
-        {/* Vidutiniai patternai */}
         <div className='absolute left-20 top-40 opacity-20'>
           <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
         </div>
@@ -128,39 +128,38 @@ const TestimonialsSection = () => {
         {/* Sekcijos antraste */}
         <div className='text-center mb-16'>
           <h2 className='text-4xl font-heading font-bold mb-4'>
-            <span className='text-light'>What Our</span>
+            <span className='theme-text'>What Our</span>
             <span className='text-accent'> Clients Say</span>
           </h2>
-          <p className='text-light/80 max-w-2xl mx-auto mb-12'>Discover how our platform has transformed businesses and careers through real success stories</p>
+          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>Discover how our platform has transformed businesses and careers through real success stories</p>
         </div>
 
-        {/* Gridas */}
+        {/* Testimonials Grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [&>*:nth-last-child(-n+2)]:lg:translate-x-1/2 relative'>
-          {/* Uzdarom korta bet kur spaudziant */}
           {expandedId && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className='fixed inset-0 z-40' onClick={() => toggleExpand(null)} />}
 
           {testimonialData.map((testimonial) => (
             <div key={testimonial.id} className='relative'>
-              {/* Testimonial korta */}
+              {/* Testimonial Card */}
               <motion.div
-                className='bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent p-6 rounded-lg cursor-pointer
-                  backdrop-blur-sm transition-all duration-300 
-                  hover:bg-light/10 hover:shadow-lg hover:-translate-y-1'
+                className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-6 rounded-lg cursor-pointer
+                  backdrop-blur-sm transition-all duration-300
+                  dark:hover:bg-light/10 hover:bg-primary/10 hover:shadow-lg hover:-translate-y-1'
                 onClick={() => toggleExpand(testimonial.id)}>
                 <FaQuoteLeft className='text-accent/20 text-4xl absolute top-4 right-4' />
                 <div className='flex items-center gap-4 mb-4'>
                   <img src={testimonial.image} alt={testimonial.name} className='w-12 h-12 rounded-full object-cover' />
                   <div>
-                    <h3 className='text-light font-medium'>{testimonial.name}</h3>
+                    <h3 className='theme-text font-medium'>{testimonial.name}</h3>
                     <Rating rating={testimonial.rating} className='text-sm my-1' />
                     <p className='text-accent text-sm'>{testimonial.role}</p>
-                    <p className='text-light/60 text-sm'>{testimonial.projectType || testimonial.expertise}</p>
+                    <p className='theme-text-secondary text-sm'>{testimonial.projectType || testimonial.expertise}</p>
                   </div>
                 </div>
-                <p className='text-light/80 line-clamp-2'>{testimonial.content}</p>
+                <p className='theme-text-secondary line-clamp-2'>{testimonial.content}</p>
               </motion.div>
 
-              {/* Aktyvi korta */}
+              {/* Expanded Card */}
               <AnimatePresence>
                 {expandedId === testimonial.id && (
                   <motion.div
@@ -169,36 +168,36 @@ const TestimonialsSection = () => {
                     exit={{ opacity: 0, scale: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                     onClick={() => toggleExpand(null)}
-                    className='absolute top-0 left-0 right-0 bg-primary/55 p-8 rounded-lg
+                    className='absolute top-0 left-0 right-0 theme-bg/55 p-8 rounded-lg
                     shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'>
                     <FaQuoteLeft className='text-accent/30 text-5xl absolute top-6 right-6' />
                     <div className='flex items-center gap-4 mb-6'>
                       <img src={testimonial.image} alt={testimonial.name} className='w-16 h-16 rounded-full object-cover' />
                       <div>
-                        <h3 className='text-light font-medium text-lg'>{testimonial.name}</h3>
+                        <h3 className='theme-text font-medium text-lg'>{testimonial.name}</h3>
                         <Rating rating={testimonial.rating} className='text-base my-2' />
                         <p className='text-accent text-sm'>{testimonial.role}</p>
-                        <p className='text-light/60 text-sm'>{testimonial.projectType || testimonial.expertise}</p>
+                        <p className='theme-text-secondary text-sm'>{testimonial.projectType || testimonial.expertise}</p>
                       </div>
                     </div>
 
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className='mb-6'>
-                      <p className='text-light/90 mb-4'>{testimonial.content}</p>
-                      <p className='text-light/80'>{testimonial.extendedContent}</p>
+                      <p className='theme-text mb-4'>{testimonial.content}</p>
+                      <p className='theme-text-secondary'>{testimonial.extendedContent}</p>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className='grid grid-cols-4 gap-4 pt-4 border-t border-light/10'>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className='grid grid-cols-4 gap-4 pt-4 border-t theme-border'>
                       <div className='col-span-2'>
                         <p className='text-accent text-sm'>Category</p>
-                        <p className='text-light text-sm'>{testimonial.projectDetails.category}</p>
+                        <p className='theme-text text-sm'>{testimonial.projectDetails.category}</p>
                       </div>
                       <div>
                         <p className='text-accent text-sm'>Duration</p>
-                        <p className='text-light text-sm'>{testimonial.projectDetails.duration}</p>
+                        <p className='theme-text text-sm'>{testimonial.projectDetails.duration}</p>
                       </div>
                       <div>
                         <p className='text-accent text-sm'>Completed</p>
-                        <p className='text-light text-sm'>{testimonial.projectDetails.completedDate}</p>
+                        <p className='theme-text text-sm'>{testimonial.projectDetails.completedDate}</p>
                       </div>
                     </motion.div>
                   </motion.div>
