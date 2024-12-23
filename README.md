@@ -155,7 +155,11 @@ server/
 - ✅ Homepage Hero Section
 - ✅ Homepage Features Overview
 - ✅ Homepage How It Works (Dual Journey)
-- 🚧 Homepage sections (In Progress)
+- ✅ Homepage Testimonials
+- ✅ Homepage Pricing
+- ✅ Homepage Contact Form
+- ✅ Listings Search Bar
+- 🚧 Listings User Filter Categories
 
 ## Contributing
 
