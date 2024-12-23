@@ -59,12 +59,12 @@ const ContactSection = () => {
   }
 
   const inputClasses = (errorField) => `
-  w-full theme-input rounded-lg px-4 py-3 theme-text
+  w-full bg-light/10 rounded-lg px-4 py-3 theme-text
   transition-all duration-300
-  focus:theme-input-focus
+  dark:placeholder:text-light/40 placeholder:text-primary/40
+  dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
+  focus:bg-light/20
   focus:outline-none focus:ring-2 focus:ring-accent/50
-  placeholder:theme-text-secondary
-  focus:placeholder:theme-text-secondary-focus
   hover:scale-[1.02] hover:shadow-lg
   ${errors[errorField] ? 'border-2 border-red-500' : 'border theme-border'}
 `
@@ -89,7 +89,7 @@ const ContactSection = () => {
         </motion.div>
 
         <motion.div className='max-w-3xl mx-auto' initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
-          <form onSubmit={handleSubmit} className='theme-card p-8 rounded-lg backdrop-blur-sm'>
+          <form onSubmit={handleSubmit} className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-8 rounded-lg backdrop-blur-sm'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
               <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
                 <label className='block theme-text text-sm font-medium mb-2'>Name</label>
