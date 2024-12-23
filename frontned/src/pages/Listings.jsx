@@ -1,9 +1,11 @@
+import SearchBar from '../components/shared/SearchBar'
+
 const Listings = () => {
   return (
-    <div>
-      <h1>Freelancer Listings</h1>
-    </div>
-  );
-};
+    <main className="pt-28">
+      <SearchBar />
+    </main>
+  )
+}
 
-export default Listings;
+export default Listings

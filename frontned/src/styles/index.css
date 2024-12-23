@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .theme-bg {
+    @apply transition-colors duration-300;
+    @apply dark:bg-primary bg-light;
+  }
+
+  .theme-text {
+    @apply dark:text-light text-primary;
+  }
+
+  .theme-text-secondary {
+    @apply dark:text-light/80 text-primary/80;
+  }
+
+  .theme-border {
+    @apply dark:border-light/50 border-primary/50;
+  }
+
+  .theme-hover {
+    @apply dark:hover:bg-light/5 hover:bg-primary/5;
+  }
+}
