@@ -7,33 +7,28 @@ const ListingTabs = () => {
   const [activeTab, setActiveTab] = useState('projects')
 
   return (
-    <section className='w-full py-32 theme-bg relative z-[1] mt-[-100px]'>
-      <div className='absolute inset-0 backdrop-blur-[100px]'>
-        {/* Didelis */}
-        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[300px] h-[300px] rotate-[25deg]' />
+    <section className='w-full py-32 theme-bg relative z-[2] mt-[-100px]'>
+      <div className='absolute inset-0 overflow-hidden'>
+        {/* Molecular patterns */}
+        <div className='absolute -left-20 top-40 opacity-20'>
+          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
         </div>
-        {/* Vidutiniai */}
-        <div className='absolute left-[10%] top-20 opacity-20'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[45deg]' />
+        <div className='absolute -right-20 bottom-20 opacity-15'>
+          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
         </div>
-        <div className='absolute right-[10%] bottom-40 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-30deg]' />
+        <div className='absolute left-1/4 top-10 opacity-10'>
+          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
         </div>
-        {/* Mazi */}
-        <div className='absolute left-1/4 top-0 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[150px] h-[150px] rotate-[15deg]' />
+        <div className='absolute right-1/3 top-1/3 opacity-5'>
+          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[60deg]' />
         </div>
-        <div className='absolute right-1/4 top-1/3 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[150px] h-[150px] rotate-[60deg]' />
-        </div>
-        <div className='absolute left-1/3 bottom-20 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[150px] h-[150px] rotate-[-15deg]' />
+        <div className='absolute left-1/3 bottom-40 opacity-5'>
+          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-15deg]' />
         </div>
       </div>
 
       <div className='container mx-auto px-4 relative z-10'>
-        <div className='max-w-6xl mx-auto'>
+        <div className='max-w-8xl mx-auto'>
           <div className='flex w-full'>
             <button
               onClick={() => setActiveTab('projects')}

@@ -4,7 +4,7 @@ import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const SearchSection = () => {
   return (
-    <section className='w-full pb-32 pt-[150px] theme-bg relative z-[1]'>
+    <section className='w-full pb-32 pt-[150px] theme-bg relative z-[3]'>
       {/* Background Pattern - reduced sizes */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         <div className='absolute -left-10 top-[20%] opacity-[0.08]'>
