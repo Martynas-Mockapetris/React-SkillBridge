@@ -156,6 +156,108 @@ const ListingTabs = () => {
     }
   ]
 
+  const freelancersData = [
+    {
+      id: 1,
+      name: 'Emma Thompson',
+      specialty: 'Full-Stack Developer',
+      rating: 4.9,
+      hourlyRate: '$65/hr',
+      image: 'https://i.pravatar.cc/150?img=1',
+      completedProjects: 6
+    },
+    {
+      id: 2,
+      name: 'Marcus Chen',
+      specialty: 'UI/UX Designer',
+      rating: 4.8,
+      hourlyRate: '$55/hr',
+      image: 'https://i.pravatar.cc/150?img=2',
+      completedProjects: 9
+    },
+    {
+      id: 3,
+      name: 'Sofia Rodriguez',
+      specialty: 'Frontend Developer',
+      rating: 4.9,
+      hourlyRate: '$60/hr',
+      image: 'https://i.pravatar.cc/150?img=3',
+      completedProjects: 34
+    },
+    {
+      id: 4,
+      name: 'Alex Kumar',
+      specialty: 'Backend Developer',
+      rating: 4.7,
+      hourlyRate: '$70/hr',
+      image: 'https://i.pravatar.cc/150?img=4',
+      completedProjects: 8
+    },
+    {
+      id: 5,
+      name: 'Laura Mitchell',
+      specialty: 'Mobile Developer',
+      rating: 4.8,
+      hourlyRate: '$75/hr',
+      image: 'https://i.pravatar.cc/150?img=5',
+      completedProjects: 27
+    },
+    {
+      id: 6,
+      name: 'David Park',
+      specialty: 'DevOps Engineer',
+      rating: 4.9,
+      hourlyRate: '$80/hr',
+      image: 'https://i.pravatar.cc/150?img=6',
+      completedProjects: 45
+    },
+    {
+      id: 7,
+      name: 'Nina Patel',
+      specialty: 'Data Scientist',
+      rating: 4.8,
+      hourlyRate: '$85/hr',
+      image: 'https://i.pravatar.cc/150?img=7',
+      completedProjects: 12
+    },
+    {
+      id: 8,
+      name: 'Thomas Anderson',
+      specialty: 'Blockchain Developer',
+      rating: 4.7,
+      hourlyRate: '$90/hr',
+      image: 'https://i.pravatar.cc/150?img=8',
+      completedProjects: 78
+    },
+    {
+      id: 9,
+      name: 'Maria Garcia',
+      specialty: 'Cloud Architect',
+      rating: 4.9,
+      hourlyRate: '$95/hr',
+      image: 'https://i.pravatar.cc/150?img=9',
+      completedProjects: 19
+    },
+    {
+      id: 10,
+      name: 'James Wilson',
+      specialty: 'Security Expert',
+      rating: 4.8,
+      hourlyRate: '$88/hr',
+      image: 'https://i.pravatar.cc/150?img=10',
+      completedProjects: 56
+    },
+    {
+      id: 11,
+      name: 'Sarah Lee',
+      specialty: 'AI/ML Engineer',
+      rating: 4.9,
+      hourlyRate: '$92/hr',
+      image: 'https://i.pravatar.cc/150?img=11',
+      completedProjects: 34
+    }
+  ]
+
   // Pagination
   const projectsPerPage = 6
   const indexOfLastProject = currentPage * projectsPerPage
