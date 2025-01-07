@@ -2,9 +2,145 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaUser, FaBriefcase } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import ProjectCard from './ProjectCard'
 
 const ListingTabs = () => {
   const [activeTab, setActiveTab] = useState('projects')
+
+  const projectsData = [
+    {
+      id: 1,
+      name: 'E-Commerce Platform Redesign',
+      type: 'Full-Stack',
+      deadline: '2024-03-15',
+      announcer: {
+        name: 'Sarah Chen',
+        image: 'https://i.pravatar.cc/150?img=1',
+        rating: 4.8
+      }
+    },
+    {
+      id: 2,
+      name: 'Mobile Banking App',
+      type: 'Frontend',
+      deadline: '2024-04-01',
+      announcer: {
+        name: 'James Wilson',
+        image: 'https://i.pravatar.cc/150?img=2',
+        rating: 4.9
+      }
+    },
+    {
+      id: 3,
+      name: 'Healthcare Dashboard',
+      type: 'UX/UI',
+      deadline: '2024-03-30',
+      announcer: {
+        name: 'Emma Thompson',
+        image: 'https://i.pravatar.cc/150?img=3',
+        rating: 4.7
+      }
+    },
+    {
+      id: 4,
+      name: 'Social Media Analytics Tool',
+      type: 'Backend',
+      deadline: '2024-04-15',
+      announcer: {
+        name: 'Michael Brown',
+        image: 'https://i.pravatar.cc/150?img=4',
+        rating: 4.6
+      }
+    },
+    {
+      id: 5,
+      name: 'Real Estate Platform',
+      type: 'Full-Stack',
+      deadline: '2024-05-01',
+      announcer: {
+        name: 'Sofia Garcia',
+        image: 'https://i.pravatar.cc/150?img=5',
+        rating: 4.9
+      }
+    },
+    {
+      id: 6,
+      name: 'Fitness Tracking App',
+      type: 'Frontend',
+      deadline: '2024-04-20',
+      announcer: {
+        name: 'David Kim',
+        image: 'https://i.pravatar.cc/150?img=6',
+        rating: 4.8
+      }
+    },
+    {
+      id: 7,
+      name: 'Educational Platform',
+      type: 'Full-Stack',
+      deadline: '2024-05-15',
+      announcer: {
+        name: 'Lisa Anderson',
+        image: 'https://i.pravatar.cc/150?img=7',
+        rating: 4.7
+      }
+    },
+    {
+      id: 8,
+      name: 'Restaurant Booking System',
+      type: 'Backend',
+      deadline: '2024-04-10',
+      announcer: {
+        name: 'Alex Martinez',
+        image: 'https://i.pravatar.cc/150?img=8',
+        rating: 4.9
+      }
+    },
+    {
+      id: 9,
+      name: 'Travel App Design',
+      type: 'UX/UI',
+      deadline: '2024-03-25',
+      announcer: {
+        name: 'Rachel Lee',
+        image: 'https://i.pravatar.cc/150?img=9',
+        rating: 4.8
+      }
+    },
+    {
+      id: 10,
+      name: 'Project Management Tool',
+      type: 'Full-Stack',
+      deadline: '2024-05-30',
+      announcer: {
+        name: 'Thomas Wright',
+        image: 'https://i.pravatar.cc/150?img=10',
+        rating: 4.6
+      }
+    },
+    {
+      id: 11,
+      name: 'Music Streaming Service',
+      type: 'Frontend',
+      deadline: '2024-04-25',
+      announcer: {
+        name: 'Nina Patel',
+        image: 'https://i.pravatar.cc/150?img=11',
+        rating: 4.7
+      }
+    },
+    {
+      id: 12,
+      name: 'AI Content Generator',
+      type: 'Backend',
+      deadline: '2024-05-10',
+      announcer: {
+        name: 'Chris Johnson',
+        image: 'https://i.pravatar.cc/150?img=12',
+        rating: 4.8
+      }
+    }
+  ]
 
   return (
     <section className='w-full py-32 theme-bg relative z-[2] mt-[-100px]'>
@@ -59,7 +195,18 @@ const ListingTabs = () => {
             exit={{ opacity: 0, x: activeTab === 'projects' ? 20 : -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
-            {/* Content will go here */}
+            {activeTab === 'projects' && (
+              <>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                  {projectsData.map((project, index) => (
+                    <ProjectCard key={project.id} project={project} index={index} />
+                  ))}
+                </div>
+                <div className='mt-12 text-center'>
+                  <button className='text-accent hover:text-accent/80 transition-colors duration-300'>Load More Projects...</button>
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       </div>
