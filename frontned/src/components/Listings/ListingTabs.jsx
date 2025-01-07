@@ -1,11 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaUser, FaBriefcase } from 'react-icons/fa'
-import molecularPattern from '../../assets/molecular-pattern.svg'
 import ProjectCard from './ProjectCard'
+import ProjectCardLoader from './ProjectCardLoader'
+import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const ListingTabs = () => {
   const [activeTab, setActiveTab] = useState('projects')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [activeTab])
 
   const projectsData = [
     {
@@ -198,9 +209,11 @@ const ListingTabs = () => {
             {activeTab === 'projects' && (
               <>
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                  {projectsData.map((project, index) => (
-                    <ProjectCard key={project.id} project={project} index={index} />
-                  ))}
+                  {isLoading
+                    ? Array(12)
+                        .fill(0)
+                        .map((_, index) => <ProjectCardLoader key={index} />)
+                    : projectsData.map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)}
                 </div>
                 <div className='mt-12 text-center'>
                   <button className='text-accent hover:text-accent/80 transition-colors duration-300'>Load More Projects...</button>
