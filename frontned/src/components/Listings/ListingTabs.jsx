@@ -36,7 +36,7 @@ const ListingTabs = () => {
       type: 'UX/UI',
       deadline: '2024-03-30',
       announcer: {
-        name: 'Emma Thompson',
+        name: 'James Thompson',
         image: 'https://i.pravatar.cc/150?img=3',
         rating: 4.7
       }
@@ -80,7 +80,7 @@ const ListingTabs = () => {
       type: 'Full-Stack',
       deadline: '2024-05-15',
       announcer: {
-        name: 'Lisa Anderson',
+        name: 'Brian Anderson',
         image: 'https://i.pravatar.cc/150?img=7',
         rating: 4.7
       }
@@ -113,7 +113,7 @@ const ListingTabs = () => {
       type: 'Full-Stack',
       deadline: '2024-05-30',
       announcer: {
-        name: 'Thomas Wright',
+        name: 'Sara Wright',
         image: 'https://i.pravatar.cc/150?img=10',
         rating: 4.6
       }
@@ -124,7 +124,7 @@ const ListingTabs = () => {
       type: 'Frontend',
       deadline: '2024-04-25',
       announcer: {
-        name: 'Nina Patel',
+        name: 'Dev Patel',
         image: 'https://i.pravatar.cc/150?img=11',
         rating: 4.7
       }
@@ -152,8 +152,8 @@ const ListingTabs = () => {
         <div className='absolute -right-20 bottom-20 opacity-15'>
           <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
         </div>
-        <div className='absolute left-1/4 top-10 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
+        <div className='absolute left-3/4 top-28 opacity-10'>
+          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[35deg]' />
         </div>
         <div className='absolute right-1/3 top-1/3 opacity-5'>
           <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[60deg]' />
