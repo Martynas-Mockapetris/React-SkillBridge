@@ -153,7 +153,7 @@ const ListingTabs = () => {
       name: 'Emma Thompson',
       specialty: 'Full-Stack Developer',
       rating: 4.9,
-      hourlyRate: '$65/hr',
+      hourlyRate: '€65/hr',
       image: 'https://i.pravatar.cc/150?img=1',
       completedProjects: 6
     },
@@ -162,7 +162,7 @@ const ListingTabs = () => {
       name: 'Marcus Chen',
       specialty: 'UI/UX Designer',
       rating: 4.8,
-      hourlyRate: '$55/hr',
+      hourlyRate: '€55/hr',
       image: 'https://i.pravatar.cc/150?img=2',
       completedProjects: 9
     },
@@ -171,7 +171,7 @@ const ListingTabs = () => {
       name: 'Sofia Rodriguez',
       specialty: 'Frontend Developer',
       rating: 4.9,
-      hourlyRate: '$60/hr',
+      hourlyRate: '€60/hr',
       image: 'https://i.pravatar.cc/150?img=3',
       completedProjects: 34
     },
@@ -180,7 +180,7 @@ const ListingTabs = () => {
       name: 'Alex Kumar',
       specialty: 'Backend Developer',
       rating: 4.7,
-      hourlyRate: '$70/hr',
+      hourlyRate: '€70/hr',
       image: 'https://i.pravatar.cc/150?img=4',
       completedProjects: 8
     },
@@ -189,7 +189,7 @@ const ListingTabs = () => {
       name: 'Laura Mitchell',
       specialty: 'Mobile Developer',
       rating: 4.8,
-      hourlyRate: '$75/hr',
+      hourlyRate: '€75/hr',
       image: 'https://i.pravatar.cc/150?img=5',
       completedProjects: 27
     },
@@ -198,7 +198,7 @@ const ListingTabs = () => {
       name: 'David Park',
       specialty: 'DevOps Engineer',
       rating: 4.9,
-      hourlyRate: '$80/hr',
+      hourlyRate: '€80/hr',
       image: 'https://i.pravatar.cc/150?img=6',
       completedProjects: 45
     },
@@ -207,7 +207,7 @@ const ListingTabs = () => {
       name: 'Nina Patel',
       specialty: 'Data Scientist',
       rating: 4.8,
-      hourlyRate: '$85/hr',
+      hourlyRate: '€85/hr',
       image: 'https://i.pravatar.cc/150?img=7',
       completedProjects: 12
     },
@@ -216,7 +216,7 @@ const ListingTabs = () => {
       name: 'Thomas Anderson',
       specialty: 'Blockchain Developer',
       rating: 4.7,
-      hourlyRate: '$90/hr',
+      hourlyRate: '€90/hr',
       image: 'https://i.pravatar.cc/150?img=8',
       completedProjects: 78
     },
@@ -225,7 +225,7 @@ const ListingTabs = () => {
       name: 'Maria Garcia',
       specialty: 'Cloud Architect',
       rating: 4.9,
-      hourlyRate: '$95/hr',
+      hourlyRate: '€95/hr',
       image: 'https://i.pravatar.cc/150?img=9',
       completedProjects: 19
     },
@@ -234,7 +234,7 @@ const ListingTabs = () => {
       name: 'James Wilson',
       specialty: 'Security Expert',
       rating: 4.8,
-      hourlyRate: '$88/hr',
+      hourlyRate: '€88/hr',
       image: 'https://i.pravatar.cc/150?img=10',
       completedProjects: 56
     },
@@ -243,7 +243,7 @@ const ListingTabs = () => {
       name: 'Sarah Lee',
       specialty: 'AI/ML Engineer',
       rating: 4.9,
-      hourlyRate: '$92/hr',
+      hourlyRate: '€92/hr',
       image: 'https://i.pravatar.cc/150?img=11',
       completedProjects: 34
     }
