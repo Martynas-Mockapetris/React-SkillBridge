@@ -2,23 +2,14 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaUser, FaBriefcase } from 'react-icons/fa'
 import ProjectCard from './ProjectCard'
-import ProjectCardLoader from './ProjectCardLoader'
+import FreelancerCard from './FreelancerCard'
+import CardLoader from './CardLoader'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const ListingTabs = () => {
   const [activeTab, setActiveTab] = useState('projects')
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-
-  // Loader state
-  useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [activeTab])
 
   // Dummy data for projects and freelancers
   const projectsData = [
@@ -259,11 +250,22 @@ const ListingTabs = () => {
   ]
 
   // Pagination
-  const projectsPerPage = 6
-  const indexOfLastProject = currentPage * projectsPerPage
-  const indexOfFirstProject = indexOfLastProject - projectsPerPage
-  const currentProjects = projectsData.slice(indexOfFirstProject, indexOfLastProject)
-  const totalPages = Math.ceil(projectsData.length / projectsPerPage)
+  const itemsPerPage = 6
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentItems = activeTab === 'projects' ? projectsData.slice(indexOfFirstItem, indexOfLastItem) : freelancersData.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil((activeTab === 'projects' ? projectsData.length : freelancersData.length) / itemsPerPage)
+
+  // Loader state
+  useEffect(() => {
+    setIsLoading(true)
+    setCurrentPage(1)
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [activeTab])
 
   return (
     <section className='w-full py-32 theme-bg relative z-[2] mt-[-100px]'>
@@ -321,28 +323,27 @@ const ListingTabs = () => {
             exit={{ opacity: 0, x: activeTab === 'projects' ? 20 : -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
-            {activeTab === 'projects' && (
-              <>
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                  {isLoading
-                    ? Array(6)
-                        .fill(0)
-                        .map((_, index) => <ProjectCardLoader key={index} />)
-                    : currentProjects.map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)}
-                </div>
-                {/* Puslapiu numeracija apacioje */}
-                <div className='mt-12 flex justify-center gap-2'>
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-10 h-10 rounded-lg transition-all duration-300 ${currentPage === i + 1 ? 'bg-accent text-white' : 'bg-accent/20 text-accent hover:bg-accent/30'}`}>
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {isLoading
+                ? Array(6)
+                    .fill(0)
+                    .map((_, index) => <CardLoader key={index} />)
+                : activeTab === 'projects'
+                ? currentItems.map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)
+                : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
+            </div>
+
+            {/* Puslapiu numeracija apacioje */}
+            <div className='mt-12 flex justify-center gap-2'>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-10 h-10 rounded-lg transition-all duration-300 ${currentPage === i + 1 ? 'bg-accent text-white' : 'bg-accent/20 text-accent hover:bg-accent/30'}`}>
+                  {i + 1}
+                </button>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>
