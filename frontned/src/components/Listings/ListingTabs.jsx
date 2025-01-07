@@ -268,7 +268,7 @@ const ListingTabs = () => {
   }, [activeTab])
 
   return (
-    <section className='w-full py-32 theme-bg relative z-[2] mt-[-100px]'>
+    <section className='w-full pt-0 pb-20 theme-bg relative z-[2]'>
       <div className='absolute inset-0 overflow-hidden'>
         {/* Molecular patterns */}
         <div className='absolute -left-20 top-40 opacity-20'>

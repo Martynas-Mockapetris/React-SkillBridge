@@ -4,7 +4,7 @@ import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const SearchSection = () => {
   return (
-    <section className='w-full pb-32 pt-[150px] theme-bg relative z-[3]'>
+    <section className='w-full pb-8 pt-[150px] theme-bg relative z-[3]'>
       {/* Background Pattern - reduced sizes */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         <div className='absolute -left-10 top-[20%] opacity-[0.08]'>
@@ -26,9 +26,9 @@ const SearchSection = () => {
         </motion.div>
 
         {/* Search Bar - added margin bottom for shadow */}
-        <div className='w-full max-w-4xl mx-auto mb-8'>
+        <div className='w-full max-w-4xl mx-auto mb-2'>
           <motion.div
-            className='relative flex flex-col sm:flex-row items-center overflow-hidden rounded-xl shadow-2xl backdrop-blur-sm bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent'
+            className='relative flex flex-col sm:flex-row items-center overflow-hidden rounded-xl shadow-xl backdrop-blur-sm bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent'
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}>
