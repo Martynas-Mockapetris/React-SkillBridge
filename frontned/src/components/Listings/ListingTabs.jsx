@@ -8,7 +8,9 @@ import molecularPattern from '../../assets/molecular-pattern.svg'
 const ListingTabs = () => {
   const [activeTab, setActiveTab] = useState('projects')
   const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
 
+  // Loader state
   useEffect(() => {
     setIsLoading(true)
     const timer = setTimeout(() => {
@@ -18,6 +20,7 @@ const ListingTabs = () => {
     return () => clearTimeout(timer)
   }, [activeTab])
 
+  // Dummy data for projects and freelancers
   const projectsData = [
     {
       id: 1,
@@ -153,6 +156,13 @@ const ListingTabs = () => {
     }
   ]
 
+  // Pagination
+  const projectsPerPage = 6
+  const indexOfLastProject = currentPage * projectsPerPage
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage
+  const currentProjects = projectsData.slice(indexOfFirstProject, indexOfLastProject)
+  const totalPages = Math.ceil(projectsData.length / projectsPerPage)
+
   return (
     <section className='w-full py-32 theme-bg relative z-[2] mt-[-100px]'>
       <div className='absolute inset-0 overflow-hidden'>
@@ -174,8 +184,10 @@ const ListingTabs = () => {
         </div>
       </div>
 
+      {/* Pagrindinis konteineris su mygtukais */}
       <div className='container mx-auto px-4 relative z-10'>
         <div className='max-w-8xl mx-auto'>
+          {/* Projektu ir Freelanceriu mygtukai */}
           <div className='flex w-full'>
             <button
               onClick={() => setActiveTab('projects')}
@@ -199,6 +211,7 @@ const ListingTabs = () => {
             </button>
           </div>
 
+          {/* Sarasu sekcija su animacija */}
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, x: activeTab === 'projects' ? -20 : 20 }}
@@ -210,13 +223,21 @@ const ListingTabs = () => {
               <>
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                   {isLoading
-                    ? Array(12)
+                    ? Array(6)
                         .fill(0)
                         .map((_, index) => <ProjectCardLoader key={index} />)
-                    : projectsData.map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)}
+                    : currentProjects.map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)}
                 </div>
-                <div className='mt-12 text-center'>
-                  <button className='text-accent hover:text-accent/80 transition-colors duration-300'>Load More Projects...</button>
+                {/* Puslapiu numeracija apacioje */}
+                <div className='mt-12 flex justify-center gap-2'>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-10 h-10 rounded-lg transition-all duration-300 ${currentPage === i + 1 ? 'bg-accent text-white' : 'bg-accent/20 text-accent hover:bg-accent/30'}`}>
+                      {i + 1}
+                    </button>
+                  ))}
                 </div>
               </>
             )}
