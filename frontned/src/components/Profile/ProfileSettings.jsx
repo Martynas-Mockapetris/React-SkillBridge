@@ -39,7 +39,7 @@ const ProfileSettings = () => {
           </div>
 
           {/* Social Links */}
-          <div className='p-6 rounded-lg bg-light/5'>
+          <div className="h-fit p-6 rounded-lg bg-light/5">
             <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
             <div>
               <div className='mb-4'>
