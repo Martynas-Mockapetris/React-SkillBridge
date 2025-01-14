@@ -1,5 +1,27 @@
 import React from 'react'
+import { motion } from 'framer-motion';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase } from 'react-icons/fa'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5
+    }
+  }
+}
 
 const ProfileSettings = () => {
   // This will come from user context/auth later
@@ -8,13 +30,15 @@ const ProfileSettings = () => {
   const showFreelancerSection = userRole === 'freelancer' || userRole === 'both'
 
   return (
-    <div className='space-y-8'>
-      <h2 className='text-2xl font-bold theme-text'>Profile Settings</h2>
+    <motion.div className='space-y-8' variants={containerVariants} initial='hidden' animate='visible'>
+      <motion.h2 className='text-2xl font-bold theme-text' variants={itemVariants}>
+        Profile Settings
+      </motion.h2>
 
       <form>
-        <div className='grid lg:grid-cols-2 gap-6 mb-8'>
+        <motion.div className='grid lg:grid-cols-2 gap-6 mb-8' variants={containerVariants}>
           {/* Basic Information */}
-          <div className='p-6 rounded-lg bg-light/5'>
+          <motion.div className='p-6 rounded-lg bg-light/5' variants={itemVariants} whileHover={{ scale: 1.01 }} transition={{ duration: 0.2 }}>
             <h3 className='text-xl font-semibold theme-text mb-4'>Basic Information</h3>
             <div>
               <div className='mb-4'>
@@ -59,7 +83,7 @@ const ProfileSettings = () => {
                   <span className='absolute left-3 top-[14px] text-accent text-[16px]'>
                     <FaTools />
                   </span>
-                  <textarea name='skills' rows='2' placeholder='Separate skills with commas' className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+                  <textarea name='skills' rows='2' placeholder='Separate skills with commas' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
@@ -68,14 +92,14 @@ const ProfileSettings = () => {
                   <span className='absolute left-3 top-[14px] text-accent text-[16px]'>
                     <FaBook />
                   </span>
-                  <textarea name='bio' rows='4' className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+                  <textarea name='bio' rows='4' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Social Links */}
-          <div className='h-fit p-6 rounded-lg bg-light/5'>
+          <motion.div className='h-fit p-6 rounded-lg bg-light/5' variants={itemVariants} whileHover={{ scale: 1.01 }} transition={{ duration: 0.2 }}>
             <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
             <div>
               <div className='mb-4'>
@@ -115,11 +139,11 @@ const ProfileSettings = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {showFreelancerSection && (
-          <div className='p-6 rounded-lg bg-light/5 mb-8'>
+          <motion.div className='p-6 rounded-lg bg-light/5 mb-8' variants={itemVariants} initial='hidden' animate='visible' whileHover={{ scale: 1.01 }} transition={{ duration: 0.2 }}>
             <h3 className='text-xl font-semibold theme-text mb-4'>Freelancer Details</h3>
             <div className='grid gap-6'>
               <div className='grid md:grid-cols-2 gap-4'>
@@ -154,7 +178,7 @@ const ProfileSettings = () => {
                   <textarea
                     name='languages'
                     rows='2'
-                    className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
+                    className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
                     placeholder='English (Native), Spanish (Fluent), etc.'
                   />
                 </div>
@@ -169,7 +193,7 @@ const ProfileSettings = () => {
                   <textarea
                     name='certifications'
                     rows='2'
-                    className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
+                    className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
                     placeholder='List your relevant certifications'
                   />
                 </div>
@@ -184,7 +208,7 @@ const ProfileSettings = () => {
                   <textarea
                     name='serviceCategories'
                     rows='2'
-                    className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
+                    className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
                     placeholder='Web Development, Mobile Apps, UI/UX Design, etc.'
                   />
                 </div>
@@ -208,16 +232,16 @@ const ProfileSettings = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        <div>
+        <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <button type='submit' className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300'>
             Save Changes
           </button>
-        </div>
+        </motion.div>
       </form>
-    </div>
+    </motion.div>
   )
 }
 
