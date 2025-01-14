@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb } from 'react-icons/fa'
 
 const ProjectsList = () => {
@@ -68,45 +69,63 @@ const ProjectsList = () => {
   const filteredProjects = projectType === 'all' ? projects : projects.filter((project) => project.type === projectType)
 
   return (
-    <div className='space-y-8'>
-      <div className='flex justify-between items-center'>
+    <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+      <motion.div className='flex justify-between items-center' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h2 className='text-2xl font-bold theme-text'>My Projects</h2>
-        <button onClick={() => navigate('/projects/new')} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300'>
+        <motion.button
+          onClick={() => navigate('/projects/new')}
+          className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300'
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}>
           New Project
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Project Type Filter */}
-      <div className='flex gap-4 flex-wrap'>
-        <button
+      <motion.div className='flex gap-4 flex-wrap' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+        <motion.button
           onClick={() => setProjectType('all')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
             ${projectType === 'all' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
           All Projects
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={() => setProjectType('freelance')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
             ${projectType === 'freelance' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
           <FaBriefcase />
           Freelance Work
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={() => setProjectType('created')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
             ${projectType === 'created' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
           <FaLightbulb />
           My Listings
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
-      <div className='grid gap-6'>
-        {filteredProjects.map((project) => (
-          <div key={project.id} className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 group backdrop-blur-sm'>
+      <motion.div className='grid gap-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
+        {filteredProjects.map((project, index) => (
+          <motion.div
+            key={project.id}
+            className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 group backdrop-blur-sm'
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+            whileHover={{ scale: 1.01 }}>
             <div className='flex justify-between items-start'>
               <div className='flex-1'>
                 <div className='flex items-center gap-3 mb-2'>
-                  {project.type === 'freelance' ? <FaBriefcase className='text-accent text-xl' /> : <FaLightbulb className='text-accent text-xl' />}
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}>
+                    {project.type === 'freelance' ? <FaBriefcase className='text-accent text-xl' /> : <FaLightbulb className='text-accent text-xl' />}
+                  </motion.div>
                   <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
                 </div>
                 <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
@@ -120,12 +139,14 @@ const ProjectsList = () => {
               </div>
               <div className='text-right'>
                 <div className='theme-text font-bold'>{project.budget}</div>
-                <button
+                <motion.button
                   onClick={() => navigate(`/projects/${project.id}`)}
-                  className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-300'>
+                  className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-300'
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}>
                   <FaEye />
                   <span>View</span>
-                </button>
+                </motion.button>
               </div>
             </div>
 
@@ -135,13 +156,13 @@ const ProjectsList = () => {
                 <span className='theme-text-secondary text-sm'>{project.progress}%</span>
               </div>
               <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700'>
-                <div className='bg-accent h-2.5 rounded-full transition-all duration-300' style={{ width: `${project.progress}%` }} />
+                <motion.div className='bg-accent h-2.5 rounded-full' initial={{ width: 0 }} animate={{ width: `${project.progress}%` }} transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} />
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
