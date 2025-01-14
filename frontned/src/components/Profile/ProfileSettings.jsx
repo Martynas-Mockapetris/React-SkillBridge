@@ -86,16 +86,16 @@ const ProfileSettings = () => {
             <h3 className='text-xl font-semibold theme-text mb-4'>Basic Information</h3>
             <div className='space-y-4'>
               {[
-                { name: 'fullName', label: 'Full Name', icon: <FaUser />, type: 'text' },
-                { name: 'email', label: 'Email', icon: <FaEnvelope />, type: 'email' },
-                { name: 'phone', label: 'Phone Number', icon: <FaPhone />, type: 'tel' },
-                { name: 'location', label: 'Location', icon: <FaMapMarkerAlt />, type: 'text' }
+                { name: 'fullName', label: 'Full Name', icon: <FaUser />, type: 'text', placeholder: 'Enter your full name' },
+                { name: 'email', label: 'Email', icon: <FaEnvelope />, type: 'email', placeholder: 'Enter your email address' },
+                { name: 'phone', label: 'Phone Number', icon: <FaPhone />, type: 'tel', placeholder: 'Enter your phone number' },
+                { name: 'location', label: 'Location', icon: <FaMapMarkerAlt />, type: 'text', placeholder: 'Enter your location' }
               ].map((field) => (
                 <div key={field.name}>
                   <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
                   <div className='relative'>
-                    <span className='absolute left-3 top-3 text-accent text-[16px]'>{field.icon}</span>
-                    <input type={field.type} name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} />
+                    <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
+                    <input type={field.type} name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} placeholder={field.placeholder} />
                     {errors[field.name] && (
                       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                         {errors[field.name]}
@@ -108,7 +108,7 @@ const ProfileSettings = () => {
               <div>
                 <label className='block mb-2 theme-text-secondary text-sm'>Skills</label>
                 <div className='relative'>
-                  <span className='absolute left-3 top-3 text-accent text-[16px]'>
+                  <span className='absolute left-3 top-4 text-accent text-[16px]'>
                     <FaTools />
                   </span>
                   <textarea name='skills' value={formData.skills} onChange={handleChange} className={inputClasses('skills')} rows='3' placeholder='Separate skills with commas' />
@@ -118,10 +118,10 @@ const ProfileSettings = () => {
               <div>
                 <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
                 <div className='relative'>
-                  <span className='absolute left-3 top-3 text-accent text-[16px]'>
+                  <span className='absolute left-3 top-4 text-accent text-[16px]'>
                     <FaBook />
                   </span>
-                  <textarea name='bio' value={formData.bio} onChange={handleChange} className={inputClasses('bio')} rows='4' />
+                  <textarea name='bio' value={formData.bio} onChange={handleChange} className={inputClasses('bio')} rows='4' placeholder='Describe yourself'/>
                 </div>
               </div>
             </div>
@@ -132,16 +132,16 @@ const ProfileSettings = () => {
             <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
             <div className='space-y-4'>
               {[
-                { name: 'website', label: 'Website', icon: <FaGlobe /> },
-                { name: 'github', label: 'GitHub', icon: <FaGithub /> },
-                { name: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin /> },
-                { name: 'twitter', label: 'Twitter', icon: <FaTwitter /> }
+                { name: 'website', label: 'Website', icon: <FaGlobe />, placeholder: 'Enter your website URL' },
+                { name: 'github', label: 'GitHub', icon: <FaGithub />, placeholder: 'Enter your GitHub profile' },
+                { name: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin />, placeholder: 'Enter your LinkedIn profile' },
+                { name: 'twitter', label: 'Twitter', icon: <FaTwitter />, placeholder: 'Enter your Twitter handle' }
               ].map((social) => (
                 <div key={social.name}>
                   <label className='block mb-2 theme-text-secondary text-sm'>{social.label}</label>
                   <div className='relative'>
-                    <span className='absolute left-3 top-3 text-accent text-[16px]'>{social.icon}</span>
-                    <input type='url' name={social.name} value={formData[social.name]} onChange={handleChange} className={inputClasses(social.name)} />
+                    <span className='absolute left-3 top-4 text-accent text-[16px]'>{social.icon}</span>
+                    <input type='url' name={social.name} value={formData[social.name]} onChange={handleChange} className={inputClasses(social.name)} placeholder={social.placeholder} />
                   </div>
                 </div>
               ))}
@@ -169,7 +169,7 @@ const ProfileSettings = () => {
                 <div>
                   <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
                   <div className='relative'>
-                    <span className='absolute left-3 top-3 text-accent text-[16px]'>
+                    <span className='absolute left-3 top-4 text-accent text-[16px]'>
                       <FaStar />
                     </span>
                     <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={inputClasses('experienceLevel')}>
@@ -189,7 +189,7 @@ const ProfileSettings = () => {
                 <div key={field.name}>
                   <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
                   <div className='relative'>
-                    <span className='absolute left-3 top-3 text-accent text-[16px]'>{field.icon}</span>
+                    <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
                     <textarea name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} rows='2' placeholder={field.placeholder} />
                   </div>
                 </div>
@@ -203,7 +203,7 @@ const ProfileSettings = () => {
                     { name: 'fiverrProfile', placeholder: 'Fiverr Profile URL' }
                   ].map((platform) => (
                     <div key={platform.name} className='relative'>
-                      <span className='absolute left-3 top-3 text-accent text-[16px]'>
+                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
                         <FaBriefcase />
                       </span>
                       <input type='url' name={platform.name} value={formData[platform.name]} onChange={handleChange} className={inputClasses(platform.name)} placeholder={platform.placeholder} />
