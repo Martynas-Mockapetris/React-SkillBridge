@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter,  FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase } from 'react-icons/fa'
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase } from 'react-icons/fa'
 
 const ProfileSettings = () => {
   // This will come from user context/auth later
@@ -19,44 +19,56 @@ const ProfileSettings = () => {
             <div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Full Name</label>
-                <div className='relative'>
-                  <FaUser className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaUser />
+                  </span>
                   <input type='text' name='fullName' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Email</label>
-                <div className='relative'>
-                  <FaEnvelope className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaEnvelope />
+                  </span>
                   <input type='email' name='email' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Phone Number</label>
-                <div className='relative'>
-                  <FaPhone className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaPhone />
+                  </span>
                   <input type='tel' name='phone' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Location</label>
-                <div className='relative'>
-                  <FaMapMarkerAlt className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaMapMarkerAlt />
+                  </span>
                   <input type='text' name='location' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Skills</label>
                 <div className='relative'>
-                  <FaTools className='absolute left-3 top-3 text-accent' />
-                  <textarea name='skills' rows='2' placeholder='Separate skills with commas' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+                  <span className='absolute left-3 top-[14px] text-accent text-[16px]'>
+                    <FaTools />
+                  </span>
+                  <textarea name='skills' rows='2' placeholder='Separate skills with commas' className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
                 <div className='relative'>
-                  <FaBook className='absolute left-3 top-3 text-accent' />
-                  <textarea name='bio' rows='4' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+                  <span className='absolute left-3 top-[14px] text-accent text-[16px]'>
+                    <FaBook />
+                  </span>
+                  <textarea name='bio' rows='4' className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
             </div>
@@ -68,29 +80,37 @@ const ProfileSettings = () => {
             <div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Website</label>
-                <div className='relative'>
-                  <FaGlobe className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaGlobe />
+                  </span>
                   <input type='url' name='website' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>GitHub</label>
-                <div className='relative'>
-                  <FaGithub className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaGithub />
+                  </span>
                   <input type='text' name='github' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>LinkedIn</label>
-                <div className='relative'>
-                  <FaLinkedin className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaLinkedin />
+                  </span>
                   <input type='text' name='linkedin' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
               <div className='mb-4'>
                 <label className='block mb-2 theme-text-secondary text-sm'>Twitter</label>
-                <div className='relative'>
-                  <FaTwitter className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                <div className='relative flex items-center'>
+                  <span className='absolute left-3 text-accent text-[16px]'>
+                    <FaTwitter />
+                  </span>
                   <input type='text' name='twitter' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                 </div>
               </div>
@@ -105,15 +125,17 @@ const ProfileSettings = () => {
               <div className='grid md:grid-cols-2 gap-4'>
                 <div>
                   <label className='block mb-2 theme-text-secondary text-sm'>Hourly Rate</label>
-                  <div className='relative'>
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-accent'>€</span>
+                  <div className='relative flex items-center'>
+                    <span className='absolute left-3 text-accent text-[16px]'>€</span>
                     <input type='number' name='hourlyRate' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' placeholder='€ per hour' />
                   </div>
                 </div>
                 <div>
                   <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
-                  <div className='relative'>
-                    <FaStar className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                  <div className='relative flex items-center'>
+                    <span className='absolute left-3 text-accent text-[16px]'>
+                      <FaStar />
+                    </span>
                     <select className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent appearance-none'>
                       <option value='entry'>Entry Level</option>
                       <option value='intermediate'>Intermediate</option>
@@ -126,11 +148,13 @@ const ProfileSettings = () => {
               <div>
                 <label className='block mb-2 theme-text-secondary text-sm'>Languages</label>
                 <div className='relative'>
-                  <FaLanguage className='absolute left-3 top-3 text-accent' />
+                  <span className='absolute left-3 top-[14px] text-accent text-[16px]'>
+                    <FaLanguage />
+                  </span>
                   <textarea
                     name='languages'
                     rows='2'
-                    className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
+                    className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
                     placeholder='English (Native), Spanish (Fluent), etc.'
                   />
                 </div>
@@ -139,11 +163,13 @@ const ProfileSettings = () => {
               <div>
                 <label className='block mb-2 theme-text-secondary text-sm'>Certifications</label>
                 <div className='relative'>
-                  <FaCertificate className='absolute left-3 top-3 text-accent' />
+                  <span className='absolute left-3 top-[14px] text-accent text-[16px]'>
+                    <FaCertificate />
+                  </span>
                   <textarea
                     name='certifications'
                     rows='2'
-                    className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
+                    className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
                     placeholder='List your relevant certifications'
                   />
                 </div>
@@ -152,11 +178,13 @@ const ProfileSettings = () => {
               <div>
                 <label className='block mb-2 theme-text-secondary text-sm'>Service Categories</label>
                 <div className='relative'>
-                  <FaList className='absolute left-3 top-3 text-accent' />
+                  <span className='absolute left-3 top-[14px] text-accent text-[16px]'>
+                    <FaList />
+                  </span>
                   <textarea
                     name='serviceCategories'
                     rows='2'
-                    className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
+                    className='w-full pl-10 p-[10px] rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent'
                     placeholder='Web Development, Mobile Apps, UI/UX Design, etc.'
                   />
                 </div>
@@ -165,12 +193,16 @@ const ProfileSettings = () => {
               <div>
                 <label className='block mb-2 theme-text-secondary text-sm'>Platform Links</label>
                 <div className='grid md:grid-cols-2 gap-4'>
-                  <div className='relative'>
-                    <FaBriefcase className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                  <div className='relative flex items-center'>
+                    <span className='absolute left-3 text-accent text-[16px]'>
+                      <FaBriefcase />
+                    </span>
                     <input type='url' name='upworkProfile' placeholder='Upwork Profile URL' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                   </div>
-                  <div className='relative'>
-                    <FaBriefcase className='absolute left-3 top-1/2 -translate-y-1/2 text-accent' />
+                  <div className='relative flex items-center'>
+                    <span className='absolute left-3 text-accent text-[16px]'>
+                      <FaBriefcase />
+                    </span>
                     <input type='url' name='fiverrProfile' placeholder='Fiverr Profile URL' className='w-full pl-10 p-3 rounded-lg bg-light/5 theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
                   </div>
                 </div>
