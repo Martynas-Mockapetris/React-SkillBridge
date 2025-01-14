@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ProfileStats from '../components/Profile/ProfileStats';
+import ProjectsList from '../components/Profile/ProjectsList';
 import { FaUser, FaProjectDiagram, FaCog, FaLock } from 'react-icons/fa';
 
 const Profile = () => {
@@ -52,6 +53,7 @@ const Profile = () => {
         {/* Content Area */}
         <div className="min-h-80">
           {activeTab === 'overview' && <ProfileStats />}
+          {activeTab === 'projects' && <ProjectsList />}
           {/* Other tab contents will be added here */}
         </div>
       </div>
