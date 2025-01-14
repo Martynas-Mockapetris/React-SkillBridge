@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaUser, FaProjectDiagram, FaCog, FaLock } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
+import ProfileSettings from '../components/Profile/ProfileSettings'
 import molecularPattern from '../assets/molecular-pattern.svg'
 
 const Profile = () => {
@@ -62,6 +63,7 @@ const Profile = () => {
           <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
             {activeTab === 'overview' && <ProfileStats />}
             {activeTab === 'projects' && <ProjectsList />}
+            {activeTab === 'settings' && <ProfileSettings />}
           </motion.div>
         </AnimatePresence>
       </div>
