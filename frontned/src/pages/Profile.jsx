@@ -4,6 +4,7 @@ import { FaUser, FaProjectDiagram, FaCog, FaLock } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
+import SecuritySettings from '../components/Profile/SecuritySettings'
 import molecularPattern from '../assets/molecular-pattern.svg'
 
 const Profile = () => {
@@ -64,6 +65,7 @@ const Profile = () => {
             {activeTab === 'overview' && <ProfileStats />}
             {activeTab === 'projects' && <ProjectsList />}
             {activeTab === 'settings' && <ProfileSettings />}
+            {activeTab === 'security' && <SecuritySettings />}
           </motion.div>
         </AnimatePresence>
       </div>
