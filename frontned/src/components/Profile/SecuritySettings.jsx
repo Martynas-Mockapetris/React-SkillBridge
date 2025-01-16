@@ -1,12 +1,18 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaLock } from 'react-icons/fa'
+import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 
 const SecuritySettings = () => {
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
+  })
+
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false
   })
 
   const [errors, setErrors] = useState({})
@@ -120,7 +126,25 @@ const SecuritySettings = () => {
                 <span className='absolute left-3 top-4 text-accent text-[16px]'>
                   <FaLock />
                 </span>
-                <input type='password' name={field.name} value={passwordData[field.name]} onChange={handleChange} className={getInputClasses(field.name)} placeholder={field.placeholder} />
+                <input
+                  type={showPasswords[field.name] ? 'text' : 'password'}
+                  name={field.name}
+                  value={passwordData[field.name]}
+                  onChange={handleChange}
+                  className={getInputClasses(field.name)}
+                  placeholder={field.placeholder}
+                />
+                <button
+                  type='button'
+                  onClick={() =>
+                    setShowPasswords((prev) => ({
+                      ...prev,
+                      [field.name]: !prev[field.name]
+                    }))
+                  }
+                  className='absolute right-3 top-4 text-accent text-[16px]'>
+                  {showPasswords[field.name] ? <FaEyeSlash /> : <FaEye />}
+                </button>
                 {errors[field.name] && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                     {errors[field.name]}
