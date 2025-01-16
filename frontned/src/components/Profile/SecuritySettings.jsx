@@ -13,7 +13,7 @@ const SecuritySettings = () => {
 
   const validateForm = () => {
     const newErrors = {}
-    
+
     // Current password validation
     if (!passwordData.currentPassword.trim()) {
       newErrors.currentPassword = 'Current password is required'
@@ -102,7 +102,19 @@ const SecuritySettings = () => {
                 <span className='absolute left-3 top-4 text-accent text-[16px]'>
                   <FaLock />
                 </span>
-                <input type='password' name={field.name} value={passwordData[field.name]} onChange={handleChange} className={inputClasses} placeholder={field.placeholder} />
+                <input
+                  type='password'
+                  name={field.name}
+                  value={passwordData[field.name]}
+                  onChange={handleChange}
+                  className={`${inputClasses} ${errors[field.name] ? 'border-2 border-red-500' : ''}`}
+                  placeholder={field.placeholder}
+                />
+                {errors[field.name] && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                    {errors[field.name]}
+                  </motion.p>
+                )}
               </div>
             </div>
           ))}
