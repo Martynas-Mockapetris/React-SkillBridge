@@ -68,6 +68,28 @@ const SecuritySettings = () => {
     return strength
   }
 
+  // Password requirements
+  const PasswordRequirements = ({ password }) => {
+    const requirements = [
+      { label: 'At least 8 characters', test: (pwd) => pwd.length >= 8 },
+      { label: 'Contains uppercase letter', test: (pwd) => /[A-Z]/.test(pwd) },
+      { label: 'Contains lowercase letter', test: (pwd) => /[a-z]/.test(pwd) },
+      { label: 'Contains number', test: (pwd) => /[0-9]/.test(pwd) },
+      { label: 'Contains special character', test: (pwd) => /[!@#$%^&*]/.test(pwd) }
+    ]
+
+    return (
+      <div className='mt-2 space-y-2'>
+        {requirements.map((req, index) => (
+          <motion.div key={index} className='flex items-center space-x-2' initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }}>
+            <span className={`text-sm ${req.test(password) ? 'text-green-500' : 'text-red-500'}`}>{req.test(password) ? '✓' : '×'}</span>
+            <span className='text-sm theme-text-secondary'>{req.label}</span>
+          </motion.div>
+        ))}
+      </div>
+    )
+  }
+
   // Updates strength when password changes
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -151,17 +173,20 @@ const SecuritySettings = () => {
                   </motion.p>
                 )}
                 {field.name === 'newPassword' && (
-                  <div className='mt-2'>
-                    <div className='h-2 w-full bg-gray-200 rounded-full overflow-hidden'>
-                      <motion.div
-                        className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${passwordStrength}%` }}
-                        transition={{ duration: 0.3 }}
-                      />
+                  <>
+                    <div className='mt-2'>
+                      <div className='h-2 w-full bg-gray-200 rounded-full overflow-hidden'>
+                        <motion.div
+                          className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${passwordStrength}%` }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </div>
+                      <p className='text-sm mt-1 theme-text-secondary'>Password Strength: {passwordStrength <= 40 ? 'Weak' : passwordStrength <= 80 ? 'Medium' : 'Strong'}</p>
                     </div>
-                    <p className='text-sm mt-1 theme-text-secondary'>Password Strength: {passwordStrength <= 40 ? 'Weak' : passwordStrength <= 80 ? 'Medium' : 'Strong'}</p>
-                  </div>
+                    <PasswordRequirements password={passwordData.newPassword} />
+                  </>
                 )}
               </div>
             </div>
