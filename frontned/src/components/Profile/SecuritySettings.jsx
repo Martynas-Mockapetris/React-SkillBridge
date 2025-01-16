@@ -10,6 +10,7 @@ const SecuritySettings = () => {
   })
 
   const [errors, setErrors] = useState({})
+  const [passwordStrength, setPasswordStrength] = useState(0)
 
   const validateForm = () => {
     const newErrors = {}
@@ -50,12 +51,29 @@ const SecuritySettings = () => {
     return Object.keys(newErrors).length === 0
   }
 
+  // Each criteria adds 20% to strength
+  const calculatePasswordStrength = (password) => {
+    let strength = 0
+    if (password.length >= 8) strength += 20
+    if (/[A-Z]/.test(password)) strength += 20
+    if (/[a-z]/.test(password)) strength += 20
+    if (/[0-9]/.test(password)) strength += 20
+    if (/[!@#$%^&*]/.test(password)) strength += 20
+    return strength
+  }
+
+  // Updates strength when password changes
   const handleChange = (e) => {
     const { name, value } = e.target
     setPasswordData((prev) => ({
       ...prev,
       [name]: value
     }))
+
+    // Calculate strength only for new password field
+    if (name === 'newPassword') {
+      setPasswordStrength(calculatePasswordStrength(value))
+    }
   }
 
   const handleSubmit = (e) => {
@@ -107,6 +125,19 @@ const SecuritySettings = () => {
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                     {errors[field.name]}
                   </motion.p>
+                )}
+                {field.name === 'newPassword' && (
+                  <div className='mt-2'>
+                    <div className='h-2 w-full bg-gray-200 rounded-full overflow-hidden'>
+                      <motion.div
+                        className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${passwordStrength}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                    <p className='text-sm mt-1 theme-text-secondary'>Password Strength: {passwordStrength <= 40 ? 'Weak' : passwordStrength <= 80 ? 'Medium' : 'Strong'}</p>
+                  </div>
                 )}
               </div>
             </div>
