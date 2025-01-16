@@ -151,7 +151,7 @@ server/
 └── app.js
 ```
 
-## Development Progress
+## Development Progress [Frontend level]
 - ✅ Homepage Hero Section
 - ✅ Homepage Features Overview
 - ✅ Homepage How It Works (Dual Journey)
@@ -159,7 +159,12 @@ server/
 - ✅ Homepage Pricing
 - ✅ Homepage Contact Form
 - ✅ Listings Search Bar
-- 🚧 Listings User Filter Categories
+- ✅ Listings User Filter Categories
+- ✅ Profile Overview
+- ✅ Profile Projects
+- 🚧 Profile Settings [Mainly done, but some adjustments needed]
+- ✅ Profile Security
+- 🚧 Admin panel next
 
 ## Contributing
 
