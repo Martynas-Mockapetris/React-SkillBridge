@@ -65,17 +65,17 @@ const SecuritySettings = () => {
     }
   }
 
-  const inputClasses = `
-    w-full pl-10 p-3 rounded-lg
-    bg-light/10
-    transition-all duration-300
-    dark:placeholder:text-light/40 placeholder:text-primary/40
-    dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
-    focus:bg-light/20
-    focus:outline-none focus:ring-2 focus:ring-accent/50
-    hover:scale-[1.02] hover:shadow-lg
-    border theme-border
-  `
+  const getInputClasses = (fieldName) => `
+  w-full pl-10 p-3 rounded-lg
+  bg-light/10
+  transition-all duration-300
+  dark:placeholder:text-light/40 placeholder:text-primary/40
+  dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
+  focus:bg-light/20
+  focus:outline-none focus:ring-2 focus:ring-accent/50
+  hover:scale-[1.02] hover:shadow-lg
+  ${errors[fieldName] ? 'border-2 border-red-500' : 'border theme-border'}
+`
 
   return (
     <motion.div className='space-y-8 p-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -102,14 +102,7 @@ const SecuritySettings = () => {
                 <span className='absolute left-3 top-4 text-accent text-[16px]'>
                   <FaLock />
                 </span>
-                <input
-                  type='password'
-                  name={field.name}
-                  value={passwordData[field.name]}
-                  onChange={handleChange}
-                  className={`${inputClasses} ${errors[field.name] ? 'border-2 border-red-500' : ''}`}
-                  placeholder={field.placeholder}
-                />
+                <input type='password' name={field.name} value={passwordData[field.name]} onChange={handleChange} className={getInputClasses(field.name)} placeholder={field.placeholder} />
                 {errors[field.name] && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                     {errors[field.name]}
