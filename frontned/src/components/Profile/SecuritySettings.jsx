@@ -68,6 +68,36 @@ const SecuritySettings = () => {
     return strength
   }
 
+  // Random password generator
+  const generateStrongPassword = () => {
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz'
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    const numbers = '0123456789'
+    const symbols = '!@#$%^&*'
+
+    const getRandomChar = (str) => str.charAt(Math.floor(Math.random() * str.length))
+
+    // Ensure one of each required character type
+    let password = [getRandomChar(lowercase), getRandomChar(uppercase), getRandomChar(numbers), getRandomChar(symbols)]
+
+    // Add additional random characters to reach desired length (12)
+    const allChars = lowercase + uppercase + numbers + symbols
+    for (let i = password.length; i < 12; i++) {
+      password.push(getRandomChar(allChars))
+    }
+
+    // Shuffle the password array
+    password = password.sort(() => Math.random() - 0.5)
+
+    const newPassword = password.join('')
+    setPasswordData((prev) => ({
+      ...prev,
+      newPassword,
+      confirmPassword: '' // Clear confirm password field
+    }))
+    setPasswordStrength(calculatePasswordStrength(newPassword))
+  }
+
   // Password requirements
   const PasswordRequirements = ({ password }) => {
     const requirements = [
@@ -174,6 +204,9 @@ const SecuritySettings = () => {
                 )}
                 {field.name === 'newPassword' && (
                   <>
+                    <button type='button' onClick={generateStrongPassword} className='absolute right-12 top-4 text-accent text-sm font-medium hover:text-accent/80'>
+                      Generate
+                    </button>
                     <div className='mt-2'>
                       <div className='h-2 w-full bg-gray-200 rounded-full overflow-hidden'>
                         <motion.div
