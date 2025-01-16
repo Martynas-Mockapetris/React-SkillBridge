@@ -163,7 +163,9 @@ server/
 - ✅ Profile Overview
 - ✅ Profile Projects
 - 🚧 Profile Settings [Mainly done, but some adjustments needed]
-- 🚧 Profile Security 
+- ✅ Profile Security
+- 🚧 Admin panel next
+
 
 ## Contributing
 
