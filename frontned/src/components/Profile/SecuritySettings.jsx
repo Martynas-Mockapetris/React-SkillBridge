@@ -9,6 +9,47 @@ const SecuritySettings = () => {
     confirmPassword: ''
   })
 
+  const [errors, setErrors] = useState({})
+
+  const validateForm = () => {
+    const newErrors = {}
+    
+    // Current password validation
+    if (!passwordData.currentPassword.trim()) {
+      newErrors.currentPassword = 'Current password is required'
+    }
+
+    // New password validation
+    if (!passwordData.newPassword) {
+      newErrors.newPassword = 'New password is required'
+    } else {
+      // Password strength rules
+      if (passwordData.newPassword.length < 8) {
+        newErrors.newPassword = 'Password must be at least 8 characters'
+      }
+      if (!/[A-Z]/.test(passwordData.newPassword)) {
+        newErrors.newPassword = 'Password must contain at least one uppercase letter'
+      }
+      if (!/[a-z]/.test(passwordData.newPassword)) {
+        newErrors.newPassword = 'Password must contain at least one lowercase letter'
+      }
+      if (!/[0-9]/.test(passwordData.newPassword)) {
+        newErrors.newPassword = 'Password must contain at least one number'
+      }
+      if (!/[!@#$%^&*]/.test(passwordData.newPassword)) {
+        newErrors.newPassword = 'Password must contain at least one special character'
+      }
+    }
+
+    // Confirm password validation
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setPasswordData((prev) => ({
@@ -19,7 +60,9 @@ const SecuritySettings = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log('Password data:', passwordData)
+    if (validateForm()) {
+      console.log('Password change submitted:', passwordData)
+    }
   }
 
   const inputClasses = `
