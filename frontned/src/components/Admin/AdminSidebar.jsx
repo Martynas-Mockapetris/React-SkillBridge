@@ -24,15 +24,15 @@ const AdminSidebar = ({ activeSection, setActiveSection }) => {
       {/* Sidebar container with responsive classes */}
       <AnimatePresence>
         <motion.div
-          className={`fixed lg:static lg:block z-40 h-[calc(100vh-100px)] bg-white dark:bg-gray-800 shadow-lg
-    ${isMobileMenuOpen ? 'block' : 'hidden lg:block'} lg:w-64 top-[100px] left-0 w-64 pl-14 lg:pl-0`}
+          className={`fixed lg:static lg:block z-40 h-screen bg-white dark:bg-gray-800 shadow-lg
+    ${isMobileMenuOpen ? 'block' : 'hidden lg:block'} w-[240px] lg:w-64 top-[50px]`}
           initial={{ x: window.innerWidth <= 1024 ? -300 : 0 }}
           animate={{ x: isMobileMenuOpen || window.innerWidth > 1024 ? 0 : -300 }}
           transition={{ duration: 0.3 }}>
           {/* Flex container for vertical layout */}
           <div className='flex h-full flex-col'>
             {/* Navigation menu */}
-            <nav className='space-y-1 p-4'>
+            <nav className='space-y-1 pt-28 lg:pt-4 p-4'>
               {navigationItems.map((item) => (
                 // Animated navigation button
                 <motion.button
