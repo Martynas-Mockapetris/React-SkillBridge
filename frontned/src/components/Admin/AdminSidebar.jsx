@@ -17,7 +17,7 @@ const AdminSidebar = ({ activeSection, setActiveSection }) => {
   return (
     <>
       {/* Mobile menu toggle button */}
-      <button className='lg:hidden fixed top-[110px] left-4 z-50 p-2 rounded-lg bg-primary text-white' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+      <button className='lg:hidden fixed top-[125px] left-4 z-50 p-2 rounded-lg bg-primary text-white' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
         {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
       </button>
 
@@ -25,7 +25,7 @@ const AdminSidebar = ({ activeSection, setActiveSection }) => {
       <AnimatePresence>
         <motion.div
           className={`fixed lg:static lg:block z-40 h-[calc(100vh-100px)] bg-white dark:bg-gray-800 shadow-lg
-    ${isMobileMenuOpen ? 'block' : 'hidden lg:block'} lg:w-64 top-[100px]`}
+    ${isMobileMenuOpen ? 'block' : 'hidden lg:block'} lg:w-64 top-[100px] left-0 w-64 pl-14 lg:pl-0`}
           initial={{ x: window.innerWidth <= 1024 ? -300 : 0 }}
           animate={{ x: isMobileMenuOpen || window.innerWidth > 1024 ? 0 : -300 }}
           transition={{ duration: 0.3 }}>
