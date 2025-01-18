@@ -17,7 +17,7 @@ const AdminSidebar = ({ activeSection, setActiveSection }) => {
   return (
     <>
       {/* Mobile menu toggle button */}
-      <button className='lg:hidden fixed top-[125px] left-4 z-50 p-2 rounded-lg bg-gradient-to-r from-primary to-accent text-white' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+      <button className='lg:hidden fixed top-[93px] left-4 z-50 p-2 rounded-lg bg-accent text-white' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
         {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
       </button>
 
