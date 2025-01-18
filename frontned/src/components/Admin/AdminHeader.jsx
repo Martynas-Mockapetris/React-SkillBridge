@@ -20,7 +20,7 @@ const AdminHeader = ({ activeSection }) => {
           {getSectionTitle(activeSection)}
         </h1>
 
-        {/* Right side - Actions */}
+        {/* Right side - Actions [Icons] */}
         <div className="flex items-center space-x-4">
           <button className="p-2 text-gray-600 hover:text-accent dark:text-gray-300">
             <FaSearch className="text-xl" />
