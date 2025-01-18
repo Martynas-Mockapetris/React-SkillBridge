@@ -17,13 +17,13 @@ const AdminSidebar = ({ activeSection, setActiveSection }) => {
   return (
     <>
       {/* Mobile menu toggle button */}
-      <button className='lg:hidden fixed top-[125px] left-4 z-50 p-2 rounded-lg bg-primary text-white' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+      <button className='lg:hidden fixed top-[125px] left-4 z-50 p-2 rounded-lg bg-gradient-to-r from-primary to-accent text-white' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
         {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
       </button>
 
       {/* Sidebar container with responsive classes */}
       <motion.div
-        className={`fixed lg:static lg:block z-40 h-screen bg-white dark:bg-gray-800 shadow-lg
+        className={`fixed lg:static lg:block z-40 h-screen bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent dark:from-light/5 dark:via-light/[0.02] backdrop-blur-sm shadow-lg
           ${isMobileMenuOpen ? 'block' : 'hidden lg:block'} w-[240px] lg:w-64 top-[50px]`}
         initial={{ x: window.innerWidth <= 1024 ? -300 : 0 }}
         animate={{ x: isMobileMenuOpen || window.innerWidth > 1024 ? 0 : -300 }}
@@ -40,13 +40,13 @@ const AdminSidebar = ({ activeSection, setActiveSection }) => {
                   setActiveSection(item.id)
                   setIsMobileMenuOpen(false)
                 }}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200
-                  ${activeSection === item.id ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200
+                  ${activeSection === item.id ? 'bg-accent text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'}`}
                 whileHover={{ scale: 1.02, translateX: 5 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2 }}>
                 {/* Icon container */}
-                <span className='mr-3 text-xl'>{item.icon}</span>
+                <span className={`mr-3 text-xl ${activeSection === item.id ? 'text-white' : 'text-accent'}`}>{item.icon}</span>
                 {/* Label text */}
                 <span className='font-medium'>{item.label}</span>
               </motion.button>
