@@ -16,9 +16,14 @@ const AdminSidebar = ({ activeSection, setActiveSection }) => {
             <button
               key={item.id}
               onClick={() => setActiveSection(item.id)}
+              className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200
+                ${activeSection === item.id 
+                  ? 'bg-primary text-white' 
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
             >
-              {item.icon}
-              {item.label}
+              <span className="mr-3 text-xl">{item.icon}</span>
+              <span className="font-medium">{item.label}</span>
             </button>
           ))}
         </nav>
