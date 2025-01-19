@@ -1,7 +1,19 @@
 import { motion } from 'framer-motion'
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa'
 
-const StatCard = ({ title, value, icon, trend }) => {
+const StatCard = ({ title, value, icon, trend, isLoading }) => {
+  if (isLoading) {
+    return (
+      <motion.div 
+        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      >
+        <div className="h-20 animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg" />
+      </motion.div>
+    )
+  }
+
   return (
     <motion.div 
       className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
