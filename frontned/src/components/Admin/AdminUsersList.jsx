@@ -1,4 +1,4 @@
-import { FaEdit, FaTrash } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaEnvelope } from 'react-icons/fa'
 
 const AdminUsersList = () => {
   const users = [
@@ -58,6 +58,12 @@ const AdminUsersList = () => {
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3'>
                   <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
                     <FaEdit className='w-4 h-4' />
+                  </button>
+                  <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+                    <FaLock className='w-4 h-4' />
+                  </button>
+                  <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
+                    <FaEnvelope className='w-4 h-4' />
                   </button>
                   <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
                     <FaTrash className='w-4 h-4' />
