@@ -1,3 +1,5 @@
+import { FaEdit, FaTrash } from 'react-icons/fa'
+
 const AdminUsersList = () => {
   const users = [
     {
@@ -40,6 +42,7 @@ const AdminUsersList = () => {
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Status</th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Join Date</th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
             </tr>
           </thead>
           <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
@@ -52,6 +55,14 @@ const AdminUsersList = () => {
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>{user.status}</span>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.joinDate}</td>
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3'>
+                  <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
+                    <FaEdit className='w-4 h-4' />
+                  </button>
+                  <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
+                    <FaTrash className='w-4 h-4' />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
