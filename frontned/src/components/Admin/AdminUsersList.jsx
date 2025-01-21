@@ -64,80 +64,77 @@ const AdminUsersList = () => {
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
       {/* Filters Section */}
-      <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-4">
+      <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-4'>
         {/* Search Row */}
-        <div className="w-full">
-          <div className="relative">
+        <div className='w-full'>
+          <div className='relative'>
             <input
-              type="text"
-              placeholder="Search users..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+              type='text'
+              placeholder='Search users...'
+              className='w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
             />
-            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            <FaSearch className='absolute left-3 top-3 text-gray-400' />
           </div>
         </div>
-        
+
         {/* Filters Row */}
-        <div className="flex flex-wrap gap-3 w-full">
-          <select 
+        <div className='flex flex-wrap gap-3 w-full'>
+          <select
             value={selectedSubscription}
             onChange={(e) => setSelectedSubscription(e.target.value)}
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">All Subscriptions</option>
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value=''>All Subscriptions</option>
             {subscriptionTypes.map((type) => (
-              <option key={type} value={type}>{type}</option>
+              <option key={type} value={type}>
+                {type}
+              </option>
             ))}
           </select>
 
-          <select 
+          <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">All Status</option>
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value=''>All Status</option>
             {statusTypes.map((status) => (
-              <option key={status} value={status}>{status}</option>
+              <option key={status} value={status}>
+                {status}
+              </option>
             ))}
           </select>
 
-          <select 
+          <select
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">All Roles</option>
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value=''>All Roles</option>
             {roleTypes.map((role) => (
-              <option key={role} value={role}>{role}</option>
+              <option key={role} value={role}>
+                {role}
+              </option>
             ))}
           </select>
 
           <input
-            type="date"
+            type='date'
             value={dateRange.start}
-            onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-            className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+            onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+            className='flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
           />
           <input
-            type="date"
+            type='date'
             value={dateRange.end}
-            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-            className=" flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+            onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+            className=' flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
           />
-          
-          <button className="flex-1 min-w-[200px] px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors">
-            Apply Filters
-          </button>
-          
-          <button 
+
+          <button className='flex-1 min-w-[200px] px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>Apply Filters</button>
+
+          <button
             onClick={() => {
-              setSelectedSubscription(''),
-              setSelectedStatus(''),
-              setSelectedRole(''),
-              setDateRange({ start: '', end: '' })
+              setSelectedSubscription(''), setSelectedStatus(''), setSelectedRole(''), setDateRange({ start: '', end: '' })
             }}
-            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
+            className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
             Reset
           </button>
         </div>
@@ -145,53 +142,55 @@ const AdminUsersList = () => {
 
       {/* User Table */}
       <div className='overflow-x-auto'>
-        <table className='min-w-full bg-white dark:bg-gray-800 rounded-lg'>
-          <thead>
-            <tr className='bg-gray-50 dark:bg-gray-700'>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Name</th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Email</th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Status</th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Subscription</th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Join Date</th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
-            </tr>
-          </thead>
-          <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>{user.name}</td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.role}</td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>{user.status}</span>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getSubscriptionColor(user.subscription.type)}`}>{user.subscription.type}</span>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.joinDate}</td>
-                {/* Quick Actions */}
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
-                  <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
-                    <FaEdit className='w-4 h-4' />
-                  </button>
-                  <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200'>
-                    <FaUserCog className='w-4 h-4' />
-                  </button>
-                  <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
-                    <FaLock className='w-4 h-4' />
-                  </button>
-                  <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
-                    <FaEnvelope className='w-4 h-4' />
-                  </button>
-                  <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
-                    <FaTrash className='w-4 h-4' />
-                  </button>
-                </td>
+        <div className='min-w-[800px] sm:w-full p-4 sm:p-0'>
+          <table className='min-w-full bg-white dark:bg-gray-800 rounded-lg'>
+            <thead>
+              <tr className='bg-gray-50 dark:bg-gray-700'>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Name</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Email</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Status</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Subscription</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Join Date</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>{user.name}</td>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.role}</td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>{user.status}</span>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getSubscriptionColor(user.subscription.type)}`}>{user.subscription.type}</span>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.joinDate}</td>
+                  {/* Quick Actions */}
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
+                    <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
+                      <FaEdit className='w-4 h-4' />
+                    </button>
+                    <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200'>
+                      <FaUserCog className='w-4 h-4' />
+                    </button>
+                    <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+                      <FaLock className='w-4 h-4' />
+                    </button>
+                    <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
+                      <FaEnvelope className='w-4 h-4' />
+                    </button>
+                    <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
+                      <FaTrash className='w-4 h-4' />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
