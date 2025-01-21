@@ -1,4 +1,4 @@
-import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch } from 'react-icons/fa'
 
 const AdminUsersList = () => {
   const users = [
@@ -50,6 +50,39 @@ const AdminUsersList = () => {
   return (
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
+            {/* Filters Section */}
+            <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Search Bar */}
+          <div className="flex-1">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search users..."
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+              />
+              <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            </div>
+          </div>
+          
+          {/* Filter Buttons Container */}
+          <div className="flex gap-3">
+            <select className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white">
+              <option value="">All Filters</option>
+            </select>
+            
+            <button className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors">
+              Apply Filters
+            </button>
+            
+            <button className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* User Table */}
       <div className='overflow-x-auto'>
         <table className='min-w-full bg-white dark:bg-gray-800 rounded-lg'>
           <thead>
@@ -76,6 +109,7 @@ const AdminUsersList = () => {
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getSubscriptionColor(user.subscription.type)}`}>{user.subscription.type}</span>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.joinDate}</td>
+                {/* Quick Actions */}
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
                   <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
                     <FaEdit className='w-4 h-4' />
