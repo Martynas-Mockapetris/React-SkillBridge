@@ -4,9 +4,11 @@ import { useState } from 'react'
 const AdminUsersList = () => {
   const [selectedSubscription, setSelectedSubscription] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
+  const [selectedRole, setSelectedRole] = useState('')
 
   const subscriptionTypes = ['Basic', 'Creator Premium', 'Freelancer Premium', 'Full Package']
   const statusTypes = ['Active', 'Inactive', 'Pending']
+  const roleTypes = ['Developer', 'Designer', 'Project Manager', 'Content Creator', 'Marketing Specialist', 'UX/UI', 'Cryptocurrency Expert', 'Web Developer', 'Full-Stack', 'Frontend', 'Backend']
 
   const users = [
     {
@@ -86,20 +88,37 @@ const AdminUsersList = () => {
               ))}
             </select>
 
-            <select 
+            <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
-            >
-              <option value="">All Status</option>
+              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+              <option value=''>All Status</option>
               {statusTypes.map((status) => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+              <option value=''>All Roles</option>
+              {roleTypes.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
               ))}
             </select>
 
             <button className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>Apply Filters</button>
 
-            <button onClick={() => {setSelectedSubscription(''), setSelectedStatus('')}} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+            <button
+              onClick={() => {
+                setSelectedSubscription(''), setSelectedStatus(''), setSelectedRole('')
+              }}
+              className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
               Reset
             </button>
           </div>
