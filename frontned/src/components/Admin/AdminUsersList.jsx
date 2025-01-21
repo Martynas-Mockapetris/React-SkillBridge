@@ -3,8 +3,10 @@ import { useState } from 'react'
 
 const AdminUsersList = () => {
   const [selectedSubscription, setSelectedSubscription] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('')
 
   const subscriptionTypes = ['Basic', 'Creator Premium', 'Freelancer Premium', 'Full Package']
+  const statusTypes = ['Active', 'Inactive', 'Pending']
 
   const users = [
     {
@@ -84,9 +86,20 @@ const AdminUsersList = () => {
               ))}
             </select>
 
+            <select 
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+            >
+              <option value="">All Status</option>
+              {statusTypes.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+
             <button className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>Apply Filters</button>
 
-            <button onClick={() => setSelectedSubscription('')} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+            <button onClick={() => {setSelectedSubscription(''), setSelectedStatus('')}} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
               Reset
             </button>
           </div>
