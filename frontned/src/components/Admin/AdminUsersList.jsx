@@ -5,6 +5,10 @@ const AdminUsersList = () => {
   const [selectedSubscription, setSelectedSubscription] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
   const [selectedRole, setSelectedRole] = useState('')
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: ''
+  })
 
   const subscriptionTypes = ['Basic', 'Creator Premium', 'Freelancer Premium', 'Full Package']
   const statusTypes = ['Active', 'Inactive', 'Pending']
@@ -112,11 +116,24 @@ const AdminUsersList = () => {
               ))}
             </select>
 
+            <input
+              type='date'
+              value={dateRange.start}
+              onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            />
+            <input
+              type='date'
+              value={dateRange.end}
+              onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            />
+
             <button className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>Apply Filters</button>
 
             <button
               onClick={() => {
-                setSelectedSubscription(''), setSelectedStatus(''), setSelectedRole('')
+                setSelectedSubscription(''), setSelectedStatus(''), setSelectedRole(''), setDateRange({ start: '', end: '' })
               }}
               className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
               Reset
