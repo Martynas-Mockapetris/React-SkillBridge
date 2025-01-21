@@ -64,81 +64,82 @@ const AdminUsersList = () => {
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
       {/* Filters Section */}
-      <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm'>
-        <div className='flex flex-col md:flex-row gap-4'>
-          {/* Search Bar */}
-          <div className='flex-1'>
-            <div className='relative'>
-              <input
-                type='text'
-                placeholder='Search users...'
-                className='w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
-              />
-              <FaSearch className='absolute left-3 top-3 text-gray-400' />
-            </div>
-          </div>
-
-          {/* Filter Buttons Container */}
-          <div className='flex gap-3'>
-            <select
-              value={selectedSubscription}
-              onChange={(e) => setSelectedSubscription(e.target.value)}
-              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-              <option value=''>All Subscriptions</option>
-              {subscriptionTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-              <option value=''>All Status</option>
-              {statusTypes.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-              <option value=''>All Roles</option>
-              {roleTypes.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-
+      <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-4">
+        {/* Search Row */}
+        <div className="w-full">
+          <div className="relative">
             <input
-              type='date'
-              value={dateRange.start}
-              onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
-              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+              type="text"
+              placeholder="Search users..."
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
             />
-            <input
-              type='date'
-              value={dateRange.end}
-              onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
-              className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
-            />
-
-            <button className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>Apply Filters</button>
-
-            <button
-              onClick={() => {
-                setSelectedSubscription(''), setSelectedStatus(''), setSelectedRole(''), setDateRange({ start: '', end: '' })
-              }}
-              className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
-              Reset
-            </button>
+            <FaSearch className="absolute left-3 top-3 text-gray-400" />
           </div>
+        </div>
+        
+        {/* Filters Row */}
+        <div className="flex flex-wrap gap-3">
+          <select 
+            value={selectedSubscription}
+            onChange={(e) => setSelectedSubscription(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+          >
+            <option value="">All Subscriptions</option>
+            {subscriptionTypes.map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+
+          <select 
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+          >
+            <option value="">All Status</option>
+            {statusTypes.map((status) => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+
+          <select 
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+          >
+            <option value="">All Roles</option>
+            {roleTypes.map((role) => (
+              <option key={role} value={role}>{role}</option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            value={dateRange.start}
+            onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+          />
+          <input
+            type="date"
+            value={dateRange.end}
+            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+          />
+          
+          <button className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors">
+            Apply Filters
+          </button>
+          
+          <button 
+            onClick={() => {
+              setSelectedSubscription(''),
+              setSelectedStatus(''),
+              setSelectedRole(''),
+              setDateRange({ start: '', end: '' })
+            }}
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            Reset
+          </button>
         </div>
       </div>
 
