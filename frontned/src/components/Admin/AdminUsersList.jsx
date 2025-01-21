@@ -13,15 +13,24 @@ const AdminUsersList = () => {
       name: 'Jane Smith',
       email: 'jane@example.com',
       role: 'Designer',
-      status: 'Active',
+      status: 'Inactive',
       joinDate: '2025-02-01'
     }
   ]
 
+  // Function to get status color based on status
+  const getStatusColor = (status) => {
+    const colors = {
+      Active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      Inactive: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      Pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+    }
+    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+  }
+
   return (
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
-
       <div className='overflow-x-auto'>
         <table className='min-w-full bg-white dark:bg-gray-800 rounded-lg'>
           <thead>
@@ -39,7 +48,9 @@ const AdminUsersList = () => {
                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>{user.name}</td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.role}</td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.status}</td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>{user.status}</span>
+                </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.joinDate}</td>
               </tr>
             ))}
