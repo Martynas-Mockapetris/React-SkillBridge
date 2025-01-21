@@ -8,7 +8,11 @@ const AdminUsersList = () => {
       email: 'john@example.com',
       role: 'Developer',
       status: 'Active',
-      joinDate: '2025-01-15'
+      joinDate: '2025-01-15',
+      subscription: {
+        type: 'Freelancer Premium',
+        status: 'Active'
+      }
     },
     {
       id: 2,
@@ -16,11 +20,14 @@ const AdminUsersList = () => {
       email: 'jane@example.com',
       role: 'Designer',
       status: 'Inactive',
-      joinDate: '2025-02-01'
+      joinDate: '2025-02-01',
+      subscription: {
+        type: 'Creator Premium',
+        status: 'Active'
+      }
     }
   ]
 
-  // Function to get status color based on status
   const getStatusColor = (status) => {
     const colors = {
       Active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
@@ -28,6 +35,16 @@ const AdminUsersList = () => {
       Pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
     }
     return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+  }
+
+  const getSubscriptionColor = (type) => {
+    const colors = {
+      Basic: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+      'Creator Premium': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+      'Freelancer Premium': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+      'Full Package': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300'
+    }
+    return colors[type] || colors['Basic']
   }
 
   return (
@@ -41,6 +58,7 @@ const AdminUsersList = () => {
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Email</th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Status</th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Subscription</th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Join Date</th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
             </tr>
@@ -54,19 +72,22 @@ const AdminUsersList = () => {
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>{user.status}</span>
                 </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getSubscriptionColor(user.subscription.type)}`}>{user.subscription.type}</span>
+                </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.joinDate}</td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3'>
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
                   <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
                     <FaEdit className='w-4 h-4' />
+                  </button>
+                  <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200'>
+                    <FaUserCog className='w-4 h-4' />
                   </button>
                   <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
                     <FaLock className='w-4 h-4' />
                   </button>
                   <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
                     <FaEnvelope className='w-4 h-4' />
-                  </button>
-                  <button className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200">
-                    <FaUserCog className="w-4 h-4" />
                   </button>
                   <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
                     <FaTrash className='w-4 h-4' />
