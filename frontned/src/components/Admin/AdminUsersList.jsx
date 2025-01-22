@@ -1,4 +1,4 @@
-import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa'
 import { useState } from 'react'
 
 const AdminUsersList = () => {
@@ -104,15 +104,11 @@ const AdminUsersList = () => {
 
   const getSortedUsers = () => {
     if (!sortConfig.key) return users
-  
+
     return [...users].sort((a, b) => {
-      const aValue = sortConfig.key.includes('.') 
-        ? sortConfig.key.split('.').reduce((obj, key) => obj[key], a)
-        : a[sortConfig.key]
-      const bValue = sortConfig.key.includes('.')
-        ? sortConfig.key.split('.').reduce((obj, key) => obj[key], b)
-        : b[sortConfig.key]
-  
+      const aValue = sortConfig.key.includes('.') ? sortConfig.key.split('.').reduce((obj, key) => obj[key], a) : a[sortConfig.key]
+      const bValue = sortConfig.key.includes('.') ? sortConfig.key.split('.').reduce((obj, key) => obj[key], b) : b[sortConfig.key]
+
       if (aValue < bValue) {
         return sortConfig.direction === 'asc' ? -1 : 1
       }
@@ -121,6 +117,12 @@ const AdminUsersList = () => {
       }
       return 0
     })
+  }
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return <FaSort className='w-4 h-4' />
+    if (sortConfig.direction === 'asc') return <FaSortUp className='w-4 h-4' />
+    return <FaSortDown className='w-4 h-4' />
   }
 
   return (
@@ -210,22 +212,40 @@ const AdminUsersList = () => {
             <thead>
               <tr className='bg-gray-50 dark:bg-gray-700'>
                 <th onClick={() => handleSort('name')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
-                  Name
+                  <div className='flex items-center space-x-1'>
+                    <span>Name</span>
+                    {getSortIcon('name')}
+                  </div>
                 </th>
                 <th onClick={() => handleSort('email')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
-                  Email
+                  <div className='flex items-center space-x-1'>
+                    <span>Email</span>
+                    {getSortIcon('email')}
+                  </div>
                 </th>
                 <th onClick={() => handleSort('role')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
-                  Role
+                  <div className='flex items-center space-x-1'>
+                    <span>Role</span>
+                    {getSortIcon('role')}
+                  </div>
                 </th>
                 <th onClick={() => handleSort('status')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
-                  Status
+                  <div className='flex items-center space-x-1'>
+                    <span>Status</span>
+                    {getSortIcon('status')}
+                  </div>
                 </th>
                 <th onClick={() => handleSort('subscription.type')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
-                  Subscription
+                  <div className='flex items-center space-x-1'>
+                    <span>Subscription</span>
+                    {getSortIcon('subscription.type')}
+                  </div>
                 </th>
                 <th onClick={() => handleSort('joinDate')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
-                  Join Date
+                  <div className='flex items-center space-x-1'>
+                    <span>Join Date</span>
+                    {getSortIcon('joinDate')}
+                  </div>
                 </th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
               </tr>
