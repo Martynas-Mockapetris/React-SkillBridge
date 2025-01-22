@@ -103,10 +103,23 @@ const AdminUsersList = () => {
     setSortConfig({ key, direction })
   }
 
-  const getSortedUsers = () => {
-    if (!sortConfig.key) return users
+  const getFilteredUsers = () => {
+    return users.filter(user => {
+      const matchesSubscription = !selectedSubscription || user.subscription.type === selectedSubscription
+      const matchesStatus = !selectedStatus || user.status === selectedStatus
+      const matchesRole = !selectedRole || user.role === selectedRole
+      const matchesDateRange = (!dateRange.start || user.joinDate >= dateRange.start) && 
+                             (!dateRange.end || user.joinDate <= dateRange.end)
+  
+      return matchesSubscription && matchesStatus && matchesRole && matchesDateRange
+    })
+  }
 
-    return [...users].sort((a, b) => {
+  const getSortedUsers = () => {
+    const filteredUsers = getFilteredUsers()
+    if (!sortConfig.key) return filteredUsers
+
+    return [...filteredUsers].sort((a, b) => {
       const aValue = sortConfig.key.includes('.') ? sortConfig.key.split('.').reduce((obj, key) => obj[key], a) : a[sortConfig.key]
       const bValue = sortConfig.key.includes('.') ? sortConfig.key.split('.').reduce((obj, key) => obj[key], b) : b[sortConfig.key]
 
@@ -184,6 +197,7 @@ const AdminUsersList = () => {
   return (
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
+      <BulkActions />
       {/* Filters Section */}
 
       <div className='mb-4 flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm'>
