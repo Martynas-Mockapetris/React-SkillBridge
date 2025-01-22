@@ -13,6 +13,7 @@ const AdminUsersList = () => {
     key: null,
     direction: 'asc'
   })
+  const [selectedUsers, setSelectedUsers] = useState([])
 
   const subscriptionTypes = ['Basic', 'Creator Premium', 'Freelancer Premium', 'Full Package']
   const statusTypes = ['Active', 'Inactive', 'Pending']
@@ -125,6 +126,42 @@ const AdminUsersList = () => {
     return <FaSortDown className='w-4 h-4' />
   }
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedUsers(users.map((user) => user.id))
+    } else {
+      setSelectedUsers([])
+    }
+  }
+
+  const handleSelectUser = (userId) => {
+    setSelectedUsers((prev) => {
+      if (prev.includes(userId)) {
+        return prev.filter((id) => id !== userId)
+      }
+      return [...prev, userId]
+    })
+  }
+
+  // Bulk actions toolbar
+  const BulkActions = () => {
+    if (selectedUsers.length === 0) return null
+
+    return (
+      <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
+        <span className='text-sm text-gray-700 dark:text-gray-300'>{selectedUsers.length} users selected</span>
+        <div className='flex gap-2'>
+          <button className='px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200'>
+            <FaLock className='inline-block mr-1' /> Suspend Selected
+          </button>
+          <button className='px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200'>
+            <FaTrash className='inline-block mr-1' /> Delete Selected
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
@@ -211,6 +248,10 @@ const AdminUsersList = () => {
           <table className='min-w-full bg-white dark:bg-gray-800 rounded-lg'>
             <thead>
               <tr className='bg-gray-50 dark:bg-gray-700'>
+                <th className='px-6 py-3 w-4 text-center'>
+                  {' '}
+                  <input type='checkbox' onChange={handleSelectAll} checked={selectedUsers.length === users.length} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                </th>
                 <th onClick={() => handleSort('name')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
                   <div className='flex items-center space-x-1'>
                     <span>Name</span>
@@ -253,6 +294,9 @@ const AdminUsersList = () => {
             <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
               {getSortedUsers().map((user) => (
                 <tr key={user.id}>
+                  <td className='px-6 py-4 w-4 text-center'>
+                    <input type='checkbox' checked={selectedUsers.includes(user.id)} onChange={() => handleSelectUser(user.id)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                  </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>{user.name}</td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.role}</td>
