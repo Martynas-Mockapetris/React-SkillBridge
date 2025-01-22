@@ -1,4 +1,4 @@
-import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { useState } from 'react'
 
 const AdminUsersList = () => {
@@ -40,6 +40,36 @@ const AdminUsersList = () => {
       }
     }
   ]
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  const totalPages = Math.ceil(users.length / itemsPerPage)
+
+  const renderPagination = () => {
+    return (
+      <div className='flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700'>
+        <div className='flex items-center'>
+          <span className='text-sm text-gray-700 dark:text-gray-300'>
+            Showing page {currentPage} of {totalPages}
+          </span>
+        </div>
+        <div className='flex items-center space-x-2'>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className='px-3 py-1 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50'>
+            <FaChevronLeft className='w-4 h-4' />
+          </button>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className='px-3 py-1 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50'>
+            <FaChevronRight className='w-4 h-4' />
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const getStatusColor = (status) => {
     const colors = {
@@ -190,6 +220,7 @@ const AdminUsersList = () => {
               ))}
             </tbody>
           </table>
+          {renderPagination()}
         </div>
       </div>
     </div>
