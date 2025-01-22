@@ -166,6 +166,20 @@ const AdminUsersList = () => {
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
       {/* Filters Section */}
+
+      <div className='mb-4 flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm'>
+        <div className='flex items-center gap-4'>
+          <div className='text-sm'>
+            <span className='text-gray-500 dark:text-gray-400'>Total Users: </span>
+            <span className='font-semibold text-gray-900 dark:text-white'>{users.length}</span>
+          </div>
+          <div className='text-sm'>
+            <span className='text-gray-500 dark:text-gray-400'>Showing: </span>
+            <span className='font-semibold text-gray-900 dark:text-white'>{getSortedUsers().length}</span>
+          </div>
+        </div>
+      </div>
+
       <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-4'>
         {/* Search Row */}
         <div className='w-full'>
