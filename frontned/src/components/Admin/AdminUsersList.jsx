@@ -1,4 +1,4 @@
-import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
 import { useState } from 'react'
 
 const AdminUsersList = () => {
@@ -162,6 +162,25 @@ const AdminUsersList = () => {
     )
   }
 
+  // Export to CSV
+  const exportToCSV = () => {
+    const headers = ['Name', 'Email', 'Role', 'Status', 'Subscription', 'Join Date']
+    const data = getSortedUsers().map((user) => [user.name, user.email, user.role, user.status, user.subscription.type, user.joinDate])
+
+    const csvContent = [headers.join(','), ...data.map((row) => row.join(','))].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'users_export.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div>
       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
@@ -178,6 +197,12 @@ const AdminUsersList = () => {
             <span className='font-semibold text-gray-900 dark:text-white'>{getSortedUsers().length}</span>
           </div>
         </div>
+        <button
+          onClick={exportToCSV}
+          className='flex items-center gap-2 px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors'>
+          <FaFileExport className='w-4 h-4' />
+          Export CSV
+        </button>
       </div>
 
       <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-4'>
