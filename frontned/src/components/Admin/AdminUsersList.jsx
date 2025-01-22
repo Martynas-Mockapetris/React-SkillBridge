@@ -1,4 +1,4 @@
-import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort } from 'react-icons/fa'
 import { useState } from 'react'
 
 const AdminUsersList = () => {
@@ -8,6 +8,10 @@ const AdminUsersList = () => {
   const [dateRange, setDateRange] = useState({
     start: '',
     end: ''
+  })
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'asc'
   })
 
   const subscriptionTypes = ['Basic', 'Creator Premium', 'Freelancer Premium', 'Full Package']
@@ -88,6 +92,35 @@ const AdminUsersList = () => {
       'Full Package': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300'
     }
     return colors[type] || colors['Basic']
+  }
+
+  const handleSort = (key) => {
+    let direction = 'asc'
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc'
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const getSortedUsers = () => {
+    if (!sortConfig.key) return users
+  
+    return [...users].sort((a, b) => {
+      const aValue = sortConfig.key.includes('.') 
+        ? sortConfig.key.split('.').reduce((obj, key) => obj[key], a)
+        : a[sortConfig.key]
+      const bValue = sortConfig.key.includes('.')
+        ? sortConfig.key.split('.').reduce((obj, key) => obj[key], b)
+        : b[sortConfig.key]
+  
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1
+      }
+      return 0
+    })
   }
 
   return (
@@ -176,17 +209,29 @@ const AdminUsersList = () => {
           <table className='min-w-full bg-white dark:bg-gray-800 rounded-lg'>
             <thead>
               <tr className='bg-gray-50 dark:bg-gray-700'>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Name</th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Email</th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Status</th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Subscription</th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Join Date</th>
+                <th onClick={() => handleSort('name')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
+                  Name
+                </th>
+                <th onClick={() => handleSort('email')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
+                  Email
+                </th>
+                <th onClick={() => handleSort('role')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
+                  Role
+                </th>
+                <th onClick={() => handleSort('status')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
+                  Status
+                </th>
+                <th onClick={() => handleSort('subscription.type')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
+                  Subscription
+                </th>
+                <th onClick={() => handleSort('joinDate')} className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
+                  Join Date
+                </th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
-              {users.map((user) => (
+              {getSortedUsers().map((user) => (
                 <tr key={user.id}>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>{user.name}</td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
