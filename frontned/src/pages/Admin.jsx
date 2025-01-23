@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import AdminHeader from '../components/admin/AdminHeader'
-import AdminSidebar from '../components/admin/AdminSidebar'
-import AdminStats from '../components/admin/AdminStats'
-import AdminUsersList from '../components/admin/AdminUsersList'
-import AdminProjectsList from '../components/admin/AdminProjectsList'
+import AdminHeader from '../components/Admin/AdminHeader'
+import AdminSidebar from '../components/Admin/AdminSidebar'
+import AdminStats from '../components/Admin/AdminStats'
+import AdminUsersList from '../components/Admin/AdminUsersList'
+import AdminProjectsList from '../components/Admin/AdminProjectsList'
 
 const Admin = () => {
   const [activeSection, setActiveSection] = useState('dashboard')

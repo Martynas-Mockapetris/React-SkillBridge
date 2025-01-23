@@ -164,7 +164,11 @@ server/
 - ✅ Profile Projects
 - 🚧 Profile Settings [Mainly done, but some adjustments needed]
 - ✅ Profile Security
-- 🚧 Admin panel next
+- 🚧 Admin Panel Next
+  - ✅ Admin Dashboard Overview
+  - ✅ Admin User Section
+  - 🚧 Admin Project Section
+  - 🚧 Admin Settings
 
 
 ## Contributing
