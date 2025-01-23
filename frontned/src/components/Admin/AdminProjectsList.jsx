@@ -1,4 +1,4 @@
-import { FaSearch, FaFilter, FaPlus } from 'react-icons/fa'
+import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock } from 'react-icons/fa'
 import { useState } from 'react'
 
 const AdminProjectsList = () => {
@@ -97,6 +97,17 @@ const AdminProjectsList = () => {
                 <span>Priority: {project.priority}</span>
                 <span>Team: {project.team.length}</span>
               </div>
+            </div>
+            <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
+              <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
+                <FaEdit className='w-4 h-4' />
+              </button>
+              <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+                <FaLock className='w-4 h-4' />
+              </button>
+              <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
+                <FaTrash className='w-4 h-4' />
+              </button>
             </div>
           </div>
         ))}
