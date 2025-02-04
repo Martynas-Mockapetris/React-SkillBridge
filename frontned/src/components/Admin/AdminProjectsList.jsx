@@ -10,6 +10,10 @@ const AdminProjectsList = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedPriority, setPriority] = useState('All')
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: ''
+  })
 
   // Data
   const projectsData = [
@@ -65,10 +69,11 @@ const AdminProjectsList = () => {
       const matchesStatus = selectedStatus === 'All' || project.status === selectedStatus
       const matchesCategory = selectedCategory === 'All' || project.category === selectedCategory
       const matchesPriority = selectedPriority === 'All' || project.priority === selectedPriority
+      const matchesDateRange = (!dateRange.start || project.deadline >= dateRange.start) && (!dateRange.end || project.deadline <= dateRange.end)
       const matchesSearch =
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) || project.description.toLowerCase().includes(searchQuery.toLowerCase()) || project.category.toLowerCase().includes(searchQuery.toLowerCase())
 
-      return matchesStatus && matchesCategory && matchesPriority && matchesSearch
+      return matchesStatus && matchesCategory && matchesPriority && matchesDateRange && matchesSearch
     })
   }
 
@@ -144,6 +149,20 @@ const AdminProjectsList = () => {
               </option>
             ))}
           </select>
+          <div className='flex gap-2'>
+            <input
+              type='date'
+              value={dateRange.start}
+              onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+              className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            />
+            <input
+              type='date'
+              value={dateRange.end}
+              onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+              className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            />
+          </div>
           <button className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'>
             <FaFilter className='w-4 h-4' />
             Filters
