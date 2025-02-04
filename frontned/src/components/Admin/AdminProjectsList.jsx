@@ -2,6 +2,9 @@ import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock } from 'react-icons
 import { useState } from 'react'
 
 const AdminProjectsList = () => {
+  // State
+  const STATUS_OPTIONS = ['All', 'Active', 'Planning', 'On Hold', 'Completed']
+  const [selectedStatus, setSelectedStatus] = useState('All')
   // Data
   const projectsData = [
     {
@@ -50,6 +53,14 @@ const AdminProjectsList = () => {
     return colors[status] || colors['Active']
   }
 
+  // Function to get filtered projects based on selected status
+  const getFilteredProjects = () => {
+    return projectsData.filter(project => {
+      if (selectedStatus === 'All') return true
+      return project.status === selectedStatus
+    })
+  }
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
@@ -71,6 +82,16 @@ const AdminProjectsList = () => {
             />
             <FaSearch className='absolute left-3 top-3 text-gray-400' />
           </div>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            {STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
           <button className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'>
             <FaFilter className='w-4 h-4' />
             Filters
@@ -81,7 +102,7 @@ const AdminProjectsList = () => {
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {/* Project Card */}
-        {projectsData.map((project) => (
+        {getFilteredProjects().map((project) => (
           <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
             <div className='flex justify-between items-start mb-4'>
               <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
