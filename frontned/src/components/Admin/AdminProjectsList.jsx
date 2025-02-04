@@ -65,6 +65,12 @@ const AdminProjectsList = () => {
     })
   }
 
+  const ProgressBar = ({ progress }) => (
+    <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2'>
+      <div className='bg-accent h-2.5 rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
+    </div>
+  )
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
@@ -120,6 +126,7 @@ const AdminProjectsList = () => {
                 <span>Deadline: {project.deadline}</span>
                 <span>Progress: {project.progress}%</span>
               </div>
+              <ProgressBar progress={project.progress} />
               <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
                 <span>Priority: {project.priority}</span>
                 <span>Team: {project.team.length}</span>
