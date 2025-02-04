@@ -96,6 +96,14 @@ const AdminProjectsList = () => {
     </div>
   )
 
+  const clearFilters = () => {
+    setSelectedStatus('All')
+    setSelectedCategory('All')
+    setPriority('All')
+    setDateRange({ start: '', end: '' })
+    setSearchQuery('')
+  }
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
@@ -163,9 +171,9 @@ const AdminProjectsList = () => {
               className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
             />
           </div>
-          <button className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700'>
+          <button onClick={clearFilters} className='flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'>
             <FaFilter className='w-4 h-4' />
-            Filters
+            Clear Filters
           </button>
         </div>
       </div>
