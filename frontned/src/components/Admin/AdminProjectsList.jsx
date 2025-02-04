@@ -71,6 +71,19 @@ const AdminProjectsList = () => {
     </div>
   )
 
+  const TeamAvatars = ({ team }) => (
+    <div className='flex -space-x-2'>
+      {team.map((member, index) => (
+        <div key={index} className='w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-xs border-2 border-white dark:border-gray-800' title={member}>
+          {member
+            .split(' ')
+            .map((n) => n[0])
+            .join('')}
+        </div>
+      ))}
+    </div>
+  )
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
@@ -129,7 +142,7 @@ const AdminProjectsList = () => {
               <ProgressBar progress={project.progress} />
               <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
                 <span>Priority: {project.priority}</span>
-                <span>Team: {project.team.length}</span>
+                <TeamAvatars team={project.team} />
               </div>
             </div>
             <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
