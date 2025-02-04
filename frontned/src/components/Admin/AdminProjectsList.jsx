@@ -4,8 +4,10 @@ import { useState } from 'react'
 const AdminProjectsList = () => {
   // State
   const STATUS_OPTIONS = ['All', 'Active', 'Planning', 'On Hold', 'Completed']
+  const CATEGORY_OPTIONS = ['All', 'Web Development', 'Mobile Development', 'Analytics', 'Design', 'Marketing']
   const [selectedStatus, setSelectedStatus] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
   // Data
   const projectsData = [
     {
@@ -58,10 +60,11 @@ const AdminProjectsList = () => {
   const getFilteredProjects = () => {
     return projectsData.filter((project) => {
       const matchesStatus = selectedStatus === 'All' || project.status === selectedStatus
+      const matchesCategory = selectedCategory === 'All' || project.category === selectedCategory
       const matchesSearch =
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) || project.description.toLowerCase().includes(searchQuery.toLowerCase()) || project.category.toLowerCase().includes(searchQuery.toLowerCase())
 
-      return matchesStatus && matchesSearch
+      return matchesStatus && matchesCategory && matchesSearch
     })
   }
 
@@ -114,6 +117,16 @@ const AdminProjectsList = () => {
             {STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
                 {status}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            {CATEGORY_OPTIONS.map((category) => (
+              <option key={category} value={category}>
+                {category}
               </option>
             ))}
           </select>
