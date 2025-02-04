@@ -107,7 +107,13 @@ const AdminProjectsList = () => {
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
-        <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Projects Overview</h2>
+        <div className='flex flex-col'>
+          <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Projects Overview</h2>
+          <div className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
+            Showing {getFilteredProjects().length} {getFilteredProjects().length === 1 ? 'project' : 'projects'}
+            {getFilteredProjects().length !== projectsData.length && ` out of ${projectsData.length} total`}
+          </div>
+        </div>
         <button className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
           <FaPlus className='w-4 h-4' />
           New Project
