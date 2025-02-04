@@ -14,6 +14,7 @@ const AdminProjectsList = () => {
     start: '',
     end: ''
   })
+  const [sortBy, setSortBy] = useState('deadline')
 
   // Data
   const projectsData = [
@@ -104,6 +105,23 @@ const AdminProjectsList = () => {
     setSearchQuery('')
   }
 
+  // Sorting
+  const getSortedProjects = (projects) => {
+    return [...projects].sort((a, b) => {
+      switch (sortBy) {
+        case 'deadline':
+          return new Date(a.deadline) - new Date(b.deadline)
+        case 'progress':
+          return b.progress - a.progress
+        case 'priority':
+          const priorityOrder = { High: 3, Medium: 2, Low: 1 }
+          return priorityOrder[b.priority] - priorityOrder[a.priority]
+        default:
+          return 0
+      }
+    })
+  }
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
@@ -184,10 +202,22 @@ const AdminProjectsList = () => {
         </div>
       </div>
 
+      {/* Sort Bar */}
+      <div className='flex justify-end mb-4'>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+          <option value='deadline'>Sort by Deadline</option>
+          <option value='progress'>Sort by Progress</option>
+          <option value='priority'>Sort by Priority</option>
+        </select>
+      </div>
+
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {/* Project Card */}
-        {getFilteredProjects().map((project) => (
+        {getSortedProjects(getFilteredProjects()).map((project) => (
           <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
             <div className='flex justify-between items-start mb-4'>
               <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
