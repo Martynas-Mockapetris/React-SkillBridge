@@ -15,6 +15,7 @@ const AdminProjectsList = () => {
     end: ''
   })
   const [sortBy, setSortBy] = useState('deadline')
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
 
   // Data
   const projectsData = [
@@ -122,6 +123,79 @@ const AdminProjectsList = () => {
     })
   }
 
+  const NewProjectModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null
+
+    return (
+      <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
+        <div className='bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl'>
+          <div className='p-6'>
+            <div className='flex justify-between items-center mb-6'>
+              <h3 className='text-xl font-semibold text-gray-900 dark:text-white'>Create New Project</h3>
+              <button onClick={onClose} className='text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'>
+                ✕
+              </button>
+            </div>
+            <form className='space-y-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>Project Name</label>
+                <input type='text' className='w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white' />
+              </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>Description</label>
+                <textarea className='w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white' rows='3'></textarea>
+              </div>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>Status</label>
+                  <select className='w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+                    {STATUS_OPTIONS.filter((status) => status !== 'All').map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>Priority</label>
+                  <select className='w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+                    {PRIORITY_OPTIONS.filter((priority) => priority !== 'All').map((priority) => (
+                      <option key={priority} value={priority}>
+                        {priority}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>Category</label>
+                  <select className='w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+                    {CATEGORY_OPTIONS.filter((category) => category !== 'All').map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>Deadline</label>
+                  <input type='date' className='w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white' />
+                </div>
+              </div>
+            </form>
+            <div className='flex justify-end gap-4 mt-6'>
+              <button onClick={onClose} className='px-4 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'>
+                Cancel
+              </button>
+              <button className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>Create Project</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
@@ -132,11 +206,13 @@ const AdminProjectsList = () => {
             {getFilteredProjects().length !== projectsData.length && ` out of ${projectsData.length} total`}
           </div>
         </div>
-        <button className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
+        <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
           <FaPlus className='w-4 h-4' />
           New Project
         </button>
       </div>
+
+      <NewProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} />
 
       {/* Search and Filter Bar */}
       <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm'>
