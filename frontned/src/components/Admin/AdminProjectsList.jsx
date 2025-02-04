@@ -5,9 +5,12 @@ const AdminProjectsList = () => {
   // State
   const STATUS_OPTIONS = ['All', 'Active', 'Planning', 'On Hold', 'Completed']
   const CATEGORY_OPTIONS = ['All', 'Web Development', 'Mobile Development', 'Analytics', 'Design', 'Marketing']
+  const PRIORITY_OPTIONS = ['All', 'High', 'Medium', 'Low']
   const [selectedStatus, setSelectedStatus] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedPriority, setPriority] = useState('All')
+
   // Data
   const projectsData = [
     {
@@ -61,10 +64,11 @@ const AdminProjectsList = () => {
     return projectsData.filter((project) => {
       const matchesStatus = selectedStatus === 'All' || project.status === selectedStatus
       const matchesCategory = selectedCategory === 'All' || project.category === selectedCategory
+      const matchesPriority = selectedPriority === 'All' || project.priority === selectedPriority
       const matchesSearch =
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) || project.description.toLowerCase().includes(searchQuery.toLowerCase()) || project.category.toLowerCase().includes(searchQuery.toLowerCase())
 
-      return matchesStatus && matchesCategory && matchesSearch
+      return matchesStatus && matchesCategory && matchesPriority && matchesSearch
     })
   }
 
@@ -127,6 +131,16 @@ const AdminProjectsList = () => {
             {CATEGORY_OPTIONS.map((category) => (
               <option key={category} value={category}>
                 {category}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedPriority}
+            onChange={(e) => setPriority(e.target.value)}
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            {PRIORITY_OPTIONS.map((priority) => (
+              <option key={priority} value={priority}>
+                {priority}
               </option>
             ))}
           </select>
