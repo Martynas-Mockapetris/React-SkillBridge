@@ -3,6 +3,8 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { motion } from 'framer-motion'
+import molecularPattern from '../assets/molecular-pattern.svg'
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -56,14 +58,14 @@ const Login = () => {
     
     // Email validation
     if (!loginData.email.trim()) {
-      newErrors.email = 'All fields required'
+      newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(loginData.email)) {
       newErrors.email = 'Email is invalid'
     }
     
     // Password validation
     if (!loginData.password) {
-      newErrors.password = 'All fields required'
+      newErrors.password = 'Password is required'
     }
     
     // Set errors and show toasts for each error
@@ -104,6 +106,8 @@ const Login = () => {
           draggable: true
         })
         
+        // Here you would normally redirect after login
+        // navigate('/dashboard')
         console.log('Login submitted:', loginData)
       } catch (error) {
         toast.error('Login failed. Please try again.', {
@@ -124,21 +128,51 @@ const Login = () => {
   return (
     <div 
       ref={loginRef}
-      className="flex items-center justify-center px-6 bg-gray-50 dark:bg-gray-900" 
+      className="flex items-center justify-center px-6 theme-bg relative z-[1]" 
       style={{ minHeight: contentHeight }}
     >
+      {/* Molecular Pattern Background */}
+      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
+        {/* Large center pattern */}
+        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10'>
+          <img src={molecularPattern} alt='' className='w-[550px] h-[550px] rotate-[25deg]' />
+        </div>
+        {/* Medium patterns */}
+        <div className='absolute -left-20 top-20 opacity-20'>
+          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
+        </div>
+        <div className='absolute right-0 bottom-40 opacity-5'>
+          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
+        </div>
+        {/* Small patterns */}
+        <div className='absolute left-1/4 top-0 opacity-5'>
+          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
+        </div>
+        <div className='absolute right-1/4 top-1/3 opacity-5'>
+          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[60deg]' />
+        </div>
+        <div className='absolute left-1/3 bottom-20 opacity-5'>
+          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-15deg]' />
+        </div>
+      </div>
+      
       <ToastContainer theme="colored" />
       
-      <div className="w-full max-w-md">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md z-10 relative"
+      >
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Sign in to your account to continue</p>
+          <h2 className="text-2xl font-bold theme-text">Welcome Back</h2>
+          <p className="mt-2 text-sm theme-text-secondary">Sign in to your account to continue</p>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-md">
+        <div className="bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-8 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+              <label className="block text-sm font-medium theme-text-secondary mb-1">Email</label>
               <div className="relative">
                 <input
                   type="email"
@@ -146,15 +180,15 @@ const Login = () => {
                   value={loginData.email}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent bg-white/60 dark:bg-gray-700/60 theme-text backdrop-blur-sm"
                 />
-                <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
+                <FaEnvelope className="absolute left-3 top-3 text-accent" />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+              <label className="block text-sm font-medium theme-text-secondary mb-1">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -162,9 +196,9 @@ const Login = () => {
                   value={loginData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white"
+                  className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent bg-white/60 dark:bg-gray-700/60 theme-text backdrop-blur-sm"
                 />
-                <FaLock className="absolute left-3 top-3 text-gray-400" />
+                <FaLock className="absolute left-3 top-3 text-accent" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -186,7 +220,7 @@ const Login = () => {
                   onChange={handleChange}
                   className="h-4 w-4 text-accent rounded border-gray-300 focus:ring-accent"
                 />
-                <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                <label htmlFor="rememberMe" className="ml-2 block text-sm theme-text-secondary">
                   Remember me
                 </label>
               </div>
@@ -195,9 +229,11 @@ const Login = () => {
               </Link>
             </div>
             
-            <button 
+            <motion.button 
               type="submit" 
               disabled={isLoading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               className="w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center"
             >
               {isLoading ? (
@@ -209,10 +245,10 @@ const Login = () => {
                   Signing In...
                 </>
               ) : 'Sign In'}
-            </button>
+            </motion.button>
             
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-700 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="pt-4 border-t border-gray-100/30 dark:border-gray-700/30 text-center">
+              <p className="text-sm theme-text-secondary">
                 Don't have an account?{" "}
                 <Link to="/register" className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200">
                   Register
@@ -221,7 +257,7 @@ const Login = () => {
             </div>
           </form>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
