@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
@@ -11,6 +11,27 @@ const Login = () => {
   
   const [errors, setErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
+  const [contentHeight, setContentHeight] = useState('100vh')
+  const loginRef = useRef(null)
+  
+  useEffect(() => {
+    const calculateHeight = () => {
+      const footerElement = document.querySelector('footer')
+      if (footerElement) {
+        const footerHeight = footerElement.offsetHeight
+        const windowHeight = window.innerHeight
+        setContentHeight(`calc(100vh - ${footerHeight}px)`)
+      }
+    }
+    
+    // Calculate on mount and window resize
+    calculateHeight()
+    window.addEventListener('resize', calculateHeight)
+    
+    return () => {
+      window.removeEventListener('resize', calculateHeight)
+    }
+  }, [])
   
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -48,7 +69,11 @@ const Login = () => {
   }
   
   return (
-    <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
+    <div 
+      ref={loginRef}
+      className="flex items-center justify-center px-6 bg-gray-50 dark:bg-gray-900" 
+      style={{ minHeight: contentHeight }}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
