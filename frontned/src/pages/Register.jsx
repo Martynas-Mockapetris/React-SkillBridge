@@ -60,7 +60,28 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Other fields will go here */}
+              {/* Email field - full width */}
+              <div>
+                <label className='block mb-2 theme-text font-medium'>Email Address</label>
+                <input type='email' name='email' className='w-full p-3 border dark:border-light/10 border-primary/10 rounded-lg bg-transparent theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+              </div>
+
+              {/* Password and Confirm Password in one row on desktop */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-10'>
+                <div>
+                  <label className='block mb-2 theme-text font-medium'>Password</label>
+                  <input type='password' name='password' className='w-full p-3 border dark:border-light/10 border-primary/10 rounded-lg bg-transparent theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+                </div>
+
+                <div>
+                  <label className='block mb-2 theme-text font-medium'>Confirm Password</label>
+                  <input
+                    type='password'
+                    name='confirmPassword'
+                    className='w-full p-3 border dark:border-light/10 border-primary/10 rounded-lg bg-transparent theme-text focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+              </div>
 
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type='submit' className='w-full p-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all font-medium'>
                 Register
