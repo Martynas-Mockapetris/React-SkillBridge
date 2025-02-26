@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import molecularPattern from '../assets/molecular-pattern.svg'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 
 const Register = () => {
@@ -9,9 +9,12 @@ const Register = () => {
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: '', 
+    confirmPassword: '',
     userType: ''
   })
+
+  const [contentHeight, setContentHeight] = useState('100vh')
+  const registerRef = useRef(null)
 
   const [showPasswords, setShowPasswords] = useState({
     password: false,
@@ -119,8 +122,26 @@ const Register = () => {
   ${errors[fieldName] ? 'border-2 border-red-500' : 'border dark:border-light/10 border-primary/10'}
 `
 
+  useEffect(() => {
+    const calculateHeight = () => {
+      const footerElement = document.querySelector('footer')
+      if (footerElement) {
+        const footerHeight = footerElement.offsetHeight
+        setContentHeight(`calc(100vh - ${footerHeight}px)`)
+      }
+    }
+
+    // Calculate on mount and window resize
+    calculateHeight()
+    window.addEventListener('resize', calculateHeight)
+
+    return () => {
+      window.removeEventListener('resize', calculateHeight)
+    }
+  }, [])
+
   return (
-    <section className='w-full py-20 theme-bg relative z-[1]'>
+    <div ref={registerRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
       {/* Background patterns - unchanged */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         {/* Large pattern */}
@@ -304,7 +325,7 @@ const Register = () => {
           </motion.div>
         </div>
       </div>
-    </section>
+    </div>
   )
 }
 
