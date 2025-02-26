@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import molecularPattern from '../assets/molecular-pattern.svg' 
+import molecularPattern from '../assets/molecular-pattern.svg'
 
 const Register = () => {
   return (
@@ -40,38 +40,29 @@ const Register = () => {
         </div>
 
         {/* Form Container */}
-        <div className='max-w-md mx-auto'>
-          <motion.div 
+        <div className='max-w-md md:max-w-6xl mx-auto'>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-lg p-8'
-          >
-            <form className="space-y-6">
-              <div>
-                <label className="block mb-2 theme-text font-medium">First Name</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  className="w-full p-3 border dark:border-light/10 border-primary/10 rounded-lg bg-transparent theme-text focus:outline-none focus:ring-2 focus:ring-accent"
-                />
+            className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-lg p-8'>
+            <form className='space-y-6'>
+              {/* First and Last Name in one row on desktop */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-10'>
+                <div>
+                  <label className='block mb-2 theme-text font-medium'>First Name</label>
+                  <input type='text' name='firstName' className='w-full p-3 border dark:border-light/10 border-primary/10 rounded-lg bg-transparent theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+                </div>
+
+                <div>
+                  <label className='block mb-2 theme-text font-medium'>Last Name</label>
+                  <input type='text' name='lastName' className='w-full p-3 border dark:border-light/10 border-primary/10 rounded-lg bg-transparent theme-text focus:outline-none focus:ring-2 focus:ring-accent' />
+                </div>
               </div>
-              
-              <div>
-                <label className="block mb-2 theme-text font-medium">Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  className="w-full p-3 border dark:border-light/10 border-primary/10 rounded-lg bg-transparent theme-text focus:outline-none focus:ring-2 focus:ring-accent"
-                />
-              </div>
-              
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                className="w-full p-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all font-medium"
-              >
+
+              {/* Other fields will go here */}
+
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type='submit' className='w-full p-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all font-medium'>
                 Register
               </motion.button>
             </form>
@@ -79,7 +70,7 @@ const Register = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register
