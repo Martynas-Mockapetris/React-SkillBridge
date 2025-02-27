@@ -47,7 +47,7 @@ export const loginUser = async (req, res) => {
 
     // Find user by email
     const user = await User.findOne({ email })
-    
+
     // Check if user exists and password matches
     if (user && (await user.comparePassword(password))) {
       res.json({
@@ -60,6 +60,30 @@ export const loginUser = async (req, res) => {
       })
     } else {
       res.status(401).json({ message: 'Invalid email or password' })
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Get user profile
+// @route   GET /api/auth/profile
+// @access  Private
+export const getUserProfile = async (req, res) => {
+  try {
+    // req.user is set by the protect middleware
+    const user = await User.findById(req.user._id)
+
+    if (user) {
+      res.json({
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        userType: user.userType
+      })
+    } else {
+      res.status(404).json({ message: 'User not found' })
     }
   } catch (error) {
     res.status(500).json({ message: error.message })
