@@ -5,7 +5,7 @@ import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { motion } from 'framer-motion'
 import molecularPattern from '../assets/molecular-pattern.svg'
-import { login, getCurrentUser } from '../services/authService'
+import { useAuth } from '../context/AuthContext'
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -20,14 +20,16 @@ const Login = () => {
   const [contentHeight, setContentHeight] = useState('100vh')
   const loginRef = useRef(null)
   const navigate = useNavigate()
+  
+  // Use the auth context instead of direct imports
+  const { currentUser, login } = useAuth()
 
-  // Check if user is already logged in
+  // Check if user is already logged in using context
   useEffect(() => {
-    const user = getCurrentUser()
-    if (user) {
+    if (currentUser) {
       navigate('/profile')
     }
-  }, [navigate])
+  }, [currentUser, navigate])
 
   useEffect(() => {
     const calculateHeight = () => {
@@ -103,33 +105,14 @@ const Login = () => {
       setIsLoading(true)
 
       try {
+        // Use the login function from context
         await login(loginData.email, loginData.password)
-
-        // Success message
-        toast.success('Login successful! Redirecting...', {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true
-        })
-
-        // Timeout to display success message
-        setTimeout(() => {
-          navigate('/profile')
-        }, 2000)
+        // After successful login, we can navigate (no need for timeout
+        // since toasts are handled in the context)
+        navigate('/profile')
         console.log('Login submitted:', loginData)
       } catch (error) {
-        const errorMessage = error.response?.data?.message || 'Login failed. Please try again.'
-        toast.error(errorMessage, {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true
-        })
+        // Error toasts are handled in context, but we can still log the error
         console.error('Login error:', error)
       } finally {
         setIsLoading(false)
@@ -163,8 +146,6 @@ const Login = () => {
           <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-15deg]' />
         </div>
       </div>
-
-      <ToastContainer theme='colored' />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className='w-full max-w-md z-10 relative'>
         <div className='text-center mb-8'>

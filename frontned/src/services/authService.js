@@ -27,6 +27,7 @@ export const login = async (email, password) => {
 // Logout user
 export const logout = () => {
   localStorage.removeItem('user')
+  return true
 }
 
 // Get current user

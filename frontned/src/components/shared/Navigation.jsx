@@ -1,18 +1,20 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { HiMenu, HiX } from 'react-icons/hi'
 import MolecularPatterns from '../shared/MolecularPatterns'
 import ThemeToggle from './ThemeToggle'
+import { useAuth } from '../../context/AuthContext'
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const { currentUser, logout } = useAuth()
 
-  const desktopLinkStyles = `relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] 
+  const desktopLinkStyles = `relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px]
     after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full theme-text`
 
   const mobileLinkStyles = 'text-2xl hover:text-accent transition-colors theme-text'
 
-  return (
+    return (
     <nav className='fixed w-full p-4 z-50 transition-all duration-300 theme-bg'>
       <div className='container mx-auto flex justify-between items-center'>
         {/* Logo and Brand */}
@@ -40,12 +42,24 @@ const Navigation = () => {
           <Link to='/admin' className={desktopLinkStyles}>
             Admin
           </Link>
-          <Link to='/login' className={desktopLinkStyles}>
-            Login
-          </Link>
-          <Link to='/register' className='text-accent font-semibold transition-colors duration-300 hover:opacity-80'>
-            Register
-          </Link>
+
+          {currentUser ? (
+            // Show logout button when user is logged in
+            <button onClick={logout} className='text-accent font-semibold transition-colors duration-300 hover:opacity-80'>
+              Logout
+            </button>
+          ) : (
+            // Show login/register links when user is not logged in
+            <>
+              <Link to='/login' className={desktopLinkStyles}>
+                Login
+              </Link>
+              <Link to='/register' className='text-accent font-semibold transition-colors duration-300 hover:opacity-80'>
+                Register
+              </Link>
+            </>
+          )}
+
           <ThemeToggle />
         </div>
 
@@ -65,12 +79,24 @@ const Navigation = () => {
             <Link to='/admin' className={mobileLinkStyles}>
               Admin
             </Link>
-            <Link to='/login' className={mobileLinkStyles}>
-              Login
-            </Link>
-            <Link to='/register' className='text-2xl text-accent font-semibold hover:opacity-80'>
-              Register
-            </Link>
+
+            {currentUser ? (
+              // Show logout button when user is logged in
+              <button onClick={logout} className='text-2xl text-accent font-semibold hover:opacity-80'>
+                Logout
+              </button>
+            ) : (
+              // Show login/register links when user is not logged in
+              <>
+                <Link to='/login' className={mobileLinkStyles}>
+                  Login
+                </Link>
+                <Link to='/register' className='text-2xl text-accent font-semibold hover:opacity-80'>
+                  Register
+                </Link>
+              </>
+            )}
+
             <ThemeToggle />
           </div>
         </div>

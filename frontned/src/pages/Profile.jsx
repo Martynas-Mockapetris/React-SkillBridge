@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaUser, FaProjectDiagram, FaCog, FaLock } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
@@ -6,9 +6,20 @@ import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
 import SecuritySettings from '../components/Profile/SecuritySettings'
 import molecularPattern from '../assets/molecular-pattern.svg'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
+  const { currentUser } = useAuth()
+  const navigate = useNavigate()
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login')
+    }
+  }, [currentUser, navigate])
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
@@ -16,6 +27,15 @@ const Profile = () => {
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
   ]
+
+  // If still loading or no user, could show a loading state
+  if (!currentUser) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+      </div>
+    )
+  }
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
@@ -33,11 +53,13 @@ const Profile = () => {
         {/* Profile Header */}
         <motion.div className='flex items-center gap-6 mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <motion.div className='w-24 h-24 rounded-full overflow-hidden border-4 border-accent' whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
-            <img src='https://i.pravatar.cc/150?img=1' alt='Profile' className='w-full h-full object-cover' onError={(e) => (e.target.src = '/default-avatar.png')} />
+            <img src={currentUser?.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt='Profile' className='w-full h-full object-cover' onError={(e) => (e.target.src = '/default-avatar.png')} />
           </motion.div>
           <div>
-            <h1 className='text-3xl font-bold theme-text'>John Doe</h1>
-            <p className='theme-text-secondary'>Full Stack Developer</p>
+            <h1 className='text-3xl font-bold theme-text'>
+              {currentUser?.firstName} {currentUser?.lastName}
+            </h1>
+            <p className='theme-text-secondary'>{currentUser?.userType === 'client' ? 'Client' : currentUser?.userType === 'freelancer' ? 'Freelancer' : 'Client & Freelancer'}</p>
           </div>
         </motion.div>
 
@@ -62,10 +84,10 @@ const Profile = () => {
         {/* Content Area */}
         <AnimatePresence mode='wait'>
           <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-            {activeTab === 'overview' && <ProfileStats />}
-            {activeTab === 'projects' && <ProjectsList />}
-            {activeTab === 'settings' && <ProfileSettings />}
-            {activeTab === 'security' && <SecuritySettings />}
+            {activeTab === 'overview' && <ProfileStats user={currentUser} />}
+            {activeTab === 'projects' && <ProjectsList user={currentUser} />}
+            {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
+            {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>
         </AnimatePresence>
       </div>

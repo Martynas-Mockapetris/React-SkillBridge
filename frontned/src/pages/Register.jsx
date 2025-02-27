@@ -5,11 +5,21 @@ import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { register as registerUser } from '../services/authService'
+import { useAuth } from '../context/AuthContext'
 
 const Register = () => {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
+
+  // Get the register function and currentUser from context
+  const { register, currentUser } = useAuth()
+
+  // Add check to redirect if already logged in
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/profile')
+    }
+  }, [currentUser, navigate])
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -102,34 +112,13 @@ const Register = () => {
           userType: formData.userType
         }
 
-        // Call the register function from auth service
-        await registerUser(userData)
+        // Call the register function from context instead of direct service
+        await register(userData)
 
-        // Success message
-        toast.success('Registration successful! Redirecting to your profile...', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true
-        })
-
-        // Redirect to login page after successful registration
-        setTimeout(() => {
-          navigate('/profile')
-        }, 3000)
+        // Navigate to profile (no need for timeout since toast is handled in context)
+        navigate('/profile')
       } catch (error) {
-        // Display error message from backend or fallback to generic message
-        const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.'
-        toast.error(errorMessage, {
-          position: 'top-right',
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true
-        })
+        // Error handling is done in context
         console.error('Registration error:', error)
       } finally {
         setIsLoading(false)
@@ -191,7 +180,6 @@ const Register = () => {
 
   return (
     <div ref={registerRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
-      <ToastContainer theme='colored' />
 
       {/* Background patterns - unchanged */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
