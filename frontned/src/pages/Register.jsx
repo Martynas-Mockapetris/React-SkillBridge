@@ -2,8 +2,15 @@ import { motion } from 'framer-motion'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import { useState, useEffect, useRef } from 'react'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { useNavigate, Link } from 'react-router-dom'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { register as registerUser } from '../services/authService'
 
 const Register = () => {
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -80,11 +87,53 @@ const Register = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (validateForm()) {
-      console.log('Form submitted:', formData)
-      // Proceed with registration
+      setIsLoading(true)
+
+      try {
+        // Create the user data object to send to the backend
+        const userData = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          userType: formData.userType
+        }
+
+        // Call the register function from auth service
+        await registerUser(userData)
+
+        // Success message
+        toast.success('Registration successful! Redirecting to your profile...', {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        })
+
+        // Redirect to login page after successful registration
+        setTimeout(() => {
+          navigate('/profile')
+        }, 3000)
+      } catch (error) {
+        // Display error message from backend or fallback to generic message
+        const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.'
+        toast.error(errorMessage, {
+          position: 'top-right',
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        })
+        console.error('Registration error:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -142,6 +191,8 @@ const Register = () => {
 
   return (
     <div ref={registerRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
+      <ToastContainer theme='colored' />
+
       {/* Background patterns - unchanged */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         {/* Large pattern */}
@@ -318,9 +369,34 @@ const Register = () => {
                 )}
               </div>
 
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type='submit' className='w-full p-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all font-medium'>
-                Register
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type='submit'
+                disabled={isLoading}
+                className='w-full p-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all font-medium flex items-center justify-center'>
+                {isLoading ? (
+                  <>
+                    <svg className='animate-spin -ml-1 mr-3 h-5 w-5 text-white' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+                      <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+                      <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+                    </svg>
+                    Registering...
+                  </>
+                ) : (
+                  'Register'
+                )}
               </motion.button>
+
+              {/* In case user has an account */}
+              <div className='mt-4 text-center'>
+                <p className='theme-text-secondary'>
+                  Already have an account?{' '}
+                  <Link to='/login' className='text-accent hover:underline'>
+                    Sign in
+                  </Link>
+                </p>
+              </div>
             </form>
           </motion.div>
         </div>
