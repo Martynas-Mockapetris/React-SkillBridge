@@ -7,6 +7,8 @@ import Navigation from './components/shared/Navigation'
 import Footer from './components/shared/Footer'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
+import ProtectedRoute from './components/shared/ProtectedRoute'
+import AdminRoute from './components/shared/AdminRoute'
 
 // Puslapiai
 import Home from './pages/Home'
@@ -23,12 +25,31 @@ function App() {
         <ToastContainer theme='colored' />
         <Navigation />
         <Routes>
+          {/* Public routes - accessible to everyone */}
           <Route path='/' element={<Home />} />
           <Route path='/listings' element={<Listings />} />
-          <Route path='/profile' element={<Profile />} />
-          <Route path='/admin' element={<Admin />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+
+          {/* Protected routes - require authentication */}
+          <Route
+            path='/profile'
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin routes - require admin role */}
+          <Route
+            path='/admin'
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            }
+          />
         </Routes>
         <Footer />
       </ThemeProvider>

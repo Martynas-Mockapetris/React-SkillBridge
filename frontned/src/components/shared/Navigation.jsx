@@ -9,12 +9,14 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { currentUser, logout } = useAuth()
 
+  const isAdmin = currentUser && currentUser.userType === 'admin'
+
   const desktopLinkStyles = `relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px]
     after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full theme-text`
 
   const mobileLinkStyles = 'text-2xl hover:text-accent transition-colors theme-text'
 
-    return (
+  return (
     <nav className='fixed w-full p-4 z-50 transition-all duration-300 theme-bg'>
       <div className='container mx-auto flex justify-between items-center'>
         {/* Logo and Brand */}
@@ -36,12 +38,20 @@ const Navigation = () => {
           <Link to='/listings' className={desktopLinkStyles}>
             Listings
           </Link>
-          <Link to='/profile' className={desktopLinkStyles}>
-            Profile
-          </Link>
-          <Link to='/admin' className={desktopLinkStyles}>
-            Admin
-          </Link>
+
+          {/* Only show Profile link if user is logged in */}
+          {currentUser && (
+            <Link to='/profile' className={desktopLinkStyles}>
+              Profile
+            </Link>
+          )}
+
+          {/* Only show Admin link if user is admin */}
+          {isAdmin && (
+            <Link to='/admin' className={desktopLinkStyles}>
+              Admin
+            </Link>
+          )}
 
           {currentUser ? (
             // Show logout button when user is logged in
@@ -73,12 +83,20 @@ const Navigation = () => {
             <Link to='/listings' className={mobileLinkStyles}>
               Listings
             </Link>
-            <Link to='/profile' className={mobileLinkStyles}>
-              Profile
-            </Link>
-            <Link to='/admin' className={mobileLinkStyles}>
-              Admin
-            </Link>
+
+            {/* Only show Profile link if user is logged in */}
+            {currentUser && (
+              <Link to='/profile' className={mobileLinkStyles}>
+                Profile
+              </Link>
+            )}
+
+            {/* Only show Admin link if user is admin */}
+            {isAdmin && (
+              <Link to='/admin' className={mobileLinkStyles}>
+                Admin
+              </Link>
+            )}
 
             {currentUser ? (
               // Show logout button when user is logged in
