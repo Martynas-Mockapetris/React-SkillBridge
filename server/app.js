@@ -1,32 +1,36 @@
-import express from 'express';
-import cors from 'cors';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import express from 'express'
+import cors from 'cors'
+import mongoose from 'mongoose'
+import dotenv from 'dotenv'
+import authRoutes from './src/routes/authRoutes.js'
 
-dotenv.config();
+dotenv.config()
 
-const app = express();
+const app = express()
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors())
+app.use(express.json())
 
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
-  .catch((error) => console.log('MongoDB connection error:', error));
+  .catch((error) => console.log('MongoDB connection error:', error))
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('SkillBridge API is running');
-});
+  res.send('SkillBridge API is running')
+})
+
+// Auth routes
+app.use('/api/auth', authRoutes)
 
 // Port
-const PORT = process.env.PORT;
+const PORT = process.env.PORT
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  console.log(`Server is running on port ${PORT}`)
+})
 
-export default app;
+export default app
