@@ -169,7 +169,14 @@ server/
   - ✅ Admin User Section
   - 🚧 Admin Project Section
   - 🚧 Admin Settings
+- ✅ Login Page
+- ✅ Signup Page
 
+## Development Progress [Backend level]
+- ✅ Login form
+- ✅ Signup form
+- ✅ Route protection
+- 🚧 Extended profile creation [Injecting more data to user collection]
 
 ## Contributing
 
