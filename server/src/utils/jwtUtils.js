@@ -10,8 +10,10 @@ export const generateToken = (userId) => {
 // Verify a token is valid
 export const verifyToken = (token) => {
   try {
+    console.log('Verifying token with secret length:', process.env.JWT_SECRET.length)
     return jwt.verify(token, process.env.JWT_SECRET)
   } catch (error) {
+    console.error('Token verification error:', error.message)
     return null
   }
 }

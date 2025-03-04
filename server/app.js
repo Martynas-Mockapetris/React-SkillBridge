@@ -3,6 +3,7 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import authRoutes from './src/routes/authRoutes.js'
+import userRoutes from './src/routes/userRoutes.js'
 
 dotenv.config()
 
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 
 // Auth routes
 app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
 
 // Port
 const PORT = process.env.PORT
