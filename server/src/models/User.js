@@ -26,12 +26,83 @@ const UserSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['client', 'freelancer', 'both'],
+    enum: ['client', 'freelancer', 'both', 'admin'],
     required: true
   },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  // New profile fields
+  phone: {
+    type: String,
+    trim: true
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  skills: {
+    type: String,
+    trim: true
+  },
+  bio: {
+    type: String,
+    trim: true
+  },
+
+  // Social links
+  website: {
+    type: String,
+    trim: true
+  },
+  github: {
+    type: String,
+    trim: true
+  },
+  linkedin: {
+    type: String,
+    trim: true
+  },
+  twitter: {
+    type: String,
+    trim: true
+  },
+
+  // Freelancer specific details
+  hourlyRate: {
+    type: Number
+  },
+  experienceLevel: {
+    type: String,
+    enum: ['entry', 'intermediate', 'expert'],
+    default: 'entry'
+  },
+  languages: {
+    type: String,
+    trim: true
+  },
+  certifications: {
+    type: String,
+    trim: true
+  },
+  serviceCategories: {
+    type: String,
+    trim: true
+  },
+  upworkProfile: {
+    type: String,
+    trim: true
+  },
+  fiverrProfile: {
+    type: String,
+    trim: true
+  },
+
+  // Profile picture
+  profilePicture: {
+    type: String,
+    default: ''
   }
 })
 
