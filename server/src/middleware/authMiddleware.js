@@ -23,11 +23,10 @@ export const protect = async (req, res, next) => {
       next()
     } catch (error) {
       console.error(error)
-      res.status(401).json({ message: 'Not authorized, token failed' })
+      return res.status(401).json({ message: 'Not authorized, token failed' })
     }
-  }
-
-  if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' })
+  } else {
+    // Only execute this if the first condition fails
+    return res.status(401).json({ message: 'Not authorized, no token' })
   }
 }
