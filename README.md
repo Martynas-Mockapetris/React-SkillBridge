@@ -176,7 +176,11 @@ server/
 - ✅ Login form
 - ✅ Signup form
 - ✅ Route protection
-- 🚧 Extended profile creation [Injecting more data to user collection]
+- ✅ Extended profile creation [Injecting more data to user collection]
+- 🚧 Projects posting feature [Backend + Frontend modal window etc.]
+- 🚧 Projects sorting in frontend
+- 🚧 Detailed project window
+- 🚧 Client/User connection through project
 
 ## Contributing
 
