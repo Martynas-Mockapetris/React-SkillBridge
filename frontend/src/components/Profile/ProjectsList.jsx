@@ -2,10 +2,15 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb } from 'react-icons/fa'
+import ProjectModal from '../../modal/ProjectModal'
 
 const ProjectsList = () => {
   const navigate = useNavigate()
   const [projectType, setProjectType] = useState('all')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const openModal = () => setIsModalOpen(true)
+  const closeModal = () => setIsModalOpen(false)
 
   const projects = [
     {
@@ -73,13 +78,16 @@ const ProjectsList = () => {
       <motion.div className='flex justify-between items-center' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h2 className='text-2xl font-bold theme-text'>My Projects</h2>
         <motion.button
-          onClick={() => navigate('/projects/new')}
+          onClick={openModal} // Changed from navigate to openModal
           className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300'
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}>
           New Project
         </motion.button>
       </motion.div>
+
+      {/* Project Modal */}
+      <ProjectModal isOpen={isModalOpen} onClose={closeModal} />
 
       {/* Project Type Filter */}
       <motion.div className='flex gap-4 flex-wrap' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
@@ -111,6 +119,7 @@ const ProjectsList = () => {
         </motion.button>
       </motion.div>
 
+      {/* Project List */}
       <motion.div className='grid gap-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
         {filteredProjects.map((project, index) => (
           <motion.div
@@ -120,6 +129,7 @@ const ProjectsList = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
             whileHover={{ scale: 1.01 }}>
+            {/* Project content remains the same */}
             <div className='flex justify-between items-start'>
               <div className='flex-1'>
                 <div className='flex items-center gap-3 mb-2'>
