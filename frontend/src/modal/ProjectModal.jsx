@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaTimes, FaUpload, FaDollarSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
+import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
 
 const ProjectModal = ({ isOpen, onClose }) => {
   // Form state
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     title: '',
     description: '',
     category: '',
     skills: [],
     budget: '',
     deadline: '',
-    type: 'created', // Default to 'created' since user is creating a project
-    status: 'draft', // Default status is draft
+    type: 'created',
+    status: 'draft',
     attachments: []
-  })
+  }
+
+  // Replace the current formData state initialization
+  const [formData, setFormData] = useState(initialFormState)
+
+  const resetForm = () => {
+    setFormData(initialFormState)
+    setCurrentStep(1)
+    setSkillInput('')
+  }
 
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 4
@@ -174,7 +183,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }
 
     console.log('Saving draft:', formData)
-    // Here you would save the draft to the database
+    resetForm()
     onClose()
   }
 
@@ -186,21 +195,13 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }
 
     console.log('Submitting project:', { ...formData, status: 'active' })
-    // Here you would submit the project to the database
+    resetForm() // Reset the form after submission
     onClose()
   }
 
-  // Prevent body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'auto'
-    }
-
-    // Cleanup function
-    return () => {
-      document.body.style.overflow = 'auto'
+      resetForm()
     }
   }, [isOpen])
 
@@ -381,7 +382,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
                             </label>
                             <div className='relative'>
                               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                                <FaDollarSign className='text-gray-400' />
+                                <FaEuroSign className='text-gray-400' />
                               </div>
                               <input
                                 type='number'
