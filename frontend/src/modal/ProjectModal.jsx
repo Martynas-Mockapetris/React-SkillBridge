@@ -1,6 +1,9 @@
+import { useContext } from 'react'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
+import AuthContext from '../context/AuthContext'
+import { createProject, saveProjectDraft } from '../services/projectService'
 
 const ProjectModal = ({ isOpen, onClose }) => {
   // Form state
@@ -18,7 +21,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
   // Replace the current formData state initialization
   const [formData, setFormData] = useState(initialFormState)
-
+  const { token } = useContext(AuthContext)
   const resetForm = () => {
     setFormData(initialFormState)
     setCurrentStep(1)
@@ -173,8 +176,45 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }))
   }
 
-  // Form submission handlers - updated with validation
-  const handleSaveDraft = () => {
+  // Form submission handlers - MOVED INSIDE THE COMPONENT
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!validateAllSteps()) {
+      return
+    }
+
+    try {
+      // Prepare the project data
+      const projectData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        skills: formData.skills,
+        budget: parseFloat(formData.budget),
+        deadline: formData.deadline,
+        status: 'active'
+      }
+
+      console.log('Sending project data:', projectData)
+
+      // Use the service function instead of direct axios call
+      const createdProject = await createProject(projectData)
+      console.log('Project created:', createdProject)
+
+      // Reset form and close modal
+      resetForm()
+      onClose()
+
+      // Show success message
+      alert('Project created successfully!')
+    } catch (err) {
+      console.error('Error creating project:', err)
+      alert('Failed to create project. Please try again.')
+    }
+  }
+
+  const handleSaveDraft = async () => {
     // For drafts, we can be more lenient, but at minimum require a title
     if (!formData.title.trim()) {
       setCurrentStep(1)
@@ -182,21 +222,34 @@ const ProjectModal = ({ isOpen, onClose }) => {
       return
     }
 
-    console.log('Saving draft:', formData)
-    resetForm()
-    onClose()
-  }
+    try {
+      // Prepare the project data
+      const projectData = {
+        title: formData.title,
+        description: formData.description || '',
+        category: formData.category || '',
+        skills: formData.skills,
+        budget: formData.budget ? parseFloat(formData.budget) : 0,
+        deadline: formData.deadline || new Date().toISOString().split('T')[0],
+        status: 'draft'
+      }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+      console.log('Saving draft:', projectData)
 
-    if (!validateAllSteps()) {
-      return
+      // Use the service function instead of direct axios call
+      const savedDraft = await saveProjectDraft(projectData)
+      console.log('Draft saved:', savedDraft)
+
+      // Reset form and close modal
+      resetForm()
+      onClose()
+
+      // Show success message
+      alert('Draft saved successfully!')
+    } catch (err) {
+      console.error('Error saving draft:', err)
+      alert('Failed to save draft. Please try again.')
     }
-
-    console.log('Submitting project:', { ...formData, status: 'active' })
-    resetForm() // Reset the form after submission
-    onClose()
   }
 
   useEffect(() => {
