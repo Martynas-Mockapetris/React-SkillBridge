@@ -34,8 +34,90 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }))
   }
 
-  // Navigation functions
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, totalSteps))
+  // Add validation for current step
+  const validateCurrentStep = () => {
+    if (currentStep === 1) {
+      // Validate basic information
+      if (!formData.title.trim()) {
+        alert('Please enter a project title')
+        return false
+      }
+      if (!formData.description.trim()) {
+        alert('Please enter a project description')
+        return false
+      }
+      if (!formData.category) {
+        alert('Please select a category')
+        return false
+      }
+    } else if (currentStep === 2) {
+      // Validate skills
+      if (formData.skills.length === 0) {
+        alert('Please add at least one skill')
+        return false
+      }
+    } else if (currentStep === 3) {
+      // Validate budget and timeline
+      if (!formData.budget) {
+        alert('Please enter a budget')
+        return false
+      }
+      if (!formData.deadline) {
+        alert('Please select a deadline')
+        return false
+      }
+    }
+    return true
+  }
+
+  // Add validation for all steps
+  const validateAllSteps = () => {
+    // Check basic information
+    if (!formData.title.trim()) {
+      setCurrentStep(1)
+      alert('Please enter a project title')
+      return false
+    }
+    if (!formData.description.trim()) {
+      setCurrentStep(1)
+      alert('Please enter a project description')
+      return false
+    }
+    if (!formData.category) {
+      setCurrentStep(1)
+      alert('Please select a category')
+      return false
+    }
+
+    // Check skills
+    if (formData.skills.length === 0) {
+      setCurrentStep(2)
+      alert('Please add at least one skill')
+      return false
+    }
+
+    // Check budget and timeline
+    if (!formData.budget) {
+      setCurrentStep(3)
+      alert('Please enter a budget')
+      return false
+    }
+    if (!formData.deadline) {
+      setCurrentStep(3)
+      alert('Please select a deadline')
+      return false
+    }
+
+    return true
+  }
+
+  // Navigation functions - updated with validation
+  const nextStep = () => {
+    if (validateCurrentStep()) {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps))
+    }
+  }
+
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1))
 
   // Handle skill addition
@@ -82,8 +164,15 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }))
   }
 
-  // Form submission handlers
+  // Form submission handlers - updated with validation
   const handleSaveDraft = () => {
+    // For drafts, we can be more lenient, but at minimum require a title
+    if (!formData.title.trim()) {
+      setCurrentStep(1)
+      alert('Please enter a project title')
+      return
+    }
+
     console.log('Saving draft:', formData)
     // Here you would save the draft to the database
     onClose()
@@ -91,6 +180,11 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
+    if (!validateAllSteps()) {
+      return
+    }
+
     console.log('Submitting project:', { ...formData, status: 'active' })
     // Here you would submit the project to the database
     onClose()
@@ -283,7 +377,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
                           {/* Budget */}
                           <div>
                             <label htmlFor='budget' className='block text-sm font-medium theme-text mb-1'>
-                              Budget (USD)*
+                              Budget (EUR)*
                             </label>
                             <div className='relative'>
                               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
