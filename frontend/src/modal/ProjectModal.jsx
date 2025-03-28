@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
 import AuthContext from '../context/AuthContext'
 import { createProject, saveProjectDraft } from '../services/projectService'
+import { toast } from 'react-toastify' // Import toast for notifications
 
-const ProjectModal = ({ isOpen, onClose }) => {
+const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
   // Form state
   const initialFormState = {
     title: '',
@@ -21,7 +22,9 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
   // Replace the current formData state initialization
   const [formData, setFormData] = useState(initialFormState)
-  const { token } = useContext(AuthContext)
+  const { currentUser, loading } = useContext(AuthContext)
+  const [submitting, setSubmitting] = useState(false) // Add submitting state
+
   const resetForm = () => {
     setFormData(initialFormState)
     setCurrentStep(1)
@@ -51,31 +54,31 @@ const ProjectModal = ({ isOpen, onClose }) => {
     if (currentStep === 1) {
       // Validate basic information
       if (!formData.title.trim()) {
-        alert('Please enter a project title')
+        toast.error('Please enter a project title')
         return false
       }
       if (!formData.description.trim()) {
-        alert('Please enter a project description')
+        toast.error('Please enter a project description')
         return false
       }
       if (!formData.category) {
-        alert('Please select a category')
+        toast.error('Please select a category')
         return false
       }
     } else if (currentStep === 2) {
       // Validate skills
       if (formData.skills.length === 0) {
-        alert('Please add at least one skill')
+        toast.error('Please add at least one skill')
         return false
       }
     } else if (currentStep === 3) {
       // Validate budget and timeline
       if (!formData.budget) {
-        alert('Please enter a budget')
+        toast.error('Please enter a budget')
         return false
       }
       if (!formData.deadline) {
-        alert('Please select a deadline')
+        toast.error('Please select a deadline')
         return false
       }
     }
@@ -87,36 +90,36 @@ const ProjectModal = ({ isOpen, onClose }) => {
     // Check basic information
     if (!formData.title.trim()) {
       setCurrentStep(1)
-      alert('Please enter a project title')
+      toast.error('Please enter a project title')
       return false
     }
     if (!formData.description.trim()) {
       setCurrentStep(1)
-      alert('Please enter a project description')
+      toast.error('Please enter a project description')
       return false
     }
     if (!formData.category) {
       setCurrentStep(1)
-      alert('Please select a category')
+      toast.error('Please select a category')
       return false
     }
 
     // Check skills
     if (formData.skills.length === 0) {
       setCurrentStep(2)
-      alert('Please add at least one skill')
+      toast.error('Please add at least one skill')
       return false
     }
 
     // Check budget and timeline
     if (!formData.budget) {
       setCurrentStep(3)
-      alert('Please enter a budget')
+      toast.error('Please enter a budget')
       return false
     }
     if (!formData.deadline) {
       setCurrentStep(3)
-      alert('Please select a deadline')
+      toast.error('Please select a deadline')
       return false
     }
 
@@ -176,7 +179,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }))
   }
 
-  // Form submission handlers - MOVED INSIDE THE COMPONENT
+  // Form submission handlers
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -185,6 +188,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }
 
     try {
+      setSubmitting(true)
       // Prepare the project data
       const projectData = {
         title: formData.title,
@@ -193,12 +197,13 @@ const ProjectModal = ({ isOpen, onClose }) => {
         skills: formData.skills,
         budget: parseFloat(formData.budget),
         deadline: formData.deadline,
-        status: 'active'
+        status: 'active',
+        progress: 0 // Add initial progress
       }
 
       console.log('Sending project data:', projectData)
 
-      // Use the service function instead of direct axios call
+      // Create the project
       const createdProject = await createProject(projectData)
       console.log('Project created:', createdProject)
 
@@ -206,11 +211,17 @@ const ProjectModal = ({ isOpen, onClose }) => {
       resetForm()
       onClose()
 
-      // Show success message
-      alert('Project created successfully!')
-    } catch (err) {
-      console.error('Error creating project:', err)
-      alert('Failed to create project. Please try again.')
+      // Call the onProjectCreated callback to refresh the projects list
+      if (onProjectCreated) {
+        onProjectCreated()
+      }
+
+      toast.success('Project created successfully!')
+    } catch (error) {
+      console.error('Error creating project:', error)
+      toast.error('Failed to create project. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -218,11 +229,12 @@ const ProjectModal = ({ isOpen, onClose }) => {
     // For drafts, we can be more lenient, but at minimum require a title
     if (!formData.title.trim()) {
       setCurrentStep(1)
-      alert('Please enter a project title')
+      toast.error('Please enter a project title')
       return
     }
 
     try {
+      setSubmitting(true)
       // Prepare the project data
       const projectData = {
         title: formData.title,
@@ -231,7 +243,8 @@ const ProjectModal = ({ isOpen, onClose }) => {
         skills: formData.skills,
         budget: formData.budget ? parseFloat(formData.budget) : 0,
         deadline: formData.deadline || new Date().toISOString().split('T')[0],
-        status: 'draft'
+        status: 'draft',
+        progress: 0
       }
 
       console.log('Saving draft:', projectData)
@@ -244,11 +257,18 @@ const ProjectModal = ({ isOpen, onClose }) => {
       resetForm()
       onClose()
 
+      // Call the onProjectCreated callback to refresh the projects list
+      if (onProjectCreated) {
+        onProjectCreated()
+      }
+
       // Show success message
-      alert('Draft saved successfully!')
+      toast.success('Draft saved successfully!')
     } catch (err) {
       console.error('Error saving draft:', err)
-      alert('Failed to save draft. Please try again.')
+      toast.error('Failed to save draft. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -551,8 +571,8 @@ const ProjectModal = ({ isOpen, onClose }) => {
                             whileTap={{ scale: 0.95 }}>
                             Save as Draft
                           </motion.button>
-                          <motion.button type='submit' className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            Post Project
+                          <motion.button type='submit' className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} disabled={submitting}>
+                            {submitting ? 'Posting...' : 'Post Project'}
                           </motion.button>
                         </>
                       )}
