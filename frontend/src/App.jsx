@@ -17,6 +17,7 @@ import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ProjectDetail from './pages/ProjectDetail'
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path='/listings' element={<Listings />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+          <Route path='/project/:id' element={<ProjectDetail />} />
 
           {/* Protected routes - require authentication */}
           <Route
