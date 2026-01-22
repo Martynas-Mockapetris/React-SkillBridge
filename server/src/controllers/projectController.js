@@ -7,16 +7,18 @@ const createProject = async (req, res) => {
   try {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
-    
+
     const { title, description, category, skills, budget, deadline, status } = req.body
-    
+
     // Process attachments if any
-    const attachments = req.files ? req.files.map(file => ({
-      name: file.originalname,
-      path: file.path,
-      mimetype: file.mimetype
-    })) : []
-    
+    const attachments = req.files
+      ? req.files.map((file) => ({
+          name: file.originalname,
+          path: file.path,
+          mimetype: file.mimetype
+        }))
+      : []
+
     // Create new project
     const project = new Project({
       user: req.user._id, // This comes from the protect middleware
@@ -29,12 +31,12 @@ const createProject = async (req, res) => {
       status: status || 'draft',
       attachments
     })
-    
+
     console.log('Saving project to database:', project)
-    
+
     const createdProject = await project.save()
     console.log('Project saved successfully:', createdProject)
-    
+
     res.status(201).json(createdProject)
   } catch (error) {
     console.error('Error creating project:', error)
@@ -60,15 +62,10 @@ const getUserProjects = async (req, res) => {
 // @access  Private
 const getProjectById = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id)
+    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture')
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
-    }
-
-    // Check if the project belongs to the user
-    if (project.user.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: 'Not authorized' })
     }
 
     res.json(project)

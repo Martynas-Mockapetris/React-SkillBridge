@@ -14,7 +14,8 @@ router.get('/test', (req, res) => {
 // Project routes
 router.post('/', protect, upload.array('attachments', 5), createProject)
 router.get('/', protect, getUserProjects)
-
-router.route('/:id').get(protect, getProjectById).put(protect, upload.array('attachments', 5), updateProject).delete(protect, deleteProject)
+router.get('/:id', getProjectById) // Public - no protect middleware
+router.put('/:id', protect, upload.array('attachments', 5), updateProject)
+router.delete('/:id', protect, deleteProject)
 
 export default router
