@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb } from 'react-icons/fa'
@@ -188,7 +188,7 @@ const ProjectsList = () => {
                 <div className='text-right'>
                   <div className='theme-text font-bold'>€{project.budget}</div>
                   <motion.button
-                    onClick={() => navigate(`/projects/${project._id}`)}
+                    onClick={() => navigate(`/project/${project._id}`)}
                     className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-300'
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}>
