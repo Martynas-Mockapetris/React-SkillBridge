@@ -44,6 +44,21 @@ const createProject = async (req, res) => {
   }
 }
 
+// @desc    Get all active projects (for listings page)
+// @route   GET /api/projects/all
+// @access  Public
+const getAllProjects = async (req, res) => {
+  try {
+    // Only show active projects in listings
+    const projects = await Project.find({ status: 'active' }).populate('user', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
+
+    res.json(projects)
+  } catch (error) {
+    console.error('Error fetching all projects:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects for the logged-in user
 // @route   GET /api/projects
 // @access  Private
@@ -153,4 +168,4 @@ const deleteProject = async (req, res) => {
   }
 }
 
-export { createProject, getUserProjects, getProjectById, updateProject, deleteProject }
+export { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects }
