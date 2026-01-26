@@ -4,149 +4,17 @@ import { FaUser, FaBriefcase } from 'react-icons/fa'
 import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
+import { getAllProjects } from '../../services/projectService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const ListingTabs = () => {
   const [activeTab, setActiveTab] = useState('projects')
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
+  const [projects, setProjects] = useState([])
+  const [error, setError] = useState(null)
 
-  // Dummy data for projects and freelancers
-  const projectsData = [
-    {
-      id: 1,
-      name: 'E-Commerce Platform Redesign',
-      type: 'Full-Stack',
-      deadline: '2024-03-15',
-      announcer: {
-        name: 'Sarah Chen',
-        image: 'https://i.pravatar.cc/150?img=1',
-        rating: 4.8
-      }
-    },
-    {
-      id: 2,
-      name: 'Mobile Banking App',
-      type: 'Frontend',
-      deadline: '2024-04-01',
-      announcer: {
-        name: 'James Wilson',
-        image: 'https://i.pravatar.cc/150?img=2',
-        rating: 4.9
-      }
-    },
-    {
-      id: 3,
-      name: 'Healthcare Dashboard',
-      type: 'UX/UI',
-      deadline: '2024-03-30',
-      announcer: {
-        name: 'James Thompson',
-        image: 'https://i.pravatar.cc/150?img=3',
-        rating: 4.7
-      }
-    },
-    {
-      id: 4,
-      name: 'Social Media Analytics Tool',
-      type: 'Backend',
-      deadline: '2024-04-15',
-      announcer: {
-        name: 'Michael Brown',
-        image: 'https://i.pravatar.cc/150?img=4',
-        rating: 4.6
-      }
-    },
-    {
-      id: 5,
-      name: 'Real Estate Platform',
-      type: 'Full-Stack',
-      deadline: '2024-05-01',
-      announcer: {
-        name: 'Sofia Garcia',
-        image: 'https://i.pravatar.cc/150?img=5',
-        rating: 4.9
-      }
-    },
-    {
-      id: 6,
-      name: 'Fitness Tracking App',
-      type: 'Frontend',
-      deadline: '2024-04-20',
-      announcer: {
-        name: 'David Kim',
-        image: 'https://i.pravatar.cc/150?img=6',
-        rating: 4.8
-      }
-    },
-    {
-      id: 7,
-      name: 'Educational Platform',
-      type: 'Full-Stack',
-      deadline: '2024-05-15',
-      announcer: {
-        name: 'Brian Anderson',
-        image: 'https://i.pravatar.cc/150?img=7',
-        rating: 4.7
-      }
-    },
-    {
-      id: 8,
-      name: 'Restaurant Booking System',
-      type: 'Backend',
-      deadline: '2024-04-10',
-      announcer: {
-        name: 'Alex Martinez',
-        image: 'https://i.pravatar.cc/150?img=8',
-        rating: 4.9
-      }
-    },
-    {
-      id: 9,
-      name: 'Travel App Design',
-      type: 'UX/UI',
-      deadline: '2024-03-25',
-      announcer: {
-        name: 'Rachel Lee',
-        image: 'https://i.pravatar.cc/150?img=9',
-        rating: 4.8
-      }
-    },
-    {
-      id: 10,
-      name: 'Project Management Tool',
-      type: 'Full-Stack',
-      deadline: '2024-05-30',
-      announcer: {
-        name: 'Sara Wright',
-        image: 'https://i.pravatar.cc/150?img=10',
-        rating: 4.6
-      }
-    },
-    {
-      id: 11,
-      name: 'Music Streaming Service',
-      type: 'Frontend',
-      deadline: '2024-04-25',
-      announcer: {
-        name: 'Dev Patel',
-        image: 'https://i.pravatar.cc/150?img=11',
-        rating: 4.7
-      }
-    },
-    {
-      id: 12,
-      name: 'AI Content Generator',
-      type: 'Backend',
-      deadline: '2024-05-10',
-      announcer: {
-        name: 'Chris Johnson',
-        image: 'https://i.pravatar.cc/150?img=12',
-        rating: 4.8
-      }
-    }
-  ]
-
+  // Dummy data for freelancers (will be replaced in future feature)
   const freelancersData = [
     {
       id: 1,
@@ -201,71 +69,43 @@ const ListingTabs = () => {
       hourlyRate: '€80/hr',
       image: 'https://i.pravatar.cc/150?img=6',
       completedProjects: 45
-    },
-    {
-      id: 7,
-      name: 'Nina Patel',
-      specialty: 'Data Scientist',
-      rating: 4.8,
-      hourlyRate: '€85/hr',
-      image: 'https://i.pravatar.cc/150?img=7',
-      completedProjects: 12
-    },
-    {
-      id: 8,
-      name: 'Thomas Anderson',
-      specialty: 'Blockchain Developer',
-      rating: 4.7,
-      hourlyRate: '€90/hr',
-      image: 'https://i.pravatar.cc/150?img=8',
-      completedProjects: 78
-    },
-    {
-      id: 9,
-      name: 'Maria Garcia',
-      specialty: 'Cloud Architect',
-      rating: 4.9,
-      hourlyRate: '€95/hr',
-      image: 'https://i.pravatar.cc/150?img=9',
-      completedProjects: 19
-    },
-    {
-      id: 10,
-      name: 'James Wilson',
-      specialty: 'Security Expert',
-      rating: 4.8,
-      hourlyRate: '€88/hr',
-      image: 'https://i.pravatar.cc/150?img=10',
-      completedProjects: 56
-    },
-    {
-      id: 11,
-      name: 'Sarah Lee',
-      specialty: 'AI/ML Engineer',
-      rating: 4.9,
-      hourlyRate: '€92/hr',
-      image: 'https://i.pravatar.cc/150?img=11',
-      completedProjects: 34
     }
   ]
+
+  // Fetch projects from API
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (activeTab === 'projects') {
+        try {
+          setIsLoading(true)
+          setError(null)
+          const data = await getAllProjects()
+          setProjects(data)
+        } catch (err) {
+          console.error('Error fetching projects:', err)
+          setError('Failed to load projects. Please try again.')
+        } finally {
+          setIsLoading(false)
+        }
+      } else {
+        // For freelancers tab, just show loading state briefly
+        setIsLoading(true)
+        setTimeout(() => {
+          setIsLoading(false)
+        }, 500)
+      }
+      setCurrentPage(1)
+    }
+
+    fetchProjects()
+  }, [activeTab])
 
   // Pagination
   const itemsPerPage = 6
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = activeTab === 'projects' ? projectsData.slice(indexOfFirstItem, indexOfLastItem) : freelancersData.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil((activeTab === 'projects' ? projectsData.length : freelancersData.length) / itemsPerPage)
-
-  // Loader state
-  useEffect(() => {
-    setIsLoading(true)
-    setCurrentPage(1)
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [activeTab])
+  const currentItems = activeTab === 'projects' ? projects.slice(indexOfFirstItem, indexOfLastItem) : freelancersData.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil((activeTab === 'projects' ? projects.length : freelancersData.length) / itemsPerPage)
 
   return (
     <section className='w-full pt-0 pb-20 theme-bg relative z-[2]'>
@@ -288,10 +128,10 @@ const ListingTabs = () => {
         </div>
       </div>
 
-      {/* Pagrindinis konteineris su mygtukais */}
+      {/* Main container */}
       <div className='container mx-auto px-4 relative z-10'>
         <div className='max-w-8xl mx-auto'>
-          {/* Projektu ir Freelanceriu mygtukai */}
+          {/* Projects and Freelancers tabs */}
           <div className='flex w-full'>
             <button
               onClick={() => setActiveTab('projects')}
@@ -315,7 +155,7 @@ const ListingTabs = () => {
             </button>
           </div>
 
-          {/* Sarasu sekcija su animacija */}
+          {/* Content section with animation */}
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, x: activeTab === 'projects' ? -20 : 20 }}
@@ -323,27 +163,51 @@ const ListingTabs = () => {
             exit={{ opacity: 0, x: activeTab === 'projects' ? 20 : -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {isLoading
-                ? Array(6)
-                    .fill(0)
-                    .map((_, index) => <CardLoader key={index} />)
-                : activeTab === 'projects'
-                ? currentItems.map((project, index) => <ProjectCard key={project.id} project={project} index={index} />)
-                : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
-            </div>
-
-            {/* Puslapiu numeracija apacioje */}
-            <div className='mt-12 flex justify-center gap-2'>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`w-10 h-10 rounded-lg transition-all duration-300 ${currentPage === i + 1 ? 'bg-accent text-white' : 'bg-accent/20 text-accent hover:bg-accent/30'}`}>
-                  {i + 1}
+            {/* Error message */}
+            {error && activeTab === 'projects' && (
+              <div className='text-center py-8'>
+                <p className='text-red-500 mb-4'>{error}</p>
+                <button onClick={() => window.location.reload()} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                  Retry
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Empty state for projects */}
+            {!isLoading && !error && activeTab === 'projects' && projects.length === 0 && (
+              <div className='text-center py-12'>
+                <FaBriefcase className='text-6xl theme-text-secondary mx-auto mb-4 opacity-50' />
+                <h3 className='text-xl font-semibold theme-text mb-2'>No projects available</h3>
+                <p className='theme-text-secondary'>Check back later for new opportunities!</p>
+              </div>
+            )}
+
+            {/* Grid of cards */}
+            {(!error || activeTab === 'freelancers') && (
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                {isLoading
+                  ? Array(6)
+                      .fill(0)
+                      .map((_, index) => <CardLoader key={index} />)
+                  : activeTab === 'projects'
+                  ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
+                  : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!isLoading && totalPages > 1 && (
+              <div className='mt-12 flex justify-center gap-2'>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-10 h-10 rounded-lg transition-all duration-300 ${currentPage === i + 1 ? 'bg-accent text-white' : 'bg-accent/20 text-accent hover:bg-accent/30'}`}>
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
         </div>
       </div>

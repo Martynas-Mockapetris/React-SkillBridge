@@ -1,44 +1,42 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb } from 'react-icons/fa'
+import ProjectModal from '../../modal/ProjectModal'
+import { useAuth } from '../../context/AuthContext' // Import useAuth hook
+import { getUserProjects } from '../../services/projectService' // Use the existing function
 
 const ProjectsList = () => {
   const navigate = useNavigate()
+  const { currentUser } = useAuth() // Get the current user
   const [projectType, setProjectType] = useState('all')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [projects, setProjects] = useState([]) // State for projects
+  const [loading, setLoading] = useState(true) // Loading state
+  const [error, setError] = useState(null) // Error state
 
-  const projects = [
-    {
-      id: 1,
-      title: 'E-commerce Website Development',
-      type: 'freelance',
-      status: 'active',
-      budget: '$5,000',
-      deadline: '2024-03-15',
-      progress: 75,
-      description: 'Full-stack e-commerce platform with payment integration'
-    },
-    {
-      id: 2,
-      title: 'Mobile App UI Design',
-      type: 'created',
-      status: 'completed',
-      budget: '$3,000',
-      deadline: '2024-02-28',
-      progress: 100,
-      description: 'UI/UX design for iOS and Android application'
-    },
-    {
-      id: 3,
-      title: 'Backend API Development',
-      type: 'created',
-      status: 'paused',
-      budget: '$4,500',
-      deadline: '2024-04-01',
-      progress: 30,
-      description: 'RESTful API development with Node.js and Express'
+  const openModal = () => setIsModalOpen(true)
+  const closeModal = () => setIsModalOpen(false)
+
+  // Fetch projects when component mounts
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  // Function to fetch projects
+  const fetchProjects = async () => {
+    try {
+      setLoading(true)
+      const fetchedProjects = await getUserProjects()
+      setProjects(fetchedProjects)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching projects:', err)
+      setError('Failed to load projects. Please try again later.')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -47,6 +45,7 @@ const ProjectsList = () => {
       case 'completed':
         return <FaCheck className='text-green-500' />
       case 'paused':
+      case 'draft':
         return <FaPause className='text-yellow-500' />
       default:
         return null
@@ -60,26 +59,37 @@ const ProjectsList = () => {
       case 'completed':
         return 'bg-green-500/10 text-green-500'
       case 'paused':
+      case 'draft':
         return 'bg-yellow-500/10 text-yellow-500'
       default:
         return 'bg-gray-500/10 text-gray-500'
     }
   }
 
-  const filteredProjects = projectType === 'all' ? projects : projects.filter((project) => project.type === projectType)
+  // Determine project type based on relationship to current user
+  const getProjectType = (project) => {
+    return project.createdBy === currentUser._id ? 'created' : 'freelance'
+  }
+
+  const filteredProjects = projectType === 'all' 
+    ? projects 
+    : projects.filter((project) => getProjectType(project) === projectType)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.div className='flex justify-between items-center' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h2 className='text-2xl font-bold theme-text'>My Projects</h2>
         <motion.button
-          onClick={() => navigate('/projects/new')}
+          onClick={openModal}
           className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300'
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}>
           New Project
         </motion.button>
       </motion.div>
+
+      {/* Project Modal - Pass fetchProjects function to refresh after creation */}
+      <ProjectModal isOpen={isModalOpen} onClose={closeModal} onProjectCreated={fetchProjects} />
 
       {/* Project Type Filter */}
       <motion.div className='flex gap-4 flex-wrap' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
@@ -111,57 +121,101 @@ const ProjectsList = () => {
         </motion.button>
       </motion.div>
 
-      <motion.div className='grid gap-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
-        {filteredProjects.map((project, index) => (
-          <motion.div
-            key={project.id}
-            className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 group backdrop-blur-sm'
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            whileHover={{ scale: 1.01 }}>
-            <div className='flex justify-between items-start'>
-              <div className='flex-1'>
-                <div className='flex items-center gap-3 mb-2'>
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}>
-                    {project.type === 'freelance' ? <FaBriefcase className='text-accent text-xl' /> : <FaLightbulb className='text-accent text-xl' />}
-                  </motion.div>
-                  <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
-                </div>
-                <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
-                <div className='flex items-center gap-4'>
-                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getStatusColor(project.status)}`}>
-                    {getStatusIcon(project.status)}
-                    <span className='capitalize text-sm'>{project.status}</span>
-                  </div>
-                  <div className='theme-text-secondary text-sm'>Due: {project.deadline}</div>
-                </div>
-              </div>
-              <div className='text-right'>
-                <div className='theme-text font-bold'>{project.budget}</div>
-                <motion.button
-                  onClick={() => navigate(`/projects/${project.id}`)}
-                  className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-300'
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}>
-                  <FaEye />
-                  <span>View</span>
-                </motion.button>
-              </div>
-            </div>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center py-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+        </div>
+      )}
 
-            <div className='mt-6'>
-              <div className='flex justify-between mb-2'>
-                <span className='theme-text-secondary text-sm'>Progress</span>
-                <span className='theme-text-secondary text-sm'>{project.progress}%</span>
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && filteredProjects.length === 0 && (
+        <div className="text-center py-10">
+          <FaLightbulb className="mx-auto text-4xl text-gray-400 mb-4" />
+          <h3 className="text-xl font-medium theme-text mb-2">No projects found</h3>
+          <p className="theme-text-secondary">
+            {projectType === 'all' 
+              ? "You don't have any projects yet. Create a new project to get started!"
+              : projectType === 'created'
+                ? "You haven't created any projects yet. Click 'New Project' to create one!"
+                : "You aren't working on any freelance projects yet."}
+          </p>
+        </div>
+      )}
+
+      {/* Project List */}
+      {!loading && !error && filteredProjects.length > 0 && (
+        <motion.div className='grid gap-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
+          {filteredProjects.map((project, index) => (
+            <motion.div
+              key={project._id}
+              className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 group backdrop-blur-sm'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              whileHover={{ scale: 1.01 }}>
+              {/* Project content */}
+              <div className='flex justify-between items-start'>
+                <div className='flex-1'>
+                  <div className='flex items-center gap-3 mb-2'>
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}>
+                      {getProjectType(project) === 'freelance' ? 
+                        <FaBriefcase className='text-accent text-xl' /> : 
+                        <FaLightbulb className='text-accent text-xl' />
+                      }
+                    </motion.div>
+                    <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
+                  </div>
+                  <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
+                  <div className='flex items-center gap-4'>
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getStatusColor(project.status)}`}>
+                      {getStatusIcon(project.status)}
+                      <span className='capitalize text-sm'>{project.status}</span>
+                    </div>
+                    <div className='theme-text-secondary text-sm'>
+                      Due: {new Date(project.deadline).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+                <div className='text-right'>
+                  <div className='theme-text font-bold'>€{project.budget}</div>
+                  <motion.button
+                    onClick={() => navigate(`/project/${project._id}`)}
+                    className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-300'
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}>
+                    <FaEye />
+                    <span>View</span>
+                  </motion.button>
+                </div>
               </div>
-              <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700'>
-                <motion.div className='bg-accent h-2.5 rounded-full' initial={{ width: 0 }} animate={{ width: `${project.progress}%` }} transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} />
+
+              <div className='mt-6'>
+                <div className='flex justify-between mb-2'>
+                  <span className='theme-text-secondary text-sm'>Progress</span>
+                  <span className='theme-text-secondary text-sm'>{project.progress || 0}%</span>
+                </div>
+                <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700'>
+                  <motion.div 
+                    className='bg-accent h-2.5 rounded-full' 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${project.progress || 0}%` }} 
+                    transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} 
+                  />
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
     </motion.div>
   )
 }
