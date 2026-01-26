@@ -59,6 +59,17 @@ export const getUserProjects = async () => {
   }
 }
 
+// Get all active projects (for listings page)
+export const getAllProjects = async () => {
+  try {
+    const response = await axios.get('/api/projects/all')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch all projects:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Get a specific project by ID
 export const getProjectById = async (projectId) => {
   try {
