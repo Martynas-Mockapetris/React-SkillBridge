@@ -2,39 +2,40 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
+import { getProjectById } from '../services/projectService'
 import molecularPattern from '../assets/molecular-pattern.svg'
 
 const ProjectDetail = () => {
-  const { id } = useParams() // Capture project ID from URL parameter
+  const { id } = useParams()
   const navigate = useNavigate()
 
-  const [project, setProject] = useState(null) // Project data state
-  const [loading, setLoading] = useState(true) // Loading indicator
-  const [error, setError] = useState(null) // Error handling
+  const [project, setProject] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
+  // Fetch project data from API
   useEffect(() => {
-    // Placeholder: simulate loading
-    setLoading(true)
+    const fetchProject = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await getProjectById(id)
+        setProject(data)
+      } catch (err) {
+        console.error('Error fetching project:', err)
+        setError('Failed to load project. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
 
-    // Mock data for now - will replace with API call
-    setTimeout(() => {
-      setProject({
-        id: id,
-        title: 'Sample Project',
-        description: 'This is a placeholder. Real data will be fetched in the next commit.',
-        category: 'Web Development',
-        budget: 5000,
-        deadline: new Date(),
-        skills: ['React', 'Node.js'],
-        status: 'active'
-      })
-      setLoading(false)
-    }, 500)
-  }, [id]) // Re-fetch if ID changes
+    if (id) {
+      fetchProject()
+    }
+  }, [id])
 
-  // Handle back navigation
   const handleBack = () => {
-    navigate(-1) // Go back to previous page
+    navigate(-1)
   }
 
   // Loading state
@@ -127,17 +128,18 @@ const ProjectDetail = () => {
             </div>
 
             {/* Skills Required */}
-            <div className='theme-card p-6 rounded-lg'>
-              <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
-              <div className='flex flex-wrap gap-2'>
-                {project.skills &&
-                  project.skills.map((skill, index) => (
+            {project.skills && project.skills.length > 0 && (
+              <div className='theme-card p-6 rounded-lg'>
+                <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
+                <div className='flex flex-wrap gap-2'>
+                  {project.skills.map((skill, index) => (
                     <span key={index} className='px-3 py-1 bg-accent/10 text-accent rounded-full text-sm'>
                       {skill}
                     </span>
                   ))}
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
 
           {/* Sidebar */}
@@ -151,7 +153,7 @@ const ProjectDetail = () => {
                 <FaDollarSign className='text-accent' />
                 <div>
                   <p className='text-sm'>Budget</p>
-                  <p className='text-lg font-semibold theme-text'>${project.budget}</p>
+                  <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
                 </div>
               </div>
 
@@ -174,7 +176,23 @@ const ProjectDetail = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Client Info */}
+            {project.user && (
+              <div className='theme-card p-6 rounded-lg'>
+                <h3 className='text-xl font-semibold theme-text mb-4'>Client Info</h3>
+                <div className='flex items-center gap-3'>
+                  <img src={project.user.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
+                  <div>
+                    <p className='font-semibold theme-text'>
+                      {project.user.firstName} {project.user.lastName}
+                    </p>
+                    <p className='text-sm theme-text-secondary'>{project.user.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons - Placeholder for future commits */}
             <div className='theme-card p-6 rounded-lg space-y-3'>
               <button className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>Contact Creator</button>
               <button className='w-full py-3 border-2 border-accent text-accent rounded-lg hover:bg-accent/10 transition-all'>Save Project</button>

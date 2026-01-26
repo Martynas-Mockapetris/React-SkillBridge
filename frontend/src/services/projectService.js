@@ -62,7 +62,7 @@ export const getUserProjects = async () => {
 // Get a specific project by ID
 export const getProjectById = async (projectId) => {
   try {
-    const response = await authAxios.get(`/api/projects/${projectId}`)
+    const response = await axios.get(`/api/projects/${projectId}`)
     return response.data
   } catch (error) {
     console.error('Failed to fetch project:', error.response?.data || error.message)
