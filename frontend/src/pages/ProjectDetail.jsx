@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
+import { useAuth } from '../context/AuthContext'
+import ContactModal from '../modal/ContactModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
 
 const ProjectDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { currentUser } = useAuth()
 
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
 
   // Fetch project data from API
   useEffect(() => {
@@ -194,12 +199,26 @@ const ProjectDetail = () => {
 
             {/* Action Buttons - Placeholder for future commits */}
             <div className='theme-card p-6 rounded-lg space-y-3'>
-              <button className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>Contact Creator</button>
+              {currentUser && currentUser._id !== project.user?._id ? (
+                <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                  Contact Creator
+                </button>
+              ) : !currentUser ? (
+                <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                  Login to Contact
+                </button>
+              ) : (
+                <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
+                  Your Project
+                </button>
+              )}
               <button className='w-full py-3 border-2 border-accent text-accent rounded-lg hover:bg-accent/10 transition-all'>Save Project</button>
             </div>
           </motion.div>
         </div>
       </div>
+      {/* Contact Modal */}
+      {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
     </section>
   )
 }
