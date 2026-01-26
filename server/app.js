@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import authRoutes from './src/routes/authRoutes.js'
 import userRoutes from './src/routes/userRoutes.js'
 import projectRoutes from './src/routes/projectRoutes.js'
+import messageRoutes from './src/routes/messageRoutes.js'
 
 dotenv.config()
 
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/projects', projectRoutes)
+app.use('/api/messages', messageRoutes)
 
 // Port
 const PORT = process.env.PORT
