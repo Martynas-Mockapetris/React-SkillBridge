@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
+import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaEnvelope } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
+import MessagesList from '../components/Profile/MessagesList'
+import { getProjectMessages } from '../services/messageService'
 
 const ProjectDetail = () => {
   const { id } = useParams()
@@ -13,8 +15,11 @@ const ProjectDetail = () => {
   const { currentUser } = useAuth()
 
   const [project, setProject] = useState(null)
+  const [activeTab, setActiveTab] = useState('details')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
 
   const [isContactModalOpen, setIsContactModalOpen] = useState(false)
 
@@ -38,6 +43,25 @@ const ProjectDetail = () => {
       fetchProject()
     }
   }, [id])
+
+  // Fetch messages when project loads and user is owner
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (project && currentUser && project.user?._id === currentUser._id) {
+        try {
+          setMessagesLoading(true)
+          const data = await getProjectMessages(project._id)
+          setMessages(data)
+        } catch (error) {
+          console.error('Error fetching messages:', error)
+        } finally {
+          setMessagesLoading(false)
+        }
+      }
+    }
+
+    fetchMessages()
+  }, [project, currentUser])
 
   const handleBack = () => {
     navigate(-1)
@@ -123,99 +147,126 @@ const ProjectDetail = () => {
         </motion.div>
 
         {/* Project Content */}
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-          {/* Main Content */}
-          <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            {/* Description Section */}
-            <div className='theme-card p-6 rounded-lg'>
-              <h2 className='text-2xl font-semibold theme-text mb-4'>Description</h2>
-              <p className='theme-text-secondary leading-relaxed'>{project.description}</p>
-            </div>
-
-            {/* Skills Required */}
-            {project.skills && project.skills.length > 0 && (
-              <div className='theme-card p-6 rounded-lg'>
-                <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
-                <div className='flex flex-wrap gap-2'>
-                  {project.skills.map((skill, index) => (
-                    <span key={index} className='px-3 py-1 bg-accent/10 text-accent rounded-full text-sm'>
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* Tabs for project owner */}
+        {project?.user?._id === currentUser?._id && (
+          <motion.div className='flex gap-4 mb-8 border-b dark:border-light/10 border-primary/10' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`py-4 px-6 transition-all duration-300 font-medium ${activeTab === 'details' ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent'}`}>
+              Project Details
+            </button>
+            <button
+              onClick={() => setActiveTab('messages')}
+              className={`py-4 px-6 transition-all duration-300 font-medium flex items-center gap-2 ${activeTab === 'messages' ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent'}`}>
+              Messages
+              {messages.length > 0 && <span className='px-2 py-1 bg-accent text-white rounded-full text-sm'>{messages.length}</span>}
+            </button>
           </motion.div>
+        )}
 
-          {/* Sidebar */}
-          <motion.div className='space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
-            {/* Project Details Card */}
-            <div className='theme-card p-6 rounded-lg space-y-4'>
-              <h3 className='text-xl font-semibold theme-text mb-4'>Project Details</h3>
-
-              {/* Budget */}
-              <div className='flex items-center gap-3 theme-text-secondary'>
-                <FaDollarSign className='text-accent' />
-                <div>
-                  <p className='text-sm'>Budget</p>
-                  <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
-                </div>
-              </div>
-
-              {/* Deadline */}
-              <div className='flex items-center gap-3 theme-text-secondary'>
-                <FaClock className='text-accent' />
-                <div>
-                  <p className='text-sm'>Deadline</p>
-                  <p className='text-lg font-semibold theme-text'>{new Date(project.deadline).toLocaleDateString()}</p>
-                </div>
-              </div>
-
-              {/* Status */}
-              <div className='flex items-center gap-3 theme-text-secondary'>
-                <FaUser className='text-accent' />
-                <div>
-                  <p className='text-sm'>Status</p>
-                  <p className='text-lg font-semibold capitalize theme-text'>{project.status}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Client Info */}
-            {project.user && (
+        {/* Project Content */}
+        {activeTab === 'details' && (
+          <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
+            {/* Main Content */}
+            <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+              {/* Description Section */}
               <div className='theme-card p-6 rounded-lg'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Client Info</h3>
-                <div className='flex items-center gap-3'>
-                  <img src={project.user.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
+                <h2 className='text-2xl font-semibold theme-text mb-4'>Description</h2>
+                <p className='theme-text-secondary leading-relaxed'>{project.description}</p>
+              </div>
+
+              {/* Skills Required */}
+              {project.skills && project.skills.length > 0 && (
+                <div className='theme-card p-6 rounded-lg'>
+                  <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
+                  <div className='flex flex-wrap gap-2'>
+                    {project.skills.map((skill, index) => (
+                      <span key={index} className='px-3 py-1 bg-accent/10 text-accent rounded-full text-sm'>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Sidebar */}
+            <motion.div className='space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+              {/* Project Details Card */}
+              <div className='theme-card p-6 rounded-lg space-y-4'>
+                <h3 className='text-xl font-semibold theme-text mb-4'>Project Details</h3>
+
+                {/* Budget */}
+                <div className='flex items-center gap-3 theme-text-secondary'>
+                  <FaDollarSign className='text-accent' />
                   <div>
-                    <p className='font-semibold theme-text'>
-                      {project.user.firstName} {project.user.lastName}
-                    </p>
-                    <p className='text-sm theme-text-secondary'>{project.user.email}</p>
+                    <p className='text-sm'>Budget</p>
+                    <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
+                  </div>
+                </div>
+
+                {/* Deadline */}
+                <div className='flex items-center gap-3 theme-text-secondary'>
+                  <FaClock className='text-accent' />
+                  <div>
+                    <p className='text-sm'>Deadline</p>
+                    <p className='text-lg font-semibold theme-text'>{new Date(project.deadline).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className='flex items-center gap-3 theme-text-secondary'>
+                  <FaUser className='text-accent' />
+                  <div>
+                    <p className='text-sm'>Status</p>
+                    <p className='text-lg font-semibold capitalize theme-text'>{project.status}</p>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Action Buttons - Placeholder for future commits */}
-            <div className='theme-card p-6 rounded-lg space-y-3'>
-              {currentUser && currentUser._id !== project.user?._id ? (
-                <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                  Contact Creator
-                </button>
-              ) : !currentUser ? (
-                <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                  Login to Contact
-                </button>
-              ) : (
-                <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                  Your Project
-                </button>
+              {/* Client Info */}
+              {project.user && (
+                <div className='theme-card p-6 rounded-lg'>
+                  <h3 className='text-xl font-semibold theme-text mb-4'>Client Info</h3>
+                  <div className='flex items-center gap-3'>
+                    <img src={project.user.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
+                    <div>
+                      <p className='font-semibold theme-text'>
+                        {project.user.firstName} {project.user.lastName}
+                      </p>
+                      <p className='text-sm theme-text-secondary'>{project.user.email}</p>
+                    </div>
+                  </div>
+                </div>
               )}
-              <button className='w-full py-3 border-2 border-accent text-accent rounded-lg hover:bg-accent/10 transition-all'>Save Project</button>
-            </div>
+
+              {/* Action Buttons - Placeholder for future commits */}
+              <div className='theme-card p-6 rounded-lg space-y-3'>
+                {currentUser && currentUser._id !== project.user?._id ? (
+                  <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                    Contact Creator
+                  </button>
+                ) : !currentUser ? (
+                  <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                    Login to Contact
+                  </button>
+                ) : (
+                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
+                    Your Project
+                  </button>
+                )}
+                <button className='w-full py-3 border-2 border-accent text-accent rounded-lg hover:bg-accent/10 transition-all'>Save Project</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Messages Tab */}
+        {activeTab === 'messages' && project?.user?._id === currentUser?._id && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <MessagesList messages={messages} loading={messagesLoading} />
           </motion.div>
-        </div>
+        )}
       </div>
       {/* Contact Modal */}
       {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
