@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
 import SecuritySettings from '../components/Profile/SecuritySettings'
 import molecularPattern from '../assets/molecular-pattern.svg'
+import MessagesList from '../components/Profile/MessagesList'
+import { getUserMessages } from '../services/messageService'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
+  const [messages, setMessages] = useState([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
   const { currentUser } = useAuth()
   const navigate = useNavigate()
 
@@ -21,9 +25,29 @@ const Profile = () => {
     }
   }, [currentUser, navigate])
 
+  // Fetch messages when Messages tab is active
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (activeTab === 'messages') {
+        try {
+          setMessagesLoading(true)
+          const data = await getUserMessages()
+          setMessages(data)
+        } catch (error) {
+          console.error('Error fetching messages:', error)
+        } finally {
+          setMessagesLoading(false)
+        }
+      }
+    }
+
+    fetchMessages()
+  }, [activeTab])
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     { id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> },
+    { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
   ]
@@ -86,6 +110,7 @@ const Profile = () => {
           <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
             {activeTab === 'overview' && <ProfileStats user={currentUser} />}
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
+            {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
             {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
             {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>
