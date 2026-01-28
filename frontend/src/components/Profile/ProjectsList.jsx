@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb } from 'react-icons/fa'
+import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects } from '../../services/projectService' // Use the existing function
@@ -71,7 +71,17 @@ const ProjectsList = () => {
     return project.createdBy === currentUser._id ? 'created' : 'freelance'
   }
 
-  const filteredProjects = projectType === 'all' ? projects : projects.filter((project) => getProjectType(project) === projectType)
+  const getInterestedProjects = (allProjects) => {
+    return allProjects.filter((project) =>
+      project.interestedUsers.some((u) => {
+        // Handle both cases: userId as direct ID or as populated object
+        const userId = u.userId._id ? u.userId._id : u.userId
+        return userId === currentUser._id
+      })
+    )
+  }
+
+  const filteredProjects = projectType === 'all' ? projects : projectType === 'interested' ? getInterestedProjects(projects) : projects.filter((project) => getProjectType(project) === projectType)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -113,6 +123,15 @@ const ProjectsList = () => {
           <FaLightbulb />
           My Listings
         </motion.button>
+        <motion.button
+          onClick={() => setProjectType('interested')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
+            ${projectType === 'interested' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+          <FaHeart />
+          Interested
+        </motion.button>
       </motion.div>
 
       {/* Loading State */}
@@ -140,7 +159,9 @@ const ProjectsList = () => {
               ? "You don't have any projects yet. Create a new project to get started!"
               : projectType === 'created'
                 ? "You haven't created any projects yet. Click 'New Project' to create one!"
-                : "You aren't working on any freelance projects yet."}
+                : projectType === 'interested'
+                  ? "You haven't shown interest in any projects yet. Browse projects to get started!"
+                  : "You aren't working on any freelance projects yet."}
           </p>
         </div>
       )}

@@ -49,7 +49,7 @@ const createProject = async (req, res) => {
 // @access  Public
 const getAllProjects = async (req, res) => {
   try {
-    // Only show active projects in listings
+    // Show only active projects in listings
     const projects = await Project.find({ status: 'active' }).populate('user', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
 
     res.json(projects)
