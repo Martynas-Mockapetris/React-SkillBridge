@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb } from 'react-icons/fa'
+import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
-import { getUserProjects } from '../../services/projectService' // Use the existing function
+import { getUserProjects, getInterestedProjects, removeFromInterested } from '../../services/projectService' // Use the existing function
 
 const ProjectsList = () => {
   const navigate = useNavigate()
@@ -27,8 +27,20 @@ const ProjectsList = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true)
-      const fetchedProjects = await getUserProjects()
-      setProjects(fetchedProjects)
+
+      // Fetch both created projects and interested projects
+      const [createdProjects, interestedProjects] = await Promise.all([getUserProjects(), getInterestedProjects()])
+
+      // Combine and remove duplicates (in case user created a project they're also interested in)
+      const allProjects = [...createdProjects]
+
+      interestedProjects.forEach((interestedProject) => {
+        if (!allProjects.some((p) => p._id === interestedProject._id)) {
+          allProjects.push(interestedProject)
+        }
+      })
+
+      setProjects(allProjects)
       setError(null)
     } catch (err) {
       console.error('Error fetching projects:', err)
@@ -68,22 +80,40 @@ const ProjectsList = () => {
 
   // Determine project type based on relationship to current user
   const getProjectType = (project) => {
-    return project.createdBy === currentUser._id ? 'created' : 'freelance'
-  }
+    // Check if user created this project
+    if (project.user._id === currentUser._id || project.user === currentUser._id) {
+      return 'created'
+    }
 
-  const filteredProjects = projectType === 'all' 
-    ? projects 
-    : projects.filter((project) => getProjectType(project) === projectType)
+    // Check if user is in interestedUsers
+    const isInterested = project.interestedUsers?.some((u) => {
+      const userId = u.userId._id ? u.userId._id : u.userId
+      return userId === currentUser._id
+    })
+
+    if (isInterested) {
+      return 'freelance'
+    }
+
+    return 'other'
+  }
+  const filteredProjects =
+    projectType === 'all'
+      ? projects
+      : projectType === 'interested'
+        ? projects.filter((project) => {
+            return project.interestedUsers?.some((u) => {
+              const userId = u.userId._id ? u.userId._id : u.userId
+              return userId === currentUser._id
+            })
+          })
+        : projects.filter((project) => getProjectType(project) === projectType)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.div className='flex justify-between items-center' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h2 className='text-2xl font-bold theme-text'>My Projects</h2>
-        <motion.button
-          onClick={openModal}
-          className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300'
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}>
+        <motion.button onClick={openModal} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           New Project
         </motion.button>
       </motion.div>
@@ -119,34 +149,45 @@ const ProjectsList = () => {
           <FaLightbulb />
           My Listings
         </motion.button>
+        <motion.button
+          onClick={() => setProjectType('interested')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
+            ${projectType === 'interested' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+          <FaHeart />
+          Interested
+        </motion.button>
       </motion.div>
 
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+        <div className='flex justify-center py-10'>
+          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline"> {error}</span>
+        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative' role='alert'>
+          <strong className='font-bold'>Error!</strong>
+          <span className='block sm:inline'> {error}</span>
         </div>
       )}
 
       {/* Empty State */}
       {!loading && !error && filteredProjects.length === 0 && (
-        <div className="text-center py-10">
-          <FaLightbulb className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-xl font-medium theme-text mb-2">No projects found</h3>
-          <p className="theme-text-secondary">
-            {projectType === 'all' 
+        <div className='text-center py-10'>
+          <FaLightbulb className='mx-auto text-4xl text-gray-400 mb-4' />
+          <h3 className='text-xl font-medium theme-text mb-2'>No projects found</h3>
+          <p className='theme-text-secondary'>
+            {projectType === 'all'
               ? "You don't have any projects yet. Create a new project to get started!"
               : projectType === 'created'
                 ? "You haven't created any projects yet. Click 'New Project' to create one!"
-                : "You aren't working on any freelance projects yet."}
+                : projectType === 'interested'
+                  ? "You haven't shown interest in any projects yet. Browse projects to get started!"
+                  : "You aren't working on any freelance projects yet."}
           </p>
         </div>
       )}
@@ -167,10 +208,7 @@ const ProjectsList = () => {
                 <div className='flex-1'>
                   <div className='flex items-center gap-3 mb-2'>
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}>
-                      {getProjectType(project) === 'freelance' ? 
-                        <FaBriefcase className='text-accent text-xl' /> : 
-                        <FaLightbulb className='text-accent text-xl' />
-                      }
+                      {getProjectType(project) === 'freelance' ? <FaBriefcase className='text-accent text-xl' /> : <FaLightbulb className='text-accent text-xl' />}
                     </motion.div>
                     <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
                   </div>
@@ -180,9 +218,7 @@ const ProjectsList = () => {
                       {getStatusIcon(project.status)}
                       <span className='capitalize text-sm'>{project.status}</span>
                     </div>
-                    <div className='theme-text-secondary text-sm'>
-                      Due: {new Date(project.deadline).toLocaleDateString()}
-                    </div>
+                    <div className='theme-text-secondary text-sm'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
                   </div>
                 </div>
                 <div className='text-right'>
@@ -195,23 +231,69 @@ const ProjectsList = () => {
                     <FaEye />
                     <span>View</span>
                   </motion.button>
+                  {(() => {
+                    // Check if user is interested in this project (but not the creator)
+                    const isCreator = project.user._id === currentUser._id || project.user === currentUser._id
+                    const isInterested = project.interestedUsers?.some((u) => {
+                      const userId = u.userId._id ? u.userId._id : u.userId
+                      return userId === currentUser._id
+                    })
+
+                    return !isCreator && isInterested
+                  })() && (
+                    <motion.button
+                      onClick={async () => {
+                        try {
+                          await removeFromInterested(project._id)
+                          await fetchProjects()
+                        } catch (err) {
+                          console.error('Error removing from interested:', err)
+                        }
+                      }}
+                      className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300'
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}>
+                      <FaHeart />
+                      <span>Remove</span>
+                    </motion.button>
+                  )}
                 </div>
               </div>
 
+              {/* Progress Bar */}
               <div className='mt-6'>
                 <div className='flex justify-between mb-2'>
                   <span className='theme-text-secondary text-sm'>Progress</span>
                   <span className='theme-text-secondary text-sm'>{project.progress || 0}%</span>
                 </div>
                 <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700'>
-                  <motion.div 
-                    className='bg-accent h-2.5 rounded-full' 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${project.progress || 0}%` }} 
-                    transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} 
-                  />
+                  <motion.div className='bg-accent h-2.5 rounded-full' initial={{ width: 0 }} animate={{ width: `${project.progress || 0}%` }} transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} />
                 </div>
               </div>
+
+              {/* Interested Users Badge */}
+              {project.interestedUsers && project.interestedUsers.length > 0 && (
+                <div className='mt-4 pt-4 border-t dark:border-light/10 border-primary/10'>
+                  <p className='text-sm theme-text-secondary mb-2'>
+                    {(() => {
+                      const count = project.interestedUsers.length
+                      const names = project.interestedUsers
+                        .slice(0, 2)
+                        .map((u) => u.userId?.firstName || 'User')
+                        .join(', ')
+                      const others = count - 2
+
+                      if (count === 1) {
+                        return `Interested: ${names}`
+                      } else if (count <= 2) {
+                        return `Interested: ${names}`
+                      } else {
+                        return `Interested: ${names} and ${others} ${others === 1 ? 'other' : 'others'}`
+                      }
+                    })()}
+                  </p>
+                </div>
+              )}
             </motion.div>
           ))}
         </motion.div>

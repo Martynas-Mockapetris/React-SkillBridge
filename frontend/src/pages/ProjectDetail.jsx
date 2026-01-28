@@ -6,7 +6,7 @@ import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
-import MessagesList from '../components/Profile/MessagesList'
+import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { getProjectMessages } from '../services/messageService'
 
 const ProjectDetail = () => {
@@ -264,7 +264,7 @@ const ProjectDetail = () => {
         {/* Messages Tab */}
         {activeTab === 'messages' && project?.user?._id === currentUser?._id && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <MessagesList messages={messages} loading={messagesLoading} />
+            <GroupedMessagesList messages={messages} loading={messagesLoading} />
           </motion.div>
         )}
       </div>

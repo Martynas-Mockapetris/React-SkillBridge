@@ -1,0 +1,63 @@
+import { motion } from 'framer-motion'
+import { FaEnvelope } from 'react-icons/fa'
+import SenderBlock from './SenderBlock'
+
+const GroupedMessagesList = ({ messages, loading }) => {
+  // Group messages by sender
+  const groupedMessages = messages.reduce((groups, message) => {
+    const senderId = message.sender._id
+
+    if (!groups[senderId]) {
+      groups[senderId] = {
+        sender: message.sender,
+        messages: []
+      }
+    }
+
+    groups[senderId].messages.push(message)
+    return groups
+  }, {})
+
+  // Convert to array and sort by first message time
+  const sortedGroups = Object.values(groupedMessages).sort((a, b) => {
+    const timeA = new Date(a.messages[0].createdAt)
+    const timeB = new Date(b.messages[0].createdAt)
+    return timeB - timeA // Newest first
+  })
+
+  if (loading) {
+    return (
+      <div className='flex justify-center py-8'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+      </div>
+    )
+  }
+
+  if (!messages || messages.length === 0) {
+    return (
+      <div className='text-center py-12'>
+        <FaEnvelope className='text-6xl theme-text-secondary mx-auto mb-4 opacity-30' />
+        <h3 className='text-xl font-semibold theme-text mb-2'>No messages yet</h3>
+        <p className='theme-text-secondary'>People interested in your project will appear here.</p>
+      </div>
+    )
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className='space-y-8'>
+      {/* Summary */}
+      <div className='p-4 bg-accent/10 rounded-lg'>
+        <p className='theme-text font-semibold'>
+          {sortedGroups.length} {sortedGroups.length === 1 ? 'person' : 'people'} interested in this project
+        </p>
+      </div>
+
+      {/* Grouped messages */}
+      {sortedGroups.map((group, index) => (
+        <SenderBlock key={group.sender._id} sender={group.sender} messages={group.messages} index={index} />
+      ))}
+    </motion.div>
+  )
+}
+
+export default GroupedMessagesList

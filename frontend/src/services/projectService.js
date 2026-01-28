@@ -102,3 +102,25 @@ export const deleteProject = async (projectId) => {
     throw error
   }
 }
+
+// Get all projects current user is interested in
+export const getInterestedProjects = async () => {
+  try {
+    const response = await authAxios.get('/api/projects/interested')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch interested projects:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Remove current user from project's interestedUsers
+export const removeFromInterested = async (projectId) => {
+  try {
+    const response = await authAxios.delete(`/api/projects/${projectId}/interested`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove from interested:', error.response?.data || error.message)
+    throw error
+  }
+}
