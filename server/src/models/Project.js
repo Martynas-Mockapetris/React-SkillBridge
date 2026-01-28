@@ -33,7 +33,7 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['draft', 'active', 'completed', 'cancelled'],
+      enum: ['draft', 'active', 'completed', 'cancelled', 'inactive', 'archived', 'paused', 'in progress', 'under review'],
       default: 'draft'
     },
     attachments: [

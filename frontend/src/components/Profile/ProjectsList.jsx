@@ -71,19 +71,13 @@ const ProjectsList = () => {
     return project.createdBy === currentUser._id ? 'created' : 'freelance'
   }
 
-  const filteredProjects = projectType === 'all' 
-    ? projects 
-    : projects.filter((project) => getProjectType(project) === projectType)
+  const filteredProjects = projectType === 'all' ? projects : projects.filter((project) => getProjectType(project) === projectType)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.div className='flex justify-between items-center' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h2 className='text-2xl font-bold theme-text'>My Projects</h2>
-        <motion.button
-          onClick={openModal}
-          className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300'
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}>
+        <motion.button onClick={openModal} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           New Project
         </motion.button>
       </motion.div>
@@ -123,26 +117,26 @@ const ProjectsList = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+        <div className='flex justify-center py-10'>
+          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline"> {error}</span>
+        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative' role='alert'>
+          <strong className='font-bold'>Error!</strong>
+          <span className='block sm:inline'> {error}</span>
         </div>
       )}
 
       {/* Empty State */}
       {!loading && !error && filteredProjects.length === 0 && (
-        <div className="text-center py-10">
-          <FaLightbulb className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-xl font-medium theme-text mb-2">No projects found</h3>
-          <p className="theme-text-secondary">
-            {projectType === 'all' 
+        <div className='text-center py-10'>
+          <FaLightbulb className='mx-auto text-4xl text-gray-400 mb-4' />
+          <h3 className='text-xl font-medium theme-text mb-2'>No projects found</h3>
+          <p className='theme-text-secondary'>
+            {projectType === 'all'
               ? "You don't have any projects yet. Create a new project to get started!"
               : projectType === 'created'
                 ? "You haven't created any projects yet. Click 'New Project' to create one!"
@@ -167,10 +161,7 @@ const ProjectsList = () => {
                 <div className='flex-1'>
                   <div className='flex items-center gap-3 mb-2'>
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}>
-                      {getProjectType(project) === 'freelance' ? 
-                        <FaBriefcase className='text-accent text-xl' /> : 
-                        <FaLightbulb className='text-accent text-xl' />
-                      }
+                      {getProjectType(project) === 'freelance' ? <FaBriefcase className='text-accent text-xl' /> : <FaLightbulb className='text-accent text-xl' />}
                     </motion.div>
                     <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
                   </div>
@@ -180,9 +171,7 @@ const ProjectsList = () => {
                       {getStatusIcon(project.status)}
                       <span className='capitalize text-sm'>{project.status}</span>
                     </div>
-                    <div className='theme-text-secondary text-sm'>
-                      Due: {new Date(project.deadline).toLocaleDateString()}
-                    </div>
+                    <div className='theme-text-secondary text-sm'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
                   </div>
                 </div>
                 <div className='text-right'>
@@ -198,20 +187,40 @@ const ProjectsList = () => {
                 </div>
               </div>
 
+              {/* Progress Bar */}
               <div className='mt-6'>
                 <div className='flex justify-between mb-2'>
                   <span className='theme-text-secondary text-sm'>Progress</span>
                   <span className='theme-text-secondary text-sm'>{project.progress || 0}%</span>
                 </div>
                 <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700'>
-                  <motion.div 
-                    className='bg-accent h-2.5 rounded-full' 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${project.progress || 0}%` }} 
-                    transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} 
-                  />
+                  <motion.div className='bg-accent h-2.5 rounded-full' initial={{ width: 0 }} animate={{ width: `${project.progress || 0}%` }} transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} />
                 </div>
               </div>
+
+              {/* Interested Users Badge */}
+              {project.interestedUsers && project.interestedUsers.length > 0 && (
+                <div className='mt-4 pt-4 border-t dark:border-light/10 border-primary/10'>
+                  <p className='text-sm theme-text-secondary mb-2'>
+                    {(() => {
+                      const count = project.interestedUsers.length
+                      const names = project.interestedUsers
+                        .slice(0, 2)
+                        .map((u) => u.userId?.firstName || 'User')
+                        .join(', ')
+                      const others = count - 2
+
+                      if (count === 1) {
+                        return `Interested: ${names}`
+                      } else if (count <= 2) {
+                        return `Interested: ${names}`
+                      } else {
+                        return `Interested: ${names} and ${others} ${others === 1 ? 'other' : 'others'}`
+                      }
+                    })()}
+                  </p>
+                </div>
+              )}
             </motion.div>
           ))}
         </motion.div>
