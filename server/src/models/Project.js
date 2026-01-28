@@ -7,6 +7,11 @@ const projectSchema = mongoose.Schema(
       ref: 'User',
       required: true
     },
+    assignee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
     title: {
       type: String,
       required: true
@@ -33,7 +38,7 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['draft', 'active', 'completed', 'cancelled', 'inactive', 'archived', 'paused', 'in progress', 'under review'],
+      enum: ['draft', 'active', 'completed', 'cancelled', 'inactive', 'archived', 'paused', 'in_progress', 'under_review'],
       default: 'draft'
     },
     attachments: [
