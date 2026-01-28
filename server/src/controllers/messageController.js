@@ -34,6 +34,19 @@ const sendMessage = async (req, res) => {
 
     const savedMessage = await message.save()
 
+    // Add sender to interestedUsers if not already present
+    const alreadyInterested = project.interestedUsers.some((user) => user.userId.toString() === req.user._id.toString())
+
+    // If not already interested, add to the list
+    if (!alreadyInterested) {
+      project.interestedUsers.push({
+        userId: req.user._id,
+        status: 'pending',
+        contactedAt: new Date()
+      })
+      await project.save()
+    }
+
     // Populate sender and receiver info before sending response
     await savedMessage.populate('sender', 'firstName lastName email profilePicture')
     await savedMessage.populate('receiver', 'firstName lastName email profilePicture')
