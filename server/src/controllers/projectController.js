@@ -168,4 +168,106 @@ const deleteProject = async (req, res) => {
   }
 }
 
-export { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects }
+// @desc    Assign a user to a project
+// @route   POST /api/projects/:id/assign
+// @access  Private (project creator only)
+const assignUserToProject = async (req, res) => {
+  try {
+    const { userId } = req.body
+    const projectId = req.params.id
+
+    // Verify project exists and user is creator
+    let project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized to assign this project' })
+    }
+
+    // Verify assignee is in interestedUsers
+    const isInterested = project.interestedUsers.some((u) => u.userId.toString() === userId)
+    if (!isInterested) {
+      return res.status(400).json({ message: 'User has not contacted this project' })
+    }
+
+    // Assign the user
+    project.assignee = userId
+    project.status = 'in_progress'
+
+    const updatedProject = await project.save()
+    const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
+
+    res.json(populatedProject)
+  } catch (error) {
+    console.error('Error assigning user to project:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Reassign project to different user
+// @route   PUT /api/projects/:id/reassign
+// @access  Private (project creator only)
+const reassignProject = async (req, res) => {
+  try {
+    const { userId } = req.body
+    const projectId = req.params.id
+
+    let project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized' })
+    }
+
+    // Verify new assignee is in interestedUsers
+    const isInterested = project.interestedUsers.some((u) => u.userId.toString() === userId)
+    if (!isInterested) {
+      return res.status(400).json({ message: 'User has not contacted this project' })
+    }
+
+    project.assignee = userId
+
+    const updatedProject = await project.save()
+    const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
+
+    res.json(populatedProject)
+  } catch (error) {
+    console.error('Error reassigning project:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove assignee from project (reopen for new assignments)
+// @route   DELETE /api/projects/:id/assignee
+// @access  Private (project creator only)
+const removeAssignee = async (req, res) => {
+  try {
+    const projectId = req.params.id
+
+    let project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized' })
+    }
+
+    project.assignee = null
+
+    const updatedProject = await project.save()
+    res.json(updatedProject)
+  } catch (error) {
+    console.error('Error removing assignee:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee }

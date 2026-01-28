@@ -1,6 +1,5 @@
 import express from 'express'
-import { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects } from '../controllers/projectController.js'
-import { protect } from '../middleware/authMiddleware.js'
+import { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee } from '../controllers/projectController.js'import { protect } from '../middleware/authMiddleware.js'
 import upload from '../middleware/uploadMiddleware.js'
 
 const router = express.Router()
@@ -18,5 +17,10 @@ router.get('/all', getAllProjects)
 router.get('/:id', getProjectById) // Public - no protect middleware
 router.put('/:id', protect, upload.array('attachments', 5), updateProject)
 router.delete('/:id', protect, deleteProject)
+
+// Assignment routes
+router.post('/:id/assign', protect, assignUserToProject)
+router.put('/:id/reassign', protect, reassignProject)
+router.delete('/:id/assignee', protect, removeAssignee)
 
 export default router
