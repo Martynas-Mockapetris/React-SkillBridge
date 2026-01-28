@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
-import { getUserProjects } from '../../services/projectService' // Use the existing function
+import { getUserProjects, getInterestedProjects, removeFromInterested } from '../../services/projectService' // Use the existing function
 
 const ProjectsList = () => {
   const navigate = useNavigate()
@@ -27,8 +27,20 @@ const ProjectsList = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true)
-      const fetchedProjects = await getUserProjects()
-      setProjects(fetchedProjects)
+
+      // Fetch both created projects and interested projects
+      const [createdProjects, interestedProjects] = await Promise.all([getUserProjects(), getInterestedProjects()])
+
+      // Combine and remove duplicates (in case user created a project they're also interested in)
+      const allProjects = [...createdProjects]
+
+      interestedProjects.forEach((interestedProject) => {
+        if (!allProjects.some((p) => p._id === interestedProject._id)) {
+          allProjects.push(interestedProject)
+        }
+      })
+
+      setProjects(allProjects)
       setError(null)
     } catch (err) {
       console.error('Error fetching projects:', err)
@@ -68,20 +80,34 @@ const ProjectsList = () => {
 
   // Determine project type based on relationship to current user
   const getProjectType = (project) => {
-    return project.createdBy === currentUser._id ? 'created' : 'freelance'
-  }
+    // Check if user created this project
+    if (project.user._id === currentUser._id || project.user === currentUser._id) {
+      return 'created'
+    }
 
-  const getInterestedProjects = (allProjects) => {
-    return allProjects.filter((project) =>
-      project.interestedUsers.some((u) => {
-        // Handle both cases: userId as direct ID or as populated object
-        const userId = u.userId._id ? u.userId._id : u.userId
-        return userId === currentUser._id
-      })
-    )
-  }
+    // Check if user is in interestedUsers
+    const isInterested = project.interestedUsers?.some((u) => {
+      const userId = u.userId._id ? u.userId._id : u.userId
+      return userId === currentUser._id
+    })
 
-  const filteredProjects = projectType === 'all' ? projects : projectType === 'interested' ? getInterestedProjects(projects) : projects.filter((project) => getProjectType(project) === projectType)
+    if (isInterested) {
+      return 'freelance'
+    }
+
+    return 'other'
+  }
+  const filteredProjects =
+    projectType === 'all'
+      ? projects
+      : projectType === 'interested'
+        ? projects.filter((project) => {
+            return project.interestedUsers?.some((u) => {
+              const userId = u.userId._id ? u.userId._id : u.userId
+              return userId === currentUser._id
+            })
+          })
+        : projects.filter((project) => getProjectType(project) === projectType)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -205,6 +231,32 @@ const ProjectsList = () => {
                     <FaEye />
                     <span>View</span>
                   </motion.button>
+                  {(() => {
+                    // Check if user is interested in this project (but not the creator)
+                    const isCreator = project.user._id === currentUser._id || project.user === currentUser._id
+                    const isInterested = project.interestedUsers?.some((u) => {
+                      const userId = u.userId._id ? u.userId._id : u.userId
+                      return userId === currentUser._id
+                    })
+
+                    return !isCreator && isInterested
+                  })() && (
+                    <motion.button
+                      onClick={async () => {
+                        try {
+                          await removeFromInterested(project._id)
+                          await fetchProjects()
+                        } catch (err) {
+                          console.error('Error removing from interested:', err)
+                        }
+                      }}
+                      className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300'
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}>
+                      <FaHeart />
+                      <span>Remove</span>
+                    </motion.button>
+                  )}
                 </div>
               </div>
 

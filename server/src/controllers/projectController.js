@@ -270,4 +270,48 @@ const removeAssignee = async (req, res) => {
   }
 }
 
-export { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee }
+// @desc    Get all projects current user is interested in
+// @route   GET /api/projects/interested
+// @access  Private
+const getInterestedProjects = async (req, res) => {
+  try {
+    // Find all projects where current user is in interestedUsers array
+    const projects = await Project.find({
+      'interestedUsers.userId': req.user._id
+    })
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .sort({ createdAt: -1 })
+
+    res.json(projects)
+  } catch (error) {
+    console.error('Error fetching interested projects:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove current user from project's interestedUsers
+// @route   DELETE /api/projects/:id/interested
+// @access  Private
+const removeFromInterested = async (req, res) => {
+  try {
+    const projectId = req.params.id
+
+    let project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Remove current user from interestedUsers array
+    project.interestedUsers = project.interestedUsers.filter((u) => u.userId.toString() !== req.user._id.toString())
+
+    const updatedProject = await project.save()
+    res.json(updatedProject)
+  } catch (error) {
+    console.error('Error removing from interested:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee, getInterestedProjects, removeFromInterested }
