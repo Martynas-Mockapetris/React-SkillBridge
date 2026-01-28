@@ -42,6 +42,24 @@ const projectSchema = mongoose.Schema(
         path: String,
         mimetype: String
       }
+    ],
+    interestedUsers: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true
+        },
+        status: {
+          type: String,
+          enum: ['pending', 'accepted', 'rejected'],
+          default: 'pending'
+        },
+        contactedAt: {
+          type: Date,
+          default: Date.now
+        }
+      }
     ]
   },
   {
