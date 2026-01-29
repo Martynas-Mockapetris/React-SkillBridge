@@ -97,36 +97,25 @@ const ProjectsList = () => {
     }
   }
 
-  // Determine project type based on relationship to current user
-  const getProjectType = (project) => {
-    // Check if user created this project
-    if (project.user._id === currentUser._id || project.user === currentUser._id) {
-      return 'created'
-    }
+  const isCreator = (project) => project.user._id === currentUser._id || project.user === currentUser._id
 
-    // Check if user is in interestedUsers
-    const isInterested = project.interestedUsers?.some((u) => {
+  const isInterested = (project) =>
+    project.interestedUsers?.some((u) => {
       const userId = u.userId._id ? u.userId._id : u.userId
       return userId === currentUser._id
     })
 
-    if (isInterested) {
-      return 'freelance'
-    }
+  const isAssignee = (project) => (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
 
+  // Determine project type based on relationship to current user
+  const getProjectType = (project) => {
+    if (isCreator(project)) return 'created'
+    if (isAssignee(project)) return 'freelance' // assigned work
+    if (isInterested(project)) return 'interested' // contacted but not assigned
     return 'other'
   }
-  const filteredProjects =
-    projectType === 'all'
-      ? projects
-      : projectType === 'interested'
-        ? projects.filter((project) => {
-            return project.interestedUsers?.some((u) => {
-              const userId = u.userId._id ? u.userId._id : u.userId
-              return userId === currentUser._id
-            })
-          })
-        : projects.filter((project) => getProjectType(project) === projectType)
+
+  const filteredProjects = projectType === 'all' ? projects : projects.filter((project) => getProjectType(project) === projectType)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -237,6 +226,12 @@ const ProjectsList = () => {
                       {getStatusIcon(project.status)}
                       <span className='text-sm'>{formatStatus(project.status)}</span>
                     </div>
+
+                    {isCreator(project) && project.assignee && (
+                      <div className='text-sm text-accent mt-1'>
+                        Assigned: {project.assignee.firstName} {project.assignee.lastName}
+                      </div>
+                    )}
                     <div className='theme-text-secondary text-sm'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
                   </div>
                 </div>
