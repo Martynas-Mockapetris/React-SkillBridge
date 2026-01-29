@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
+import AssignModal from '../../modal/AssignModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee } from '../../services/projectService'
 import { formatStatus } from '../../utils/formatters'
@@ -347,6 +348,17 @@ const ProjectsList = () => {
           ))}
         </motion.div>
       )}
+
+      {/* Assign Modal */}
+      <AssignModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false)
+          setSelectedProject(null)
+        }}
+        project={selectedProject}
+        onAssignSuccess={fetchProjects}
+      />
     </motion.div>
   )
 }
