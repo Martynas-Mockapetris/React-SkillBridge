@@ -135,3 +135,14 @@ export const assignUserToProject = async (projectId, userId) => {
     throw error
   }
 }
+
+// Remove assignee from project
+export const removeAssignee = async (projectId) => {
+  try {
+    const response = await authAxios.delete(`/api/projects/${projectId}/assignee`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove assignee:', error.response?.data || error.message)
+    throw error
+  }
+}

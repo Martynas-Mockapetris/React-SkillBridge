@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
-import { getUserProjects, getInterestedProjects, removeFromInterested } from '../../services/projectService' // Use the existing function
+import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee } from '../../services/projectService'
 import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
@@ -15,6 +15,8 @@ const ProjectsList = () => {
   const [projects, setProjects] = useState([]) // State for projects
   const [loading, setLoading] = useState(true) // Loading state
   const [error, setError] = useState(null) // Error state
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
 
   const openModal = () => setIsModalOpen(true)
   const closeModal = () => setIsModalOpen(false)
@@ -284,6 +286,39 @@ const ProjectsList = () => {
                   <motion.div className='bg-accent h-2.5 rounded-full' initial={{ width: 0 }} animate={{ width: `${project.progress || 0}%` }} transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }} />
                 </div>
               </div>
+
+              {/* Assign/Remove Actions (Creator only) */}
+              {isCreator(project) && project.interestedUsers && project.interestedUsers.length > 0 && (
+                <div className='mt-4 pt-4 border-t dark:border-light/10 border-primary/10'>
+                  {!project.assignee ? (
+                    <motion.button
+                      onClick={() => {
+                        setSelectedProject(project)
+                        setIsAssignModalOpen(true)
+                      }}
+                      className='w-full py-2 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded transition-all'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Assign Project
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      onClick={async () => {
+                        try {
+                          await removeAssignee(project._id)
+                          await fetchProjects()
+                        } catch (err) {
+                          console.error('Error removing assignee:', err)
+                        }
+                      }}
+                      className='w-full py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded transition-all'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Remove Assignment
+                    </motion.button>
+                  )}
+                </div>
+              )}
 
               {/* Interested Users Badge */}
               {project.interestedUsers && project.interestedUsers.length > 0 && (
