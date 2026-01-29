@@ -64,7 +64,10 @@ const getAllProjects = async (req, res) => {
 // @access  Private
 const getUserProjects = async (req, res) => {
   try {
-    const projects = await Project.find({ user: req.user._id }).populate('interestedUsers.userId', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
+    const projects = await Project.find({ user: req.user._id })
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+      .sort({ createdAt: -1 })
     res.json(projects)
   } catch (error) {
     console.error('Error fetching user projects:', error)
@@ -281,8 +284,8 @@ const getInterestedProjects = async (req, res) => {
     })
       .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
       .sort({ createdAt: -1 })
-
     res.json(projects)
   } catch (error) {
     console.error('Error fetching interested projects:', error)
