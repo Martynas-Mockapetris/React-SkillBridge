@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaEnvelope } from 'react-icons/fa'
+import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { getProjectMessages } from '../services/messageService'
+import { formatStatus } from '../utils/formatters'
 
 const ProjectDetail = () => {
   const { id } = useParams()
@@ -219,7 +220,7 @@ const ProjectDetail = () => {
                   <FaUser className='text-accent' />
                   <div>
                     <p className='text-sm'>Status</p>
-                    <p className='text-lg font-semibold capitalize theme-text'>{project.status}</p>
+                    <p className='text-lg font-semibold theme-text'>{formatStatus(project.status)}</p>
                   </div>
                 </div>
               </div>
@@ -264,7 +265,23 @@ const ProjectDetail = () => {
         {/* Messages Tab */}
         {activeTab === 'messages' && project?.user?._id === currentUser?._id && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <GroupedMessagesList messages={messages} loading={messagesLoading} />
+            <GroupedMessagesList
+              messages={messages}
+              loading={messagesLoading}
+              projectId={id}
+              isProjectCreator={true}
+              onRefresh={async () => {
+                try {
+                  const updatedProject = await getProjectById(id)
+                  setProject(updatedProject)
+
+                  const updatedMessages = await getProjectMessages(id)
+                  setMessages(updatedMessages)
+                } catch (error) {
+                  console.error('Error refreshing data:', error)
+                }
+              }}
+            />
           </motion.div>
         )}
       </div>

@@ -124,3 +124,14 @@ export const removeFromInterested = async (projectId) => {
     throw error
   }
 }
+
+// Assign a user to a project
+export const assignUserToProject = async (projectId, userId) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/assign`, { userId })
+    return response.data
+  } catch (error) {
+    console.error('Failed to assign user to project:', error.response?.data || error.message)
+    throw error
+  }
+}

@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaClock } from 'react-icons/fa'
+import { assignUserToProject } from '../../services/projectService'
 
-const SenderBlock = ({ sender, messages, index }) => {
+const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onAssignSuccess }) => {
+  const [assigning, setAssigning] = useState(false)
   // Format time nicely
   const formatTime = (dateString) => {
     const date = new Date(dateString)
@@ -12,6 +15,18 @@ const SenderBlock = ({ sender, messages, index }) => {
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 48) return 'Yesterday'
     return date.toLocaleDateString()
+  }
+
+  const handleAssign = async () => {
+    try {
+      setAssigning(true)
+      await assignUserToProject(projectId, sender._id)
+      onAssignSuccess?.() // Refresh parent
+    } catch (error) {
+      console.error('Failed to assign user:', error)
+    } finally {
+      setAssigning(false)
+    }
   }
 
   return (
@@ -25,6 +40,16 @@ const SenderBlock = ({ sender, messages, index }) => {
           </h3>
           <p className='text-sm theme-text-secondary'>{sender?.email}</p>
         </div>
+        {isProjectCreator && (
+          <motion.button
+            onClick={handleAssign}
+            disabled={assigning}
+            className='px-3 py-1 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded text-sm transition-all'
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}>
+            {assigning ? 'Assigning...' : 'Assign'}
+          </motion.button>
+        )}
       </div>
 
       {/* Messages from this sender */}

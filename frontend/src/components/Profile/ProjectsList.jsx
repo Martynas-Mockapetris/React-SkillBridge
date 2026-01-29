@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart } from 'react-icons/fa'
+import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested } from '../../services/projectService' // Use the existing function
+import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
   const navigate = useNavigate()
@@ -54,9 +55,18 @@ const ProjectsList = () => {
     switch (status) {
       case 'active':
         return <FaClock className='text-blue-500' />
+      case 'in_progress':
+        return <FaSpinner className='text-purple-500' />
+      case 'under_review':
+        return <FaSearch className='text-orange-500' />
       case 'completed':
         return <FaCheck className='text-green-500' />
       case 'paused':
+        return <FaPause className='text-yellow-500' />
+      case 'cancelled':
+        return <FaTimes className='text-red-500' />
+      case 'archived':
+        return <FaArchive className='text-gray-500' />
       case 'draft':
         return <FaPause className='text-yellow-500' />
       default:
@@ -68,9 +78,18 @@ const ProjectsList = () => {
     switch (status) {
       case 'active':
         return 'bg-blue-500/10 text-blue-500'
+      case 'in_progress':
+        return 'bg-purple-500/10 text-purple-500'
+      case 'under_review':
+        return 'bg-orange-500/10 text-orange-500'
       case 'completed':
         return 'bg-green-500/10 text-green-500'
       case 'paused':
+        return 'bg-yellow-500/10 text-yellow-500'
+      case 'cancelled':
+        return 'bg-red-500/10 text-red-500'
+      case 'archived':
+        return 'bg-gray-500/10 text-gray-500'
       case 'draft':
         return 'bg-yellow-500/10 text-yellow-500'
       default:
@@ -216,7 +235,7 @@ const ProjectsList = () => {
                   <div className='flex items-center gap-4'>
                     <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getStatusColor(project.status)}`}>
                       {getStatusIcon(project.status)}
-                      <span className='capitalize text-sm'>{project.status}</span>
+                      <span className='text-sm'>{formatStatus(project.status)}</span>
                     </div>
                     <div className='theme-text-secondary text-sm'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
                   </div>

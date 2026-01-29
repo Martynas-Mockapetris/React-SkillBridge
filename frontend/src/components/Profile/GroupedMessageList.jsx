@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { FaEnvelope } from 'react-icons/fa'
 import SenderBlock from './SenderBlock'
 
-const GroupedMessagesList = ({ messages, loading }) => {
+const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, onRefresh }) => {
   // Group messages by sender
   const groupedMessages = messages.reduce((groups, message) => {
     const senderId = message.sender._id
@@ -54,7 +54,7 @@ const GroupedMessagesList = ({ messages, loading }) => {
 
       {/* Grouped messages */}
       {sortedGroups.map((group, index) => (
-        <SenderBlock key={group.sender._id} sender={group.sender} messages={group.messages} index={index} />
+        <SenderBlock key={group.sender._id} sender={group.sender} messages={group.messages} index={index} projectId={projectId} isProjectCreator={isProjectCreator} onAssignSuccess={onRefresh} />
       ))}
     </motion.div>
   )
