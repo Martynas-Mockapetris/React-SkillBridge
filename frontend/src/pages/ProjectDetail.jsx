@@ -139,7 +139,7 @@ const ProjectDetail = () => {
         </motion.button>
 
         {/* Project Header */}
-        <motion.div className='mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div className='mb-4 pb-4 border-b-2 dark:border-light/10 border-primary/10' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h1 className='text-4xl font-bold theme-text mb-2'>{project.title}</h1>
           <p className='theme-text-secondary flex items-center gap-2'>
             <FaTags />
@@ -171,14 +171,14 @@ const ProjectDetail = () => {
             {/* Main Content */}
             <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
               {/* Description Section */}
-              <div className='theme-card p-6 rounded-lg'>
+              <div className='theme-card p-2 rounded-lg'>
                 <h2 className='text-2xl font-semibold theme-text mb-4'>Description</h2>
                 <p className='theme-text-secondary leading-relaxed'>{project.description}</p>
               </div>
 
               {/* Skills Required */}
               {project.skills && project.skills.length > 0 && (
-                <div className='theme-card p-6 rounded-lg'>
+                <div className='theme-card p-2 rounded-lg'>
                   <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
                   <div className='flex flex-wrap gap-2'>
                     {project.skills.map((skill, index) => (
@@ -192,7 +192,39 @@ const ProjectDetail = () => {
             </motion.div>
 
             {/* Sidebar */}
-            <motion.div className='space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+            <motion.div className='space-y-6 p-2' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+              {/* Assigned Person Card */}
+              {project.assignee && (
+                <div className='theme-card p-6 rounded-lg border-2 border-accent/30'>
+                  <h3 className='text-xl font-semibold theme-text mb-4 flex items-center gap-2'>
+                    <span className='w-3 h-3 bg-accent rounded-full'></span>
+                    Assigned To
+                  </h3>
+                  <div className='flex items-center gap-3 mb-4'>
+                    <img src={project.assignee.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.assignee.firstName} className='w-14 h-14 rounded-full object-cover border-2 border-accent/20' />
+                    <div>
+                      <p className='font-semibold theme-text'>
+                        {project.assignee.firstName} {project.assignee.lastName}
+                      </p>
+                      <p className='text-sm theme-text-secondary'>{project.assignee.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Contact button */}
+                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && (
+                    <div className='pt-4 border-t dark:border-light/10 border-primary/10'>
+                      <motion.button
+                        onClick={() => navigate(`/messages`)}
+                        className='w-full py-2 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded transition-all text-sm'
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}>
+                        Contact Assignee
+                      </motion.button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Project Details Card */}
               <div className='theme-card p-6 rounded-lg space-y-4'>
                 <h3 className='text-xl font-semibold theme-text mb-4'>Project Details</h3>
