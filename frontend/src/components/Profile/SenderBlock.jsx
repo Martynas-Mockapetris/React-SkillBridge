@@ -9,6 +9,10 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
   const [replyText, setReplyText] = useState('') // Store reply message
   const [sending, setSending] = useState(false) // Track sending state
 
+  // Get current user to check if this is sender's own messages
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+  const isOwnMessages = sender?._id === currentUser._id
+
   // Format time nicely
   const formatTime = (dateString) => {
     const date = new Date(dateString)
@@ -64,7 +68,7 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
           </h3>
           <p className='text-sm theme-text-secondary'>{sender?.email}</p>
         </div>
-        {isProjectCreator && (
+        {isProjectCreator && !isOwnMessages && (
           <motion.button
             onClick={handleAssign}
             disabled={assigning}
@@ -93,7 +97,7 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
       </div>
 
       {/* Reply Input (only for project creator) */}
-      {isProjectCreator && (
+      {isProjectCreator && !isOwnMessages && (
         <div className='mt-4 pl-16'>
           <div className='flex gap-2'>
             <input

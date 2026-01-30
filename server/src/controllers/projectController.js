@@ -190,6 +190,11 @@ const assignUserToProject = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized to assign this project' })
     }
 
+    // Prevent owner from assigning project to themselves
+    if (project.user.toString() === userId) {
+      return res.status(400).json({ message: 'Cannot assign project to yourself' })
+    }
+
     // Verify assignee is in interestedUsers
     const isInterested = project.interestedUsers.some((u) => u.userId.toString() === userId)
     if (!isInterested) {

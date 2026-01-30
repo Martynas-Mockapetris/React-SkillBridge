@@ -34,11 +34,12 @@ const sendMessage = async (req, res) => {
 
     const savedMessage = await message.save()
 
-    // Add sender to interestedUsers if not already present
+    // Add sender to interestedUsers ONLY if they are NOT the project owner
+    const isProjectOwner = project.user.toString() === req.user._id.toString()
     const alreadyInterested = project.interestedUsers.some((user) => user.userId.toString() === req.user._id.toString())
 
-    // If not already interested, add to the list
-    if (!alreadyInterested) {
+    // Only add to interested list if sender is not the owner and not already interested
+    if (!isProjectOwner && !alreadyInterested) {
       project.interestedUsers.push({
         userId: req.user._id,
         status: 'pending',
@@ -87,7 +88,7 @@ const getUserMessages = async (req, res) => {
     })
       .populate('sender', 'firstName lastName email profilePicture')
       .populate('receiver', 'firstName lastName email profilePicture')
-      .populate('project', 'title category')
+      .populate('project', 'title category user') // Add 'user' to get project owner
       .sort({ createdAt: -1 }) // Newest first
 
     res.json(messages)
