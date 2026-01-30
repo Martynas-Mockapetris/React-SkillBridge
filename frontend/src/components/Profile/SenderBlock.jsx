@@ -2,9 +2,13 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaClock } from 'react-icons/fa'
 import { assignUserToProject } from '../../services/projectService'
+import { sendMessage } from '../../services/messageService'
 
 const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onAssignSuccess }) => {
   const [assigning, setAssigning] = useState(false)
+  const [replyText, setReplyText] = useState('') // Store reply message
+  const [sending, setSending] = useState(false) // Track sending state
+
   // Format time nicely
   const formatTime = (dateString) => {
     const date = new Date(dateString)
@@ -26,6 +30,26 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
       console.error('Failed to assign user:', error)
     } finally {
       setAssigning(false)
+    }
+  }
+
+  const handleReply = async () => {
+    // Don't send if empty
+    if (!replyText.trim()) return
+
+    try {
+      setSending(true)
+
+      // Send the reply (we'll create this service function next)
+      await sendMessage(projectId, sender._id, replyText)
+
+      // Clear input and refresh
+      setReplyText('')
+      onAssignSuccess?.() // Refresh messages
+    } catch (error) {
+      console.error('Failed to send reply:', error)
+    } finally {
+      setSending(false)
     }
   }
 
@@ -67,6 +91,36 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
           </motion.div>
         ))}
       </div>
+
+      {/* Reply Input (only for project creator) */}
+      {isProjectCreator && (
+        <div className='mt-4 pl-16'>
+          <div className='flex gap-2'>
+            <input
+              type='text'
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder='Type your reply...'
+              className='flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 border-gray-300 theme-bg theme-text focus:outline-none focus:border-accent'
+              onKeyPress={(e) => {
+                // Send on Enter key
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleReply()
+                }
+              }}
+            />
+            <motion.button
+              onClick={handleReply}
+              disabled={!replyText.trim() || sending}
+              className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}>
+              {sending ? 'Sending...' : 'Reply'}
+            </motion.button>
+          </div>
+        </div>
+      )}
     </motion.div>
   )
 }
