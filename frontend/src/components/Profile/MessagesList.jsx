@@ -91,18 +91,9 @@ const MessagesList = ({ messages, loading }) => {
 
   const groupedMessages = groupMessagesByProject()
 
-  // Filter out projects owned by current user (they should use ProjectDetail Messages tab)
-  const filteredMessages = groupedMessages.filter((group) => {
-    // Safety check: ensure project and user exist
-    if (!group.project || !group.project.user) return true
-
-    const projectOwnerId = group.project.user._id || group.project.user
-    return projectOwnerId !== currentUser._id
-  })
-
   return (
     <div className='space-y-6'>
-      {filteredMessages.map((group, groupIndex) => {
+      {groupedMessages.map((group, groupIndex) => {
         const { project, messages: projectMessages } = group
 
         // Find the OTHER person in the conversation (not current user)
