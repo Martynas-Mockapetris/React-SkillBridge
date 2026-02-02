@@ -13,7 +13,7 @@ import { formatStatus } from '../utils/formatters'
 const ProjectDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { currentUser } = useAuth()
+  const { currentUser, loading: authLoading } = useAuth()
 
   const [project, setProject] = useState(null)
   const [activeTab, setActiveTab] = useState('details')
@@ -26,18 +26,39 @@ const ProjectDetail = () => {
 
   // Fetch project data from API
   useEffect(() => {
+    if (authLoading) return
+
     const fetchProject = async () => {
       try {
         setLoading(true)
         setError(null)
+        let data
 
-        // If current user is owner, use owner-only endpoint
-        const data = currentUser ? await getProjectByIdOwner(id) : await getProjectById(id)
+        if (currentUser) {
+          try {
+            data = await getProjectByIdOwner(id)
+            setProject(data)
+            return
+          } catch (ownerErr) {
+            if (ownerErr.response?.status === 401 || ownerErr.response?.status === 403) {
+              // Not owner -> fall back to public
+            } else {
+              throw ownerErr
+            }
+          }
+        }
 
+        data = await getProjectById(id)
         setProject(data)
       } catch (err) {
         console.error('Error fetching project:', err)
-        setError('Failed to load project. Please try again.')
+        if (err.response?.status === 404) {
+          setError('Project not found or not yet published.')
+        } else if (err.response?.status === 401) {
+          setError('Authentication required. Please log in.')
+        } else {
+          setError('Failed to load project. Please try again.')
+        }
       } finally {
         setLoading(false)
       }
@@ -46,7 +67,7 @@ const ProjectDetail = () => {
     if (id) {
       fetchProject()
     }
-  }, [id])
+  }, [id, currentUser, authLoading])
 
   // Fetch messages when project loads and user is owner
   useEffect(() => {

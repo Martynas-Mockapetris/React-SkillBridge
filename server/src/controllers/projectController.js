@@ -109,7 +109,8 @@ const getProjectByIdOwner = async (req, res) => {
     }
 
     // ✅ Only owner can access draft/private version
-    if (project.user.toString() !== req.user._id.toString()) {
+    const projectUserId = project.user._id ? project.user._id.toString() : project.user.toString()
+    if (projectUserId !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized' })
     }
 
@@ -349,4 +350,17 @@ const removeFromInterested = async (req, res) => {
   }
 }
 
-export { createProject, getUserProjects, getProjectById, getProjectByIdOwner, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee, getInterestedProjects, removeFromInterested }
+export {
+  createProject,
+  getUserProjects,
+  getProjectById,
+  getProjectByIdOwner,
+  updateProject,
+  deleteProject,
+  getAllProjects,
+  assignUserToProject,
+  reassignProject,
+  removeAssignee,
+  getInterestedProjects,
+  removeFromInterested
+}
