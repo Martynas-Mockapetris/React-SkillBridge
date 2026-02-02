@@ -1,6 +1,6 @@
 import { useState } from 'react' // Add useState for reply functionality
 import { motion } from 'framer-motion'
-import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane } from 'react-icons/fa'
+import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaChevronUp } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { sendMessage } from '../../services/messageService' // Import message service
 
@@ -10,6 +10,17 @@ const MessagesList = ({ messages, loading }) => {
   // State for managing replies per project
   const [replyTexts, setReplyTexts] = useState({}) // { projectId: 'reply text' }
   const [sendingStates, setSendingStates] = useState({}) // { projectId: true/false }
+
+  // State for managing expanded/collapsed conversations
+  const [expandedConversations, setExpandedConversations] = useState({}) // { projectId: true/false }
+
+  // Toggle conversation expansion
+  const toggleConversation = (projectId) => {
+    setExpandedConversations((prev) => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }))
+  }
 
   // Get current user from localStorage
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
@@ -116,68 +127,97 @@ const MessagesList = ({ messages, loading }) => {
             transition={{ duration: 0.3, delay: groupIndex * 0.05 }}
             className='theme-card p-6 rounded-lg hover:shadow-lg transition-all'>
             {/* Project Header */}
-            <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10'>
+            {/* Project Header - Clickable Accordion */}
+            <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(project._id)}>
               <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-3 flex-1'>
+                  {/* Expand/Collapse Icon */}
+                  <motion.div animate={{ rotate: expandedConversations[project._id] ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                    <FaChevronDown className='theme-text-secondary' />
+                  </motion.div>
+
+                  {/* Project Info */}
                   <FaBriefcase className='text-accent' />
-                  <div>
+                  <div className='flex-1'>
                     <p className='font-semibold theme-text'>{project.title}</p>
                     {project.category && <p className='text-sm theme-text-secondary'>{project.category}</p>}
                   </div>
+
+                  {/* Message Count Badge */}
+                  <div className='px-3 py-1 bg-accent/10 rounded-full'>
+                    <span className='text-sm font-semibold text-accent'>
+                      {projectMessages.length} {projectMessages.length === 1 ? 'message' : 'messages'}
+                    </span>
+                  </div>
                 </div>
+
+                {/* View Project Button - Stop propagation to prevent accordion toggle */}
                 <motion.button
-                  onClick={() => navigate(`/project/${project._id}`)}
+                  onClick={(e) => {
+                    e.stopPropagation() // Prevent accordion toggle when clicking button
+                    navigate(`/project/${project._id}`)
+                  }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className='flex items-center gap-2 px-3 py-2 bg-accent/10 text-accent rounded-lg 
-                  hover:bg-accent hover:text-white transition-all text-sm'>
+                  hover:bg-accent hover:text-white transition-all text-sm ml-3'>
                   View Project
                   <FaArrowRight />
                 </motion.button>
               </div>
+
+              {/* Last Message Preview (when collapsed) */}
+              {!expandedConversations[project._id] && projectMessages.length > 0 && (
+                <div className='mt-3 ml-8 text-sm theme-text-secondary line-clamp-1'>
+                  {projectMessages[projectMessages.length - 1].sender._id === currentUser._id ? 'You: ' : ''}
+                  {projectMessages[projectMessages.length - 1].content}
+                </div>
+              )}
             </div>
 
-            {/* Conversation Thread */}
-            <div className='space-y-3 mb-4'>
-              {projectMessages.map((message, msgIndex) => {
-                // Check if this message is from the current user
-                const isOwnMessage = message.sender._id === currentUser._id || message.sender === currentUser._id
+            {/* Conversation Thread - Only show when expanded */}
+            {expandedConversations[project._id] && (
+              <div className='space-y-3 mb-4'>
+                {projectMessages.map((message, msgIndex) => {
+                  // Check if this message is from the current user
+                  const isOwnMessage = message.sender._id === currentUser._id || message.sender === currentUser._id
 
-                return (
-                  <motion.div
-                    key={message._id}
-                    initial={{ opacity: 0, x: isOwnMessage ? 10 : -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
-                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
-                      {/* Sender name for received messages */}
-                      {!isOwnMessage && (
-                        <div className='flex items-center gap-2 mb-2'>
-                          <img src={message.sender?.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={message.sender?.firstName} className='w-6 h-6 rounded-full object-cover' />
-                          <p className='text-sm font-semibold theme-text'>
-                            {message.sender?.firstName} {message.sender?.lastName}
-                          </p>
+                  return (
+                    <motion.div
+                      key={message._id}
+                      initial={{ opacity: 0, x: isOwnMessage ? 10 : -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
+                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
+                        {/* Sender name for received messages */}
+                        {!isOwnMessage && (
+                          <div className='flex items-center gap-2 mb-2'>
+                            <img src={message.sender?.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={message.sender?.firstName} className='w-6 h-6 rounded-full object-cover' />
+                            <p className='text-sm font-semibold theme-text'>
+                              {message.sender?.firstName} {message.sender?.lastName}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Message content */}
+                        <p className={`theme-text leading-relaxed mb-2 ${isOwnMessage ? 'text-right' : ''}`}>{message.content}</p>
+
+                        {/* Timestamp */}
+                        <div className={`flex items-center gap-1 text-xs theme-text-secondary ${isOwnMessage ? 'justify-end' : ''}`}>
+                          <FaClock />
+                          <span>{formatDate(message.createdAt)}</span>
+                          {message.isRead && <FaEnvelopeOpen className='text-green-500 ml-1' title='Read' />}
                         </div>
-                      )}
-
-                      {/* Message content */}
-                      <p className={`theme-text leading-relaxed mb-2 ${isOwnMessage ? 'text-right' : ''}`}>{message.content}</p>
-
-                      {/* Timestamp */}
-                      <div className={`flex items-center gap-1 text-xs theme-text-secondary ${isOwnMessage ? 'justify-end' : ''}`}>
-                        <FaClock />
-                        <span>{formatDate(message.createdAt)}</span>
-                        {message.isRead && <FaEnvelopeOpen className='text-green-500 ml-1' title='Read' />}
                       </div>
-                    </div>
-                  </motion.div>
-                )
-              })}
-            </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
 
             {/* Reply Input - Only show if there's another person in the conversation */}
-            {otherPersonMessage && (
+            {expandedConversations[project._id] && otherPersonMessage && (
               <div className='flex gap-2 pt-4 border-t dark:border-light/10 border-primary/10'>
                 <input
                   type='text'
