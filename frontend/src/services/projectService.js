@@ -157,3 +157,14 @@ export const removeAssignee = async (projectId) => {
     throw error
   }
 }
+
+// Publish a draft project
+export const publishProject = async (projectId) => {
+  try {
+    const response = await authAxios.put(`/api/projects/${projectId}/publish`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to publish project:', error.response?.data || error.message)
+    throw error
+  }
+}

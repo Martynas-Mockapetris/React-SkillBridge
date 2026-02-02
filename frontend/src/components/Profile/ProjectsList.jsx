@@ -5,7 +5,7 @@ import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, Fa
 import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
-import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee } from '../../services/projectService'
+import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject } from '../../services/projectService'
 import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
@@ -319,6 +319,24 @@ const ProjectsList = () => {
                     </motion.button>
                   )}
                 </div>
+              )}
+
+              {/* Publish button for draft projects */}
+              {project.status === 'draft' && (
+                <motion.button
+                  onClick={async () => {
+                    try {
+                      await publishProject(project._id)
+                      await fetchProjects()
+                    } catch (err) {
+                      console.error('Error publishing project:', err)
+                    }
+                  }}
+                  className='w-full mt-2 py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded transition-all'
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}>
+                  Publish Project
+                </motion.button>
               )}
 
               {/* Interested Users Badge */}
