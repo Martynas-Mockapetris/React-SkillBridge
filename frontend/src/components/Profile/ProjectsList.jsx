@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
+import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive, FaEdit } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
@@ -13,14 +13,23 @@ const ProjectsList = () => {
   const { currentUser } = useAuth() // Get the current user
   const [projectType, setProjectType] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState('create')
   const [projects, setProjects] = useState([]) // State for projects
   const [loading, setLoading] = useState(true) // Loading state
   const [error, setError] = useState(null) // Error state
   const [selectedProject, setSelectedProject] = useState(null)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
 
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = () => {
+    setModalMode('create')
+    setSelectedProject(null)
+    setIsModalOpen(true)
+  }
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setModalMode('create')
+    setSelectedProject(null)
+  }
 
   // Fetch projects when component mounts
   useEffect(() => {
@@ -130,7 +139,7 @@ const ProjectsList = () => {
       </motion.div>
 
       {/* Project Modal - Pass fetchProjects function to refresh after creation */}
-      <ProjectModal isOpen={isModalOpen} onClose={closeModal} onProjectCreated={fetchProjects} />
+      <ProjectModal isOpen={isModalOpen} onClose={closeModal} onProjectCreated={fetchProjects} mode={modalMode} initialData={selectedProject} onProjectUpdated={fetchProjects} />
 
       {/* Project Type Filter */}
       <motion.div className='flex gap-4 flex-wrap' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
@@ -321,22 +330,37 @@ const ProjectsList = () => {
                 </div>
               )}
 
-              {/* Publish button for draft projects */}
-              {project.status === 'draft' && (
-                <motion.button
-                  onClick={async () => {
-                    try {
-                      await publishProject(project._id)
-                      await fetchProjects()
-                    } catch (err) {
-                      console.error('Error publishing project:', err)
-                    }
-                  }}
-                  className='w-full mt-2 py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded transition-all'
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}>
-                  Publish Project
-                </motion.button>
+              {/* Edit and Publish buttons for creator projects */}
+              {isCreator(project) && (
+                <div className='mt-2 space-y-2'>
+                  <motion.button
+                    onClick={() => {
+                      setSelectedProject(project)
+                      setModalMode('edit')
+                      setIsModalOpen(true)
+                    }}
+                    className='w-full py-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded transition-all'
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}>
+                    Edit Project
+                  </motion.button>
+                  {project.status === 'draft' && (
+                    <motion.button
+                      onClick={async () => {
+                        try {
+                          await publishProject(project._id)
+                          await fetchProjects()
+                        } catch (err) {
+                          console.error('Error publishing project:', err)
+                        }
+                      }}
+                      className='w-full py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded transition-all'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Publish Project
+                    </motion.button>
+                  )}
+                </div>
               )}
 
               {/* Interested Users Badge */}

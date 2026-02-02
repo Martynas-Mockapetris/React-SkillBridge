@@ -129,7 +129,7 @@ const getProjectByIdOwner = async (req, res) => {
 // @access  Private
 const updateProject = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, deadline, status } = req.body
+    const { title, description, category, skills, budget, deadline } = req.body
 
     let project = await Project.findById(req.params.id)
 
@@ -140,6 +140,37 @@ const updateProject = async (req, res) => {
     // Check if the project belongs to the user
     if (project.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized' })
+    }
+
+    const isDraft = project.status === 'draft'
+
+    // If not draft, only allow extending deadline
+    if (!isDraft) {
+      const hasOtherUpdates = title || description || category || skills || budget || (req.files && req.files.length > 0)
+
+      if (hasOtherUpdates) {
+        return res.status(400).json({ message: 'Only deadline extension is allowed after publish' })
+      }
+
+      if (deadline) {
+        const newDeadline = new Date(deadline)
+        const currentDeadline = new Date(project.deadline)
+
+        if (isNaN(newDeadline)) {
+          return res.status(400).json({ message: 'Invalid deadline' })
+        }
+
+        if (newDeadline <= currentDeadline) {
+          return res.status(400).json({ message: 'Deadline can only be extended' })
+        }
+
+        project.deadline = deadline
+        const updatedProject = await project.save()
+        return res.json(updatedProject)
+      }
+
+      // No valid changes
+      return res.status(400).json({ message: 'No valid updates provided' })
     }
 
     // Process new attachments if any
@@ -158,7 +189,6 @@ const updateProject = async (req, res) => {
     project.skills = Array.isArray(skills) ? skills : skills ? skills.split(',') : project.skills
     project.budget = budget || project.budget
     project.deadline = deadline || project.deadline
-    project.status = status || project.status
     project.attachments = [...project.attachments, ...newAttachments]
 
     const updatedProject = await project.save()

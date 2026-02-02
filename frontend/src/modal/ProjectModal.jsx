@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
 import AuthContext from '../context/AuthContext'
-import { createProject, saveProjectDraft } from '../services/projectService'
+import { createProject, saveProjectDraft, updateProject } from '../services/projectService'
 import { toast } from 'react-toastify' // Import toast for notifications
 
-const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
+const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', initialData = null, onProjectUpdated }) => {
   // Form state
   const initialFormState = {
     title: '',
@@ -19,6 +19,10 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
     status: 'draft',
     attachments: []
   }
+
+  const isEditMode = mode === 'edit'
+  const isDraftEdit = isEditMode && initialData?.status === 'draft'
+  const isDeadlineOnly = isEditMode && initialData?.status !== 'draft'
 
   // Replace the current formData state initialization
   const [formData, setFormData] = useState(initialFormState)
@@ -51,6 +55,14 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
 
   // Add validation for current step
   const validateCurrentStep = () => {
+    if (isDeadlineOnly) {
+      if (currentStep === 3 && !formData.deadline) {
+        toast.error('Please select a deadline')
+        return false
+      }
+      return true
+    }
+
     if (currentStep === 1) {
       // Validate basic information
       if (!formData.title.trim()) {
@@ -87,6 +99,15 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
 
   // Add validation for all steps
   const validateAllSteps = () => {
+    if (isDeadlineOnly) {
+      if (!formData.deadline) {
+        setCurrentStep(3)
+        toast.error('Please select a deadline')
+        return false
+      }
+      return true
+    }
+
     // Check basic information
     if (!formData.title.trim()) {
       setCurrentStep(1)
@@ -204,6 +225,26 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
       console.log('Sending project data:', projectData)
 
       // Create the project
+      if (isEditMode && initialData) {
+        const updatePayload = isDeadlineOnly
+          ? { deadline: formData.deadline }
+          : {
+              title: formData.title,
+              description: formData.description,
+              category: formData.category,
+              skills: formData.skills,
+              budget: parseFloat(formData.budget),
+              deadline: formData.deadline
+            }
+
+        await updateProject(initialData._id, updatePayload)
+
+        onClose()
+        if (onProjectUpdated) onProjectUpdated()
+        toast.success('Project updated successfully!')
+        return
+      }
+
       const createdProject = await createProject(projectData)
       console.log('Project created:', createdProject)
 
@@ -273,10 +314,26 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
   }
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return
+
+    if (isEditMode && initialData) {
+      setFormData({
+        title: initialData.title || '',
+        description: initialData.description || '',
+        category: initialData.category || '',
+        skills: Array.isArray(initialData.skills) ? initialData.skills : [],
+        budget: initialData.budget ? String(initialData.budget) : '',
+        deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
+        type: initialData.type || 'created',
+        status: initialData.status || 'draft',
+        attachments: []
+      })
+      setCurrentStep(isDeadlineOnly ? 3 : 1)
+      setSkillInput('')
+    } else {
       resetForm()
     }
-  }, [isOpen])
+  }, [isOpen, isEditMode, initialData, isDeadlineOnly])
 
   // Handle escape key press to close modal
   useEffect(() => {
@@ -307,7 +364,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
               onClick={(e) => e.stopPropagation()}>
               {/* Modal Header */}
               <div className='flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700'>
-                <h2 className='text-2xl font-bold theme-text'>Create New Project</h2>
+                <h2 className='text-2xl font-bold theme-text'>{isEditMode ? 'Edit Project' : 'Create New Project'}</h2>
                 <button onClick={onClose} className='text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors'>
                   <FaTimes size={24} />
                 </button>
@@ -359,6 +416,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                             required
                             className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
                             placeholder='E.g., E-commerce Website Development'
+                            disabled={isDeadlineOnly}
                           />
                         </div>
 
@@ -376,6 +434,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                             rows={4}
                             className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
                             placeholder='Describe your project in detail...'
+                            disabled={isDeadlineOnly}
                           />
                         </div>
 
@@ -390,7 +449,8 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                             value={formData.category}
                             onChange={handleChange}
                             required
-                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                            disabled={isDeadlineOnly}>
                             <option value='' disabled>
                               Select a category
                             </option>
@@ -419,6 +479,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                               onKeyPress={handleSkillKeyPress}
                               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
                               placeholder='E.g., React, Node.js, UI Design'
+                              disabled={isDeadlineOnly}
                             />
                           </div>
                           <motion.button type='button' onClick={handleAddSkill} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -432,9 +493,11 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                             <div key={index} className='flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full'>
                               <FaTag className='text-xs' />
                               <span>{skill}</span>
-                              <button type='button' onClick={() => handleRemoveSkill(skill)} className='text-accent hover:text-accent/80'>
-                                <FaTimes size={12} />
-                              </button>
+                              {!isDeadlineOnly && (
+                                <button type='button' onClick={() => handleRemoveSkill(skill)} className='text-accent hover:text-accent/80'>
+                                  <FaTimes size={12} />
+                                </button>
+                              )}
                             </div>
                           ))}
                           {formData.skills.length === 0 && <p className='text-sm theme-text-secondary italic'>No skills added yet</p>}
@@ -467,6 +530,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                                 min='0'
                                 className='w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
                                 placeholder='1000'
+                                disabled={isDeadlineOnly}
                               />
                             </div>
                           </div>
@@ -501,14 +565,16 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                         <h3 className='text-lg font-medium theme-text mb-4'>Attachments</h3>
 
                         {/* File Upload */}
-                        <div className='border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center'>
-                          <input type='file' id='attachments' multiple onChange={handleFileChange} className='hidden' />
-                          <label htmlFor='attachments' className='cursor-pointer flex flex-col items-center justify-center py-4'>
-                            <FaUpload className='text-gray-400 text-3xl mb-2' />
-                            <p className='theme-text font-medium'>Click to upload files</p>
-                            <p className='text-sm theme-text-secondary mt-1'>or drag and drop files here</p>
-                          </label>
-                        </div>
+                        {!isDeadlineOnly && (
+                          <div className='border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center'>
+                            <input type='file' id='attachments' multiple onChange={handleFileChange} className='hidden' />
+                            <label htmlFor='attachments' className='cursor-pointer flex flex-col items-center justify-center py-4'>
+                              <FaUpload className='text-gray-400 text-3xl mb-2' />
+                              <p className='theme-text font-medium'>Click to upload files</p>
+                              <p className='text-sm theme-text-secondary mt-1'>or drag and drop files here</p>
+                            </label>
+                          </div>
+                        )}
 
                         {/* Attachments List */}
                         {formData.attachments.length > 0 && (
@@ -563,16 +629,18 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
                         </motion.button>
                       ) : (
                         <>
-                          <motion.button
-                            type='button'
-                            onClick={handleSaveDraft}
-                            className='px-4 py-2 border border-accent bg-accent/10 text-accent rounded-lg hover:bg-accent/20'
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}>
-                            Save as Draft
-                          </motion.button>
+                          {!isEditMode && (
+                            <motion.button
+                              type='button'
+                              onClick={handleSaveDraft}
+                              className='px-4 py-2 border border-accent bg-accent/10 text-accent rounded-lg hover:bg-accent/20'
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}>
+                              Save as Draft
+                            </motion.button>
+                          )}
                           <motion.button type='submit' className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} disabled={submitting}>
-                            {submitting ? 'Posting...' : 'Post Project'}
+                            {submitting ? 'Saving...' : isEditMode ? 'Save Changes' : 'Post Project'}
                           </motion.button>
                         </>
                       )}
