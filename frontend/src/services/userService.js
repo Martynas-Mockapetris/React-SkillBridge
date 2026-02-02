@@ -19,7 +19,6 @@ const setAuthHeader = () => {
 }
 
 // Creates a pre-configured axios instance with auth headers
-
 const createAuthAxios = () => {
   const instance = axios.create()
 
@@ -46,6 +45,18 @@ export const getUserProfile = async () => {
     return response.data
   } catch (error) {
     console.error('Failed to fetch user profile:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Fetches user dashboard statistics with 30-day trends
+export const getUserStats = async () => {
+  try {
+    // Call backend endpoint that calculates all stats
+    const response = await authAxios.get('/api/users/stats')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch user stats:', error.response?.data || error.message)
     throw error
   }
 }
