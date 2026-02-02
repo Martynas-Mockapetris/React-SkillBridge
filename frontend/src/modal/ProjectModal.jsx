@@ -197,7 +197,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
         skills: formData.skills,
         budget: parseFloat(formData.budget),
         deadline: formData.deadline,
-        status: 'active',
+        status: 'draft',
         progress: 0 // Add initial progress
       }
 
