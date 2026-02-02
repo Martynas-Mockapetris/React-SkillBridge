@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
-import { getProjectById } from '../services/projectService'
+import { getProjectById, getProjectByIdOwner } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
@@ -30,7 +30,10 @@ const ProjectDetail = () => {
       try {
         setLoading(true)
         setError(null)
-        const data = await getProjectById(id)
+
+        // If current user is owner, use owner-only endpoint
+        const data = currentUser ? await getProjectByIdOwner(id) : await getProjectById(id)
+
         setProject(data)
       } catch (err) {
         console.error('Error fetching project:', err)

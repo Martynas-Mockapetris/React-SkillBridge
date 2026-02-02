@@ -193,19 +193,19 @@ export const getUserStats = async (req, res) => {
 
     const successRate = totalProjects > 0 ? Math.round((completed / totalProjects) * 100) : 0
 
-    // Calculate previous success rate for trend
-    const totalProjectsAt60Days = await Project.countDocuments({
+    // Calculate previous 30-day success rate for trend (pure 30 vs 30)
+    const totalProjectsPrev30ForRate = await Project.countDocuments({
       $or: [{ user: userId }, { assignee: userId }],
-      createdAt: { $lt: thirtyDaysAgo } // Projects that existed 30 days ago
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } // Previous 30 days window
     })
 
-    const completedAt60Days = await Project.countDocuments({
+    const completedPrev30ForRate = await Project.countDocuments({
       $or: [{ user: userId }, { assignee: userId }],
       status: 'completed',
-      updatedAt: { $lt: thirtyDaysAgo } // Completed before 30 days ago
+      updatedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } // Completed in previous 30 days
     })
 
-    const previousSuccessRate = totalProjectsAt60Days > 0 ? Math.round((completedAt60Days / totalProjectsAt60Days) * 100) : 0
+    const previousSuccessRate = totalProjectsPrev30ForRate > 0 ? Math.round((completedPrev30ForRate / totalProjectsPrev30ForRate) * 100) : 0
 
     // Trend: percentage point change
     const successRateTrend = successRate - previousSuccessRate

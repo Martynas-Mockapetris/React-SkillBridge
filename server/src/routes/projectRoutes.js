@@ -1,5 +1,5 @@
 import express from 'express'
-import { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee, getInterestedProjects, removeFromInterested } from '../controllers/projectController.js'
+import { createProject, getUserProjects, getProjectById, getProjectByIdOwner, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee, getInterestedProjects, removeFromInterested } from '../controllers/projectController.js'
 import { protect } from '../middleware/authMiddleware.js'
 import upload from '../middleware/uploadMiddleware.js'
 
@@ -17,6 +17,7 @@ router.get('/', protect, getUserProjects)
 router.get('/all', getAllProjects)
 router.get('/interested', protect, getInterestedProjects)
 router.get('/:id', getProjectById) // Public - no protect middleware
+router.get('/:id/owner', protect, getProjectByIdOwner) 
 router.put('/:id', protect, upload.array('attachments', 5), updateProject)
 router.delete('/:id', protect, deleteProject)
 

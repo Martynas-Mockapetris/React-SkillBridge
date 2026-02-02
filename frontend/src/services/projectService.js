@@ -81,6 +81,17 @@ export const getProjectById = async (projectId) => {
   }
 }
 
+// Get project by ID for owner (includes drafts)
+export const getProjectByIdOwner = async (projectId) => {
+  try {
+    const response = await authAxios.get(`/api/projects/${projectId}/owner`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch owner project:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Update an existing project
 export const updateProject = async (projectId, projectData) => {
   try {

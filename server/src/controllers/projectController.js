@@ -75,12 +75,13 @@ const getUserProjects = async (req, res) => {
   }
 }
 
-// @desc    Get project by ID
+// @desc    Get project by ID (PUBLIC - only active)
 // @route   GET /api/projects/:id
-// @access  Private
+// @access  Public
 const getProjectById = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+    // ✅ Only return active projects publicly
+    const project = await Project.findOne({ _id: req.params.id, status: 'active' }).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
@@ -89,6 +90,32 @@ const getProjectById = async (req, res) => {
     res.json(project)
   } catch (error) {
     console.error('Error fetching project:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Get project by ID (OWNER ONLY - includes drafts)
+// @route   GET /api/projects/:id/owner
+// @access  Private (creator only)
+const getProjectByIdOwner = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // ✅ Only owner can access draft/private version
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized' })
+    }
+
+    res.json(project)
+  } catch (error) {
+    console.error('Error fetching project (owner):', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -322,4 +349,4 @@ const removeFromInterested = async (req, res) => {
   }
 }
 
-export { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee, getInterestedProjects, removeFromInterested }
+export { createProject, getUserProjects, getProjectById, getProjectByIdOwner, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee, getInterestedProjects, removeFromInterested }
