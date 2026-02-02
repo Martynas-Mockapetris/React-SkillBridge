@@ -89,7 +89,7 @@ const getUserMessages = async (req, res) => {
       .populate('sender', 'firstName lastName email profilePicture')
       .populate('receiver', 'firstName lastName email profilePicture')
       .populate('project', 'title category user') // Add 'user' to get project owner
-      .sort({ createdAt: -1 }) // Newest first
+      .sort({ createdAt: 1 }) // Oldest first
 
     res.json(messages)
   } catch (error) {

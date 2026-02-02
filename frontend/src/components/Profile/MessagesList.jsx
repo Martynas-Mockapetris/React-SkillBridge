@@ -165,13 +165,30 @@ const MessagesList = ({ messages, loading }) => {
                 </motion.button>
               </div>
 
-              {/* Last Message Preview (when collapsed) */}
-              {!expandedConversations[project._id] && projectMessages.length > 0 && (
-                <div className='mt-3 ml-8 text-sm theme-text-secondary line-clamp-1'>
-                  {projectMessages[projectMessages.length - 1].sender._id === currentUser._id ? 'You: ' : ''}
-                  {projectMessages[projectMessages.length - 1].content}
-                </div>
-              )}
+              {/* Last Message Preview (when collapsed) - Show most recent message */}
+              {!expandedConversations[project._id] &&
+                projectMessages.length > 0 &&
+                (() => {
+                  // Get the most recent message (first in sorted array)
+                  const lastMessage = projectMessages[projectMessages.length - 1] // Newest at end
+                  const isOwnMessage = lastMessage.sender._id === currentUser._id || lastMessage.sender === currentUser._id
+
+                  // Format sender name: "You" for own messages, first name for others
+                  const senderName = isOwnMessage ? 'You' : lastMessage.sender?.firstName || 'Unknown'
+
+                  return (
+                    <div className='mt-3 ml-8'>
+                      <div className='flex items-center gap-2 text-sm'>
+                        {/* Sender name with styling */}
+                        <span className='font-semibold theme-text'>{senderName}:</span>
+                        {/* Message preview - truncated */}
+                        <span className='theme-text-secondary line-clamp-1 flex-1'>{lastMessage.content}</span>
+                        {/* Timestamp */}
+                        <span className='text-xs theme-text-secondary whitespace-nowrap'>{formatDate(lastMessage.createdAt)}</span>
+                      </div>
+                    </div>
+                  )
+                })()}
             </div>
 
             {/* Conversation Thread - Only show when expanded */}
