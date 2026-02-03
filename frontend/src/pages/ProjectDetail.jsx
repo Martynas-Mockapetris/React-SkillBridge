@@ -5,6 +5,7 @@ import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/
 import { getProjectById, getProjectByIdOwner } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
+import ProjectModal from '../modal/ProjectModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { getProjectMessages } from '../services/messageService'
@@ -23,50 +24,49 @@ const ProjectDetail = () => {
   const [messagesLoading, setMessagesLoading] = useState(false)
 
   const [isContactModalOpen, setIsContactModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
-  // Fetch project data from API
-  useEffect(() => {
-    if (authLoading) return
+  // Load project data
+  const loadProject = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      let data
 
-    const fetchProject = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        let data
-
-        if (currentUser) {
-          try {
-            data = await getProjectByIdOwner(id)
-            setProject(data)
-            return
-          } catch (ownerErr) {
-            if (ownerErr.response?.status === 401 || ownerErr.response?.status === 403) {
-              // Not owner -> fall back to public
-            } else {
-              throw ownerErr
-            }
+      if (currentUser) {
+        try {
+          data = await getProjectByIdOwner(id)
+          setProject(data)
+          return
+        } catch (ownerErr) {
+          if (ownerErr.response?.status === 401 || ownerErr.response?.status === 403) {
+            // Not owner -> fall back to public
+          } else {
+            throw ownerErr
           }
         }
-
-        data = await getProjectById(id)
-        setProject(data)
-      } catch (err) {
-        console.error('Error fetching project:', err)
-        if (err.response?.status === 404) {
-          setError('Project not found or not yet published.')
-        } else if (err.response?.status === 401) {
-          setError('Authentication required. Please log in.')
-        } else {
-          setError('Failed to load project. Please try again.')
-        }
-      } finally {
-        setLoading(false)
       }
-    }
 
-    if (id) {
-      fetchProject()
+      data = await getProjectById(id)
+      setProject(data)
+    } catch (err) {
+      console.error('Error fetching project:', err)
+      if (err.response?.status === 404) {
+        setError('Project not found or not yet published.')
+      } else if (err.response?.status === 401) {
+        setError('Authentication required. Please log in.')
+      } else {
+        setError('Failed to load project. Please try again.')
+      }
+    } finally {
+      setLoading(false)
     }
+  }
+
+  // Fetch project on mount or when id/currentUser changes
+  useEffect(() => {
+    if (authLoading) return
+    if (id) loadProject()
   }, [id, currentUser, authLoading])
 
   // Fetch messages when project loads and user is owner
@@ -299,6 +299,11 @@ const ProjectDetail = () => {
 
               {/* Action Buttons - Placeholder for future commits */}
               <div className='theme-card p-6 rounded-lg space-y-3'>
+                {currentUser && currentUser._id === project.user?._id && (
+                  <button onClick={() => setIsEditModalOpen(true)} className='w-full py-3 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all'>
+                    Edit Project
+                  </button>
+                )}
                 {currentUser && currentUser._id !== project.user?._id ? (
                   <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
                     Contact Creator
@@ -341,6 +346,9 @@ const ProjectDetail = () => {
           </motion.div>
         )}
       </div>
+      {/* Edit Project Modal */}
+      {project && <ProjectModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} mode='edit' initialData={project} onProjectUpdated={loadProject} />}
+
       {/* Contact Modal */}
       {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
     </section>
