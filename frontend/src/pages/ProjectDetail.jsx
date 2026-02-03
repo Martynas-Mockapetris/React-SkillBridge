@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
-import { getProjectById, getProjectByIdOwner } from '../services/projectService'
+import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
@@ -31,23 +31,7 @@ const ProjectDetail = () => {
     try {
       setLoading(true)
       setError(null)
-      let data
-
-      if (currentUser) {
-        try {
-          data = await getProjectByIdOwner(id)
-          setProject(data)
-          return
-        } catch (ownerErr) {
-          if (ownerErr.response?.status === 401 || ownerErr.response?.status === 403) {
-            // Not owner -> fall back to public
-          } else {
-            throw ownerErr
-          }
-        }
-      }
-
-      data = await getProjectById(id)
+      const data = await getProjectById(id)
       setProject(data)
     } catch (err) {
       console.error('Error fetching project:', err)

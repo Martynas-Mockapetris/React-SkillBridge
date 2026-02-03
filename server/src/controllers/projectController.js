@@ -80,14 +80,27 @@ const getUserProjects = async (req, res) => {
 // @access  Public
 const getProjectById = async (req, res) => {
   try {
-    // ✅ Only return active projects publicly
-    const project = await Project.findOne({ _id: req.params.id, status: 'active' }).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    res.json(project)
+    // Public can see only active
+    if (project.status === 'active') {
+      return res.json(project)
+    }
+
+    // If not active, only owner or assignee can see
+    const currentUserId = req.user?._id?.toString()
+    const ownerId = project.user?._id ? project.user._id.toString() : project.user.toString()
+    const assigneeId = project.assignee?._id ? project.assignee._id.toString() : project.assignee?.toString()
+
+    if (currentUserId && (currentUserId === ownerId || currentUserId === assigneeId)) {
+      return res.json(project)
+    }
+
+    return res.status(404).json({ message: 'Project not found' })
   } catch (error) {
     console.error('Error fetching project:', error)
     if (error.kind === 'ObjectId') {
