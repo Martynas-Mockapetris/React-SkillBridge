@@ -32,7 +32,7 @@ const mergeWithAuthData = (profileData) => {
  */
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   // Initialize user data from localStorage on app load

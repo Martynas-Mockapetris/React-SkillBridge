@@ -99,6 +99,13 @@ const UserSchema = new mongoose.Schema({
     trim: true
   },
 
+  // Favorite projects
+  favorites: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Project',
+    default: []
+  },
+
   // Profile picture
   profilePicture: {
     type: String,

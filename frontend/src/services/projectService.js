@@ -73,10 +73,21 @@ export const getAllProjects = async () => {
 // Get a specific project by ID
 export const getProjectById = async (projectId) => {
   try {
-    const response = await axios.get(`/api/projects/${projectId}`)
+    const response = await authAxios.get(`/api/projects/${projectId}`)
     return response.data
   } catch (error) {
     console.error('Failed to fetch project:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Get project by ID for owner (includes drafts)
+export const getProjectByIdOwner = async (projectId) => {
+  try {
+    const response = await authAxios.get(`/api/projects/${projectId}/owner`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch owner project:', error.response?.data || error.message)
     throw error
   }
 }
@@ -121,6 +132,39 @@ export const removeFromInterested = async (projectId) => {
     return response.data
   } catch (error) {
     console.error('Failed to remove from interested:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Assign a user to a project
+export const assignUserToProject = async (projectId, userId) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/assign`, { userId })
+    return response.data
+  } catch (error) {
+    console.error('Failed to assign user to project:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Remove assignee from project
+export const removeAssignee = async (projectId) => {
+  try {
+    const response = await authAxios.delete(`/api/projects/${projectId}/assignee`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove assignee:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Publish a draft project
+export const publishProject = async (projectId) => {
+  try {
+    const response = await authAxios.put(`/api/projects/${projectId}/publish`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to publish project:', error.response?.data || error.message)
     throw error
   }
 }

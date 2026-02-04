@@ -64,7 +64,10 @@ const getAllProjects = async (req, res) => {
 // @access  Private
 const getUserProjects = async (req, res) => {
   try {
-    const projects = await Project.find({ user: req.user._id }).populate('interestedUsers.userId', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
+    const projects = await Project.find({ user: req.user._id })
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+      .sort({ createdAt: -1 })
     res.json(projects)
   } catch (error) {
     console.error('Error fetching user projects:', error)
@@ -72,20 +75,61 @@ const getUserProjects = async (req, res) => {
   }
 }
 
-// @desc    Get project by ID
+// @desc    Get project by ID (PUBLIC - only active)
 // @route   GET /api/projects/:id
-// @access  Private
+// @access  Public
 const getProjectById = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture')
+    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    res.json(project)
+    // Public can see only active
+    if (project.status === 'active') {
+      return res.json(project)
+    }
+
+    // If not active, only owner or assignee can see
+    const currentUserId = req.user?._id?.toString()
+    const ownerId = project.user?._id ? project.user._id.toString() : project.user.toString()
+    const assigneeId = project.assignee?._id ? project.assignee._id.toString() : project.assignee?.toString()
+
+    if (currentUserId && (currentUserId === ownerId || currentUserId === assigneeId)) {
+      return res.json(project)
+    }
+
+    return res.status(404).json({ message: 'Project not found' })
   } catch (error) {
     console.error('Error fetching project:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Get project by ID (OWNER ONLY - includes drafts)
+// @route   GET /api/projects/:id/owner
+// @access  Private (creator only)
+const getProjectByIdOwner = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // ✅ Only owner can access draft/private version
+    const projectUserId = project.user._id ? project.user._id.toString() : project.user.toString()
+    if (projectUserId !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized' })
+    }
+
+    res.json(project)
+  } catch (error) {
+    console.error('Error fetching project (owner):', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -98,7 +142,7 @@ const getProjectById = async (req, res) => {
 // @access  Private
 const updateProject = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, deadline, status } = req.body
+    const { title, description, category, skills, budget, deadline } = req.body
 
     let project = await Project.findById(req.params.id)
 
@@ -109,6 +153,37 @@ const updateProject = async (req, res) => {
     // Check if the project belongs to the user
     if (project.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized' })
+    }
+
+    const isDraft = project.status === 'draft'
+
+    // If not draft, only allow extending deadline
+    if (!isDraft) {
+      const hasOtherUpdates = title || description || category || skills || budget || (req.files && req.files.length > 0)
+
+      if (hasOtherUpdates) {
+        return res.status(400).json({ message: 'Only deadline extension is allowed after publish' })
+      }
+
+      if (deadline) {
+        const newDeadline = new Date(deadline)
+        const currentDeadline = new Date(project.deadline)
+
+        if (isNaN(newDeadline)) {
+          return res.status(400).json({ message: 'Invalid deadline' })
+        }
+
+        if (newDeadline <= currentDeadline) {
+          return res.status(400).json({ message: 'Deadline can only be extended' })
+        }
+
+        project.deadline = deadline
+        const updatedProject = await project.save()
+        return res.json(updatedProject)
+      }
+
+      // No valid changes
+      return res.status(400).json({ message: 'No valid updates provided' })
     }
 
     // Process new attachments if any
@@ -127,7 +202,6 @@ const updateProject = async (req, res) => {
     project.skills = Array.isArray(skills) ? skills : skills ? skills.split(',') : project.skills
     project.budget = budget || project.budget
     project.deadline = deadline || project.deadline
-    project.status = status || project.status
     project.attachments = [...project.attachments, ...newAttachments]
 
     const updatedProject = await project.save()
@@ -185,6 +259,11 @@ const assignUserToProject = async (req, res) => {
 
     if (project.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized to assign this project' })
+    }
+
+    // Prevent owner from assigning project to themselves
+    if (project.user.toString() === userId) {
+      return res.status(400).json({ message: 'Cannot assign project to yourself' })
     }
 
     // Verify assignee is in interestedUsers
@@ -281,8 +360,8 @@ const getInterestedProjects = async (req, res) => {
     })
       .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
       .sort({ createdAt: -1 })
-
     res.json(projects)
   } catch (error) {
     console.error('Error fetching interested projects:', error)
@@ -314,4 +393,17 @@ const removeFromInterested = async (req, res) => {
   }
 }
 
-export { createProject, getUserProjects, getProjectById, updateProject, deleteProject, getAllProjects, assignUserToProject, reassignProject, removeAssignee, getInterestedProjects, removeFromInterested }
+export {
+  createProject,
+  getUserProjects,
+  getProjectById,
+  getProjectByIdOwner,
+  updateProject,
+  deleteProject,
+  getAllProjects,
+  assignUserToProject,
+  reassignProject,
+  removeAssignee,
+  getInterestedProjects,
+  removeFromInterested
+}

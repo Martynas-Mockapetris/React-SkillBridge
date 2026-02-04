@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaEnvelope } from 'react-icons/fa'
+import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
+import ProjectModal from '../modal/ProjectModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { getProjectMessages } from '../services/messageService'
+import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../services/userService'
+import { formatStatus } from '../utils/formatters'
 
 const ProjectDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { currentUser } = useAuth()
+  const { currentUser, loading: authLoading } = useAuth()
 
   const [project, setProject] = useState(null)
   const [activeTab, setActiveTab] = useState('details')
@@ -22,27 +25,36 @@ const ProjectDetail = () => {
   const [messagesLoading, setMessagesLoading] = useState(false)
 
   const [isContactModalOpen, setIsContactModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
-  // Fetch project data from API
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await getProjectById(id)
-        setProject(data)
-      } catch (err) {
-        console.error('Error fetching project:', err)
+  // Load project data
+  const loadProject = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await getProjectById(id)
+      setProject(data)
+    } catch (err) {
+      console.error('Error fetching project:', err)
+      if (err.response?.status === 404) {
+        setError('Project not found or not yet published.')
+      } else if (err.response?.status === 401) {
+        setError('Authentication required. Please log in.')
+      } else {
         setError('Failed to load project. Please try again.')
-      } finally {
-        setLoading(false)
       }
+    } finally {
+      setLoading(false)
     }
+  }
 
-    if (id) {
-      fetchProject()
-    }
-  }, [id])
+  // Fetch project on mount or when id/currentUser changes
+  useEffect(() => {
+    if (authLoading) return
+    if (id) loadProject()
+  }, [id, currentUser, authLoading])
 
   // Fetch messages when project loads and user is owner
   useEffect(() => {
@@ -61,6 +73,24 @@ const ProjectDetail = () => {
     }
 
     fetchMessages()
+  }, [project, currentUser])
+
+  // Load favorites when project or user changes
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (project && currentUser) {
+        try {
+          const favorites = await getFavoriteProjects()
+          const favoriteIds = favorites.map((fav) => fav._id)
+          setIsFavorited(favoriteIds.includes(project._id))
+        } catch (error) {
+          console.error('Error loading favorites:', error)
+          setIsFavorited(false)
+        }
+      }
+    }
+
+    loadFavorites()
   }, [project, currentUser])
 
   const handleBack = () => {
@@ -138,7 +168,7 @@ const ProjectDetail = () => {
         </motion.button>
 
         {/* Project Header */}
-        <motion.div className='mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div className='mb-4 pb-4 border-b-2 dark:border-light/10 border-primary/10' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h1 className='text-4xl font-bold theme-text mb-2'>{project.title}</h1>
           <p className='theme-text-secondary flex items-center gap-2'>
             <FaTags />
@@ -170,14 +200,14 @@ const ProjectDetail = () => {
             {/* Main Content */}
             <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
               {/* Description Section */}
-              <div className='theme-card p-6 rounded-lg'>
+              <div className='theme-card p-2 rounded-lg'>
                 <h2 className='text-2xl font-semibold theme-text mb-4'>Description</h2>
                 <p className='theme-text-secondary leading-relaxed'>{project.description}</p>
               </div>
 
               {/* Skills Required */}
               {project.skills && project.skills.length > 0 && (
-                <div className='theme-card p-6 rounded-lg'>
+                <div className='theme-card p-2 rounded-lg'>
                   <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
                   <div className='flex flex-wrap gap-2'>
                     {project.skills.map((skill, index) => (
@@ -191,7 +221,39 @@ const ProjectDetail = () => {
             </motion.div>
 
             {/* Sidebar */}
-            <motion.div className='space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+            <motion.div className='space-y-6 p-2' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+              {/* Assigned Person Card */}
+              {project.assignee && (
+                <div className='theme-card p-6 rounded-lg border-2 border-accent/30'>
+                  <h3 className='text-xl font-semibold theme-text mb-4 flex items-center gap-2'>
+                    <span className='w-3 h-3 bg-accent rounded-full'></span>
+                    Assigned To
+                  </h3>
+                  <div className='flex items-center gap-3 mb-4'>
+                    <img src={project.assignee.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.assignee.firstName} className='w-14 h-14 rounded-full object-cover border-2 border-accent/20' />
+                    <div>
+                      <p className='font-semibold theme-text'>
+                        {project.assignee.firstName} {project.assignee.lastName}
+                      </p>
+                      <p className='text-sm theme-text-secondary'>{project.assignee.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Contact button */}
+                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && (
+                    <div className='pt-4 border-t dark:border-light/10 border-primary/10'>
+                      <motion.button
+                        onClick={() => navigate(`/messages`)}
+                        className='w-full py-2 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded transition-all text-sm'
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}>
+                        Contact Assignee
+                      </motion.button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Project Details Card */}
               <div className='theme-card p-6 rounded-lg space-y-4'>
                 <h3 className='text-xl font-semibold theme-text mb-4'>Project Details</h3>
@@ -219,7 +281,7 @@ const ProjectDetail = () => {
                   <FaUser className='text-accent' />
                   <div>
                     <p className='text-sm'>Status</p>
-                    <p className='text-lg font-semibold capitalize theme-text'>{project.status}</p>
+                    <p className='text-lg font-semibold theme-text'>{formatStatus(project.status)}</p>
                   </div>
                 </div>
               </div>
@@ -242,6 +304,11 @@ const ProjectDetail = () => {
 
               {/* Action Buttons - Placeholder for future commits */}
               <div className='theme-card p-6 rounded-lg space-y-3'>
+                {currentUser && currentUser._id === project.user?._id && (
+                  <button onClick={() => setIsEditModalOpen(true)} className='w-full py-3 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all'>
+                    Edit Project
+                  </button>
+                )}
                 {currentUser && currentUser._id !== project.user?._id ? (
                   <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
                     Contact Creator
@@ -255,7 +322,33 @@ const ProjectDetail = () => {
                     Your Project
                   </button>
                 )}
-                <button className='w-full py-3 border-2 border-accent text-accent rounded-lg hover:bg-accent/10 transition-all'>Save Project</button>
+                <button
+                  onClick={async () => {
+                    if (!currentUser) {
+                      alert('Please login to favorite projects')
+                      return
+                    }
+
+                    setFavoriteLoading(true)
+                    try {
+                      if (isFavorited) {
+                        await removeFromFavorites(project._id)
+                        setIsFavorited(false)
+                      } else {
+                        await addToFavorites(project._id)
+                        setIsFavorited(true)
+                      }
+                    } catch (error) {
+                      console.error('Error toggling favorite:', error)
+                      alert('Failed to update favorites. Please try again.')
+                    } finally {
+                      setFavoriteLoading(false)
+                    }
+                  }}
+                  disabled={favoriteLoading}
+                  className={`w-full py-3 border-2 rounded-lg transition-all ${isFavorited ? 'bg-accent text-white border-accent hover:bg-accent/90' : 'border-accent text-accent hover:bg-accent/10'}`}>
+                  {favoriteLoading ? 'Loading...' : isFavorited ? 'Unfavorite' : 'Save to Favorites'}
+                </button>
               </div>
             </motion.div>
           </div>
@@ -264,10 +357,29 @@ const ProjectDetail = () => {
         {/* Messages Tab */}
         {activeTab === 'messages' && project?.user?._id === currentUser?._id && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <GroupedMessagesList messages={messages} loading={messagesLoading} />
+            <GroupedMessagesList
+              messages={messages}
+              loading={messagesLoading}
+              projectId={id}
+              isProjectCreator={true}
+              onRefresh={async () => {
+                try {
+                  const updatedProject = await getProjectById(id)
+                  setProject(updatedProject)
+
+                  const updatedMessages = await getProjectMessages(id)
+                  setMessages(updatedMessages)
+                } catch (error) {
+                  console.error('Error refreshing data:', error)
+                }
+              }}
+            />
           </motion.div>
         )}
       </div>
+      {/* Edit Project Modal */}
+      {project && <ProjectModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} mode='edit' initialData={project} onProjectUpdated={loadProject} />}
+
       {/* Contact Modal */}
       {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
     </section>

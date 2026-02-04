@@ -2,8 +2,11 @@ import { motion } from 'framer-motion'
 import { FaEnvelope } from 'react-icons/fa'
 import SenderBlock from './SenderBlock'
 
-const GroupedMessagesList = ({ messages, loading }) => {
-  // Group messages by sender
+const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, onRefresh }) => {
+  // Get current user to exclude from interested count
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+
+  // Group ALL messages by sender (including owner's)
   const groupedMessages = messages.reduce((groups, message) => {
     const senderId = message.sender._id
 
@@ -24,6 +27,12 @@ const GroupedMessagesList = ({ messages, loading }) => {
     const timeB = new Date(b.messages[0].createdAt)
     return timeB - timeA // Newest first
   })
+
+  // Filter out owner for counting interested people
+  const interestedCount = sortedGroups.filter((group) => {
+    const senderId = group.sender._id || group.sender
+    return senderId !== currentUser._id
+  }).length
 
   if (loading) {
     return (
@@ -48,13 +57,13 @@ const GroupedMessagesList = ({ messages, loading }) => {
       {/* Summary */}
       <div className='p-4 bg-accent/10 rounded-lg'>
         <p className='theme-text font-semibold'>
-          {sortedGroups.length} {sortedGroups.length === 1 ? 'person' : 'people'} interested in this project
+          {interestedCount} {interestedCount === 1 ? 'person' : 'people'} interested in this project
         </p>
       </div>
 
       {/* Grouped messages */}
       {sortedGroups.map((group, index) => (
-        <SenderBlock key={group.sender._id} sender={group.sender} messages={group.messages} index={index} />
+        <SenderBlock key={group.sender._id} sender={group.sender} messages={group.messages} index={index} projectId={projectId} isProjectCreator={isProjectCreator} onAssignSuccess={onRefresh} />
       ))}
     </motion.div>
   )

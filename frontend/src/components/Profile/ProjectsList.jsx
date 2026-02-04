@@ -1,27 +1,60 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart } from 'react-icons/fa'
+import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
+import AssignModal from '../../modal/AssignModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
-import { getUserProjects, getInterestedProjects, removeFromInterested } from '../../services/projectService' // Use the existing function
+import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject } from '../../services/projectService'
+import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
+import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
   const navigate = useNavigate()
   const { currentUser } = useAuth() // Get the current user
   const [projectType, setProjectType] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState('create')
   const [projects, setProjects] = useState([]) // State for projects
   const [loading, setLoading] = useState(true) // Loading state
   const [error, setError] = useState(null) // Error state
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
+  const [favorites, setFavorites] = useState([])
 
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = () => {
+    setModalMode('create')
+    setSelectedProject(null)
+    setIsModalOpen(true)
+  }
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setModalMode('create')
+    setSelectedProject(null)
+  }
 
   // Fetch projects when component mounts
   useEffect(() => {
     fetchProjects()
   }, [])
+
+  // Fetch favorites when component mounts
+  useEffect(() => {
+    if (!currentUser) return // Skip if no user
+
+    const loadFavorites = async () => {
+      try {
+        const favProjects = await getFavoriteProjects()
+        // Extract just the IDs
+        const favoriteIds = favProjects.map((fav) => fav._id)
+        setFavorites(favoriteIds)
+      } catch (error) {
+        console.error('Error loading favorites:', error)
+      }
+    }
+
+    loadFavorites()
+  }, [currentUser])
 
   // Function to fetch projects
   const fetchProjects = async () => {
@@ -54,9 +87,18 @@ const ProjectsList = () => {
     switch (status) {
       case 'active':
         return <FaClock className='text-blue-500' />
+      case 'in_progress':
+        return <FaSpinner className='text-purple-500' />
+      case 'under_review':
+        return <FaSearch className='text-orange-500' />
       case 'completed':
         return <FaCheck className='text-green-500' />
       case 'paused':
+        return <FaPause className='text-yellow-500' />
+      case 'cancelled':
+        return <FaTimes className='text-red-500' />
+      case 'archived':
+        return <FaArchive className='text-gray-500' />
       case 'draft':
         return <FaPause className='text-yellow-500' />
       default:
@@ -68,9 +110,18 @@ const ProjectsList = () => {
     switch (status) {
       case 'active':
         return 'bg-blue-500/10 text-blue-500'
+      case 'in_progress':
+        return 'bg-purple-500/10 text-purple-500'
+      case 'under_review':
+        return 'bg-orange-500/10 text-orange-500'
       case 'completed':
         return 'bg-green-500/10 text-green-500'
       case 'paused':
+        return 'bg-yellow-500/10 text-yellow-500'
+      case 'cancelled':
+        return 'bg-red-500/10 text-red-500'
+      case 'archived':
+        return 'bg-gray-500/10 text-gray-500'
       case 'draft':
         return 'bg-yellow-500/10 text-yellow-500'
       default:
@@ -78,36 +129,29 @@ const ProjectsList = () => {
     }
   }
 
-  // Determine project type based on relationship to current user
-  const getProjectType = (project) => {
-    // Check if user created this project
-    if (project.user._id === currentUser._id || project.user === currentUser._id) {
-      return 'created'
-    }
+  const isCreator = (project) => project.user._id === currentUser._id || project.user === currentUser._id
 
-    // Check if user is in interestedUsers
-    const isInterested = project.interestedUsers?.some((u) => {
+  const isFavorited = (projectId) => {
+    return favorites.includes(projectId)
+  }
+
+  const isInterested = (project) =>
+    project.interestedUsers?.some((u) => {
       const userId = u.userId._id ? u.userId._id : u.userId
       return userId === currentUser._id
     })
 
-    if (isInterested) {
-      return 'freelance'
-    }
+  const isAssignee = (project) => (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
 
+  // Determine project type based on relationship to current user
+  const getProjectType = (project) => {
+    if (isCreator(project)) return 'created'
+    if (isAssignee(project)) return 'freelance' // assigned work
+    if (isInterested(project)) return 'interested' // contacted but not assigned
     return 'other'
   }
-  const filteredProjects =
-    projectType === 'all'
-      ? projects
-      : projectType === 'interested'
-        ? projects.filter((project) => {
-            return project.interestedUsers?.some((u) => {
-              const userId = u.userId._id ? u.userId._id : u.userId
-              return userId === currentUser._id
-            })
-          })
-        : projects.filter((project) => getProjectType(project) === projectType)
+
+  const filteredProjects = projectType === 'all' ? projects : projectType === 'favorites' ? projects.filter((project) => isFavorited(project._id)) : projects.filter((project) => getProjectType(project) === projectType)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -119,7 +163,7 @@ const ProjectsList = () => {
       </motion.div>
 
       {/* Project Modal - Pass fetchProjects function to refresh after creation */}
-      <ProjectModal isOpen={isModalOpen} onClose={closeModal} onProjectCreated={fetchProjects} />
+      <ProjectModal isOpen={isModalOpen} onClose={closeModal} onProjectCreated={fetchProjects} mode={modalMode} initialData={selectedProject} onProjectUpdated={fetchProjects} />
 
       {/* Project Type Filter */}
       <motion.div className='flex gap-4 flex-wrap' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
@@ -155,8 +199,17 @@ const ProjectsList = () => {
           whileTap={{ scale: 0.95 }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
             ${projectType === 'interested' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
-          <FaHeart />
+          <FaEye />
           Interested
+        </motion.button>
+        <motion.button
+          onClick={() => setProjectType('favorites')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
+    ${projectType === 'favorites' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+          <FaHeart />
+          Favorites
         </motion.button>
       </motion.div>
 
@@ -187,7 +240,9 @@ const ProjectsList = () => {
                 ? "You haven't created any projects yet. Click 'New Project' to create one!"
                 : projectType === 'interested'
                   ? "You haven't shown interest in any projects yet. Browse projects to get started!"
-                  : "You aren't working on any freelance projects yet."}
+                  : projectType === 'favorites'
+                    ? 'No favorite projects yet. Click the heart icon on any project to add it to your favorites!'
+                    : "You aren't working on any freelance projects yet."}
           </p>
         </div>
       )}
@@ -210,14 +265,42 @@ const ProjectsList = () => {
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}>
                       {getProjectType(project) === 'freelance' ? <FaBriefcase className='text-accent text-xl' /> : <FaLightbulb className='text-accent text-xl' />}
                     </motion.div>
-                    <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
+                    <div className='flex items-center justify-between w-full'>
+                      <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
+                      <motion.button
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          try {
+                            if (isFavorited(project._id)) {
+                              await removeFromFavorites(project._id)
+                              setFavorites(favorites.filter((id) => id !== project._id))
+                            } else {
+                              await addToFavorites(project._id)
+                              setFavorites([...favorites, project._id])
+                            }
+                          } catch (error) {
+                            console.error('Error toggling favorite:', error)
+                          }
+                        }}
+                        className='ml-2'
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}>
+                        <FaHeart className={`text-2xl ${isFavorited(project._id) ? 'text-red-500' : 'text-gray-400'}`} />
+                      </motion.button>
+                    </div>
                   </div>
                   <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
                   <div className='flex items-center gap-4'>
                     <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getStatusColor(project.status)}`}>
                       {getStatusIcon(project.status)}
-                      <span className='capitalize text-sm'>{project.status}</span>
+                      <span className='text-sm'>{formatStatus(project.status)}</span>
                     </div>
+
+                    {isCreator(project) && project.assignee && (
+                      <div className='text-sm text-accent mt-1'>
+                        Assigned: {project.assignee.firstName} {project.assignee.lastName}
+                      </div>
+                    )}
                     <div className='theme-text-secondary text-sm'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
                   </div>
                 </div>
@@ -271,6 +354,72 @@ const ProjectsList = () => {
                 </div>
               </div>
 
+              {/* Assign/Remove Actions (Creator only) */}
+              {isCreator(project) && project.interestedUsers && project.interestedUsers.length > 0 && (
+                <div className='mt-4 pt-4 border-t dark:border-light/10 border-primary/10'>
+                  {!project.assignee ? (
+                    <motion.button
+                      onClick={() => {
+                        setSelectedProject(project)
+                        setIsAssignModalOpen(true)
+                      }}
+                      className='w-full py-2 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded transition-all'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Assign Project
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      onClick={async () => {
+                        try {
+                          await removeAssignee(project._id)
+                          await fetchProjects()
+                        } catch (err) {
+                          console.error('Error removing assignee:', err)
+                        }
+                      }}
+                      className='w-full py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded transition-all'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Remove Assignment
+                    </motion.button>
+                  )}
+                </div>
+              )}
+
+              {/* Edit and Publish buttons for creator projects */}
+              {isCreator(project) && (
+                <div className='mt-2 space-y-2'>
+                  <motion.button
+                    onClick={() => {
+                      setSelectedProject(project)
+                      setModalMode('edit')
+                      setIsModalOpen(true)
+                    }}
+                    className='w-full py-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded transition-all'
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}>
+                    Edit Project
+                  </motion.button>
+                  {project.status === 'draft' && (
+                    <motion.button
+                      onClick={async () => {
+                        try {
+                          await publishProject(project._id)
+                          await fetchProjects()
+                        } catch (err) {
+                          console.error('Error publishing project:', err)
+                        }
+                      }}
+                      className='w-full py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded transition-all'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Publish Project
+                    </motion.button>
+                  )}
+                </div>
+              )}
+
               {/* Interested Users Badge */}
               {project.interestedUsers && project.interestedUsers.length > 0 && (
                 <div className='mt-4 pt-4 border-t dark:border-light/10 border-primary/10'>
@@ -298,6 +447,17 @@ const ProjectsList = () => {
           ))}
         </motion.div>
       )}
+
+      {/* Assign Modal */}
+      <AssignModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false)
+          setSelectedProject(null)
+        }}
+        project={selectedProject}
+        onAssignSuccess={fetchProjects}
+      />
     </motion.div>
   )
 }
