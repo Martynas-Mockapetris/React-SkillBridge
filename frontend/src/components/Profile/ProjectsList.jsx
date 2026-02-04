@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive, FaEdit } from 'react-icons/fa'
+import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
@@ -19,6 +19,7 @@ const ProjectsList = () => {
   const [error, setError] = useState(null) // Error state
   const [selectedProject, setSelectedProject] = useState(null)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
+  const [favorites, setFavorites] = useState([])
 
   const openModal = () => {
     setModalMode('create')
@@ -111,6 +112,10 @@ const ProjectsList = () => {
 
   const isCreator = (project) => project.user._id === currentUser._id || project.user === currentUser._id
 
+  const isFavorited = (projectId) => {
+    return favorites.includes(projectId)
+  }
+
   const isInterested = (project) =>
     project.interestedUsers?.some((u) => {
       const userId = u.userId._id ? u.userId._id : u.userId
@@ -175,7 +180,7 @@ const ProjectsList = () => {
           whileTap={{ scale: 0.95 }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
             ${projectType === 'interested' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
-          <FaHeart />
+          <FaEye />
           Interested
         </motion.button>
       </motion.div>
@@ -230,7 +235,24 @@ const ProjectsList = () => {
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}>
                       {getProjectType(project) === 'freelance' ? <FaBriefcase className='text-accent text-xl' /> : <FaLightbulb className='text-accent text-xl' />}
                     </motion.div>
-                    <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
+                    <div className='flex items-center justify-between w-full'>
+                      <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          // Toggle favorite logic will go here
+                          if (isFavorited(project._id)) {
+                            setFavorites(favorites.filter((id) => id !== project._id))
+                          } else {
+                            setFavorites([...favorites, project._id])
+                          }
+                        }}
+                        className='ml-2'
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}>
+                        <FaHeart className={`text-2xl ${isFavorited(project._id) ? 'text-red-500' : 'text-gray-400'}`} />
+                      </motion.button>
+                    </div>
                   </div>
                   <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
                   <div className='flex items-center gap-4'>
