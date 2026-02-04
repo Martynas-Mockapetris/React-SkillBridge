@@ -25,6 +25,8 @@ const ProjectDetail = () => {
 
   const [isContactModalOpen, setIsContactModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   // Load project data
   const loadProject = async () => {
@@ -70,6 +72,13 @@ const ProjectDetail = () => {
     }
 
     fetchMessages()
+  }, [project, currentUser])
+
+  // Check if project is favorited when it loads
+  useEffect(() => {
+    if (project && currentUser) {
+      setIsFavorited(false)
+    }
   }, [project, currentUser])
 
   const handleBack = () => {
@@ -301,7 +310,27 @@ const ProjectDetail = () => {
                     Your Project
                   </button>
                 )}
-                <button className='w-full py-3 border-2 border-accent text-accent rounded-lg hover:bg-accent/10 transition-all'>Save Project</button>
+                <button
+                  onClick={async () => {
+                    setFavoriteLoading(true)
+                    try {
+                      if (isFavorited) {
+                        // removeFromFavorites will go here
+                        setIsFavorited(false)
+                      } else {
+                        // addToFavorites will go here
+                        setIsFavorited(true)
+                      }
+                    } catch (error) {
+                      console.error('Error:', error)
+                    } finally {
+                      setFavoriteLoading(false)
+                    }
+                  }}
+                  disabled={favoriteLoading}
+                  className={`w-full py-3 border-2 rounded-lg transition-all ${isFavorited ? 'bg-accent text-white border-accent hover:bg-accent/90' : 'border-accent text-accent hover:bg-accent/10'}`}>
+                  {favoriteLoading ? 'Loading...' : isFavorited ? 'Unfavorite' : 'Save to Favorites'}
+                </button>
               </div>
             </motion.div>
           </div>
