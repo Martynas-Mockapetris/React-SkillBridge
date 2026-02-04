@@ -61,6 +61,39 @@ export const getUserStats = async () => {
   }
 }
 
+// Get user's favorite projects
+export const getFavoriteProjects = async () => {
+  try {
+    const response = await authAxios.get('/api/users/favorites')
+    return response.data
+  } catch (error) {
+    console.error('Failed to get favorite projects:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Add project to favorites
+export const addToFavorites = async (projectId) => {
+  try {
+    const response = await authAxios.post(`/api/users/favorites/${projectId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to add to favorites:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Remove project from favorites
+export const removeFromFavorites = async (projectId) => {
+  try {
+    const response = await authAxios.delete(`/api/users/favorites/${projectId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove from favorites:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Updates the user's profile with new data
 export const updateUserProfile = async (profileData) => {
   try {

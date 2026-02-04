@@ -9,6 +9,7 @@ import ProjectModal from '../modal/ProjectModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { getProjectMessages } from '../services/messageService'
+import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../services/userService'
 import { formatStatus } from '../utils/formatters'
 
 const ProjectDetail = () => {
@@ -74,11 +75,22 @@ const ProjectDetail = () => {
     fetchMessages()
   }, [project, currentUser])
 
-  // Check if project is favorited when it loads
+  // Load favorites when project or user changes
   useEffect(() => {
-    if (project && currentUser) {
-      setIsFavorited(false)
+    const loadFavorites = async () => {
+      if (project && currentUser) {
+        try {
+          const favorites = await getFavoriteProjects()
+          const favoriteIds = favorites.map((fav) => fav._id)
+          setIsFavorited(favoriteIds.includes(project._id))
+        } catch (error) {
+          console.error('Error loading favorites:', error)
+          setIsFavorited(false)
+        }
+      }
     }
+
+    loadFavorites()
   }, [project, currentUser])
 
   const handleBack = () => {
@@ -312,17 +324,23 @@ const ProjectDetail = () => {
                 )}
                 <button
                   onClick={async () => {
+                    if (!currentUser) {
+                      alert('Please login to favorite projects')
+                      return
+                    }
+
                     setFavoriteLoading(true)
                     try {
                       if (isFavorited) {
-                        // removeFromFavorites will go here
+                        await removeFromFavorites(project._id)
                         setIsFavorited(false)
                       } else {
-                        // addToFavorites will go here
+                        await addToFavorites(project._id)
                         setIsFavorited(true)
                       }
                     } catch (error) {
-                      console.error('Error:', error)
+                      console.error('Error toggling favorite:', error)
+                      alert('Failed to update favorites. Please try again.')
                     } finally {
                       setFavoriteLoading(false)
                     }
