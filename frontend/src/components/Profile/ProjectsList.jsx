@@ -6,6 +6,7 @@ import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject } from '../../services/projectService'
+import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
@@ -36,6 +37,24 @@ const ProjectsList = () => {
   useEffect(() => {
     fetchProjects()
   }, [])
+
+  // Fetch favorites when component mounts
+  useEffect(() => {
+    if (!currentUser) return // Skip if no user
+
+    const loadFavorites = async () => {
+      try {
+        const favProjects = await getFavoriteProjects()
+        // Extract just the IDs
+        const favoriteIds = favProjects.map((fav) => fav._id)
+        setFavorites(favoriteIds)
+      } catch (error) {
+        console.error('Error loading favorites:', error)
+      }
+    }
+
+    loadFavorites()
+  }, [currentUser])
 
   // Function to fetch projects
   const fetchProjects = async () => {
@@ -249,13 +268,18 @@ const ProjectsList = () => {
                     <div className='flex items-center justify-between w-full'>
                       <h3 className='text-xl font-semibold theme-text'>{project.title}</h3>
                       <motion.button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation()
-                          // Toggle favorite logic will go here
-                          if (isFavorited(project._id)) {
-                            setFavorites(favorites.filter((id) => id !== project._id))
-                          } else {
-                            setFavorites([...favorites, project._id])
+                          try {
+                            if (isFavorited(project._id)) {
+                              await removeFromFavorites(project._id)
+                              setFavorites(favorites.filter((id) => id !== project._id))
+                            } else {
+                              await addToFavorites(project._id)
+                              setFavorites([...favorites, project._id])
+                            }
+                          } catch (error) {
+                            console.error('Error toggling favorite:', error)
                           }
                         }}
                         className='ml-2'

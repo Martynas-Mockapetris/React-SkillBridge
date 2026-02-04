@@ -1,50 +1,66 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
+import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 
 const ProjectCard = ({ project, index }) => {
   const { currentUser } = useAuth()
   const [favorites, setFavorites] = useState([])
   const [isFavoriting, setIsFavoriting] = useState(false)
 
+  // Load favorites on mount
+  useEffect(() => {
+    if (!currentUser) return
+
+    const loadFavorites = async () => {
+      try {
+        const favProjects = await getFavoriteProjects()
+        const favoriteIds = favProjects.map((fav) => fav._id)
+        setFavorites(favoriteIds)
+      } catch (error) {
+        console.error('Error loading favorites:', error)
+      }
+    }
+
+    loadFavorites()
+  }, [currentUser?._id])
+
   const isFavorited = (projectId) => {
     return favorites.includes(projectId)
   }
 
-  const handleFavoriteClick = (e) => {
-    e.preventDefault() // Prevent navigation to project detail
+  const handleFavoriteClick = async (e) => {
+    e.preventDefault()
     e.stopPropagation()
 
     if (!currentUser) {
-      // Optionally show a message or redirect to login
       alert('Please login to favorite projects')
       return
     }
 
     setIsFavoriting(true)
 
-    // Toggle favorite logic
-    if (isFavorited(project._id)) {
-      setFavorites(favorites.filter((id) => id !== project._id))
-    } else {
-      setFavorites([...favorites, project._id])
+    try {
+      if (isFavorited(project._id)) {
+        await removeFromFavorites(project._id)
+        setFavorites(favorites.filter((id) => id !== project._id))
+      } else {
+        await addToFavorites(project._id)
+        setFavorites([...favorites, project._id])
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    } finally {
+      setIsFavoriting(false)
     }
-
-    setIsFavoriting(false)
   }
 
   return (
     <Link to={`/project/${project._id}`}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{
-          scale: 1.02,
-          transition: { duration: 0.1 }
-        }}
-        transition={{ duration: 0.2, delay: index * 0.1 }}
+        // ... (keep all existing motion div props)
         className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 relative'>
         {/* Favorite button - top right corner */}
         <motion.button onClick={handleFavoriteClick} disabled={isFavoriting} className='absolute top-4 right-4 z-10' whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
