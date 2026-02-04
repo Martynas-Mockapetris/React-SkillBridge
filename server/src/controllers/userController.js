@@ -258,3 +258,64 @@ export const getUserStats = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
+
+// @desc    Add project to favorites
+// @route   POST /api/users/favorites/:projectId
+// @access  Private
+export const addToFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    const projectId = req.params.projectId
+
+    // Check if already favorited
+    if (user.favorites.includes(projectId)) {
+      return res.status(400).json({ message: 'Project already in favorites' })
+    }
+
+    user.favorites.push(projectId)
+    await user.save()
+
+    res.json({ message: 'Added to favorites', favorites: user.favorites })
+  } catch (error) {
+    console.error('Error adding to favorites:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove project from favorites
+// @route   DELETE /api/users/favorites/:projectId
+// @access  Private
+export const removeFromFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    const projectId = req.params.projectId
+
+    user.favorites = user.favorites.filter((id) => id.toString() !== projectId)
+    await user.save()
+
+    res.json({ message: 'Removed from favorites', favorites: user.favorites })
+  } catch (error) {
+    console.error('Error removing from favorites:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Get user's favorite projects
+// @route   GET /api/users/favorites
+// @access  Private
+export const getFavoriteProjects = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate({
+      path: 'favorites',
+      populate: {
+        path: 'user',
+        select: 'firstName lastName email profilePicture'
+      }
+    })
+
+    res.json(user.favorites || [])
+  } catch (error) {
+    console.error('Error fetching favorites:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
