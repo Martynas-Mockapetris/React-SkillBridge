@@ -33,17 +33,27 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
   }
 
   const handleSubmit = async () => {
-    if (!links.length && files.length === 0 && !note.trim()) {
-      toast.error('Please provide at least a link, a file, or a note.')
+    // Require at least one link
+    if (!links.length) {
+      toast.error('Please add at least one link.')
+      return
+    }
+
+    // Require note
+    if (!note.trim()) {
+      toast.error('Please add a note describing your submission.')
       return
     }
 
     try {
       setSubmitting(true)
       const formData = new FormData()
+
+      // Required fields
       formData.append('links', JSON.stringify(links))
       formData.append('note', note)
 
+      // Optional files
       files.forEach((file) => {
         formData.append('submissionFiles', file)
       })
