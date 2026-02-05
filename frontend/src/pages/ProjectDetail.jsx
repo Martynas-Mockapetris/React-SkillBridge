@@ -11,6 +11,8 @@ import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { getProjectMessages } from '../services/messageService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../services/userService'
 import { formatStatus } from '../utils/formatters'
+import SubmitProjectModal from '../modal/SubmitProjectModal'
+import ReviewProjectModal from '../modal/ReviewProjectModal'
 
 const ProjectDetail = () => {
   const { id } = useParams()
@@ -28,6 +30,11 @@ const ProjectDetail = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+
+  const isOwner = currentUser && project && currentUser._id === project.user?._id
+  const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
 
   // Load project data
   const loadProject = async () => {
@@ -322,6 +329,37 @@ const ProjectDetail = () => {
                     Your Project
                   </button>
                 )}
+                {/* Submission/Review Buttons */}
+                {isAssignee && project.status === 'in_progress' && (
+                  <button onClick={() => setIsSubmitModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                    Submit Project
+                  </button>
+                )}
+
+                {isAssignee && project.status === 'under_review' && (
+                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
+                    Pending Review
+                  </button>
+                )}
+
+                {isOwner && project.status === 'in_progress' && (
+                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
+                    Pending Project
+                  </button>
+                )}
+
+                {isOwner && project.status === 'under_review' && (
+                  <button onClick={() => setIsReviewModalOpen(true)} className='w-full py-3 bg-purple-500/10 text-purple-600 rounded-lg hover:bg-purple-500 hover:text-white transition-all'>
+                    Review Submission
+                  </button>
+                )}
+
+                {project.status === 'completed' && (
+                  <button disabled className='w-full py-3 bg-green-500 text-white rounded-lg cursor-not-allowed opacity-50'>
+                    Completed
+                  </button>
+                )}
+                {/* Favorite Button */}
                 <button
                   onClick={async () => {
                     if (!currentUser) {
@@ -382,6 +420,11 @@ const ProjectDetail = () => {
 
       {/* Contact Modal */}
       {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
+
+      {/* Submit and Review Modals */}
+      {project && <SubmitProjectModal isOpen={isSubmitModalOpen} onClose={() => setIsSubmitModalOpen(false)} project={project} onSubmitSuccess={loadProject} />}
+
+      {project && <ReviewProjectModal isOpen={isReviewModalOpen} onClose={() => setIsReviewModalOpen(false)} project={project} onReviewSuccess={loadProject} />}
     </section>
   )
 }

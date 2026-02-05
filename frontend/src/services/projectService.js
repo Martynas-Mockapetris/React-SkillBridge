@@ -168,3 +168,27 @@ export const publishProject = async (projectId) => {
     throw error
   }
 }
+
+// Submit project work (assignee)
+export const submitProject = async (projectId, formData) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/submit`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Failed to submit project:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Review submitted project (owner)
+export const reviewProject = async (projectId, reviewData) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/review`, reviewData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to review project:', error.response?.data || error.message)
+    throw error
+  }
+}
