@@ -393,6 +393,112 @@ const removeFromInterested = async (req, res) => {
   }
 }
 
+// @desc    Submit project work (assignee only)
+// @route   POST /api/projects/:id/submit
+// @access  Private
+const submitProject = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Only assignee can submit
+    const assigneeId = project.assignee?.toString()
+    if (!assigneeId || assigneeId !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized to submit this project' })
+    }
+
+    if (project.status !== 'in_progress') {
+      return res.status(400).json({ message: 'Project is not in progress' })
+    }
+
+    // Parse links from request
+    let links = []
+    if (req.body.links) {
+      try {
+        links = Array.isArray(req.body.links) ? req.body.links : JSON.parse(req.body.links)
+      } catch (err) {
+        links = req.body.links
+          .split(',')
+          .map((l) => l.trim())
+          .filter(Boolean)
+      }
+    }
+
+    // Process submission files
+    const submissionFiles = req.files
+      ? req.files.map((file) => ({
+          name: file.originalname,
+          path: file.path,
+          mimetype: file.mimetype
+        }))
+      : []
+
+    project.submission = {
+      links,
+      files: submissionFiles,
+      note: req.body.note || '',
+      submittedAt: new Date(),
+      submittedBy: req.user._id
+    }
+
+    project.status = 'under_review'
+
+    const updatedProject = await project.save()
+    res.json(updatedProject)
+  } catch (error) {
+    console.error('Error submitting project:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Review submitted project (owner only)
+// @route   POST /api/projects/:id/review
+// @access  Private
+const reviewProject = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const { decision, feedback } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Only owner can review
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized to review this project' })
+    }
+
+    if (project.status !== 'under_review') {
+      return res.status(400).json({ message: 'Project is not under review' })
+    }
+
+    if (!['accepted', 'declined'].includes(decision)) {
+      return res.status(400).json({ message: 'Invalid decision' })
+    }
+
+    project.review = {
+      decision,
+      feedback: feedback || '',
+      reviewedAt: new Date(),
+      reviewedBy: req.user._id
+    }
+
+    project.status = decision === 'accepted' ? 'completed' : 'in_progress'
+
+    const updatedProject = await project.save()
+    res.json(updatedProject)
+  } catch (error) {
+    console.error('Error reviewing project:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 export {
   createProject,
   getUserProjects,
@@ -405,5 +511,7 @@ export {
   reassignProject,
   removeAssignee,
   getInterestedProjects,
-  removeFromInterested
+  removeFromInterested,
+  submitProject,
+  reviewProject
 }

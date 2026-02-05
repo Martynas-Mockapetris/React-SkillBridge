@@ -32,6 +32,9 @@ app.use('/api/users', userRoutes)
 app.use('/api/projects', projectRoutes)
 app.use('/api/messages', messageRoutes)
 
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'))
+
 // Port
 const PORT = process.env.PORT
 
