@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
+import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
@@ -213,17 +213,45 @@ const ProjectDetail = () => {
               </div>
 
               {/* Skills Required */}
-              {project.skills && project.skills.length > 0 && (
-                <div className='theme-card p-2 rounded-lg'>
-                  <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
-                  <div className='flex flex-wrap gap-2'>
-                    {project.skills.map((skill, index) => (
-                      <span key={index} className='px-3 py-1 bg-accent/10 text-accent rounded-full text-sm'>
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+              <div className='theme-card p-6 rounded-lg'>
+                <h3 className='text-xl font-semibold theme-text mb-4'>Skills Required</h3>
+                <div className='flex flex-wrap gap-2'>
+                  {project.skills?.map((skill, index) => (
+                    <motion.span key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className='px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium'>
+                      {skill}
+                    </motion.span>
+                  ))}
                 </div>
+              </div>
+
+              {/* Review Feedback Section - visible to both */}
+              {project.review && project.review.decision && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg border-l-4 border-accent space-y-3'>
+                  <div className='flex items-center gap-2'>
+                    {project.review.decision === 'accepted' ? (
+                      <>
+                        <FaCheck className='text-green-500 text-xl' />
+                        <h3 className='text-lg font-semibold text-green-600 dark:text-green-400'>Project Accepted</h3>
+                      </>
+                    ) : (
+                      <>
+                        <FaTimes className='text-red-500 text-xl' />
+                        <h3 className='text-lg font-semibold text-red-600 dark:text-red-400'>Changes Requested</h3>
+                      </>
+                    )}
+                  </div>
+
+                  {project.review.feedback && (
+                    <div className='bg-primary/5 dark:bg-light/5 rounded-lg p-4 border border-primary/10 dark:border-light/10'>
+                      <p className='text-xs font-semibold theme-text-secondary mb-2'>Feedback from Client:</p>
+                      <p className='text-sm theme-text leading-relaxed'>{project.review.feedback}</p>
+                    </div>
+                  )}
+
+                  <p className='text-xs theme-text-secondary'>
+                    {new Date(project.review.reviewedAt).toLocaleDateString()} at {new Date(project.review.reviewedAt).toLocaleTimeString()}
+                  </p>
+                </motion.div>
               )}
             </motion.div>
 
