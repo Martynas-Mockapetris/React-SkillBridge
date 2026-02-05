@@ -14,6 +14,12 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
   const fileUrl = (path) => `/${path}`
 
   const handleReview = async (decision) => {
+    // Require feedback
+    if (!feedback.trim()) {
+      toast.error('Please provide feedback before submitting review.')
+      return
+    }
+
     try {
       setReviewing(true)
       await reviewProject(project._id, { decision, feedback })
