@@ -22,6 +22,8 @@ const ProjectsList = () => {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [favorites, setFavorites] = useState([])
 
+  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
+
   const openModal = () => {
     setModalMode('create')
     setSelectedProject(null)
@@ -371,6 +373,7 @@ const ProjectsList = () => {
                   ) : (
                     <motion.button
                       onClick={async () => {
+                        if (isLockedStatus(project.status)) return
                         try {
                           await removeAssignee(project._id)
                           await fetchProjects()
@@ -378,10 +381,13 @@ const ProjectsList = () => {
                           console.error('Error removing assignee:', err)
                         }
                       }}
-                      className='w-full py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded transition-all'
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}>
-                      Remove Assignment
+                      disabled={isLockedStatus(project.status)}
+                      className={`w-full py-2 rounded transition-all ${
+                        isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white'
+                      }`}
+                      whileHover={isLockedStatus(project.status) ? {} : { scale: 1.02 }}
+                      whileTap={isLockedStatus(project.status) ? {} : { scale: 0.98 }}>
+                      {isLockedStatus(project.status) ? 'Assigning Locked' : 'Remove Assignment'}
                     </motion.button>
                   )}
                 </div>
@@ -392,14 +398,18 @@ const ProjectsList = () => {
                 <div className='mt-2 space-y-2'>
                   <motion.button
                     onClick={() => {
+                      if (isLockedStatus(project.status)) return
                       setSelectedProject(project)
                       setModalMode('edit')
                       setIsModalOpen(true)
                     }}
-                    className='w-full py-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded transition-all'
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}>
-                    Edit Project
+                    disabled={isLockedStatus(project.status)}
+                    className={`w-full py-2 rounded transition-all ${
+                      isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'
+                    }`}
+                    whileHover={isLockedStatus(project.status) ? {} : { scale: 1.02 }}
+                    whileTap={isLockedStatus(project.status) ? {} : { scale: 0.98 }}>
+                    {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
                   </motion.button>
                   {project.status === 'draft' && (
                     <motion.button
