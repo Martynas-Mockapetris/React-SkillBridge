@@ -35,6 +35,7 @@ const ProjectDetail = () => {
 
   const isOwner = currentUser && project && currentUser._id === project.user?._id
   const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
+  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
   // Load project data
   const loadProject = async () => {
@@ -340,8 +341,16 @@ const ProjectDetail = () => {
               {/* Action Buttons - Placeholder for future commits */}
               <div className='theme-card p-6 rounded-lg space-y-3'>
                 {currentUser && currentUser._id === project.user?._id && (
-                  <button onClick={() => setIsEditModalOpen(true)} className='w-full py-3 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all'>
-                    Edit Project
+                  <button
+                    onClick={() => {
+                      if (isLockedStatus(project.status)) return
+                      setIsEditModalOpen(true)
+                    }}
+                    disabled={isLockedStatus(project.status)}
+                    className={`w-full py-3 rounded-lg transition-all ${
+                      isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'
+                    }`}>
+                    {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
                   </button>
                 )}
                 {currentUser && currentUser._id !== project.user?._id ? (
