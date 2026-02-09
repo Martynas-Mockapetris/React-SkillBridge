@@ -298,12 +298,12 @@ const ProjectsList = () => {
                       <span className='text-sm'>{formatStatus(project.status)}</span>
                     </div>
 
-                    {isCreator(project) && project.assignee && (
-                      <div className='text-sm text-accent mt-1'>
+                    {project.assignee && (isCreator(project) || isAssignee(project)) && (
+                      <div className='text-sm text-accent'>
                         Assigned: {project.assignee.firstName} {project.assignee.lastName}
                       </div>
                     )}
-                    <div className='theme-text-secondary text-sm'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
+                    <div className='theme-text-secondary text-sm mt-[2px]'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
                   </div>
                 </div>
                 <div className='text-right'>
