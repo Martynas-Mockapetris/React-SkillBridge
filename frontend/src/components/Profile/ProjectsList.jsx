@@ -153,14 +153,17 @@ const ProjectsList = () => {
     return 'other'
   }
 
+  // Filter projects based on selected tab
   const filteredProjects =
     projectType === 'all'
       ? projects.filter((project) => project.status !== 'archived')
       : projectType === 'favorites'
-        ? projects.filter((project) => isFavorited(project._id) && project.status !== 'archived')
+        ? projects.filter((project) => isFavorited(project._id) && project.status !== 'archived' && project.status !== 'completed')
         : projectType === 'archived'
           ? projects.filter((project) => project.status === 'archived')
-          : projects.filter((project) => getProjectType(project) === projectType && project.status !== 'archived')
+          : projectType === 'completed'
+            ? projects.filter((project) => project.status === 'completed')
+            : projects.filter((project) => getProjectType(project) === projectType && project.status !== 'archived' && project.status !== 'completed')
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -221,6 +224,15 @@ const ProjectsList = () => {
           Favorites
         </motion.button>
         <motion.button
+          onClick={() => setProjectType('completed')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
+    ${projectType === 'completed' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+          <FaCheck />
+          Completed
+        </motion.button>
+        <motion.button
           onClick={() => setProjectType('archived')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -262,9 +274,11 @@ const ProjectsList = () => {
                     ? "You haven't shown interest in any projects yet. Browse projects to get started!"
                     : projectType === 'favorites'
                       ? 'No favorite projects yet. Click the heart icon on any project to add it to your favorites!'
-                      : projectType === 'archived'
-                        ? 'No archived projects yet. Completed projects can be archived to keep your workspace clean!'
-                        : 'No projects found in this category.'}
+                      : projectType === 'completed'
+                        ? 'No completed projects yet. Once projects are finished and reviewed, they will appear here!'
+                        : projectType === 'archived'
+                          ? 'No archived projects yet. Completed projects can be archived to keep your workspace clean!'
+                          : 'No projects found in this category.'}
           </p>
         </div>
       )}
