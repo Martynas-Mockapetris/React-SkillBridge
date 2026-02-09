@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
@@ -11,6 +11,7 @@ import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser } = useAuth() // Get the current user
   const [projectType, setProjectType] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -58,22 +59,48 @@ const ProjectsList = () => {
     loadFavorites()
   }, [currentUser])
 
-  // Function to fetch projects
+  // Reload projects and favorites when user navigates back to this page
+  useEffect(() => {
+    if (currentUser) {
+      fetchProjects()
+    }
+  }, [location.pathname, currentUser])
+
+  // Function to fetch projects and favorites
   const fetchProjects = async () => {
     try {
       setLoading(true)
 
-      // Fetch both created projects and interested projects
+      // Fetch created, interested, and favorite projects
       const [createdProjects, interestedProjects] = await Promise.all([getUserProjects(), getInterestedProjects()])
 
-      // Combine and remove duplicates (in case user created a project they're also interested in)
+      // Combine and remove duplicates
       const allProjects = [...createdProjects]
 
+      // Add interested projects
       interestedProjects.forEach((interestedProject) => {
         if (!allProjects.some((p) => p._id === interestedProject._id)) {
           allProjects.push(interestedProject)
         }
       })
+
+      // Also fetch and merge favorite projects
+      if (currentUser) {
+        try {
+          const favProjects = await getFavoriteProjects()
+          const favoriteIds = favProjects.map((fav) => fav._id)
+          setFavorites(favoriteIds)
+
+          // Add favorite project objects to allProjects if not already there
+          favProjects.forEach((favProject) => {
+            if (!allProjects.some((p) => p._id === favProject._id)) {
+              allProjects.push(favProject)
+            }
+          })
+        } catch (error) {
+          console.error('Error loading favorites:', error)
+        }
+      }
 
       setProjects(allProjects)
       setError(null)
