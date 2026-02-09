@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
-import { getProjectById } from '../services/projectService'
+import { getProjectById, archiveProject } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
@@ -395,10 +395,19 @@ const ProjectDetail = () => {
                     Review Submission
                   </button>
                 )}
-
-                {project.status === 'completed' && (
-                  <button disabled className='w-full py-3 bg-green-500 text-white rounded-lg cursor-not-allowed opacity-50'>
-                    Completed
+                {project.status === 'completed' && isOwner && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await archiveProject(project._id)
+                        loadProject() // Reload to get updated status
+                      } catch (error) {
+                        console.error('Error archiving project:', error)
+                        alert('Failed to archive project')
+                      }
+                    }}
+                    className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                    Archive Project
                   </button>
                 )}
                 {/* Favorite Button */}

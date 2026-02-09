@@ -153,7 +153,14 @@ const ProjectsList = () => {
     return 'other'
   }
 
-  const filteredProjects = projectType === 'all' ? projects : projectType === 'favorites' ? projects.filter((project) => isFavorited(project._id)) : projects.filter((project) => getProjectType(project) === projectType)
+  const filteredProjects =
+    projectType === 'all'
+      ? projects.filter((project) => project.status !== 'archived')
+      : projectType === 'favorites'
+        ? projects.filter((project) => isFavorited(project._id) && project.status !== 'archived')
+        : projectType === 'archived'
+          ? projects.filter((project) => project.status === 'archived')
+          : projects.filter((project) => getProjectType(project) === projectType && project.status !== 'archived')
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -213,6 +220,15 @@ const ProjectsList = () => {
           <FaHeart />
           Favorites
         </motion.button>
+        <motion.button
+          onClick={() => setProjectType('archived')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
+    ${projectType === 'archived' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+          <FaArchive />
+          Archived
+        </motion.button>
       </motion.div>
 
       {/* Loading State */}
@@ -240,11 +256,15 @@ const ProjectsList = () => {
               ? "You don't have any projects yet. Create a new project to get started!"
               : projectType === 'created'
                 ? "You haven't created any projects yet. Click 'New Project' to create one!"
-                : projectType === 'interested'
-                  ? "You haven't shown interest in any projects yet. Browse projects to get started!"
-                  : projectType === 'favorites'
-                    ? 'No favorite projects yet. Click the heart icon on any project to add it to your favorites!'
-                    : "You aren't working on any freelance projects yet."}
+                : projectType === 'freelance'
+                  ? "You aren't working on any freelance projects yet. Browse available projects to get started!"
+                  : projectType === 'interested'
+                    ? "You haven't shown interest in any projects yet. Browse projects to get started!"
+                    : projectType === 'favorites'
+                      ? 'No favorite projects yet. Click the heart icon on any project to add it to your favorites!'
+                      : projectType === 'archived'
+                        ? 'No archived projects yet. Completed projects can be archived to keep your workspace clean!'
+                        : 'No projects found in this category.'}
           </p>
         </div>
       )}
