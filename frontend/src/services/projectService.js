@@ -192,3 +192,14 @@ export const reviewProject = async (projectId, reviewData) => {
     throw error
   }
 }
+
+// Archive a completed project
+export const archiveProject = async (projectId) => {
+  try {
+    const response = await authAxios.patch(`/api/projects/${projectId}/archive`)
+    return response.data
+  } catch (error) {
+    console.error('Error archiving project:', error)
+    throw error
+  }
+}

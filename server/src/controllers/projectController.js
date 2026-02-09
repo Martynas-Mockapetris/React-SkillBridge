@@ -499,6 +499,41 @@ const reviewProject = async (req, res) => {
   }
 }
 
+// @desc    Archive a completed project
+// @route   PATCH /api/projects/:id/archive
+// @access  Private (owner only)
+const archiveProject = async (req, res) => {
+  try {
+    const projectId = req.params.id
+
+    // Find project
+    let project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Only owner can archive
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to archive this project' })
+    }
+
+    // Only completed projects can be archived
+    if (project.status !== 'completed') {
+      return res.status(400).json({ message: 'Only completed projects can be archived' })
+    }
+
+    // Update status to archived
+    project.status = 'archived'
+
+    const updatedProject = await project.save()
+    res.json(updatedProject)
+  } catch (error) {
+    console.error('Error archiving project:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 export {
   createProject,
   getUserProjects,
@@ -513,5 +548,6 @@ export {
   getInterestedProjects,
   removeFromInterested,
   submitProject,
-  reviewProject
+  reviewProject,
+  archiveProject
 }
