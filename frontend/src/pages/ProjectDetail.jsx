@@ -276,7 +276,8 @@ const ProjectDetail = () => {
                   </div>
 
                   {/* Contact button */}
-                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && (
+                  {/* Only show if project is NOT (completed/archived) */}
+                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && !['completed', 'archived'].includes(project.status) && (
                     <div className='pt-4 border-t dark:border-light/10 border-primary/10'>
                       <motion.button
                         onClick={() => navigate(`/messages`)}
@@ -340,7 +341,7 @@ const ProjectDetail = () => {
 
               {/* Action Buttons - Placeholder for future commits */}
               <div className='theme-card p-6 rounded-lg space-y-3'>
-                {currentUser && currentUser._id === project.user?._id && (
+                {currentUser && currentUser._id === project.user?._id && !['completed', 'archived'].includes(project.status) && (
                   <button
                     onClick={() => {
                       if (isLockedStatus(project.status)) return
@@ -353,18 +354,22 @@ const ProjectDetail = () => {
                     {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
                   </button>
                 )}
-                {currentUser && currentUser._id !== project.user?._id ? (
-                  <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Contact Creator
-                  </button>
-                ) : !currentUser ? (
-                  <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Login to Contact
-                  </button>
-                ) : (
-                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                    Your Project
-                  </button>
+                {!['completed', 'archived'].includes(project.status) && (
+                  <>
+                    {currentUser && currentUser._id !== project.user?._id ? (
+                      <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                        Contact Creator
+                      </button>
+                    ) : !currentUser ? (
+                      <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                        Login to Contact
+                      </button>
+                    ) : (
+                      <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
+                        Your Project
+                      </button>
+                    )}
+                  </>
                 )}
                 {/* Submission/Review Buttons */}
                 {isAssignee && project.status === 'in_progress' && (
