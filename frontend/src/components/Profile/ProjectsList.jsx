@@ -317,14 +317,15 @@ const ProjectsList = () => {
                     <span>View</span>
                   </motion.button>
                   {(() => {
-                    // Check if user is interested in this project (but not the creator)
+                    // Check if user is interested in this project (but not the creator or assigned)
                     const isCreator = project.user._id === currentUser._id || project.user === currentUser._id
                     const isInterested = project.interestedUsers?.some((u) => {
                       const userId = u.userId._id ? u.userId._id : u.userId
                       return userId === currentUser._id
                     })
 
-                    return !isCreator && isInterested
+                    // Only show Remove button if: NOT creator AND interested AND NOT assigned
+                    return !isCreator && isInterested && !isAssignee(project)
                   })() && (
                     <motion.button
                       onClick={async () => {
