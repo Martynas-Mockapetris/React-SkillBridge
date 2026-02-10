@@ -22,6 +22,7 @@ const ProjectsList = () => {
   const [selectedProject, setSelectedProject] = useState(null)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [favorites, setFavorites] = useState([])
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
@@ -180,8 +181,8 @@ const ProjectsList = () => {
     return 'other'
   }
 
-  // Filter projects based on selected tab
-  const filteredProjects =
+  // Apply tab filter first
+  let filteredProjects =
     projectType === 'all'
       ? projects.filter((project) => project.status !== 'archived')
       : projectType === 'favorites'
@@ -191,6 +192,11 @@ const ProjectsList = () => {
           : projectType === 'completed'
             ? projects.filter((project) => project.status === 'completed')
             : projects.filter((project) => getProjectType(project) === projectType && project.status !== 'archived' && project.status !== 'completed')
+
+  // Apply status filter if "All Projects" tab is selected
+  if (projectType === 'all' && statusFilter !== 'all') {
+    filteredProjects = filteredProjects.filter((project) => project.status === statusFilter)
+  }
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -269,6 +275,25 @@ const ProjectsList = () => {
           Archived
         </motion.button>
       </motion.div>
+
+      {/* Status Filter - Only show when "All Projects" tab is selected */}
+      {projectType === 'all' && (
+        <motion.select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className='px-4 py-2 rounded-lg border-2 border-accent/20 theme-bg theme-text transition-all duration-300 hover:border-accent/50 focus:border-accent focus:outline-none'
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}>
+          <option value='all'>All Statuses</option>
+          <option value='active'>Active</option>
+          <option value='in_progress'>In Progress</option>
+          <option value='under_review'>Under Review</option>
+          <option value='completed'>Completed</option>
+          <option value='paused'>Paused</option>
+          <option value='cancelled'>Cancelled</option>
+        </motion.select>
+      )}
 
       {/* Loading State */}
       {loading && (
