@@ -77,7 +77,7 @@ const Profile = () => {
         {/* Profile Header */}
         <motion.div className='flex items-center gap-6 mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <motion.div className='w-24 h-24 rounded-full overflow-hidden border-4 border-accent' whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
-            <img src={currentUser?.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt='Profile' className='w-full h-full object-cover' onError={(e) => (e.target.src = '/default-avatar.png')} />
+            <img src={currentUser?.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id}`} alt='Profile' className='w-full h-full object-cover' onError={(e) => (e.target.src = '/default-avatar.png')} />
           </motion.div>
           <div>
             <h1 className='text-3xl font-bold theme-text'>

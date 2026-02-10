@@ -211,7 +211,7 @@ const MessagesList = ({ messages, loading }) => {
                             {/* Sender name for received messages */}
                             {!isOwnMessage && (
                               <div className='flex items-center gap-2 mb-2'>
-                                <img src={message.sender?.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={message.sender?.firstName} className='w-6 h-6 rounded-full object-cover' />
+                                <img src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`} alt={message.sender?.firstName} className='w-6 h-6 rounded-full object-cover' />
                                 <p className='text-sm font-semibold theme-text'>
                                   {message.sender?.firstName} {message.sender?.lastName}
                                 </p>

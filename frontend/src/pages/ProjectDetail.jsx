@@ -266,7 +266,7 @@ const ProjectDetail = () => {
                     Assigned To
                   </h3>
                   <div className='flex items-center gap-3 mb-4'>
-                    <img src={project.assignee.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.assignee.firstName} className='w-14 h-14 rounded-full object-cover border-2 border-accent/20' />
+                    <img src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`} alt={project.assignee.firstName} className='w-14 h-14 rounded-full object-cover border-2 border-accent/20' />
                     <div>
                       <p className='font-semibold theme-text'>
                         {project.assignee.firstName} {project.assignee.lastName}
@@ -328,7 +328,7 @@ const ProjectDetail = () => {
                 <div className='theme-card p-6 rounded-lg'>
                   <h3 className='text-xl font-semibold theme-text mb-4'>Client Info</h3>
                   <div className='flex items-center gap-3'>
-                    <img src={project.user.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
+                    <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
                     <div>
                       <p className='font-semibold theme-text'>
                         {project.user.firstName} {project.user.lastName}

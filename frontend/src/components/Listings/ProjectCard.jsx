@@ -91,7 +91,7 @@ const ProjectCard = ({ project, index }) => {
         {/* Client info */}
         {project.user && (
           <div className='flex items-center gap-3 mb-4 pb-4 border-b dark:border-light/10 border-primary/10'>
-            <img src={project.user.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.user.firstName} className='w-10 h-10 rounded-full object-cover' />
+            <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-10 h-10 rounded-full object-cover' />
             <div>
               <p className='font-medium theme-text text-sm'>
                 {project.user.firstName} {project.user.lastName}

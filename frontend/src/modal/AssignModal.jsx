@@ -63,7 +63,7 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}>
                   <div className='flex items-center gap-3'>
-                    <img src={interested.userId.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={interested.userId.firstName} className='w-10 h-10 rounded-full object-cover' />
+                    <img src={interested.userId.profilePicture || `https://i.pravatar.cc/150?u=${interested.userId._id}`} alt={interested.userId.firstName} className='w-10 h-10 rounded-full object-cover' />
                     <div>
                       <p className='font-semibold'>
                         {interested.userId.firstName} {interested.userId.lastName}

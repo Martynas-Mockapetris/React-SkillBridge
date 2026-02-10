@@ -61,7 +61,7 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: index * 0.1 }} className='mb-6'>
       {/* Sender Header */}
       <div className='flex items-center gap-3 mb-4 pb-3 border-b dark:border-light/10 border-primary/10'>
-        <img src={sender?.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={sender?.firstName} className='w-12 h-12 rounded-full object-cover border-2 border-accent/20' />
+        <img src={sender?.profilePicture || `https://i.pravatar.cc/150?u=${sender?._id}`} alt={sender?.firstName} className='w-12 h-12 rounded-full object-cover border-2 border-accent/20' />
         <div>
           <h3 className='font-semibold theme-text'>
             {sender?.firstName} {sender?.lastName}
