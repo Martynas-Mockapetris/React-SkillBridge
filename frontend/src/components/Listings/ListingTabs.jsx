@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaUser, FaBriefcase } from 'react-icons/fa'
+import { useContext } from 'react'
+import { SearchContext } from '../../context/SearchContext'
 import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
@@ -13,6 +15,31 @@ const ListingTabs = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [projects, setProjects] = useState([])
   const [error, setError] = useState(null)
+  const { searchTerm } = useContext(SearchContext)
+
+  // Function to filter projects by search term
+  const filterProjects = (projectsList) => {
+    if (!searchTerm) return projectsList // If no search, return all
+
+    return projectsList.filter(
+      (project) =>
+        // Search in title, description, and skills
+        project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.skills?.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+  }
+
+  // Function to filter freelancers by search term
+  const filterFreelancers = (freelancersList) => {
+    if (!searchTerm) return freelancersList // If no search, return all
+
+    return freelancersList.filter(
+      (freelancer) =>
+        // Search in name and specialty
+        freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) || freelancer.specialty.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }
 
   // Dummy data for freelancers (will be replaced in future feature)
   const freelancersData = [
@@ -104,8 +131,11 @@ const ListingTabs = () => {
   const itemsPerPage = 6
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = activeTab === 'projects' ? projects.slice(indexOfFirstItem, indexOfLastItem) : freelancersData.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil((activeTab === 'projects' ? projects.length : freelancersData.length) / itemsPerPage)
+  const filteredProjects = filterProjects(projects)
+  const filteredFreelancers = filterFreelancers(freelancersData)
+
+  const currentItems = activeTab === 'projects' ? filteredProjects.slice(indexOfFirstItem, indexOfLastItem) : filteredFreelancers.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil((activeTab === 'projects' ? filteredProjects.length : filteredFreelancers.length) / itemsPerPage)
 
   return (
     <section className='w-full pt-0 pb-20 theme-bg relative z-[2]'>
@@ -190,8 +220,8 @@ const ListingTabs = () => {
                       .fill(0)
                       .map((_, index) => <CardLoader key={index} />)
                   : activeTab === 'projects'
-                  ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
-                  : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
+                    ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
+                    : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
               </div>
             )}
 

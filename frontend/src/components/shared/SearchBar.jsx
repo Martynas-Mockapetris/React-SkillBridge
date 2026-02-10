@@ -1,8 +1,34 @@
+import { useContext, useState } from 'react'
+import { SearchContext } from '../../context/SearchContext'
 import { FaSearch } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const SearchSection = () => {
+  // Get search context functions
+  const { searchTerm, updateSearch } = useContext(SearchContext)
+
+  // Local state for input field (temporary until user clicks search)
+  const [inputValue, setInputValue] = useState('')
+
+  // Handle input change - update local state as user types
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value)
+  }
+
+  // Handle search button click - update context
+  const handleSearch = () => {
+    updateSearch(inputValue)
+    setInputValue('')
+  }
+
+  // Handle Enter key press for search
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  }
+
   return (
     <section className='w-full pb-8 pt-[150px] theme-bg relative z-[3]'>
       {/* Background Pattern - reduced sizes */}
@@ -35,6 +61,9 @@ const SearchSection = () => {
             <input
               type='text'
               placeholder='Search opportunities...'
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyPress={handleKeyPress}
               className='w-full bg-primary/40 dark:bg-light/20 px-6 py-5 pl-14
             text-light dark:text-light text-lg
             transition-all duration-300
@@ -45,6 +74,7 @@ const SearchSection = () => {
             />
             <FaSearch className='absolute left-5 top-5 sm:top-1/2 sm:-translate-y-1/2 text-light/80 dark:text-primary/80' size={22} />
             <button
+              onClick={handleSearch}
               className='w-full sm:w-auto min-h-full h-auto bg-accent text-primary px-10 py-5 font-semibold text-lg
             transition-all duration-300 hover:bg-accent/90 hover:shadow-lg flex items-center justify-center'>
               Search
