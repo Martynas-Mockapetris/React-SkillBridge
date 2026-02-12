@@ -11,6 +11,7 @@ const FreelanceTab = ({ user }) => {
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null)
 
   // Fetch announcements when component mounts
   useEffect(() => {
@@ -41,6 +42,11 @@ const FreelanceTab = ({ user }) => {
         setError('Failed to delete announcement')
       }
     }
+  }
+
+  const handleEditAnnouncement = (announcement) => {
+    setEditingAnnouncement(announcement)
+    setIsModalOpen(true)
   }
 
   return (
@@ -130,7 +136,11 @@ const FreelanceTab = ({ user }) => {
                     {announcement.isActive ? '● Active' : '○ Paused'}
                   </span>
                   <div className='flex gap-2'>
-                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className='p-1.5 rounded text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleEditAnnouncement(announcement)}
+                      className='p-1.5 rounded text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'>
                       <FaEdit size={14} />
                     </motion.button>
                     <motion.button
@@ -150,11 +160,22 @@ const FreelanceTab = ({ user }) => {
       {/* Create Announcement Modal */}
       <CreateAnnouncementModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAnnouncementCreated={(newAnnouncement) => {
-          setAnnouncements([newAnnouncement, ...announcements])
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingAnnouncement(null)
         }}
-      />{' '}
+        editingAnnouncement={editingAnnouncement}
+        onAnnouncementCreated={(updatedAnnouncement) => {
+          if (editingAnnouncement) {
+            // Update existing announcement
+            setAnnouncements(announcements.map((a) => (a._id === updatedAnnouncement._id ? updatedAnnouncement : a)))
+            setEditingAnnouncement(null)
+          } else {
+            // Add new announcement
+            setAnnouncements([updatedAnnouncement, ...announcements])
+          }
+        }}
+      />
     </motion.div>
   )
 }

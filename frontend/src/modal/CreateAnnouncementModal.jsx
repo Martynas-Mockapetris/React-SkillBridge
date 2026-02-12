@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheck } from 'react-icons/fa'
-import { createAnnouncement } from '../services/announcementService'
+import { createAnnouncement, updateAnnouncement } from '../services/announcementService'
 
-const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => {
+const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editingAnnouncement }) => {
+  const isEditMode = !!editingAnnouncement
   // Form state
   const [formData, setFormData] = useState({
-    title: '',
-    hourlyRate: '',
-    skills: '',
-    background: ''
+    title: editingAnnouncement?.title || '',
+    hourlyRate: editingAnnouncement?.hourlyRate || '',
+    skills: editingAnnouncement?.skills?.join(', ') || '',
+    background: editingAnnouncement?.background || ''
   })
 
   // UI state
@@ -90,8 +91,13 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
         background: formData.background.trim()
       }
 
-      // Submit to backend
-      const response = await createAnnouncement(announcementData)
+      // Submit to backend - create or update
+      let response
+      if (isEditMode) {
+        response = await updateAnnouncement(editingAnnouncement._id, announcementData)
+      } else {
+        response = await createAnnouncement(announcementData)
+      }
 
       // Show success message
       setSuccess(true)
@@ -124,10 +130,10 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
   const handleClose = () => {
     if (!loading) {
       setFormData({
-        title: '',
-        hourlyRate: '',
-        skills: '',
-        background: ''
+        title: editingAnnouncement?.title || '',
+        hourlyRate: editingAnnouncement?.hourlyRate || '',
+        skills: editingAnnouncement?.skills?.join(', ') || '',
+        background: editingAnnouncement?.background || ''
       })
       setError('')
       setSuccess(false)
@@ -236,7 +242,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
                     placeholder='Describe your experience, specialties, and what you offer...'
                     disabled={loading}
                     rows='4'
-                    className='w-full px-4 py-2 rounded-lg theme-input border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all resize-none disabled:opacity-50'
+                    className='w-full px-4 py-2 rounded-lg theme-input theme-text border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all resize-none disabled:opacity-50'
                   />
                 </div>
 
@@ -248,7 +254,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
                     disabled={loading}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className='flex-1 px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:bg-accent/10 transition-colors disabled:opacity-50'>
+                    className='flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg theme-text hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50'>
                     Cancel
                   </motion.button>
 
@@ -266,7 +272,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
                     ) : (
                       <>
                         <FaCheck />
-                        Create Announcement
+                        {isEditMode ? 'Update Announcement' : 'Create Announcement'}
                       </>
                     )}
                   </motion.button>
