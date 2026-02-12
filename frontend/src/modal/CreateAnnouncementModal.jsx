@@ -191,7 +191,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
                     onChange={handleInputChange}
                     placeholder='e.g., Senior React Developer Available'
                     disabled={loading}
-                    className='w-full px-4 py-2 rounded-lg theme-input border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all disabled:opacity-50'
+                    className='w-full px-4 py-2 rounded-lg theme-input theme-text border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all disabled:opacity-50'
                   />
                 </div>
 
@@ -207,7 +207,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
                     min='1'
                     step='0.5'
                     disabled={loading}
-                    className='w-full px-4 py-2 rounded-lg theme-input border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all disabled:opacity-50'
+                    className='w-full px-4 py-2 rounded-lg theme-input theme-text border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all disabled:opacity-50'
                   />
                 </div>
 
@@ -221,7 +221,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated }) => 
                     onChange={handleInputChange}
                     placeholder='e.g., React, JavaScript, Node.js, MongoDB'
                     disabled={loading}
-                    className='w-full px-4 py-2 rounded-lg theme-input border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all disabled:opacity-50'
+                    className='w-full px-4 py-2 rounded-lg theme-input theme-text border dark:border-light/10 border-primary/10 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all disabled:opacity-50'
                   />
                   <p className='text-xs theme-text-secondary mt-1'>Separate skills with commas</p>
                 </div>
