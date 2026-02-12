@@ -319,3 +319,20 @@ export const getFavoriteProjects = async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 }
+
+// @desc    Get all freelancers (freelancer + both)
+// @route   GET /api/users/freelancers
+// @access  Public
+export const getFreelancers = async (req, res) => {
+  try {
+    // Only users who registered as freelancer or both
+    const freelancers = await User.find({
+      userType: { $in: ['freelancer', 'both'] }
+    }).select('firstName lastName profilePicture skills bio userType createdAt')
+
+    res.json(freelancers)
+  } catch (error) {
+    console.error('Error fetching freelancers:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}

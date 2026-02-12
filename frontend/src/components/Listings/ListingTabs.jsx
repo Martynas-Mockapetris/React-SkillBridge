@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaUser, FaBriefcase } from 'react-icons/fa'
+import { useContext } from 'react'
+import { SearchContext } from '../../context/SearchContext'
 import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
 import { getAllProjects } from '../../services/projectService'
+import { getFreelancers } from '../../services/userService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const ListingTabs = () => {
@@ -12,65 +15,33 @@ const ListingTabs = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [projects, setProjects] = useState([])
+  const [freelancers, setFreelancers] = useState([])
   const [error, setError] = useState(null)
+  const { searchTerm } = useContext(SearchContext)
 
-  // Dummy data for freelancers (will be replaced in future feature)
-  const freelancersData = [
-    {
-      id: 1,
-      name: 'Emma Thompson',
-      specialty: 'Full-Stack Developer',
-      rating: 4.9,
-      hourlyRate: '€65/hr',
-      image: 'https://i.pravatar.cc/150?img=1',
-      completedProjects: 6
-    },
-    {
-      id: 2,
-      name: 'Marcus Chen',
-      specialty: 'UI/UX Designer',
-      rating: 4.8,
-      hourlyRate: '€55/hr',
-      image: 'https://i.pravatar.cc/150?img=2',
-      completedProjects: 9
-    },
-    {
-      id: 3,
-      name: 'Sofia Rodriguez',
-      specialty: 'Frontend Developer',
-      rating: 4.9,
-      hourlyRate: '€60/hr',
-      image: 'https://i.pravatar.cc/150?img=3',
-      completedProjects: 34
-    },
-    {
-      id: 4,
-      name: 'Alex Kumar',
-      specialty: 'Backend Developer',
-      rating: 4.7,
-      hourlyRate: '€70/hr',
-      image: 'https://i.pravatar.cc/150?img=4',
-      completedProjects: 8
-    },
-    {
-      id: 5,
-      name: 'Laura Mitchell',
-      specialty: 'Mobile Developer',
-      rating: 4.8,
-      hourlyRate: '€75/hr',
-      image: 'https://i.pravatar.cc/150?img=5',
-      completedProjects: 27
-    },
-    {
-      id: 6,
-      name: 'David Park',
-      specialty: 'DevOps Engineer',
-      rating: 4.9,
-      hourlyRate: '€80/hr',
-      image: 'https://i.pravatar.cc/150?img=6',
-      completedProjects: 45
-    }
-  ]
+  // Function to filter projects by search term
+  const filterProjects = (projectsList) => {
+    if (!searchTerm) return projectsList // If no search, return all
+
+    return projectsList.filter(
+      (project) =>
+        // Search in title, description, and skills
+        project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.skills?.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+  }
+
+  // Function to filter freelancers by search term
+  const filterFreelancers = (freelancersList) => {
+    if (!searchTerm) return freelancersList // If no search, return all
+
+    return freelancersList.filter(
+      (freelancer) =>
+        // Search in name and specialty
+        freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) || freelancer.specialty.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }
 
   // Fetch projects from API
   useEffect(() => {
@@ -88,11 +59,31 @@ const ListingTabs = () => {
           setIsLoading(false)
         }
       } else {
-        // For freelancers tab, just show loading state briefly
-        setIsLoading(true)
-        setTimeout(() => {
+        // Fetch freelancers from API
+        try {
+          setIsLoading(true)
+          setError(null)
+
+          const data = await getFreelancers()
+
+          // Map API users into FreelancerCard format
+          const mapped = data.map((user) => ({
+            id: user._id,
+            name: `${user.firstName} ${user.lastName}`,
+            specialty: user.skills || 'Freelancer',
+            rating: 'New', // placeholder for now (real rating later)
+            hourlyRate: '€—/hr', // placeholder for now (real rate later)
+            image: user.profilePicture || `https://i.pravatar.cc/150?u=${user._id}`,
+            completedProjects: 0 // placeholder (real count later)
+          }))
+
+          setFreelancers(mapped)
+        } catch (err) {
+          console.error('Error fetching freelancers:', err)
+          setError('Failed to load freelancers. Please try again.')
+        } finally {
           setIsLoading(false)
-        }, 500)
+        }
       }
       setCurrentPage(1)
     }
@@ -104,8 +95,12 @@ const ListingTabs = () => {
   const itemsPerPage = 6
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = activeTab === 'projects' ? projects.slice(indexOfFirstItem, indexOfLastItem) : freelancersData.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil((activeTab === 'projects' ? projects.length : freelancersData.length) / itemsPerPage)
+  const filteredProjects = filterProjects(projects)
+  const filteredFreelancers = filterFreelancers(freelancers)
+
+  const currentItems = activeTab === 'projects' ? filteredProjects.slice(indexOfFirstItem, indexOfLastItem) : filteredFreelancers.slice(indexOfFirstItem, indexOfLastItem)
+
+  const totalPages = Math.ceil((activeTab === 'projects' ? filteredProjects.length : filteredFreelancers.length) / itemsPerPage)
 
   return (
     <section className='w-full pt-0 pb-20 theme-bg relative z-[2]'>
@@ -190,8 +185,8 @@ const ListingTabs = () => {
                       .fill(0)
                       .map((_, index) => <CardLoader key={index} />)
                   : activeTab === 'projects'
-                  ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
-                  : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
+                    ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
+                    : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
               </div>
             )}
 

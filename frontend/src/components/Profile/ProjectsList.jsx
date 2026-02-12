@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
@@ -11,6 +11,7 @@ import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser } = useAuth() // Get the current user
   const [projectType, setProjectType] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -21,6 +22,9 @@ const ProjectsList = () => {
   const [selectedProject, setSelectedProject] = useState(null)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [favorites, setFavorites] = useState([])
+  const [statusFilter, setStatusFilter] = useState('all')
+
+  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
   const openModal = () => {
     setModalMode('create')
@@ -56,22 +60,48 @@ const ProjectsList = () => {
     loadFavorites()
   }, [currentUser])
 
-  // Function to fetch projects
+  // Reload projects and favorites when user navigates back to this page
+  useEffect(() => {
+    if (currentUser) {
+      fetchProjects()
+    }
+  }, [location.pathname, currentUser])
+
+  // Function to fetch projects and favorites
   const fetchProjects = async () => {
     try {
       setLoading(true)
 
-      // Fetch both created projects and interested projects
+      // Fetch created, interested, and favorite projects
       const [createdProjects, interestedProjects] = await Promise.all([getUserProjects(), getInterestedProjects()])
 
-      // Combine and remove duplicates (in case user created a project they're also interested in)
+      // Combine and remove duplicates
       const allProjects = [...createdProjects]
 
+      // Add interested projects
       interestedProjects.forEach((interestedProject) => {
         if (!allProjects.some((p) => p._id === interestedProject._id)) {
           allProjects.push(interestedProject)
         }
       })
+
+      // Also fetch and merge favorite projects
+      if (currentUser) {
+        try {
+          const favProjects = await getFavoriteProjects()
+          const favoriteIds = favProjects.map((fav) => fav._id)
+          setFavorites(favoriteIds)
+
+          // Add favorite project objects to allProjects if not already there
+          favProjects.forEach((favProject) => {
+            if (!allProjects.some((p) => p._id === favProject._id)) {
+              allProjects.push(favProject)
+            }
+          })
+        } catch (error) {
+          console.error('Error loading favorites:', error)
+        }
+      }
 
       setProjects(allProjects)
       setError(null)
@@ -151,7 +181,22 @@ const ProjectsList = () => {
     return 'other'
   }
 
-  const filteredProjects = projectType === 'all' ? projects : projectType === 'favorites' ? projects.filter((project) => isFavorited(project._id)) : projects.filter((project) => getProjectType(project) === projectType)
+  // Apply tab filter first
+  let filteredProjects =
+    projectType === 'all'
+      ? projects.filter((project) => project.status !== 'archived')
+      : projectType === 'favorites'
+        ? projects.filter((project) => isFavorited(project._id) && project.status !== 'archived' && project.status !== 'completed')
+        : projectType === 'archived'
+          ? projects.filter((project) => project.status === 'archived')
+          : projectType === 'completed'
+            ? projects.filter((project) => project.status === 'completed')
+            : projects.filter((project) => getProjectType(project) === projectType && project.status !== 'archived' && project.status !== 'completed')
+
+  // Apply status filter if "All Projects" tab is selected
+  if (projectType === 'all' && statusFilter !== 'all') {
+    filteredProjects = filteredProjects.filter((project) => project.status === statusFilter)
+  }
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -211,7 +256,44 @@ const ProjectsList = () => {
           <FaHeart />
           Favorites
         </motion.button>
+        <motion.button
+          onClick={() => setProjectType('completed')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
+    ${projectType === 'completed' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+          <FaCheck />
+          Completed
+        </motion.button>
+        <motion.button
+          onClick={() => setProjectType('archived')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300
+    ${projectType === 'archived' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+          <FaArchive />
+          Archived
+        </motion.button>
       </motion.div>
+
+      {/* Status Filter - Only show when "All Projects" tab is selected */}
+      {projectType === 'all' && (
+        <motion.select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className='px-4 py-2 rounded-lg border-2 border-accent/20 theme-bg theme-text transition-all duration-300 hover:border-accent/50 focus:border-accent focus:outline-none'
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}>
+          <option value='all'>All Statuses</option>
+          <option value='active'>Active</option>
+          <option value='in_progress'>In Progress</option>
+          <option value='under_review'>Under Review</option>
+          <option value='completed'>Completed</option>
+          <option value='paused'>Paused</option>
+          <option value='cancelled'>Cancelled</option>
+        </motion.select>
+      )}
 
       {/* Loading State */}
       {loading && (
@@ -238,11 +320,17 @@ const ProjectsList = () => {
               ? "You don't have any projects yet. Create a new project to get started!"
               : projectType === 'created'
                 ? "You haven't created any projects yet. Click 'New Project' to create one!"
-                : projectType === 'interested'
-                  ? "You haven't shown interest in any projects yet. Browse projects to get started!"
-                  : projectType === 'favorites'
-                    ? 'No favorite projects yet. Click the heart icon on any project to add it to your favorites!'
-                    : "You aren't working on any freelance projects yet."}
+                : projectType === 'freelance'
+                  ? "You aren't working on any freelance projects yet. Browse available projects to get started!"
+                  : projectType === 'interested'
+                    ? "You haven't shown interest in any projects yet. Browse projects to get started!"
+                    : projectType === 'favorites'
+                      ? 'No favorite projects yet. Click the heart icon on any project to add it to your favorites!'
+                      : projectType === 'completed'
+                        ? 'No completed projects yet. Once projects are finished and reviewed, they will appear here!'
+                        : projectType === 'archived'
+                          ? 'No archived projects yet. Completed projects can be archived to keep your workspace clean!'
+                          : 'No projects found in this category.'}
           </p>
         </div>
       )}
@@ -296,12 +384,12 @@ const ProjectsList = () => {
                       <span className='text-sm'>{formatStatus(project.status)}</span>
                     </div>
 
-                    {isCreator(project) && project.assignee && (
-                      <div className='text-sm text-accent mt-1'>
+                    {project.assignee && (isCreator(project) || isAssignee(project)) && (
+                      <div className='text-sm text-accent'>
                         Assigned: {project.assignee.firstName} {project.assignee.lastName}
                       </div>
                     )}
-                    <div className='theme-text-secondary text-sm'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
+                    <div className='theme-text-secondary text-sm mt-[2px]'>Due: {new Date(project.deadline).toLocaleDateString()}</div>
                   </div>
                 </div>
                 <div className='text-right'>
@@ -315,14 +403,15 @@ const ProjectsList = () => {
                     <span>View</span>
                   </motion.button>
                   {(() => {
-                    // Check if user is interested in this project (but not the creator)
+                    // Check if user is interested in this project (but not the creator or assigned)
                     const isCreator = project.user._id === currentUser._id || project.user === currentUser._id
                     const isInterested = project.interestedUsers?.some((u) => {
                       const userId = u.userId._id ? u.userId._id : u.userId
                       return userId === currentUser._id
                     })
 
-                    return !isCreator && isInterested
+                    // Only show Remove button if: NOT creator AND interested AND NOT assigned
+                    return !isCreator && isInterested && !isAssignee(project)
                   })() && (
                     <motion.button
                       onClick={async () => {
@@ -371,6 +460,7 @@ const ProjectsList = () => {
                   ) : (
                     <motion.button
                       onClick={async () => {
+                        if (isLockedStatus(project.status)) return
                         try {
                           await removeAssignee(project._id)
                           await fetchProjects()
@@ -378,10 +468,13 @@ const ProjectsList = () => {
                           console.error('Error removing assignee:', err)
                         }
                       }}
-                      className='w-full py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded transition-all'
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}>
-                      Remove Assignment
+                      disabled={isLockedStatus(project.status)}
+                      className={`w-full py-2 rounded transition-all ${
+                        isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white'
+                      }`}
+                      whileHover={isLockedStatus(project.status) ? {} : { scale: 1.02 }}
+                      whileTap={isLockedStatus(project.status) ? {} : { scale: 0.98 }}>
+                      {isLockedStatus(project.status) ? 'Assigning Locked' : 'Remove Assignment'}
                     </motion.button>
                   )}
                 </div>
@@ -392,14 +485,18 @@ const ProjectsList = () => {
                 <div className='mt-2 space-y-2'>
                   <motion.button
                     onClick={() => {
+                      if (isLockedStatus(project.status)) return
                       setSelectedProject(project)
                       setModalMode('edit')
                       setIsModalOpen(true)
                     }}
-                    className='w-full py-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded transition-all'
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}>
-                    Edit Project
+                    disabled={isLockedStatus(project.status)}
+                    className={`w-full py-2 rounded transition-all ${
+                      isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'
+                    }`}
+                    whileHover={isLockedStatus(project.status) ? {} : { scale: 1.02 }}
+                    whileTap={isLockedStatus(project.status) ? {} : { scale: 0.98 }}>
+                    {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
                   </motion.button>
                   {project.status === 'draft' && (
                     <motion.button

@@ -6,6 +6,7 @@ import authRoutes from './src/routes/authRoutes.js'
 import userRoutes from './src/routes/userRoutes.js'
 import projectRoutes from './src/routes/projectRoutes.js'
 import messageRoutes from './src/routes/messageRoutes.js'
+import announcementRoutes from './src/routes/announcementRoutes.js'
 
 dotenv.config()
 
@@ -31,6 +32,10 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/projects', projectRoutes)
 app.use('/api/messages', messageRoutes)
+app.use('/api/announcements', announcementRoutes)
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'))
 
 // Port
 const PORT = process.env.PORT

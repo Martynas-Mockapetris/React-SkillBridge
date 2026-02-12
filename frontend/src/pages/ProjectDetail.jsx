@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags } from 'react-icons/fa'
-import { getProjectById } from '../services/projectService'
+import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
+import { getProjectById, archiveProject } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
@@ -11,6 +11,8 @@ import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { getProjectMessages } from '../services/messageService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../services/userService'
 import { formatStatus } from '../utils/formatters'
+import SubmitProjectModal from '../modal/SubmitProjectModal'
+import ReviewProjectModal from '../modal/ReviewProjectModal'
 
 const ProjectDetail = () => {
   const { id } = useParams()
@@ -28,6 +30,12 @@ const ProjectDetail = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+
+  const isOwner = currentUser && project && currentUser._id === project.user?._id
+  const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
+  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
   // Load project data
   const loadProject = async () => {
@@ -206,17 +214,45 @@ const ProjectDetail = () => {
               </div>
 
               {/* Skills Required */}
-              {project.skills && project.skills.length > 0 && (
-                <div className='theme-card p-2 rounded-lg'>
-                  <h2 className='text-2xl font-semibold theme-text mb-4'>Skills Required</h2>
-                  <div className='flex flex-wrap gap-2'>
-                    {project.skills.map((skill, index) => (
-                      <span key={index} className='px-3 py-1 bg-accent/10 text-accent rounded-full text-sm'>
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+              <div className='theme-card p-6 rounded-lg'>
+                <h3 className='text-xl font-semibold theme-text mb-4'>Skills Required</h3>
+                <div className='flex flex-wrap gap-2'>
+                  {project.skills?.map((skill, index) => (
+                    <motion.span key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className='px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium'>
+                      {skill}
+                    </motion.span>
+                  ))}
                 </div>
+              </div>
+
+              {/* Review Feedback Section - visible to both */}
+              {project.review && project.review.decision && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg border-l-4 border-accent space-y-3'>
+                  <div className='flex items-center gap-2'>
+                    {project.review.decision === 'accepted' ? (
+                      <>
+                        <FaCheck className='text-green-500 text-xl' />
+                        <h3 className='text-lg font-semibold text-green-600 dark:text-green-400'>Project Accepted</h3>
+                      </>
+                    ) : (
+                      <>
+                        <FaTimes className='text-red-500 text-xl' />
+                        <h3 className='text-lg font-semibold text-red-600 dark:text-red-400'>Changes Requested</h3>
+                      </>
+                    )}
+                  </div>
+
+                  {project.review.feedback && (
+                    <div className='bg-primary/5 dark:bg-light/5 rounded-lg p-4 border border-primary/10 dark:border-light/10'>
+                      <p className='text-xs font-semibold theme-text-secondary mb-2'>Feedback from Client:</p>
+                      <p className='text-sm theme-text leading-relaxed'>{project.review.feedback}</p>
+                    </div>
+                  )}
+
+                  <p className='text-xs theme-text-secondary'>
+                    {new Date(project.review.reviewedAt).toLocaleDateString()} at {new Date(project.review.reviewedAt).toLocaleTimeString()}
+                  </p>
+                </motion.div>
               )}
             </motion.div>
 
@@ -230,7 +266,11 @@ const ProjectDetail = () => {
                     Assigned To
                   </h3>
                   <div className='flex items-center gap-3 mb-4'>
-                    <img src={project.assignee.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.assignee.firstName} className='w-14 h-14 rounded-full object-cover border-2 border-accent/20' />
+                    <img
+                      src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`}
+                      alt={project.assignee.firstName}
+                      className='w-14 h-14 rounded-full object-cover border-2 border-accent/20'
+                    />
                     <div>
                       <p className='font-semibold theme-text'>
                         {project.assignee.firstName} {project.assignee.lastName}
@@ -240,7 +280,8 @@ const ProjectDetail = () => {
                   </div>
 
                   {/* Contact button */}
-                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && (
+                  {/* Only show if project is NOT (completed/archived) */}
+                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && !['completed', 'archived'].includes(project.status) && (
                     <div className='pt-4 border-t dark:border-light/10 border-primary/10'>
                       <motion.button
                         onClick={() => navigate(`/messages`)}
@@ -291,7 +332,7 @@ const ProjectDetail = () => {
                 <div className='theme-card p-6 rounded-lg'>
                   <h3 className='text-xl font-semibold theme-text mb-4'>Client Info</h3>
                   <div className='flex items-center gap-3'>
-                    <img src={project.user.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
+                    <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
                     <div>
                       <p className='font-semibold theme-text'>
                         {project.user.firstName} {project.user.lastName}
@@ -304,24 +345,76 @@ const ProjectDetail = () => {
 
               {/* Action Buttons - Placeholder for future commits */}
               <div className='theme-card p-6 rounded-lg space-y-3'>
-                {currentUser && currentUser._id === project.user?._id && (
-                  <button onClick={() => setIsEditModalOpen(true)} className='w-full py-3 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all'>
-                    Edit Project
+                {currentUser && currentUser._id === project.user?._id && !['completed', 'archived'].includes(project.status) && (
+                  <button
+                    onClick={() => {
+                      if (isLockedStatus(project.status)) return
+                      setIsEditModalOpen(true)
+                    }}
+                    disabled={isLockedStatus(project.status)}
+                    className={`w-full py-3 rounded-lg transition-all ${
+                      isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'
+                    }`}>
+                    {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
                   </button>
                 )}
-                {currentUser && currentUser._id !== project.user?._id ? (
-                  <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Contact Creator
+                {!['completed', 'archived'].includes(project.status) && (
+                  <>
+                    {currentUser && currentUser._id !== project.user?._id ? (
+                      <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                        Contact Creator
+                      </button>
+                    ) : !currentUser ? (
+                      <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                        Login to Contact
+                      </button>
+                    ) : (
+                      <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
+                        Your Project
+                      </button>
+                    )}
+                  </>
+                )}
+                {/* Submission/Review Buttons */}
+                {isAssignee && project.status === 'in_progress' && (
+                  <button onClick={() => setIsSubmitModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                    Submit Project
                   </button>
-                ) : !currentUser ? (
-                  <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Login to Contact
-                  </button>
-                ) : (
+                )}
+
+                {isAssignee && project.status === 'under_review' && (
                   <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                    Your Project
+                    Pending Review
                   </button>
                 )}
+
+                {isOwner && project.status === 'in_progress' && (
+                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
+                    Pending Project
+                  </button>
+                )}
+
+                {isOwner && project.status === 'under_review' && (
+                  <button onClick={() => setIsReviewModalOpen(true)} className='w-full py-3 bg-purple-500/10 text-purple-600 rounded-lg hover:bg-purple-500 hover:text-white transition-all'>
+                    Review Submission
+                  </button>
+                )}
+                {project.status === 'completed' && isOwner && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await archiveProject(project._id)
+                        loadProject() // Reload to get updated status
+                      } catch (error) {
+                        console.error('Error archiving project:', error)
+                        alert('Failed to archive project')
+                      }
+                    }}
+                    className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                    Archive Project
+                  </button>
+                )}
+                {/* Favorite Button */}
                 <button
                   onClick={async () => {
                     if (!currentUser) {
@@ -382,6 +475,11 @@ const ProjectDetail = () => {
 
       {/* Contact Modal */}
       {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
+
+      {/* Submit and Review Modals */}
+      {project && <SubmitProjectModal isOpen={isSubmitModalOpen} onClose={() => setIsSubmitModalOpen(false)} project={project} onSubmitSuccess={loadProject} />}
+
+      {project && <ReviewProjectModal isOpen={isReviewModalOpen} onClose={() => setIsReviewModalOpen(false)} project={project} onReviewSuccess={loadProject} />}
     </section>
   )
 }

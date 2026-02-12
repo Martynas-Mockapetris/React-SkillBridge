@@ -48,6 +48,47 @@ const projectSchema = mongoose.Schema(
         mimetype: String
       }
     ],
+    submission: {
+      links: {
+        type: [String],
+        default: []
+      },
+      files: [
+        {
+          name: String,
+          path: String,
+          mimetype: String
+        }
+      ],
+      note: {
+        type: String,
+        default: ''
+      },
+      submittedAt: {
+        type: Date
+      },
+      submittedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    },
+    review: {
+      decision: {
+        type: String,
+        enum: ['accepted', 'declined']
+      },
+      feedback: {
+        type: String,
+        default: ''
+      },
+      reviewedAt: {
+        type: Date
+      },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    },
     interestedUsers: [
       {
         userId: {

@@ -104,3 +104,14 @@ export const updateUserProfile = async (profileData) => {
     throw error
   }
 }
+
+// Get all freelancers (freelancer + both)
+export const getFreelancers = async () => {
+  try {
+    const response = await axios.get('/api/users/freelancers')
+    return response.data
+  } catch (error) {
+    console.error('Failed to get freelancers:', error.response?.data || error.message)
+    throw error
+  }
+}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
 import SecuritySettings from '../components/Profile/SecuritySettings'
+import FreelanceTab from '../components/Profile/FreelanceTab'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import MessagesList from '../components/Profile/MessagesList'
 import { getUserMessages } from '../services/messageService'
@@ -48,6 +49,10 @@ const Profile = () => {
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     { id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> },
     { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
+    // Freelance tab - only visible to freelancers
+    ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
+      ? [{ id: 'freelance', label: 'Freelance', icon: <FaBriefcase /> }]
+      : []),
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
   ]
@@ -77,7 +82,7 @@ const Profile = () => {
         {/* Profile Header */}
         <motion.div className='flex items-center gap-6 mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <motion.div className='w-24 h-24 rounded-full overflow-hidden border-4 border-accent' whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
-            <img src={currentUser?.profilePicture || 'https://i.pravatar.cc/150?img=1'} alt='Profile' className='w-full h-full object-cover' onError={(e) => (e.target.src = '/default-avatar.png')} />
+            <img src={currentUser?.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id}`} alt='Profile' className='w-full h-full object-cover' onError={(e) => (e.target.src = '/default-avatar.png')} />
           </motion.div>
           <div>
             <h1 className='text-3xl font-bold theme-text'>
@@ -111,6 +116,7 @@ const Profile = () => {
             {activeTab === 'overview' && <ProfileStats user={currentUser} />}
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
             {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
+            {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
             {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
             {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>
