@@ -82,59 +82,65 @@ const FreelanceTab = ({ user }) => {
             </motion.button>
           </div>
         ) : (
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            {announcements.map((announcement) => (
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            {announcements.map((announcement, index) => (
               <motion.div
                 key={announcement._id}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className='theme-card p-6 rounded-lg border dark:border-light/10 border-primary/10 hover:shadow-md transition-shadow'>
-                {/* Announcement Header */}
-                <div className='flex justify-between items-start mb-3'>
-                  <div>
-                    <h3 className='text-lg font-semibold theme-text'>{announcement.title}</h3>
-                    <p className='text-accent font-bold text-lg'>€{announcement.hourlyRate}/hr</p>
+                whileHover={{
+                  scale: 1.02,
+                  transition: { duration: 0.1 }
+                }}
+                transition={{ duration: 0.2, delay: index * 0.1 }}
+                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 group backdrop-blur-sm'>
+                {/* Title Section */}
+                <div className='flex items-start gap-4 mb-4'>
+                  <div className='flex-1'>
+                    <h3 className='flex text-xl font-bold mb-2 theme-text'>{announcement.title}</h3>
+                    <div className='flex gap-2 flex-wrap'>
+                      {announcement.skills.slice(0, 2).map((skill, idx) => (
+                        <span key={idx} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent'>
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+                </div>
+
+                {/* Rate Section */}
+                <div className='flex items-center justify-between mb-3'>
+                  <div className='flex items-center gap-1'>
+                    <span className='font-medium theme-text'>Hourly Rate</span>
+                  </div>
+                  <span className='font-bold text-accent text-lg'>€{announcement.hourlyRate}/hr</span>
+                </div>
+
+                {/* Background Section */}
+                <div className='flex items-center gap-2 theme-text-secondary text-sm line-clamp-2'>
+                  <span>{announcement.background}</span>
+                </div>
+
+                {/* Status Badge */}
+                <div className='mt-4 flex items-center justify-between'>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                      announcement.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}>
+                    {announcement.isActive ? '● Active' : '○ Paused'}
+                  </span>
                   <div className='flex gap-2'>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className='p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors'>
-                      <FaEdit />
+                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className='p-1.5 rounded text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'>
+                      <FaEdit size={14} />
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleDeleteAnnouncement(announcement._id)}
-                      className='p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors'>
-                      <FaTrash />
+                      className='p-1.5 rounded text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors'>
+                      <FaTrash size={14} />
                     </motion.button>
                   </div>
-                </div>
-
-                {/* Skills */}
-                <div className='mb-3'>
-                  <p className='text-sm font-semibold theme-text-secondary mb-2'>Skills:</p>
-                  <div className='flex flex-wrap gap-2'>
-                    {announcement.skills.map((skill, idx) => (
-                      <span key={idx} className='bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-medium'>
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Background */}
-                <p className='theme-text-secondary text-sm'>{announcement.background}</p>
-
-                {/* Status */}
-                <div className='mt-3 flex items-center gap-2'>
-                  <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      announcement.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                    }`}>
-                    {announcement.isActive ? 'Active' : 'Paused'}
-                  </span>
                 </div>
               </motion.div>
             ))}
