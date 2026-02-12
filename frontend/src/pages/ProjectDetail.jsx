@@ -266,7 +266,11 @@ const ProjectDetail = () => {
                     Assigned To
                   </h3>
                   <div className='flex items-center gap-3 mb-4'>
-                    <img src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`} alt={project.assignee.firstName} className='w-14 h-14 rounded-full object-cover border-2 border-accent/20' />
+                    <img
+                      src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`}
+                      alt={project.assignee.firstName}
+                      className='w-14 h-14 rounded-full object-cover border-2 border-accent/20'
+                    />
                     <div>
                       <p className='font-semibold theme-text'>
                         {project.assignee.firstName} {project.assignee.lastName}
