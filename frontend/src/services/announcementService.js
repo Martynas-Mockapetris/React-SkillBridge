@@ -1,5 +1,29 @@
 import axios from 'axios'
 
+// Get authentication token from localStorage
+const getToken = () => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  return user.token
+}
+
+// Create authenticated axios instance
+const createAuthAxios = () => {
+  const instance = axios.create()
+
+  // Add request interceptor to automatically set auth header
+  instance.interceptors.request.use((config) => {
+    const token = getToken()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  })
+
+  return instance
+}
+
+const authAxios = createAuthAxios()
+
 // Get all active announcements (public, no auth needed)
 // Used when browsing freelancers
 export const getAllAnnouncements = async () => {
@@ -16,7 +40,7 @@ export const getAllAnnouncements = async () => {
 // Used in FreelanceTab to display user's own announcements
 export const getUserAnnouncements = async () => {
   try {
-    const response = await axios.get('/api/announcements/my-announcements')
+    const response = await authAxios.get('/api/announcements/my-announcements')
     return response.data
   } catch (error) {
     console.error('Error fetching user announcements:', error)
@@ -33,7 +57,7 @@ export const getUserAnnouncements = async () => {
 //   - title: string (announcement headline)
 export const createAnnouncement = async (announcementData) => {
   try {
-    const response = await axios.post('/api/announcements', announcementData)
+    const response = await authAxios.post('/api/announcements', announcementData)
     return response.data
   } catch (error) {
     console.error('Error creating announcement:', error)
@@ -48,7 +72,7 @@ export const createAnnouncement = async (announcementData) => {
 //   - updates: object with fields to update (hourlyRate, skills, background, title)
 export const updateAnnouncement = async (id, updates) => {
   try {
-    const response = await axios.put(`/api/announcements/${id}`, updates)
+    const response = await authAxios.put(`/api/announcements/${id}`, updates)
     return response.data
   } catch (error) {
     console.error('Error updating announcement:', error)
@@ -62,7 +86,7 @@ export const updateAnnouncement = async (id, updates) => {
 //   - id: announcement ID to delete
 export const deleteAnnouncement = async (id) => {
   try {
-    const response = await axios.delete(`/api/announcements/${id}`)
+    const response = await authAxios.delete(`/api/announcements/${id}`)
     return response.data
   } catch (error) {
     console.error('Error deleting announcement:', error)
@@ -76,7 +100,7 @@ export const deleteAnnouncement = async (id) => {
 //   - id: announcement ID
 export const toggleAnnouncementStatus = async (id) => {
   try {
-    const response = await axios.patch(`/api/announcements/${id}/toggle`)
+    const response = await authAxios.patch(`/api/announcements/${id}/toggle`)
     return response.data
   } catch (error) {
     console.error('Error toggling announcement status:', error)
