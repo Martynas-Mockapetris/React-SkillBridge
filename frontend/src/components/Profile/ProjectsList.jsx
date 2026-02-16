@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive } from 'react-icons/fa'
+import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive, FaStar } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
+import RatingModal from '../../modal/RatingModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject } from '../../services/projectService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
@@ -23,6 +24,9 @@ const ProjectsList = () => {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [favorites, setFavorites] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
+  const [selectedFreelancerForRating, setSelectedFreelancerForRating] = useState(null)
+  const [selectedProjectForRating, setSelectedProjectForRating] = useState(null)
 
   const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
@@ -402,6 +406,20 @@ const ProjectsList = () => {
                     <FaEye />
                     <span>View</span>
                   </motion.button>
+                  {project.status === 'completed' && project.assignee && isCreator(project) && (
+                    <motion.button
+                      onClick={() => {
+                        setSelectedFreelancerForRating(project.assignee)
+                        setSelectedProjectForRating(project)
+                        setIsRatingModalOpen(true)
+                      }}
+                      className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-all duration-300'
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}>
+                      <FaStar />
+                      <span>Rate Freelancer</span>
+                    </motion.button>
+                  )}
                   {(() => {
                     // Check if user is interested in this project (but not the creator or assigned)
                     const isCreator = project.user._id === currentUser._id || project.user === currentUser._id
@@ -554,6 +572,21 @@ const ProjectsList = () => {
         }}
         project={selectedProject}
         onAssignSuccess={fetchProjects}
+      />
+      {/* Rating Modal for manual rating of completed projects */}
+      <RatingModal
+        isOpen={isRatingModalOpen}
+        onClose={() => {
+          setIsRatingModalOpen(false)
+          setSelectedFreelancerForRating(null)
+          setSelectedProjectForRating(null)
+        }}
+        freelancer={selectedFreelancerForRating}
+        projectId={selectedProjectForRating?._id}
+        onRatingSubmitted={() => {
+          // Refresh projects to show updated rating
+          fetchProjects()
+        }}
       />
     </motion.div>
   )
