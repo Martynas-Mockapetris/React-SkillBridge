@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { reviewProject } from '../services/projectService'
 import { toast } from 'react-toastify'
+import RatingModal from './RatingModal'
 
 const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
   const [feedback, setFeedback] = useState('')
   const [reviewing, setReviewing] = useState(false)
+  const [showRatingModal, setShowRatingModal] = useState(false)
 
   if (!isOpen || !project) return null
 
@@ -24,9 +26,16 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
       setReviewing(true)
       await reviewProject(project._id, { decision, feedback })
       toast.success(`Project ${decision === 'accepted' ? 'accepted' : 'declined'}!`)
-      onReviewSuccess?.()
-      onClose()
-      setFeedback('')
+
+      // If accepted, show rating modal
+      if (decision === 'accepted') {
+        setShowRatingModal(true)
+      } else {
+        // If declined, close immediately
+        onReviewSuccess?.()
+        onClose()
+        setFeedback('')
+      }
     } catch (error) {
       console.error('Error reviewing project:', error)
       toast.error('Failed to review project. Please try again.')
@@ -150,6 +159,21 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
           </motion.div>
         </div>
       )}
+      {/* Rating Modal - shown after accepting project */}
+      <RatingModal
+        isOpen={showRatingModal}
+        onClose={() => {
+          setShowRatingModal(false)
+          onReviewSuccess?.()
+          onClose()
+          setFeedback('')
+        }}
+        freelancer={project.assignee}
+        projectId={project._id}
+        onRatingSubmitted={() => {
+          toast.success('Thank you for rating this freelancer!')
+        }}
+      />
     </AnimatePresence>
   )
 }
