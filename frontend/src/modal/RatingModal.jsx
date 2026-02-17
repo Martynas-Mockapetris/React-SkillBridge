@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaStar } from 'react-icons/fa'
 import { submitRating } from '../services/ratingService'
 
-const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted }) => {
+const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted, ratedUserType = 'freelancer' }) => {
+  // Support both freelancer prop (legacy) and generic ratedUser
+  const ratedUser = freelancer
+  const userTypeLabel = ratedUserType === 'client' ? 'Client' : 'Freelancer'
   // Form state
   const [score, setScore] = useState(0)
   const [hoverScore, setHoverScore] = useState(0)
@@ -42,7 +45,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
       setError('')
 
       // Submit rating to backend
-      await submitRating(freelancer._id, projectId, score, feedback.trim())
+      await submitRating(ratedUser._id, projectId, score, feedback.trim())
 
       // Show success message
       setSuccess(true)
@@ -96,7 +99,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
               onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className='flex items-center justify-between p-6 border-b dark:border-gray-700 border-gray-200 sticky top-0 bg-inherit rounded-t-lg'>
-                <h2 className='text-2xl font-bold theme-text'>Rate Freelancer</h2>
+                <h2 className='text-2xl font-bold theme-text'>Rate {userTypeLabel}</h2>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -124,14 +127,14 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
                   </motion.div>
                 )}
 
-                {/* Freelancer Info */}
+                {/* User Info */}
                 <div className='flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg'>
-                  <img src={freelancer.profilePicture || `https://i.pravatar.cc/150?u=${freelancer._id}`} alt={freelancer.firstName} className='w-12 h-12 rounded-full object-cover' />
+                  <img src={ratedUser.profilePicture || `https://i.pravatar.cc/150?u=${ratedUser._id}`} alt={ratedUser.firstName} className='w-12 h-12 rounded-full object-cover' />
                   <div>
                     <p className='font-semibold theme-text'>
-                      {freelancer.firstName} {freelancer.lastName}
+                      {ratedUser.firstName} {ratedUser.lastName}
                     </p>
-                    <p className='text-sm theme-text-secondary'>{freelancer.skills || 'Freelancer'}</p>
+                    <p className='text-sm theme-text-secondary'>{ratedUserType === 'client' ? 'Client' : ratedUser.skills || 'Freelancer'}</p>
                   </div>
                 </div>
 

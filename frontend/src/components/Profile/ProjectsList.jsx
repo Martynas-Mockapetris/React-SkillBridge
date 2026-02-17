@@ -28,8 +28,8 @@ const ProjectsList = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
   const [selectedFreelancerForRating, setSelectedFreelancerForRating] = useState(null)
   const [selectedProjectForRating, setSelectedProjectForRating] = useState(null)
-  const [myRatings, setMyRatings] = useState(null)
   const [freelancerRatingsCache, setFreelancerRatingsCache] = useState({})
+  const [ratingUserType, setRatingUserType] = useState('freelancer')
 
   const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
@@ -470,7 +470,6 @@ const ProjectsList = () => {
                     const hasRated = freelancerRatings?.ratings?.some((r) => r.projectId === project._id && r.ratedBy._id === currentUser._id)
 
                     // Button will show if project is completed, has assignee, user is creator, and hasn't rated yet
-
                     return isCompleted && hasAssignee && isCreatorCheck && !hasRated
                   })() && (
                     <motion.button
@@ -486,6 +485,26 @@ const ProjectsList = () => {
                       <span>Rate Freelancer</span>
                     </motion.button>
                   )}
+
+                  {/* Rate Client button - for freelancers on assigned projects */}
+                  {project.status === 'completed' &&
+                    project.assignee &&
+                    isAssignee(project) &&
+                    !freelancerRatingsCache[project.user._id]?.ratings?.some((r) => r.projectId === project._id && r.ratedBy._id === currentUser._id) && (
+                      <motion.button
+                        onClick={() => {
+                          setSelectedFreelancerForRating({ _id: project.user._id, firstName: project.user.firstName, lastName: project.user.lastName, profilePicture: project.user.profilePicture })
+                          setSelectedProjectForRating(project)
+                          setIsRatingModalOpen(true)
+                          setRatingUserType('client')
+                        }}
+                        className='mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all duration-300'
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}>
+                        <FaStar />
+                        <span>Rate Client</span>
+                      </motion.button>
+                    )}
                   {(() => {
                     // Check if user is interested in this project (but not the creator or assigned)
                     const isCreator = project.user._id === currentUser._id || project.user === currentUser._id
@@ -646,9 +665,11 @@ const ProjectsList = () => {
           setIsRatingModalOpen(false)
           setSelectedFreelancerForRating(null)
           setSelectedProjectForRating(null)
+          setRatingUserType('freelancer')
         }}
         freelancer={selectedFreelancerForRating}
         projectId={selectedProjectForRating?._id}
+        ratedUserType={ratingUserType}
         onRatingSubmitted={() => {
           // Reload the freelancer's ratings after submission
           const loadFreelancerRatings = async () => {

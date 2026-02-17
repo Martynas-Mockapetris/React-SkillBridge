@@ -1,15 +1,15 @@
 import User from '../models/User.js'
 import Project from '../models/Project.js'
 
-// Submit a rating for a freelancer
+// Submit a rating for a freelancer or client
 export const submitRating = async (req, res) => {
   try {
-    const { freelancerId, projectId, score, feedback } = req.body
-    const clientId = req.user._id
+    const { receiverId, projectId, score, feedback } = req.body
+    const raterId = req.user._id
 
     // Validate required fields
-    if (!freelancerId || !projectId || !score) {
-      return res.status(400).json({ message: 'Freelancer ID, Project ID, and score are required' })
+    if (!receiverId || !projectId || !score) {
+      return res.status(400).json({ message: 'Receiver ID, Project ID, and score are required' })
     }
 
     // Validate score is between 1-5
@@ -17,53 +17,66 @@ export const submitRating = async (req, res) => {
       return res.status(400).json({ message: 'Score must be between 1 and 5' })
     }
 
-    // Find the freelancer
-    const freelancer = await User.findById(freelancerId)
-    if (!freelancer) {
-      return res.status(404).json({ message: 'Freelancer not found' })
+    // Find the receiver (person being rated)
+    const receiver = await User.findById(receiverId)
+    if (!receiver) {
+      return res.status(404).json({ message: 'User not found' })
     }
 
-    // Find the project to verify it exists and client owns it
+    // Find the project to verify authorization
     const project = await Project.findById(projectId)
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    if (project.user.toString() !== clientId.toString()) {
-      return res.status(403).json({ message: 'You can only rate freelancers on your own projects' })
+    // Determine if rating freelancer or client and verify authorization
+    if (project.assignee && project.assignee.toString() === receiverId) {
+      // Rating a freelancer - rater must be the project creator (client)
+      isRatingFreelancer = true
+      if (project.user.toString() !== raterId.toString()) {
+        return res.status(403).json({ message: 'You can only rate freelancers on your own projects' })
+      }
+    } else if (project.user.toString() === receiverId) {
+      // Rating a client - rater must be the project assignee (freelancer)
+      isRatingFreelancer = false
+      if (!project.assignee || project.assignee.toString() !== raterId.toString()) {
+        return res.status(403).json({ message: 'You can only rate clients on projects you are assigned to' })
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid rating parameters' })
     }
 
-    // Check if client already rated this freelancer for this project
-    const existingRating = freelancer.ratings.find((rating) => rating.projectId.toString() === projectId && rating.ratedBy.toString() === clientId.toString())
+    // Check if rater already rated this user for this project
+    const existingRating = receiver.ratings.find((rating) => rating.projectId.toString() === projectId && rating.ratedBy.toString() === raterId.toString())
 
     if (existingRating) {
-      return res.status(400).json({ message: 'You have already rated this freelancer for this project' })
+      return res.status(400).json({ message: 'You have already rated this user for this project' })
     }
 
-    // Add rating to freelancer's ratings array
+    // Add rating to receiver's ratings array
     const newRating = {
-      ratedBy: clientId,
+      ratedBy: raterId,
       score,
       feedback: feedback?.trim() || '',
       projectId,
       createdAt: new Date()
     }
 
-    freelancer.ratings.push(newRating)
+    receiver.ratings.push(newRating)
 
     // Recalculate average rating
-    const totalScore = freelancer.ratings.reduce((sum, rating) => sum + rating.score, 0)
-    freelancer.averageRating = totalScore / freelancer.ratings.length
-    freelancer.totalRatings = freelancer.ratings.length
+    const totalScore = receiver.ratings.reduce((sum, rating) => sum + rating.score, 0)
+    receiver.averageRating = totalScore / receiver.ratings.length
+    receiver.totalRatings = receiver.ratings.length
 
-    await freelancer.save()
+    await receiver.save()
 
     res.status(201).json({
       message: 'Rating submitted successfully',
-      freelancer: {
-        _id: freelancer._id,
-        averageRating: freelancer.averageRating,
-        totalRatings: freelancer.totalRatings
+      user: {
+        _id: receiver._id,
+        averageRating: receiver.averageRating,
+        totalRatings: receiver.totalRatings
       }
     })
   } catch (error) {

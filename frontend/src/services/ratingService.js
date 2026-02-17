@@ -24,11 +24,11 @@ const createAuthAxios = () => {
 
 const authAxios = createAuthAxios()
 
-// Submit a rating for a freelancer (protected)
-export const submitRating = async (freelancerId, projectId, score, feedback = '') => {
+// Submit a rating for a user (freelancer or client)
+export const submitRating = async (receiverId, projectId, score, feedback = '') => {
   try {
     const response = await authAxios.post('/api/ratings', {
-      freelancerId,
+      receiverId,
       projectId,
       score,
       feedback
