@@ -121,6 +121,25 @@ const Profile = () => {
               {currentUser?.firstName} {currentUser?.lastName}
             </h1>
             <p className='theme-text-secondary'>{currentUser?.userType === 'client' ? 'Client' : currentUser?.userType === 'freelancer' ? 'Freelancer' : 'Client & Freelancer'}</p>
+            <div className='flex items-center gap-2'>
+              {ratingStats?.totalRatings > 0 ? (
+                <>
+                  <div className='flex items-center gap-1'>
+                    <span className='text-lg font-semibold text-accent'>{ratingStats.averageRating.toFixed(1)}</span>
+                    <div className='flex'>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <FaStar key={star} size={14} className={star <= Math.round(ratingStats.averageRating) ? 'text-accent' : 'text-gray-300 dark:text-gray-600'} />
+                      ))}
+                    </div>
+                  </div>
+                  <span className='text-sm theme-text-secondary'>
+                    ({ratingStats.totalRatings} {ratingStats.totalRatings === 1 ? 'rating' : 'ratings'})
+                  </span>
+                </>
+              ) : (
+                <p className='text-sm theme-text-secondary'>No ratings yet</p>
+              )}
+            </div>
           </div>
         </motion.div>
 
