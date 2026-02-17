@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
 import SecuritySettings from '../components/Profile/SecuritySettings'
 import FreelanceTab from '../components/Profile/FreelanceTab'
+import RatingsSection from '../components/Profile/RatingsSection'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import MessagesList from '../components/Profile/MessagesList'
 import { getUserMessages } from '../services/messageService'
+import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -17,6 +19,9 @@ const Profile = () => {
   const [messages, setMessages] = useState([])
   const [messagesLoading, setMessagesLoading] = useState(false)
   const { currentUser } = useAuth()
+  const [ratings, setRatings] = useState(null)
+  const [ratingStats, setRatingStats] = useState(null)
+  const [ratingsLoading, setRatingsLoading] = useState(false)
   const navigate = useNavigate()
 
   // Redirect if not authenticated
@@ -45,13 +50,40 @@ const Profile = () => {
     fetchMessages()
   }, [activeTab])
 
+  // Fetch ratings for freelancers
+  useEffect(() => {
+    const fetchRatings = async () => {
+      // Only fetch if user is freelancer
+      if (!currentUser || (currentUser.userType !== 'freelancer' && currentUser.userType !== 'both')) {
+        return
+      }
+
+      try {
+        setRatingsLoading(true)
+        const ratingsData = await getFreelancerRatings(currentUser._id)
+        const statsData = await getRatingStats(currentUser._id)
+        setRatings(ratingsData)
+        setRatingStats(statsData)
+      } catch (error) {
+        console.error('Error fetching ratings:', error)
+      } finally {
+        setRatingsLoading(false)
+      }
+    }
+
+    fetchRatings()
+  }, [currentUser])
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     { id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> },
     { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
-      ? [{ id: 'freelance', label: 'Freelance', icon: <FaBriefcase /> }]
+      ? [
+          { id: 'freelance', label: 'Freelance', icon: <FaBriefcase /> },
+          { id: 'ratings', label: 'Ratings', icon: <FaStar /> }
+        ]
       : []),
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
@@ -117,6 +149,7 @@ const Profile = () => {
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
             {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
+            {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
             {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
             {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>
