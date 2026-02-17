@@ -8,6 +8,7 @@ import RatingModal from '../../modal/RatingModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject } from '../../services/projectService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
+import { getFreelancerRatings } from '../../services/ratingService'
 import { formatStatus } from '../../utils/formatters'
 
 const ProjectsList = () => {
@@ -27,6 +28,8 @@ const ProjectsList = () => {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
   const [selectedFreelancerForRating, setSelectedFreelancerForRating] = useState(null)
   const [selectedProjectForRating, setSelectedProjectForRating] = useState(null)
+  const [myRatings, setMyRatings] = useState(null)
+  const [freelancerRatingsCache, setFreelancerRatingsCache] = useState({})
 
   const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
@@ -70,6 +73,58 @@ const ProjectsList = () => {
       fetchProjects()
     }
   }, [location.pathname, currentUser])
+
+  // Load freelancer ratings to check which projects have been rated
+  useEffect(() => {
+    if (!currentUser?._id) return
+
+    const loadMyRatings = async () => {
+      try {
+        const ratingsData = await getFreelancerRatings(currentUser._id)
+        setMyRatings(ratingsData)
+      } catch (error) {
+        console.error('Error loading ratings:', error)
+      }
+    }
+
+    loadMyRatings()
+  }, [currentUser])
+
+  // Load freelancer ratings for all freelancers in projects
+  useEffect(() => {
+    if (!projects || projects.length === 0) return
+
+    const loadFreelancerRatings = async () => {
+      const freelancerIds = new Set()
+
+      // Collect all unique freelancer IDs from projects
+      projects.forEach((project) => {
+        if (project.assignee?._id) {
+          freelancerIds.add(project.assignee._id)
+        }
+      })
+
+      // Fetch ratings for each freelancer
+      const newCache = { ...freelancerRatingsCache }
+
+      for (const freelancerId of freelancerIds) {
+        if (newCache[freelancerId]) {
+          continue
+        }
+
+        try {
+          const ratingsData = await getFreelancerRatings(freelancerId)
+          newCache[freelancerId] = ratingsData
+        } catch (error) {
+          console.error(`Error loading ratings for freelancer ${freelancerId}:`, error)
+        }
+      }
+
+      setFreelancerRatingsCache(newCache)
+    }
+
+    loadFreelancerRatings()
+  }, [projects])
 
   // Function to fetch projects and favorites
   const fetchProjects = async () => {
@@ -406,7 +461,18 @@ const ProjectsList = () => {
                     <FaEye />
                     <span>View</span>
                   </motion.button>
-                  {project.status === 'completed' && project.assignee && isCreator(project) && (
+                  {(() => {
+                    const isCompleted = project.status === 'completed'
+                    const hasAssignee = project.assignee
+                    const isCreatorCheck = isCreator(project)
+                    const freelancerId = hasAssignee ? project.assignee._id : null
+                    const freelancerRatings = freelancerId ? freelancerRatingsCache[freelancerId] : null
+                    const hasRated = freelancerRatings?.ratings?.some((r) => r.projectId === project._id && r.ratedBy._id === currentUser._id)
+
+                    // Button will show if project is completed, has assignee, user is creator, and hasn't rated yet
+
+                    return isCompleted && hasAssignee && isCreatorCheck && !hasRated
+                  })() && (
                     <motion.button
                       onClick={() => {
                         setSelectedFreelancerForRating(project.assignee)
@@ -584,7 +650,20 @@ const ProjectsList = () => {
         freelancer={selectedFreelancerForRating}
         projectId={selectedProjectForRating?._id}
         onRatingSubmitted={() => {
-          // Refresh projects to show updated rating
+          // Reload the freelancer's ratings after submission
+          const loadFreelancerRatings = async () => {
+            try {
+              if (!selectedFreelancerForRating?._id) return
+              const ratingsData = await getFreelancerRatings(selectedFreelancerForRating._id)
+              setFreelancerRatingsCache((prev) => ({
+                ...prev,
+                [selectedFreelancerForRating._id]: ratingsData
+              }))
+            } catch (error) {
+              console.error('Error loading freelancer ratings:', error)
+            }
+          }
+          loadFreelancerRatings()
           fetchProjects()
         }}
       />

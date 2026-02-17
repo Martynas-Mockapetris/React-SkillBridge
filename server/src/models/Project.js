@@ -106,7 +106,11 @@ const projectSchema = mongoose.Schema(
           default: Date.now
         }
       }
-    ]
+    ],
+    isRated: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true
