@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 const FreelancerCard = ({ freelancer, index }) => {
   return (
-    <Link to={`/freelancers/${freelancer.id}`}>
+    <Link to={`/freelancer/${freelancer.id}`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

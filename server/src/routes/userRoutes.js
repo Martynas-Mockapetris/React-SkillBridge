@@ -1,5 +1,5 @@
 import express from 'express'
-import { getUserProfile, updateUserProfile, deleteUserAccount, getUserStats, addToFavorites, removeFromFavorites, getFavoriteProjects, getFreelancers } from '../controllers/userController.js'
+import { getUserProfile, updateUserProfile, deleteUserAccount, getUserStats, addToFavorites, removeFromFavorites, getFavoriteProjects, getFreelancers, getUserById } from '../controllers/userController.js'
 import { protect } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
@@ -25,5 +25,8 @@ router.delete('/favorites/:projectId', protect, removeFromFavorites)
 
 // Freelancers route
 router.get('/freelancers', getFreelancers)
+
+// Get user by ID
+router.get('/:id', getUserById)
 
 export default router
