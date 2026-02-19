@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { FaStar, FaArrowLeft, FaHeart, FaRegHeart, FaPhone, FaEnvelope } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
-import { getUserById } from '../services/userService'
+import { getUserById, addFreelancerToFavorites, removeFreelancerFromFavorites, getUserProfile } from '../services/userService'
 import { getAllAnnouncements } from '../services/announcementService'
 import RatingsSection from '../components/Profile/RatingsSection'
 import molecularPattern from '../assets/molecular-pattern.svg'
@@ -29,6 +29,17 @@ const UserDetail = () => {
         const freelancerData = await getUserById(freelancerId)
         setFreelancer(freelancerData)
 
+        // Check if current user has this freelancer favorited by fetching fresh profile data
+        if (currentUser) {
+          try {
+            const userProfile = await getUserProfile()
+            setIsFavorited(userProfile.favoriteFreelancers?.includes(freelancerId) || false)
+          } catch (error) {
+            console.error('Error checking favorite status:', error)
+            setIsFavorited(false)
+          }
+        }
+
         // Fetch announcements
         const allAnnouncements = await getAllAnnouncements()
         const freelancerAnnouncements = allAnnouncements.filter((ann) => (typeof ann.userId === 'string' ? ann.userId === freelancerId : ann.userId._id === freelancerId || ann.userId === freelancerId))
@@ -48,7 +59,7 @@ const UserDetail = () => {
     }
 
     fetchData()
-  }, [freelancerId])
+  }, [freelancerId, currentUser])
 
   if (loading) {
     return (
@@ -67,6 +78,26 @@ const UserDetail = () => {
         </button>
       </div>
     )
+  }
+
+  const handleToggleFavorite = async () => {
+    if (!currentUser) {
+      alert('Please login to add favorites')
+      return
+    }
+
+    try {
+      if (isFavorited) {
+        await removeFreelancerFromFavorites(freelancerId)
+        setIsFavorited(false)
+      } else {
+        await addFreelancerToFavorites(freelancerId)
+        setIsFavorited(true)
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      alert('Failed to update favorites')
+    }
   }
 
   return (
@@ -117,12 +148,7 @@ const UserDetail = () => {
               <motion.button className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
                 Hire
               </motion.button>
-              <motion.button
-                onClick={() => {
-                  // Add/remove favorite logic
-                }}
-                className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'
-                whileHover={{ scale: 1.05 }}>
+              <motion.button onClick={handleToggleFavorite} className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
                 {isFavorited ? <FaHeart /> : <FaRegHeart />}
               </motion.button>
             </div>

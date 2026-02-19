@@ -94,6 +94,28 @@ export const removeFromFavorites = async (projectId) => {
   }
 }
 
+// Add freelancer to favorites
+export const addFreelancerToFavorites = async (freelancerId) => {
+  try {
+    const response = await authAxios.post(`/api/users/favorites/freelancer/${freelancerId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to add freelancer to favorites:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Remove freelancer from favorites
+export const removeFreelancerFromFavorites = async (freelancerId) => {
+  try {
+    const response = await authAxios.delete(`/api/users/favorites/freelancer/${freelancerId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove freelancer from favorites:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Updates the user's profile with new data
 export const updateUserProfile = async (profileData) => {
   try {

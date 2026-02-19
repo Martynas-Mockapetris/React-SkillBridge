@@ -354,3 +354,44 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 }
+
+// @desc    Add freelancer to favorites
+// @route   POST /api/users/favorites/freelancer/:freelancerId
+// @access  Private
+export const addFreelancerToFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    const freelancerId = req.params.freelancerId
+
+    // Check if already favorited
+    if (user.favoriteFreelancers.includes(freelancerId)) {
+      return res.status(400).json({ message: 'Freelancer already in favorites' })
+    }
+
+    user.favoriteFreelancers.push(freelancerId)
+    await user.save()
+
+    res.json({ message: 'Added to favorites', favoriteFreelancers: user.favoriteFreelancers })
+  } catch (error) {
+    console.error('Error adding freelancer to favorites:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove freelancer from favorites
+// @route   DELETE /api/users/favorites/freelancer/:freelancerId
+// @access  Private
+export const removeFreelancerFromFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    const freelancerId = req.params.freelancerId
+
+    user.favoriteFreelancers = user.favoriteFreelancers.filter((id) => id.toString() !== freelancerId)
+    await user.save()
+
+    res.json({ message: 'Removed from favorites', favoriteFreelancers: user.favoriteFreelancers })
+  } catch (error) {
+    console.error('Error removing freelancer from favorites:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}

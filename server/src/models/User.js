@@ -106,6 +106,13 @@ const UserSchema = new mongoose.Schema({
     default: []
   },
 
+  // Favorite freelancers
+  favoriteFreelancers: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User',
+    default: []
+  },
+
   // Profile picture
   profilePicture: {
     type: String,
