@@ -153,7 +153,16 @@ const MessagesList = ({ messages, loading }) => {
                     </motion.div>
                     <FaEnvelope className='text-accent' />
                     <div className='flex-1'>
-                      <p className='font-semibold theme-text'>{projectTitle}</p>
+                      <p className='font-semibold theme-text'>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate(`/freelancer/${otherUser._id}`)
+                          }}
+                          className='hover:text-accent transition-colors cursor-pointer underline'>
+                          {projectTitle}
+                        </button>
+                      </p>
                       <p className='text-sm theme-text-secondary'>Direct message</p>
                     </div>
                     <div className='px-3 py-1 bg-accent/10 rounded-full'>
@@ -182,10 +191,16 @@ const MessagesList = ({ messages, loading }) => {
                             <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
                               {!isOwnMessage && (
                                 <div className='flex items-center gap-2 mb-2'>
-                                  <img src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`} alt={message.sender?.firstName} className='w-6 h-6 rounded-full object-cover' />
-                                  <p className='text-sm font-semibold theme-text'>
+                                  <img
+                                    src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`}
+                                    alt={message.sender?.firstName}
+                                    className='w-6 h-6 rounded-full object-cover cursor-pointer hover:opacity-80'
+                                    onClick={() => navigate(`/freelancer/${message.sender?._id}`)}
+                                    title='View profile'
+                                  />
+                                  <button onClick={() => navigate(`/freelancer/${message.sender?._id}`)} className='text-sm font-semibold theme-text hover:text-accent transition-colors underline'>
                                     {message.sender?.firstName} {message.sender?.lastName}
-                                  </p>
+                                  </button>
                                 </div>
                               )}
                               {message.subject && <p className='text-sm font-semibold text-accent mb-2'>{message.subject}</p>}
@@ -340,10 +355,16 @@ const MessagesList = ({ messages, loading }) => {
                             {/* Sender name for received messages */}
                             {!isOwnMessage && (
                               <div className='flex items-center gap-2 mb-2'>
-                                <img src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`} alt={message.sender?.firstName} className='w-6 h-6 rounded-full object-cover' />
-                                <p className='text-sm font-semibold theme-text'>
+                                <img
+                                  src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`}
+                                  alt={message.sender?.firstName}
+                                  className='w-6 h-6 rounded-full object-cover cursor-pointer hover:opacity-80'
+                                  onClick={() => navigate(`/freelancer/${message.sender?._id}`)}
+                                  title='View profile'
+                                />
+                                <button onClick={() => navigate(`/freelancer/${message.sender?._id}`)} className='text-sm font-semibold theme-text hover:text-accent transition-colors underline'>
                                   {message.sender?.firstName} {message.sender?.lastName}
-                                </p>
+                                </button>
                               </div>
                             )}
 
