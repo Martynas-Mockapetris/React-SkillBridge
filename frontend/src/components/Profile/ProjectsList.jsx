@@ -30,6 +30,7 @@ const ProjectsList = () => {
   const [selectedProjectForRating, setSelectedProjectForRating] = useState(null)
   const [freelancerRatingsCache, setFreelancerRatingsCache] = useState({})
   const [ratingUserType, setRatingUserType] = useState('freelancer')
+  const [myRatings, setMyRatings] = useState([])
 
   const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import InputMask from 'react-input-mask'
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 
@@ -262,7 +261,7 @@ const ProfileSettings = () => {
                       <span className='absolute left-3 top-4 text-accent text-[16px]'>
                         <FaPhone />
                       </span>
-                      <InputMask mask='+999 99 999 9999' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
+                      <input type='tel' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
                       {errors.phone && (
                         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                           {errors.phone}
