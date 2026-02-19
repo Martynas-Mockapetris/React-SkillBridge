@@ -5,7 +5,12 @@ const messageSchema = mongoose.Schema(
     project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Project',
-      required: true
+      required: false
+    },
+    subject: {
+      type: String,
+      required: false,
+      maxlength: 200
     },
     sender: {
       type: mongoose.Schema.Types.ObjectId,
@@ -19,7 +24,8 @@ const messageSchema = mongoose.Schema(
     },
     content: {
       type: String,
-      required: true
+      required: true,
+      maxlength: 2000
     },
     isRead: {
       type: Boolean,
