@@ -8,6 +8,7 @@ import { getUserById, addFreelancerToFavorites, removeFreelancerFromFavorites, g
 import { getAllAnnouncements } from '../services/announcementService'
 import RatingsSection from '../components/Profile/RatingsSection'
 import molecularPattern from '../assets/molecular-pattern.svg'
+import DirectContactModal from '../modal/DirectContactModal'
 
 const UserDetail = () => {
   const { freelancerId } = useParams()
@@ -21,6 +22,7 @@ const UserDetail = () => {
   const [ratingStats, setRatingStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isFavorited, setIsFavorited] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
 
   // Fetch freelancer data, announcements, and ratings
   useEffect(() => {
@@ -142,7 +144,7 @@ const UserDetail = () => {
             )}
             {/* Action Buttons */}
             <div className='flex gap-3'>
-              <motion.button className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all' whileHover={{ scale: 1.05 }}>
+              <motion.button onClick={() => setShowContactModal(true)} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all' whileHover={{ scale: 1.05 }}>
                 Contact Freelancer
               </motion.button>
               <motion.button className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
@@ -188,6 +190,7 @@ const UserDetail = () => {
           </motion.div>
         )}
       </div>
+      <DirectContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} freelancer={freelancer} />
     </section>
   )
 }
