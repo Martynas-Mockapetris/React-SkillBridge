@@ -24,7 +24,7 @@ const RatingsSection = ({ ratings, stats, loading }) => {
     return (
       <div className='flex gap-1'>
         {[1, 2, 3, 4, 5].map((star) => (
-          <FaStar key={star} size={16} className={star <= score ? 'text-accent' : 'text-gray-300 dark:text-gray-600'} />
+          <FaStar key={star} size={16} className={star <= score ? 'text-accent' : 'theme-text-muted'} />
         ))}
       </div>
     )
@@ -52,10 +52,10 @@ const RatingsSection = ({ ratings, stats, loading }) => {
           {[5, 4, 3, 2, 1].map((stars) => (
             <div key={stars} className='flex items-center gap-4'>
               <div className='flex items-center gap-1 w-20'>
-                <span className='text-sm font-medium'>{stars}</span>
+                <span className='text-sm font-medium theme-text'>{stars}</span>
                 <FaStar size={12} className='text-accent' />
               </div>
-              <div className='flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
+              <div className='flex-1 h-2 theme-input rounded-full overflow-hidden'>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(stats.distribution[stars] / stats.totalRatings) * 100}%` }}

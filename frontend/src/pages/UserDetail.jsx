@@ -134,7 +134,7 @@ const UserDetail = () => {
                 <span className='text-2xl font-bold text-accent'>{ratingStats.averageRating.toFixed(1)}</span>
                 <div className='flex'>
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <FaStar key={star} size={18} className={star <= Math.round(ratingStats.averageRating) ? 'text-accent' : 'text-gray-300 dark:text-gray-600'} />
+                    <FaStar key={star} size={18} className={star <= Math.round(ratingStats.averageRating) ? 'text-accent' : 'theme-text-muted'} />
                   ))}
                 </div>
                 <span className='text-sm theme-text-secondary'>({ratingStats.totalRatings} ratings)</span>
