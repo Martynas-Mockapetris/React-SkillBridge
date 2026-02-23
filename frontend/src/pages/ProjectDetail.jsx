@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
-import { getProjectById, archiveProject } from '../services/projectService'
+import { getProjectById, archiveProject, proposeRate, counterRate, acceptRate } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
@@ -32,6 +32,10 @@ const ProjectDetail = () => {
   const [favoriteLoading, setFavoriteLoading] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const [rateAmount, setRateAmount] = useState('')
+  const [rateType, setRateType] = useState('hourly')
+  const [rateLoading, setRateLoading] = useState(false)
+  const [rateError, setRateError] = useState('')
 
   const isOwner = currentUser && project && currentUser._id === project.user?._id
   const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
@@ -100,6 +104,60 @@ const ProjectDetail = () => {
 
     loadFavorites()
   }, [project, currentUser])
+
+  const currentOffer = project?.rateNegotiation?.currentOffer
+  const isRateProposedByMe = currentOffer?.proposedBy?.toString() === currentUser?._id
+
+  const handleProposeRate = async () => {
+    if (!rateAmount || Number(rateAmount) <= 0) {
+      setRateError('Enter a valid amount')
+      return
+    }
+
+    try {
+      setRateLoading(true)
+      setRateError('')
+      await proposeRate(project._id, { amount: Number(rateAmount), type: rateType })
+      await loadProject()
+      setRateAmount('')
+    } catch (error) {
+      setRateError(error.response?.data?.message || 'Failed to propose rate')
+    } finally {
+      setRateLoading(false)
+    }
+  }
+
+  const handleCounterRate = async () => {
+    if (!rateAmount || Number(rateAmount) <= 0) {
+      setRateError('Enter a valid amount')
+      return
+    }
+
+    try {
+      setRateLoading(true)
+      setRateError('')
+      await counterRate(project._id, { amount: Number(rateAmount), type: rateType })
+      await loadProject()
+      setRateAmount('')
+    } catch (error) {
+      setRateError(error.response?.data?.message || 'Failed to counter rate')
+    } finally {
+      setRateLoading(false)
+    }
+  }
+
+  const handleAcceptRate = async () => {
+    try {
+      setRateLoading(true)
+      setRateError('')
+      await acceptRate(project._id)
+      await loadProject()
+    } catch (error) {
+      setRateError(error.response?.data?.message || 'Failed to accept rate')
+    } finally {
+      setRateLoading(false)
+    }
+  }
 
   const handleBack = () => {
     navigate(-1)
@@ -291,6 +349,58 @@ const ProjectDetail = () => {
                         Contact Assignee
                       </motion.button>
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Rate Negotiation */}
+              {(isOwner || isAssignee) && project.assignee && !['in_progress', 'under_review', 'completed', 'archived', 'cancelled'].includes(project.status) && (
+                <div className='theme-card p-6 rounded-lg space-y-4 border border-accent/20'>
+                  <h3 className='text-xl font-semibold theme-text'>Rate Negotiation</h3>
+
+                  {rateError && <div className='p-2 bg-red-100 text-red-700 rounded text-sm'>{rateError}</div>}
+
+                  {currentOffer ? (
+                    <div className='bg-accent/10 p-3 rounded-lg'>
+                      <p className='text-sm theme-text-secondary'>Current Offer</p>
+                      <p className='text-lg font-semibold theme-text'>
+                        €{currentOffer.amount} {currentOffer.type === 'hourly' ? '/hr' : 'fixed'}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className='text-sm theme-text-secondary'>No offer yet</p>
+                  )}
+
+                  <div className='grid grid-cols-2 gap-3'>
+                    <input
+                      type='number'
+                      value={rateAmount}
+                      onChange={(e) => setRateAmount(e.target.value)}
+                      className='p-2 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
+                      placeholder='Amount'
+                    />
+                    <select value={rateType} onChange={(e) => setRateType(e.target.value)} className='p-2 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                      <option value='hourly'>Hourly</option>
+                      <option value='fixed'>Fixed</option>
+                    </select>
+                  </div>
+
+                  {isOwner && (
+                    <button onClick={handleProposeRate} disabled={rateLoading} className='w-full py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                      Propose Rate
+                    </button>
+                  )}
+
+                  {isAssignee && (
+                    <button onClick={handleCounterRate} disabled={rateLoading} className='w-full py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'>
+                      Counter Offer
+                    </button>
+                  )}
+
+                  {currentOffer && !isRateProposedByMe && (
+                    <button onClick={handleAcceptRate} disabled={rateLoading} className='w-full py-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all'>
+                      Accept Offer
+                    </button>
                   )}
                 </div>
               )}

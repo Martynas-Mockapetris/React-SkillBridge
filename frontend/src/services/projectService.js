@@ -193,6 +193,39 @@ export const reviewProject = async (projectId, reviewData) => {
   }
 }
 
+// Propose a rate (owner only)
+export const proposeRate = async (projectId, rateData) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/rate/propose`, rateData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to propose rate:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Counter a rate (assignee only)
+export const counterRate = async (projectId, rateData) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/rate/counter`, rateData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to counter rate:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Accept current rate (owner or assignee)
+export const acceptRate = async (projectId) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/rate/accept`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to accept rate:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Archive a completed project
 export const archiveProject = async (projectId) => {
   try {
