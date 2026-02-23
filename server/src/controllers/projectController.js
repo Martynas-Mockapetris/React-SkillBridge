@@ -55,6 +55,28 @@ const createProject = async (req, res) => {
   }
 }
 
+// @desc    Publish a draft project
+// @route   PUT /api/projects/:id/publish
+// @access  Private (owner only)
+const publishProject = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized' })
+    }
+
+    project.status = 'active'
+    const updated = await project.save()
+    res.json(updated)
+  } catch (error) {
+    console.error('Error publishing project:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all active projects (for listings page)
 // @route   GET /api/projects/all
 // @access  Public
@@ -661,6 +683,7 @@ const archiveProject = async (req, res) => {
 
 export {
   createProject,
+  publishProject,
   getUserProjects,
   getProjectById,
   getProjectByIdOwner,

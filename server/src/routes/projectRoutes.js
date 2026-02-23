@@ -1,6 +1,7 @@
 import express from 'express'
 import {
   createProject,
+  publishProject,
   getUserProjects,
   getProjectById,
   getProjectByIdOwner,
@@ -31,6 +32,7 @@ router.get('/test', (req, res) => {
 
 // Project routes
 router.post('/', protect, upload.array('attachments', 5), createProject)
+router.put('/:id/publish', protect, publishProject)
 router.get('/', protect, getUserProjects)
 router.get('/all', getAllProjects)
 router.get('/interested', protect, getInterestedProjects)
