@@ -1,5 +1,6 @@
 import User from '../models/User.js'
 import Project from '../models/Project.js'
+import Announcement from '../models/Announcement.js'
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -320,20 +321,43 @@ export const getFavoriteProjects = async (req, res) => {
   }
 }
 
-// @desc    Get all freelancers (freelancer + both)
+// @desc    Get all freelancers (freelancer + both) with their active announcements
 // @route   GET /api/users/freelancers
 // @access  Public
 export const getFreelancers = async (req, res) => {
   try {
-    // Only users who registered as freelancer or both
+    // Get all freelancers
     const freelancers = await User.find({
       userType: { $in: ['freelancer', 'both'] }
-    }).select('firstName lastName profilePicture skills bio userType createdAt')
+    }).select('firstName lastName profilePicture skills bio userType createdAt hourlyRate _id')
 
-    res.json(freelancers)
+    // Fetch announcements for each freelancer
+    const freelancersWithAnnouncements = []
+
+    for (const freelancer of freelancers) {
+      const announcements = await Announcement.find({
+        userId: freelancer._id,
+        isActive: true
+      }).select('title background hourlyRate skills isActive')
+
+      freelancersWithAnnouncements.push({
+        _id: freelancer._id,
+        firstName: freelancer.firstName,
+        lastName: freelancer.lastName,
+        profilePicture: freelancer.profilePicture,
+        skills: freelancer.skills,
+        bio: freelancer.bio,
+        userType: freelancer.userType,
+        createdAt: freelancer.createdAt,
+        hourlyRate: freelancer.hourlyRate,
+        announcements: announcements
+      })
+    }
+
+    res.json(freelancersWithAnnouncements)
   } catch (error) {
     console.error('Error fetching freelancers:', error)
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
 
