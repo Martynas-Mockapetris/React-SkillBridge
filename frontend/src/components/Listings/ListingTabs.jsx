@@ -7,7 +7,6 @@ import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
 import { getAllProjects } from '../../services/projectService'
-import { getFreelancers } from '../../services/userService'
 import { getAllAnnouncements } from '../../services/announcementService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
@@ -197,7 +196,7 @@ const ListingTabs = () => {
                       .map((_, index) => <CardLoader key={index} />)
                   : activeTab === 'projects'
                     ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
-                    : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
+                    : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer._id} freelancer={freelancer} index={index} />)}
               </div>
             )}
 
