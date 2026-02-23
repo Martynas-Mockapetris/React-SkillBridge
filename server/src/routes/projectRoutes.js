@@ -9,6 +9,9 @@ import {
   getAllProjects,
   assignUserToProject,
   reassignProject,
+  proposeRate,
+  counterRate,
+  acceptRate,
   removeAssignee,
   getInterestedProjects,
   removeFromInterested,
@@ -41,6 +44,11 @@ router.post('/:id/assign', protect, assignUserToProject)
 router.put('/:id/reassign', protect, reassignProject)
 router.delete('/:id/assignee', protect, removeAssignee)
 router.delete('/:id/interested', protect, removeFromInterested)
+
+// Rate negotiation routes
+router.post('/:id/rate/propose', protect, proposeRate)
+router.post('/:id/rate/counter', protect, counterRate)
+router.post('/:id/rate/accept', protect, acceptRate)
 
 // Submission & Review routes
 router.post('/:id/submit', protect, upload.array('submissionFiles', 5), submitProject)

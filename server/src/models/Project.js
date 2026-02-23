@@ -110,6 +110,28 @@ const projectSchema = mongoose.Schema(
     isRated: {
       type: Boolean,
       default: false
+    },
+    rateNegotiation: {
+      status: {
+        type: String,
+        enum: ['none', 'proposed', 'countered', 'accepted'],
+        default: 'none'
+      },
+      currentOffer: {
+        amount: { type: Number },
+        type: { type: String, enum: ['hourly', 'fixed'], default: 'hourly' },
+        proposedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        proposedAt: { type: Date }
+      },
+      history: [
+        {
+          amount: { type: Number },
+          type: { type: String, enum: ['hourly', 'fixed'], default: 'hourly' },
+          proposedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+          proposedAt: { type: Date }
+        }
+      ],
+      agreedAt: { type: Date }
     }
   },
   {

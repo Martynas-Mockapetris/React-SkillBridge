@@ -360,6 +360,120 @@ const removeAssignee = async (req, res) => {
   }
 }
 
+// @desc    Propose project rate (owner only)
+// @route   POST /api/projects/:id/rate/propose
+// @access  Private
+const proposeRate = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const { amount, type } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to propose rate' })
+    }
+    if (!project.assignee) {
+      return res.status(400).json({ message: 'Project has no assignee yet' })
+    }
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ message: 'Amount must be greater than 0' })
+    }
+
+    project.rateNegotiation = project.rateNegotiation || {}
+    project.rateNegotiation.status = 'proposed'
+    project.rateNegotiation.currentOffer = {
+      amount: Number(amount),
+      type: type || 'hourly',
+      proposedBy: req.user._id,
+      proposedAt: new Date()
+    }
+    project.rateNegotiation.history = project.rateNegotiation.history || []
+    project.rateNegotiation.history.push(project.rateNegotiation.currentOffer)
+
+    project.status = 'negotiating'
+
+    const updated = await project.save()
+    res.json(updated)
+  } catch (error) {
+    console.error('Error proposing rate:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Counter project rate (assignee only)
+// @route   POST /api/projects/:id/rate/counter
+// @access  Private
+const counterRate = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const { amount, type } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+    if (!project.assignee || project.assignee.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to counter rate' })
+    }
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ message: 'Amount must be greater than 0' })
+    }
+
+    project.rateNegotiation = project.rateNegotiation || {}
+    project.rateNegotiation.status = 'countered'
+    project.rateNegotiation.currentOffer = {
+      amount: Number(amount),
+      type: type || 'hourly',
+      proposedBy: req.user._id,
+      proposedAt: new Date()
+    }
+    project.rateNegotiation.history = project.rateNegotiation.history || []
+    project.rateNegotiation.history.push(project.rateNegotiation.currentOffer)
+
+    project.status = 'negotiating'
+
+    const updated = await project.save()
+    res.json(updated)
+  } catch (error) {
+    console.error('Error countering rate:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Accept current rate (owner or assignee)
+// @route   POST /api/projects/:id/rate/accept
+// @access  Private
+const acceptRate = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+
+    const isOwner = project.user.toString() === req.user._id.toString()
+    const isAssignee = project.assignee?.toString() === req.user._id.toString()
+
+    if (!isOwner && !isAssignee) {
+      return res.status(403).json({ message: 'Not authorized to accept rate' })
+    }
+
+    if (!project.rateNegotiation?.currentOffer) {
+      return res.status(400).json({ message: 'No rate proposal to accept' })
+    }
+
+    project.rateNegotiation.status = 'accepted'
+    project.rateNegotiation.agreedAt = new Date()
+    project.status = 'in_progress'
+
+    const updated = await project.save()
+    res.json(updated)
+  } catch (error) {
+    console.error('Error accepting rate:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects current user is interested in
 // @route   GET /api/projects/interested
 // @access  Private
@@ -555,6 +669,9 @@ export {
   getAllProjects,
   assignUserToProject,
   reassignProject,
+  proposeRate,
+  counterRate,
+  acceptRate,
   removeAssignee,
   getInterestedProjects,
   removeFromInterested,

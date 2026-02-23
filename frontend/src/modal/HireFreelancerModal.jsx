@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaTimes, FaCheck, FaPaperPlane } from 'react-icons/fa'
+import { FaTimes } from 'react-icons/fa'
 import { createProject, saveProjectDraft } from '../services/projectService'
 import { toast } from 'react-toastify'
 
@@ -29,30 +29,12 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
   }
 
   const validateForm = () => {
-    if (!formData.title.trim()) {
-      setError('Title is required')
-      return false
-    }
-    if (!formData.description.trim()) {
-      setError('Description is required')
-      return false
-    }
-    if (!formData.category) {
-      setError('Category is required')
-      return false
-    }
-    if (!formData.skills.trim()) {
-      setError('At least one skill is required')
-      return false
-    }
-    if (!formData.budget || Number(formData.budget) <= 0) {
-      setError('Budget must be greater than 0')
-      return false
-    }
-    if (!formData.deadline) {
-      setError('Deadline is required')
-      return false
-    }
+    if (!formData.title.trim()) return setError('Title is required'), false
+    if (!formData.description.trim()) return setError('Description is required'), false
+    if (!formData.category) return setError('Category is required'), false
+    if (!formData.skills.trim()) return setError('At least one skill is required'), false
+    if (!formData.budget || Number(formData.budget) <= 0) return setError('Budget must be greater than 0'), false
+    if (!formData.deadline) return setError('Deadline is required'), false
     return true
   }
 
@@ -60,10 +42,7 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
     title: formData.title.trim(),
     description: formData.description.trim(),
     category: formData.category,
-    skills: formData.skills
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean),
+    skills: formData.skills.split(',').map((s) => s.trim()).filter(Boolean),
     budget: Number(formData.budget),
     deadline: formData.deadline,
     assigneeId: freelancer._id
@@ -71,7 +50,6 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
 
   const handleSaveDraft = async () => {
     if (!validateForm()) return
-
     try {
       setLoading(true)
       setError('')
@@ -88,7 +66,6 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
 
   const handleAssign = async () => {
     if (!validateForm()) return
-
     try {
       setLoading(true)
       setError('')
@@ -107,10 +84,7 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40' />
-
-          {/* Modal */}
           <motion.div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={(e) => e.stopPropagation()}>
             <motion.div
               className='bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto'
@@ -119,47 +93,24 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}>
-              {/* Header */}
               <div className='flex items-center justify-between p-6 border-b dark:border-light/10 border-primary/10 sticky top-0 bg-inherit rounded-t-lg'>
-                <h2 className='text-2xl font-bold theme-text'>
-                  Hire {freelancer.firstName} {freelancer.lastName}
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={onClose}
-                  disabled={loading}
-                  className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50'>
+                <h2 className='text-2xl font-bold theme-text'>Hire {freelancer.firstName} {freelancer.lastName}</h2>
+                <motion.button onClick={onClose} disabled={loading} className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
               </div>
 
-              {/* Body */}
               <form className='p-6 space-y-4'>
                 {error && <div className='p-3 bg-red-100 text-red-700 rounded'>{error}</div>}
 
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Project Title</label>
-                  <input
-                    type='text'
-                    name='title'
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
-                    placeholder='Enter project title'
-                  />
+                  <input type='text' name='title' value={formData.title} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
                 </div>
 
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Description</label>
-                  <textarea
-                    name='description'
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows='4'
-                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
-                    placeholder='Describe your project'
-                  />
+                  <textarea name='description' value={formData.description} onChange={handleInputChange} rows='4' className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
                 </div>
 
                 <div>
@@ -167,35 +118,19 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
                   <select name='category' value={formData.category} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
                     <option value=''>Select category</option>
                     {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Skills (comma separated)</label>
-                  <input
-                    type='text'
-                    name='skills'
-                    value={formData.skills}
-                    onChange={handleInputChange}
-                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
-                    placeholder='React, Node.js, MongoDB'
-                  />
+                  <input type='text' name='skills' value={formData.skills} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
                 </div>
 
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Budget (EUR)</label>
-                  <input
-                    type='number'
-                    name='budget'
-                    value={formData.budget}
-                    onChange={handleInputChange}
-                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
-                    placeholder='2000'
-                  />
+                  <input type='number' name='budget' value={formData.budget} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
                 </div>
 
                 <div>
@@ -204,7 +139,6 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
                 </div>
               </form>
 
-              {/* Footer */}
               <div className='flex justify-end gap-3 p-6 border-t dark:border-light/10 border-primary/10'>
                 <motion.button onClick={handleSaveDraft} disabled={loading} className='px-4 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all disabled:opacity-50'>
                   Save as Draft
