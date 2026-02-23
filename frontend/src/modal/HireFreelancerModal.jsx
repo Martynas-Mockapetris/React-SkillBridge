@@ -16,6 +16,7 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [rateType, setRateType] = useState('hourly')
 
   const categories = ['Web Development', 'Mobile Development', 'UI/UX Design', 'Data Science', 'Machine Learning', 'DevOps', 'Blockchain', 'Content Writing', 'Digital Marketing', 'Other']
 
@@ -29,24 +30,47 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
   }
 
   const validateForm = () => {
-    if (!formData.title.trim()) return setError('Title is required'), false
-    if (!formData.description.trim()) return setError('Description is required'), false
-    if (!formData.category) return setError('Category is required'), false
-    if (!formData.skills.trim()) return setError('At least one skill is required'), false
-    if (!formData.budget || Number(formData.budget) <= 0) return setError('Budget must be greater than 0'), false
-    if (!formData.deadline) return setError('Deadline is required'), false
+    if (!formData.title.trim()) return (setError('Title is required'), false)
+    if (!formData.description.trim()) return (setError('Description is required'), false)
+    if (!formData.category) return (setError('Category is required'), false)
+    if (!formData.skills.trim()) return (setError('At least one skill is required'), false)
+    if (!formData.budget || Number(formData.budget) <= 0) return (setError('Budget must be greater than 0'), false)
+    if (!formData.deadline) return (setError('Deadline is required'), false)
     return true
   }
 
-  const buildPayload = () => ({
-    title: formData.title.trim(),
-    description: formData.description.trim(),
-    category: formData.category,
-    skills: formData.skills.split(',').map((s) => s.trim()).filter(Boolean),
-    budget: Number(formData.budget),
-    deadline: formData.deadline,
-    assigneeId: freelancer._id
-  })
+  const buildPayload = () => {
+    const payload = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      category: formData.category,
+      skills: formData.skills
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+      budget: Number(formData.budget),
+      deadline: formData.deadline,
+      assigneeId: freelancer._id,
+      rateNegotiation: {
+        status: 'proposed',
+        currentOffer: {
+          amount: Number(formData.budget),
+          type: rateType,
+          proposedBy: 'owner',
+          proposedAt: new Date()
+        },
+        history: [
+          {
+            amount: Number(formData.budget),
+            type: rateType,
+            proposedBy: 'owner',
+            proposedAt: new Date()
+          }
+        ]
+      }
+    }
+    return payload
+  }
 
   const handleSaveDraft = async () => {
     if (!validateForm()) return
@@ -94,7 +118,9 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
               transition={{ duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}>
               <div className='flex items-center justify-between p-6 border-b dark:border-light/10 border-primary/10 sticky top-0 bg-inherit rounded-t-lg'>
-                <h2 className='text-2xl font-bold theme-text'>Hire {freelancer.firstName} {freelancer.lastName}</h2>
+                <h2 className='text-2xl font-bold theme-text'>
+                  Hire {freelancer.firstName} {freelancer.lastName}
+                </h2>
                 <motion.button onClick={onClose} disabled={loading} className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
@@ -118,7 +144,9 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
                   <select name='category' value={formData.category} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
                     <option value=''>Select category</option>
                     {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -131,6 +159,14 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Budget (EUR)</label>
                   <input type='number' name='budget' value={formData.budget} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium theme-text mb-1'>Rate Type</label>
+                  <select value={rateType} onChange={(e) => setRateType(e.target.value)} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                    <option value='hourly'>Hourly Rate</option>
+                    <option value='fixed'>Fixed Price</option>
+                  </select>
                 </div>
 
                 <div>

@@ -8,7 +8,7 @@ const createProject = async (req, res) => {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
-    const { title, description, category, skills, budget, deadline, status, assigneeId } = req.body
+    const { title, description, category, skills, budget, deadline, status, assigneeId, rateNegotiation } = req.body
 
     // Process attachments if any
     const attachments = req.files
@@ -22,7 +22,8 @@ const createProject = async (req, res) => {
     let normalizedStatus = status || 'draft'
 
     if (assigneeId && !status) {
-      normalizedStatus = 'assigned'
+      // If initial rate proposal included, set to negotiating instead of assigned
+      normalizedStatus = rateNegotiation?.status === 'proposed' ? 'negotiating' : 'assigned'
     }
 
     if (assigneeId && assigneeId.toString() === req.user._id.toString()) {
@@ -40,7 +41,8 @@ const createProject = async (req, res) => {
       budget: Number(budget),
       deadline,
       status: normalizedStatus,
-      attachments
+      attachments,
+      rateNegotiation: rateNegotiation || undefined
     })
 
     console.log('Saving project to database:', project)
