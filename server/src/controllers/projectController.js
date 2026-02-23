@@ -8,7 +8,7 @@ const createProject = async (req, res) => {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
-    const { title, description, category, skills, budget, deadline, status } = req.body
+    const { title, description, category, skills, budget, deadline, status, assigneeId } = req.body
 
     // Process attachments if any
     const attachments = req.files
@@ -19,6 +19,16 @@ const createProject = async (req, res) => {
         }))
       : []
 
+    let normalizedStatus = status || 'draft'
+
+    if (assigneeId && !status) {
+      normalizedStatus = 'assigned'
+    }
+
+    if (assigneeId && assigneeId.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Cannot assign project to yourself' })
+    }
+
     // Create new project
     const project = new Project({
       user: req.user._id, // This comes from the protect middleware
@@ -28,7 +38,7 @@ const createProject = async (req, res) => {
       skills: Array.isArray(skills) ? skills : skills.split(','),
       budget: Number(budget),
       deadline,
-      status: status || 'draft',
+      status: normalizedStatus,
       attachments
     })
 
