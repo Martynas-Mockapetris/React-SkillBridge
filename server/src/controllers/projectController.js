@@ -30,6 +30,25 @@ const createProject = async (req, res) => {
       return res.status(400).json({ message: 'Cannot assign project to yourself' })
     }
 
+    // Process rateNegotiation if present - replace 'owner' with actual user ID
+    let processedRateNegotiation = rateNegotiation
+    if (rateNegotiation) {
+      processedRateNegotiation = {
+        ...rateNegotiation,
+        currentOffer: rateNegotiation.currentOffer
+          ? {
+              ...rateNegotiation.currentOffer,
+              proposedBy: req.user._id
+            }
+          : undefined,
+        history:
+          rateNegotiation.history?.map((offer) => ({
+            ...offer,
+            proposedBy: req.user._id
+          })) || []
+      }
+    }
+
     // Create new project
     const project = new Project({
       user: req.user._id, // This comes from the protect middleware
@@ -42,7 +61,7 @@ const createProject = async (req, res) => {
       deadline,
       status: normalizedStatus,
       attachments,
-      rateNegotiation: rateNegotiation || undefined
+      rateNegotiation: processedRateNegotiation || undefined
     })
 
     console.log('Saving project to database:', project)
@@ -99,7 +118,16 @@ const getAllProjects = async (req, res) => {
 // @access  Private
 const getUserProjects = async (req, res) => {
   try {
-    const projects = await Project.find({ user: req.user._id })
+    const projects = await Project.find({
+      $or: [
+        { user: req.user._id }, // Owner sees all projects including drafts
+        {
+          assignee: req.user._id,
+          status: { $ne: 'draft' } // Assignee only sees non-draft projects
+        }
+      ]
+    })
+      .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
       .populate('assignee', 'firstName lastName email profilePicture')
       .sort({ createdAt: -1 })
