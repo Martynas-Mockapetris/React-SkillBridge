@@ -32,6 +32,7 @@ const createProject = async (req, res) => {
     // Create new project
     const project = new Project({
       user: req.user._id, // This comes from the protect middleware
+      assignee: assigneeId || null,
       title,
       description,
       category,

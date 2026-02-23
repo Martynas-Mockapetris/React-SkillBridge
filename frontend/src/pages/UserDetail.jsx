@@ -9,6 +9,7 @@ import { getAllAnnouncements } from '../services/announcementService'
 import RatingsSection from '../components/Profile/RatingsSection'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import DirectContactModal from '../modal/DirectContactModal'
+import HireFreelancerModal from '../modal/HireFreelancerModal'
 
 const UserDetail = () => {
   const { freelancerId } = useParams()
@@ -23,6 +24,7 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(true)
   const [isFavorited, setIsFavorited] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
+  const [showHireModal, setShowHireModal] = useState(false)
 
   // Fetch freelancer data, announcements, and ratings
   useEffect(() => {
@@ -147,7 +149,16 @@ const UserDetail = () => {
               <motion.button onClick={() => setShowContactModal(true)} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all' whileHover={{ scale: 1.05 }}>
                 Contact Freelancer
               </motion.button>
-              <motion.button className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
+              <motion.button
+                onClick={() => {
+                  if (!currentUser) {
+                    alert('Please login to hire a freelancer')
+                    return
+                  }
+                  setShowHireModal(true)
+                }}
+                className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'
+                whileHover={{ scale: 1.05 }}>
                 Hire
               </motion.button>
               <motion.button onClick={handleToggleFavorite} className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
@@ -191,6 +202,7 @@ const UserDetail = () => {
         )}
       </div>
       <DirectContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} freelancer={freelancer} />
+      <HireFreelancerModal isOpen={showHireModal} onClose={() => setShowHireModal(false)} freelancer={freelancer} />
     </section>
   )
 }

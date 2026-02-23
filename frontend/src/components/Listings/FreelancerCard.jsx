@@ -37,6 +37,7 @@ const FreelancerCard = ({ freelancer, index }) => {
             transition: { duration: 0.1 }
           }}
           transition={{ duration: 0.2, delay: index * 0.1 }}
+          onClick={() => navigate(`/freelancer/${freelancerInfo._id}`)}
           className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 flex flex-col h-full'>
           {/* Header: Freelancer Profile Info */}
           <div className='flex items-center gap-4 mb-4'>
