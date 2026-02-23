@@ -107,6 +107,16 @@ const ProjectDetail = () => {
 
   const currentOffer = project?.rateNegotiation?.currentOffer
   const isRateProposedByMe = currentOffer?.proposedBy?.toString() === currentUser?._id
+  const negotiationHistory = project?.rateNegotiation?.history || []
+
+  const getOfferLabel = (userId) => {
+    if (!userId) return 'User'
+    if (project?.user?._id && userId.toString() === project.user._id.toString()) return 'Client'
+    if (project?.assignee?._id && userId.toString() === project.assignee._id.toString()) return 'Freelancer'
+    return 'User'
+  }
+
+  const formatOfferType = (type) => (type === 'fixed' ? 'fixed' : '/hr')
 
   const handleProposeRate = async () => {
     if (!rateAmount || Number(rateAmount) <= 0) {
@@ -354,7 +364,7 @@ const ProjectDetail = () => {
               )}
 
               {/* Rate Negotiation */}
-              {(isOwner || isAssignee) && project.assignee && !['in_progress', 'under_review', 'completed', 'archived', 'cancelled'].includes(project.status) && (
+              {(isOwner || isAssignee) && project.assignee && !['completed', 'archived', 'cancelled'].includes(project.status) && (
                 <div className='theme-card p-6 rounded-lg space-y-4 border border-accent/20'>
                   <h3 className='text-xl font-semibold theme-text'>Rate Negotiation</h3>
 
@@ -386,21 +396,46 @@ const ProjectDetail = () => {
                   </div>
 
                   {isOwner && (
-                    <button onClick={handleProposeRate} disabled={rateLoading} className='w-full py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                    <button
+                      onClick={handleProposeRate}
+                      disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
+                      className='w-full py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
                       Propose Rate
                     </button>
                   )}
 
                   {isAssignee && (
-                    <button onClick={handleCounterRate} disabled={rateLoading} className='w-full py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'>
+                    <button
+                      onClick={handleCounterRate}
+                      disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
+                      className='w-full py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'>
                       Counter Offer
                     </button>
                   )}
 
                   {currentOffer && !isRateProposedByMe && (
-                    <button onClick={handleAcceptRate} disabled={rateLoading} className='w-full py-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all'>
+                    <button
+                      onClick={handleAcceptRate}
+                      disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
+                      className='w-full py-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all'>
                       Accept Offer
                     </button>
+                  )}
+
+                  {negotiationHistory.length > 0 && (
+                    <div className='pt-3 border-t dark:border-light/10 border-primary/10'>
+                      <p className='text-sm font-semibold theme-text mb-2'>Negotiation History</p>
+                      <div className='space-y-2 max-h-32 overflow-y-auto'>
+                        {negotiationHistory.map((offer, idx) => (
+                          <div key={idx} className='text-sm theme-text-secondary flex justify-between gap-2'>
+                            <span>
+                              {getOfferLabel(offer.proposedBy)}: €{offer.amount} {formatOfferType(offer.type)}
+                            </span>
+                            <span className='text-xs'>{offer.proposedAt ? new Date(offer.proposedAt).toLocaleDateString() : ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
