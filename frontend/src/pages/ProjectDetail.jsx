@@ -117,7 +117,7 @@ const ProjectDetail = () => {
   }
 
   const formatOfferType = (type) => (type === 'fixed' ? 'fixed' : '/hr')
-  
+
   const negotiationTimeline = negotiationHistory.map((offer) => {
     const label = getOfferLabel(offer.proposedBy)
     const time = offer.proposedAt ? new Date(offer.proposedAt) : null
@@ -604,24 +604,12 @@ const ProjectDetail = () => {
         {/* Messages Tab */}
         {activeTab === 'messages' && project?.user?._id === currentUser?._id && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            {negotiationTimeline.length > 0 && (
-              <div className='mb-6 p-4 bg-accent/5 border border-accent/20 rounded-lg'>
-                <h3 className='text-sm font-semibold theme-text mb-3'>Negotiation Timeline</h3>
-                <div className='space-y-2'>
-                  {negotiationTimeline.map((entry, idx) => (
-                    <div key={idx} className='text-sm theme-text-secondary flex justify-between gap-3'>
-                      <span>{entry.text}</span>
-                      <span className='text-xs'>{entry.time ? entry.time.toLocaleDateString() : ''}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
             <GroupedMessagesList
               messages={messages}
               loading={messagesLoading}
               projectId={id}
               isProjectCreator={true}
+              systemEvents={negotiationTimeline}
               onRefresh={async () => {
                 try {
                   const updatedProject = await getProjectById(id)
