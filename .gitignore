@@ -33,4 +33,4 @@ Thumbs.db
 text.txt
 
 # Server scripts
-/server/scripts/
+/server/src/scripts/
