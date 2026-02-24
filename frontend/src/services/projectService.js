@@ -1,28 +1,5 @@
 import axios from 'axios'
-
-// Reuse the same authentication setup from userServices
-const getToken = () => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  return user.token
-}
-
-// Create authenticated axios instance
-const createAuthAxios = () => {
-  const instance = axios.create()
-
-  // Add request interceptor to automatically set auth header
-  instance.interceptors.request.use((config) => {
-    const token = getToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  })
-
-  return instance
-}
-
-const authAxios = createAuthAxios()
+import { authAxios } from '../utils/axiosConfig'
 
 // Create a new project
 export const createProject = async (projectData) => {

@@ -1,25 +1,5 @@
 import axios from 'axios'
-
-// Get authentication token from localStorage
-const getToken = () => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  return user.token
-}
-
-// Create authenticated axios instance
-const createAuthAxios = () => {
-  const instance = axios.create()
-  instance.interceptors.request.use((config) => {
-    const token = getToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  })
-  return instance
-}
-
-const authAxios = createAuthAxios()
+import { authAxios } from '../utils/axiosConfig'
 
 // Send a message about a project or direct message to another user
 export const sendMessage = async (receiverId, content, subject = null, projectId = null) => {
