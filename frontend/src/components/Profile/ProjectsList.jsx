@@ -10,6 +10,7 @@ import { getUserProjects, getInterestedProjects, removeFromInterested, removeAss
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import { getFreelancerRatings } from '../../services/ratingService'
 import { formatStatus } from '../../utils/formatters'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const ProjectsList = () => {
   const navigate = useNavigate()
@@ -358,7 +359,7 @@ const ProjectsList = () => {
       {/* Loading State */}
       {loading && (
         <div className='flex justify-center py-10'>
-          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+          <LoadingSpinner />
         </div>
       )}
 

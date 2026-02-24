@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { FaEnvelope } from 'react-icons/fa'
 import SenderBlock from './SenderBlock'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, onRefresh, systemEvents = [] }) => {
   // Get current user to exclude from interested count
@@ -37,7 +38,7 @@ const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, o
   if (loading) {
     return (
       <div className='flex justify-center py-8'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+        <LoadingSpinner />
       </div>
     )
   }

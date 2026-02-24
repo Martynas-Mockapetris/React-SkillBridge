@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 // Initial form state with empty values
 const initialFormState = {
@@ -207,7 +208,7 @@ const ProfileSettings = () => {
     <motion.div className='space-y-8 p-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       {isLoading ? (
         <div className='flex justify-center items-center h-64'>
-          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+          <LoadingSpinner />
         </div>
       ) : (
         <>

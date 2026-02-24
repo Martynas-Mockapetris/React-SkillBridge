@@ -9,6 +9,7 @@ import ProjectModal from '../modal/ProjectModal'
 import { formatStatus } from '../utils/formatters'
 import SubmitProjectModal from '../modal/SubmitProjectModal'
 import PageBackground from '../components/shared/PageBackground'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 import ReviewProjectModal from '../modal/ReviewProjectModal'
 import { useRateNegotiation } from '../hooks/useRateNegotiation'
 import { useProjectModals } from '../hooks/useProjectModals'
@@ -95,7 +96,7 @@ const ProjectDetail = () => {
       <section className='w-full theme-bg relative z-[1] pt-[80px]'>
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
           <div className='flex items-center justify-center min-h-[400px]'>
-            <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+            <LoadingSpinner />
           </div>
         </div>
       </section>

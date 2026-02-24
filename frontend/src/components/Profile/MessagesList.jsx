@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaChevronUp } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { sendMessage } from '../../services/messageService' // Import message service
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const MessagesList = ({ messages, loading }) => {
   const navigate = useNavigate()
@@ -109,7 +110,7 @@ const MessagesList = ({ messages, loading }) => {
   if (loading) {
     return (
       <div className='flex justify-center py-8'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+        <LoadingSpinner />
       </div>
     )
   }

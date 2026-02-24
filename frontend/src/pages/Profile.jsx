@@ -9,6 +9,7 @@ import FreelanceTab from '../components/Profile/FreelanceTab'
 import RatingsSection from '../components/Profile/RatingsSection'
 import MessagesList from '../components/Profile/MessagesList'
 import PageBackground from '../components/shared/PageBackground'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getUserMessages } from '../services/messageService'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { useNavigate } from 'react-router-dom'
@@ -91,11 +92,7 @@ const Profile = () => {
 
   // If still loading or no user, could show a loading state
   if (!currentUser) {
-    return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
-      </div>
-    )
+    return <LoadingSpinner fullScreen />
   }
 
   return (

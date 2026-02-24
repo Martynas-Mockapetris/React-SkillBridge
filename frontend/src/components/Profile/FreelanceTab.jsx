@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { FaBriefcase, FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
 import CreateAnnouncementModal from '../../modal/CreateAnnouncementModal'
 import { getUserAnnouncements, deleteAnnouncement } from '../../services/announcementService'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const FreelanceTab = ({ user }) => {
   // Modal state
@@ -70,7 +71,7 @@ const FreelanceTab = ({ user }) => {
       <div className='theme-card p-8 rounded-lg text-center'>
         {loading ? (
           <div className='flex justify-center py-8'>
-            <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+            <LoadingSpinner />
           </div>
         ) : error ? (
           <div className='bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 p-4 rounded-lg'>{error}</div>

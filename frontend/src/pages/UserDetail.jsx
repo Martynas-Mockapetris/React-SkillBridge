@@ -7,6 +7,7 @@ import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { getUserById, addFreelancerToFavorites, removeFreelancerFromFavorites, getUserProfile } from '../services/userService'
 import { getAllAnnouncements } from '../services/announcementService'
 import RatingsSection from '../components/Profile/RatingsSection'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import DirectContactModal from '../modal/DirectContactModal'
 import HireFreelancerModal from '../modal/HireFreelancerModal'
@@ -66,11 +67,7 @@ const UserDetail = () => {
   }, [freelancerId, currentUser])
 
   if (loading) {
-    return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
-      </div>
-    )
+    return <LoadingSpinner fullScreen />
   }
 
   if (!freelancer) {
