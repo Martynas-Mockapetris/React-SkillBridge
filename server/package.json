@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node src/scripts/seedDatabase.js",
+    "reset": "node src/scripts/resetDatabase.js"
   },
   "keywords": [],
   "author": "",

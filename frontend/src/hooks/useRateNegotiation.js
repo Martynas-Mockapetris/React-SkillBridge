@@ -49,7 +49,9 @@ export const useRateNegotiation = (projectId, loadProject) => {
     try {
       setRateLoading(true)
       setRateError('')
-      await acceptRate(projectId)
+      const result = await acceptRate(projectId)
+      console.log('Accept rate response:', result)
+      console.log('Budget in response:', result.budget)
       await loadProject()
     } catch (error) {
       setRateError(error.response?.data?.message || 'Failed to accept rate')

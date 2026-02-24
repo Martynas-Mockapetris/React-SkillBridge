@@ -49,6 +49,15 @@ const createProject = async (req, res) => {
       }
     }
 
+    const shouldSetBudget = !rateNegotiation || rateNegotiation.status !== 'proposed'
+    const finalBudget = shouldSetBudget ? Number(budget) : undefined
+
+    console.log('=== CREATE PROJECT DEBUG ===')
+    console.log('RateNegotiation status:', rateNegotiation?.status)
+    console.log('Should set budget:', shouldSetBudget)
+    console.log('Final budget value:', finalBudget)
+    console.log('Original budget from request:', budget)
+
     // Create new project
     const project = new Project({
       user: req.user._id, // This comes from the protect middleware
@@ -57,7 +66,9 @@ const createProject = async (req, res) => {
       description,
       category,
       skills: Array.isArray(skills) ? skills : skills.split(','),
-      budget: Number(budget),
+      // Only set budget if there's no rate negotiation (i.e., this is a fixed budget project)
+      // If rate negotiation is proposed, leave budget empty until agreed
+      budget: finalBudget,
       deadline,
       status: normalizedStatus,
       attachments,
@@ -146,11 +157,19 @@ const getProjectById = async (req, res) => {
     const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
 
     if (!project) {
+      console.log(`[GET PROJECT] Project ${req.params.id} not found in DB`)
       return res.status(404).json({ message: 'Project not found' })
     }
 
+    console.log(`[GET PROJECT] Found project ${req.params.id}`)
+    console.log(`[GET PROJECT] Project status: ${project.status}`)
+    console.log(`[GET PROJECT] Project owner: ${project.user?._id || project.user}`)
+    console.log(`[GET PROJECT] Project assignee: ${project.assignee?._id || project.assignee}`)
+    console.log(`[GET PROJECT] Current user from req.user: ${req.user?._id}`)
+
     // Public can see only active
     if (project.status === 'active') {
+      console.log(`[GET PROJECT] Project is active, returning to any user`)
       return res.json(project)
     }
 
@@ -159,10 +178,19 @@ const getProjectById = async (req, res) => {
     const ownerId = project.user?._id ? project.user._id.toString() : project.user.toString()
     const assigneeId = project.assignee?._id ? project.assignee._id.toString() : project.assignee?.toString()
 
+    console.log(`[GET PROJECT] Non-active project - checking permissions`)
+    console.log(`  currentUserId: ${currentUserId}`)
+    console.log(`  ownerId: ${ownerId}`)
+    console.log(`  assigneeId: ${assigneeId}`)
+    console.log(`  isOwner: ${currentUserId === ownerId}`)
+    console.log(`  isAssignee: ${currentUserId === assigneeId}`)
+
     if (currentUserId && (currentUserId === ownerId || currentUserId === assigneeId)) {
+      console.log(`[GET PROJECT] User has permission, returning project`)
       return res.json(project)
     }
 
+    console.log(`[GET PROJECT] User does not have permission to access this project`)
     return res.status(404).json({ message: 'Project not found' })
   } catch (error) {
     console.error('Error fetching project:', error)
@@ -514,11 +542,31 @@ const acceptRate = async (req, res) => {
       return res.status(400).json({ message: 'No rate proposal to accept' })
     }
 
+    console.log('=== ACCEPT RATE DEBUG ===')
+    console.log('Project ID:', projectId)
+    console.log('Before accept:')
+    console.log('  - Budget:', project.budget)
+    console.log('  - RateNegotiation.status:', project.rateNegotiation.status)
+    console.log('  - CurrentOffer:', project.rateNegotiation.currentOffer)
+    console.log('  - CurrentOffer.amount:', project.rateNegotiation.currentOffer.amount)
+
     project.rateNegotiation.status = 'accepted'
     project.rateNegotiation.agreedAt = new Date()
+    // Update project budget with the agreed rate amount
+    const agreedAmount = Number(project.rateNegotiation.currentOffer.amount)
+    console.log('Setting budget to agreedAmount:', agreedAmount)
+    project.budget = agreedAmount
     project.status = 'in_progress'
 
+    console.log('After setting:')
+    console.log('  - Budget:', project.budget)
+
     const updated = await project.save()
+
+    console.log('After save:')
+    console.log('  - Budget:', updated.budget)
+    console.log('=== END DEBUG ===')
+
     res.json(updated)
   } catch (error) {
     console.error('Error accepting rate:', error)

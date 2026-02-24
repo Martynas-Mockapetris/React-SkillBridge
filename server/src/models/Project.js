@@ -30,7 +30,7 @@ const projectSchema = mongoose.Schema(
     },
     budget: {
       type: Number,
-      required: true
+      required: false
     },
     deadline: {
       type: Date,

@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaStar } from 'react-icons/fa'
 import { submitRating } from '../services/ratingService'
+import { AuthContext } from '../context/AuthContext'
 
 const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted, ratedUserType = 'freelancer' }) => {
+  const { logout } = useContext(AuthContext)
   // Support both freelancer prop (legacy) and generic ratedUser
   const ratedUser = freelancer
   const userTypeLabel = ratedUserType === 'client' ? 'Client' : 'Freelancer'
@@ -65,6 +67,16 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
         onClose()
       }, 1500)
     } catch (err) {
+      console.log('[RATING SUBMIT] Error:', err.response?.status, err.response?.data?.message)
+
+      // Handle authentication errors (token expired or user logged out)
+      if (err.response?.status === 401) {
+        console.log('[RATING SUBMIT] 401 - Logging out user')
+        logout()
+        setError('Your session has expired. Please log in again to submit a rating.')
+        return
+      }
+
       setError(err.response?.data?.message || 'Failed to submit rating')
       setLoading(false)
     }

@@ -31,3 +31,6 @@ Thumbs.db
 
 # Project specific
 text.txt
+
+# Server scripts
+/server/scripts/

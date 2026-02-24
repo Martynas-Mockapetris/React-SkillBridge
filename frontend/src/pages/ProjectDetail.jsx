@@ -65,6 +65,13 @@ const ProjectDetail = () => {
   // Fetch project on mount or when id/currentUser changes
   useEffect(() => {
     if (authLoading) return
+
+    // If user logged out while on this page, redirect to home or show message
+    if (!currentUser) {
+      setError('You have been logged out. Please log in to view this project.')
+      return
+    }
+
     if (id) loadProject()
   }, [id, currentUser, authLoading])
 
@@ -284,6 +291,27 @@ const ProjectDetail = () => {
                       <p className='text-sm'>Budget</p>
                       <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
                     </div>
+                  </div>
+                )}
+
+                {/* Proposed Budget (when negotiating) */}
+                {project.rateNegotiation?.status === 'proposed' && (
+                  <div className='flex items-center gap-3 p-3 rounded-lg bg-orange-100 dark:bg-orange-900/20'>
+                    <FaDollarSign className='text-orange-600 dark:text-orange-400' />
+                    <div>
+                      <p className='text-sm text-orange-800 dark:text-orange-200'>Proposed Budget</p>
+                      <div className='flex items-center gap-2'>
+                        <p className='text-lg font-semibold text-orange-900 dark:text-orange-100'>€{project.rateNegotiation.currentOffer?.amount}</p>
+                        <span className='text-xs px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded font-semibold'>PROPOSED</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rate Type */}
+                {project.rateNegotiation?.currentOffer && (
+                  <div className='flex items-center gap-3 theme-text-secondary text-sm'>
+                    <span className='px-2 py-1 bg-accent/10 dark:bg-accent/20 text-accent rounded font-medium'>{project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}</span>
                   </div>
                 )}
 
