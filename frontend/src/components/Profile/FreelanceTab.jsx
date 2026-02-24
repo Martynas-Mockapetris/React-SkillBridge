@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaBriefcase, FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
+import { FaBriefcase, FaPlus, FaEdit, FaTrash, FaPlay, FaPause } from 'react-icons/fa'
 import CreateAnnouncementModal from '../../modal/CreateAnnouncementModal'
-import { getUserAnnouncements, deleteAnnouncement } from '../../services/announcementService'
+import { getUserAnnouncements, deleteAnnouncement, toggleAnnouncementStatus } from '../../services/announcementService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const FreelanceTab = ({ user }) => {
@@ -48,6 +48,17 @@ const FreelanceTab = ({ user }) => {
   const handleEditAnnouncement = (announcement) => {
     setEditingAnnouncement(announcement)
     setIsModalOpen(true)
+  }
+
+  const handleToggleStatus = async (announcementId) => {
+    try {
+      const response = await toggleAnnouncementStatus(announcementId)
+      const updatedAnnouncement = response.announcement
+      setAnnouncements(announcements.map((a) => (a._id === announcementId ? updatedAnnouncement : a)))
+    } catch (err) {
+      console.error('Error toggling announcement status:', err)
+      setError('Failed to toggle announcement status')
+    }
   }
 
   return (
@@ -137,6 +148,16 @@ const FreelanceTab = ({ user }) => {
                     {announcement.isActive ? '● Active' : '○ Paused'}
                   </span>
                   <div className='flex gap-2'>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleToggleStatus(announcement._id)}
+                      className={`p-1.5 rounded transition-colors ${
+                        announcement.isActive ? 'text-orange-600 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30' : 'text-green-600 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30'
+                      }`}
+                      title={announcement.isActive ? 'Pause announcement' : 'Resume announcement'}>
+                      {announcement.isActive ? <FaPause size={14} /> : <FaPlay size={14} />}
+                    </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
