@@ -6,9 +6,9 @@ import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
-import molecularPattern from '../assets/molecular-pattern.svg'
 import { formatStatus } from '../utils/formatters'
 import SubmitProjectModal from '../modal/SubmitProjectModal'
+import PageBackground from '../components/shared/PageBackground'
 import ReviewProjectModal from '../modal/ReviewProjectModal'
 import { useRateNegotiation } from '../hooks/useRateNegotiation'
 import { useProjectModals } from '../hooks/useProjectModals'
@@ -67,18 +67,15 @@ const ProjectDetail = () => {
     if (id) loadProject()
   }, [id, currentUser, authLoading])
 
-  const currentOffer = project?.rateNegotiation?.currentOffer
+  // Build negotiation timeline for MessagesTab
   const negotiationHistory = project?.rateNegotiation?.history || []
-
   const getOfferLabel = (userId) => {
     if (!userId) return 'User'
     if (project?.user?._id && userId.toString() === project.user._id.toString()) return 'Client'
     if (project?.assignee?._id && userId.toString() === project.assignee._id.toString()) return 'Freelancer'
     return 'User'
   }
-
   const formatOfferType = (type) => (type === 'fixed' ? 'fixed' : '/hr')
-
   const negotiationTimeline = negotiationHistory.map((offer) => {
     const label = getOfferLabel(offer.proposedBy)
     const time = offer.proposedAt ? new Date(offer.proposedAt) : null
@@ -139,15 +136,7 @@ const ProjectDetail = () => {
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      {/* Molecular patterns for background consistency */}
-      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
-        <div className='absolute -left-20 top-10 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[500px] h-[500px] rotate-[40deg]' />
-        </div>
-        <div className='absolute right-0 bottom-20 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-50deg]' />
-        </div>
-      </div>
+      <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         {/* Back Button */}

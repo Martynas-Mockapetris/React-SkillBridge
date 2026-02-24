@@ -7,8 +7,8 @@ import ProfileSettings from '../components/Profile/ProfileSettings'
 import SecuritySettings from '../components/Profile/SecuritySettings'
 import FreelanceTab from '../components/Profile/FreelanceTab'
 import RatingsSection from '../components/Profile/RatingsSection'
-import molecularPattern from '../assets/molecular-pattern.svg'
 import MessagesList from '../components/Profile/MessagesList'
+import PageBackground from '../components/shared/PageBackground'
 import { getUserMessages } from '../services/messageService'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { useNavigate } from 'react-router-dom'
@@ -100,15 +100,7 @@ const Profile = () => {
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      {/* Molecular patterns */}
-      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
-        <div className='absolute -left-20 top-10 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[500px] h-[500px] rotate-[40deg]' />
-        </div>
-        <div className='absolute right-0 bottom-20 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-50deg]' />
-        </div>
-      </div>
+      <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         {/* Profile Header */}

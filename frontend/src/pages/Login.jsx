@@ -4,8 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { motion } from 'framer-motion'
-import molecularPattern from '../assets/molecular-pattern.svg'
 import { useAuth } from '../context/AuthContext'
+import PageBackground from '../components/shared/PageBackground'
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -20,7 +20,7 @@ const Login = () => {
   const [contentHeight, setContentHeight] = useState('100vh')
   const loginRef = useRef(null)
   const navigate = useNavigate()
-  
+
   // Use the auth context instead of direct imports
   const { currentUser, login } = useAuth()
 
@@ -122,30 +122,7 @@ const Login = () => {
 
   return (
     <div ref={loginRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
-      {/* Molecular Pattern Background */}
-      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
-        {/* Large center pattern */}
-        <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[550px] h-[550px] rotate-[25deg]' />
-        </div>
-        {/* Medium patterns */}
-        <div className='absolute -left-20 top-20 opacity-20'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
-        </div>
-        <div className='absolute right-0 bottom-40 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
-        </div>
-        {/* Small patterns */}
-        <div className='absolute left-1/4 top-0 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[15deg]' />
-        </div>
-        <div className='absolute right-1/4 top-1/3 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[60deg]' />
-        </div>
-        <div className='absolute left-1/3 bottom-20 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-15deg]' />
-        </div>
-      </div>
+      <PageBackground variant='auth' />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className='w-full max-w-md z-10 relative'>
         <div className='text-center mb-8'>
