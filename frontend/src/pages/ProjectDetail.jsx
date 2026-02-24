@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
-import { getProjectById, archiveProject } from '../services/projectService'
+import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
-import GroupedMessagesList from '../components/Profile/GroupedMessageList'
 import { formatStatus } from '../utils/formatters'
 import SubmitProjectModal from '../modal/SubmitProjectModal'
 import ReviewProjectModal from '../modal/ReviewProjectModal'
@@ -15,6 +14,7 @@ import { useRateNegotiation } from '../hooks/useRateNegotiation'
 import { useProjectModals } from '../hooks/useProjectModals'
 import { useFavorites } from '../hooks/useFavorites'
 import { useProjectMessages } from '../hooks/useProjectMessages'
+import { ProjectHeader, SkillsRequired, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
 
 const ProjectDetail = () => {
   const { id } = useParams()
@@ -60,7 +60,6 @@ const ProjectDetail = () => {
 
   const isOwner = currentUser && project && currentUser._id === project.user?._id
   const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
-  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
 
   // Fetch project on mount or when id/currentUser changes
   useEffect(() => {
@@ -69,7 +68,6 @@ const ProjectDetail = () => {
   }, [id, currentUser, authLoading])
 
   const currentOffer = project?.rateNegotiation?.currentOffer
-  const isRateProposedByMe = currentOffer?.proposedBy?.toString() === currentUser?._id
   const negotiationHistory = project?.rateNegotiation?.history || []
 
   const getOfferLabel = (userId) => {
@@ -165,13 +163,7 @@ const ProjectDetail = () => {
         </motion.button>
 
         {/* Project Header */}
-        <motion.div className='mb-4 pb-4 border-b-2 dark:border-light/10 border-primary/10' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className='text-4xl font-bold theme-text mb-2'>{project.title}</h1>
-          <p className='theme-text-secondary flex items-center gap-2'>
-            <FaTags />
-            {project.category}
-          </p>
-        </motion.div>
+        <ProjectHeader project={project} />
 
         {/* Project Content */}
         {/* Tabs for project owner */}
@@ -203,16 +195,7 @@ const ProjectDetail = () => {
               </div>
 
               {/* Skills Required */}
-              <div className='theme-card p-6 rounded-lg'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Skills Required</h3>
-                <div className='flex flex-wrap gap-2'>
-                  {project.skills?.map((skill, index) => (
-                    <motion.span key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className='px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium'>
-                      {skill}
-                    </motion.span>
-                  ))}
-                </div>
-              </div>
+              <SkillsRequired skills={project.skills} />
 
               {/* Review Feedback Section - visible to both */}
               {project.review && project.review.decision && (
@@ -285,106 +268,19 @@ const ProjectDetail = () => {
               )}
 
               {/* Rate Negotiation */}
-              {(isOwner || isAssignee) && project.assignee && !['completed', 'archived', 'cancelled'].includes(project.status) && (
-                <div className='theme-card p-6 rounded-lg space-y-4 border border-accent/20'>
-                  <h3 className='text-xl font-semibold theme-text'>Rate Negotiation</h3>
-
-                  {rateError && <div className='p-2 bg-red-100 text-red-700 rounded text-sm'>{rateError}</div>}
-
-                  {/* Show Accepted Status */}
-                  {project.rateNegotiation?.status === 'accepted' && (
-                    <div className='bg-green-500/10 border border-green-500/30 p-4 rounded-lg'>
-                      <div className='flex items-center gap-2 text-green-600 font-semibold mb-2'>
-                        <FaCheck />
-                        <span>Rate Accepted</span>
-                      </div>
-                      <p className='text-lg font-bold theme-text'>
-                        €{currentOffer?.amount} {currentOffer?.type === 'hourly' ? '/hr' : 'fixed'}
-                      </p>
-                      <p className='text-xs theme-text-secondary mt-1'>Agreed on {project.rateNegotiation.agreedAt ? new Date(project.rateNegotiation.agreedAt).toLocaleDateString() : ''}</p>
-                    </div>
-                  )}
-
-                  {/* Show Current Offer when not accepted */}
-                  {project.rateNegotiation?.status !== 'accepted' && (
-                    <>
-                      {currentOffer ? (
-                        <div className='bg-accent/10 p-3 rounded-lg'>
-                          <p className='text-sm theme-text-secondary'>Current Offer</p>
-                          <p className='text-lg font-semibold theme-text'>
-                            €{currentOffer.amount} {currentOffer.type === 'hourly' ? '/hr' : 'fixed'}
-                          </p>
-                          <p className='text-xs theme-text-secondary mt-1'>Proposed by {getOfferLabel(currentOffer.proposedBy)}</p>
-                        </div>
-                      ) : (
-                        <p className='text-sm theme-text-secondary'>No offer yet</p>
-                      )}
-
-                      {/* Input fields for new offer */}
-                      <div className='grid grid-cols-2 gap-3'>
-                        <input
-                          type='number'
-                          value={rateAmount}
-                          onChange={(e) => setRateAmount(e.target.value)}
-                          className='p-2 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
-                          placeholder='Amount'
-                        />
-                        <select value={rateType} onChange={(e) => setRateType(e.target.value)} className='p-2 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
-                          <option value='hourly'>Hourly</option>
-                          <option value='fixed'>Fixed</option>
-                        </select>
-                      </div>
-
-                      {/* Propose button for owner */}
-                      {isOwner && (
-                        <button
-                          onClick={handleProposeRate}
-                          disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
-                          className='w-full py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all disabled:opacity-50'>
-                          Propose Rate
-                        </button>
-                      )}
-
-                      {/* Counter button for assignee */}
-                      {isAssignee && (
-                        <button
-                          onClick={handleCounterRate}
-                          disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
-                          className='w-full py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all disabled:opacity-50'>
-                          Counter Offer
-                        </button>
-                      )}
-
-                      {/* Accept button - show if offer exists and not proposed by me */}
-                      {currentOffer && !isRateProposedByMe && (
-                        <button
-                          onClick={handleAcceptRate}
-                          disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
-                          className='w-full py-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all disabled:opacity-50 font-semibold'>
-                          Accept Offer
-                        </button>
-                      )}
-                    </>
-                  )}
-
-                  {/* Negotiation History */}
-                  {negotiationHistory.length > 0 && (
-                    <div className='pt-3 border-t dark:border-light/10 border-primary/10'>
-                      <p className='text-sm font-semibold theme-text mb-2'>Negotiation History</p>
-                      <div className='space-y-2 max-h-32 overflow-y-auto'>
-                        {negotiationHistory.map((offer, idx) => (
-                          <div key={idx} className='text-sm theme-text-secondary flex justify-between gap-2'>
-                            <span>
-                              {getOfferLabel(offer.proposedBy)}: €{offer.amount} {formatOfferType(offer.type)}
-                            </span>
-                            <span className='text-xs'>{offer.proposedAt ? new Date(offer.proposedAt).toLocaleDateString() : ''}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              <RateNegotiationCard
+                project={project}
+                currentUser={currentUser}
+                rateAmount={rateAmount}
+                setRateAmount={setRateAmount}
+                rateType={rateType}
+                setRateType={setRateType}
+                rateLoading={rateLoading}
+                rateError={rateError}
+                handleProposeRate={handleProposeRate}
+                handleCounterRate={handleCounterRate}
+                handleAcceptRate={handleAcceptRate}
+              />
 
               {/* Project Details Card */}
               <div className='theme-card p-6 rounded-lg space-y-4'>
@@ -436,118 +332,27 @@ const ProjectDetail = () => {
                 </div>
               )}
 
-              {/* Action Buttons - Placeholder for future commits */}
-              <div className='theme-card p-6 rounded-lg space-y-3'>
-                {currentUser && currentUser._id === project.user?._id && !['completed', 'archived'].includes(project.status) && (
-                  <button
-                    onClick={() => {
-                      if (isLockedStatus(project.status)) return
-                      setIsEditModalOpen(true)
-                    }}
-                    disabled={isLockedStatus(project.status)}
-                    className={`w-full py-3 rounded-lg transition-all ${
-                      isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'
-                    }`}>
-                    {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
-                  </button>
-                )}
-                {!['completed', 'archived'].includes(project.status) && (
-                  <>
-                    {currentUser && currentUser._id !== project.user?._id ? (
-                      <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                        Contact Creator
-                      </button>
-                    ) : !currentUser ? (
-                      <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                        Login to Contact
-                      </button>
-                    ) : (
-                      <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                        Your Project
-                      </button>
-                    )}
-                  </>
-                )}
-                {/* Submission/Review Buttons */}
-                {isAssignee && project.status === 'in_progress' && (
-                  <button onClick={() => setIsSubmitModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Submit Project
-                  </button>
-                )}
-
-                {isAssignee && project.status === 'under_review' && (
-                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                    Pending Review
-                  </button>
-                )}
-
-                {isOwner && project.status === 'in_progress' && (
-                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                    Pending Project
-                  </button>
-                )}
-
-                {isOwner && project.status === 'under_review' && (
-                  <button onClick={() => setIsReviewModalOpen(true)} className='w-full py-3 bg-purple-500/10 text-purple-600 rounded-lg hover:bg-purple-500 hover:text-white transition-all'>
-                    Review Submission
-                  </button>
-                )}
-                {project.status === 'completed' && isOwner && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        await archiveProject(project._id)
-                        loadProject() // Reload to get updated status
-                      } catch (error) {
-                        console.error('Error archiving project:', error)
-                        alert('Failed to archive project')
-                      }
-                    }}
-                    className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Archive Project
-                  </button>
-                )}
-                {/* Favorite Button */}
-                <button
-                  onClick={() => {
-                    if (!currentUser) {
-                      alert('Please login to favorite projects')
-                      return
-                    }
-                    handleToggleFavorite()
-                  }}
-                  disabled={favoriteLoading}
-                  className={`w-full py-3 border-2 rounded-lg transition-all ${isFavorited ? 'bg-accent text-white border-accent hover:bg-accent/90' : 'border-accent text-accent hover:bg-accent/10'}`}>
-                  {favoriteLoading ? 'Loading...' : isFavorited ? 'Unfavorite' : 'Save to Favorites'}
-                </button>
-              </div>
+              {/* Action Buttons */}
+              <ProjectActions
+                project={project}
+                currentUser={currentUser}
+                isOwner={isOwner}
+                isAssignee={isAssignee}
+                isFavorited={isFavorited}
+                favoriteLoading={favoriteLoading}
+                handleToggleFavorite={handleToggleFavorite}
+                setIsEditModalOpen={setIsEditModalOpen}
+                setIsContactModalOpen={setIsContactModalOpen}
+                setIsSubmitModalOpen={setIsSubmitModalOpen}
+                setIsReviewModalOpen={setIsReviewModalOpen}
+                loadProject={loadProject}
+              />
             </motion.div>
           </div>
         )}
 
         {/* Messages Tab */}
-        {activeTab === 'messages' && project?.user?._id === currentUser?._id && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <GroupedMessagesList
-              messages={messages}
-              loading={messagesLoading}
-              projectId={id}
-              isProjectCreator={true}
-              systemEvents={negotiationTimeline}
-              onRefresh={async () => {
-                try {
-                  const updatedProject = await getProjectById(id)
-                  setProject(updatedProject)
-
-                  const updatedMessages = await getProjectMessages(id)
-                  setMessages(updatedMessages)
-                } catch (error) {
-                  console.error('Error refreshing data:', error)
-                }
-              }}
-            />
-          </motion.div>
-        )}
+        {activeTab === 'messages' && <MessagesTab project={project} currentUser={currentUser} messages={messages} messagesLoading={messagesLoading} negotiationTimeline={negotiationTimeline} id={id} />}
       </div>
       {/* Edit Project Modal */}
       {project && <ProjectModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} mode='edit' initialData={project} onProjectUpdated={loadProject} />}

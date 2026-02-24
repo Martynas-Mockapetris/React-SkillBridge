@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 // Manages all 8 modal states
 export const useProjectModals = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false)
