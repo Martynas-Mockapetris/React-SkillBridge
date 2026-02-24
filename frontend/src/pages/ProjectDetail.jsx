@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
-import { getProjectById, archiveProject, proposeRate, counterRate, acceptRate } from '../services/projectService'
+import { getProjectById, archiveProject } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import GroupedMessagesList from '../components/Profile/GroupedMessageList'
-import { getProjectMessages } from '../services/messageService'
-import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../services/userService'
 import { formatStatus } from '../utils/formatters'
 import SubmitProjectModal from '../modal/SubmitProjectModal'
 import ReviewProjectModal from '../modal/ReviewProjectModal'
+import { useRateNegotiation } from '../hooks/useRateNegotiation'
+import { useProjectModals } from '../hooks/useProjectModals'
+import { useFavorites } from '../hooks/useFavorites'
+import { useProjectMessages } from '../hooks/useProjectMessages'
 
 const ProjectDetail = () => {
   const { id } = useParams()
@@ -23,23 +25,15 @@ const ProjectDetail = () => {
   const [activeTab, setActiveTab] = useState('details')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [messages, setMessages] = useState([])
-  const [messagesLoading, setMessagesLoading] = useState(false)
 
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isFavorited, setIsFavorited] = useState(false)
-  const [favoriteLoading, setFavoriteLoading] = useState(false)
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
-  const [rateAmount, setRateAmount] = useState('')
-  const [rateType, setRateType] = useState('hourly')
-  const [rateLoading, setRateLoading] = useState(false)
-  const [rateError, setRateError] = useState('')
+  // Extract modal state into hook
+  const { isContactModalOpen, setIsContactModalOpen, isEditModalOpen, setIsEditModalOpen, isSubmitModalOpen, setIsSubmitModalOpen, isReviewModalOpen, setIsReviewModalOpen } = useProjectModals()
 
-  const isOwner = currentUser && project && currentUser._id === project.user?._id
-  const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
-  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
+  // Extract favorites into hook
+  const { isFavorited, favoriteLoading, handleToggleFavorite } = useFavorites(id, currentUser)
+
+  // Extract messages into hook
+  const { messages, messagesLoading } = useProjectMessages(project, currentUser)
 
   // Load project data
   const loadProject = async () => {
@@ -62,48 +56,17 @@ const ProjectDetail = () => {
     }
   }
 
+  const { rateAmount, setRateAmount, rateType, setRateType, rateLoading, rateError, setRateError, handleProposeRate, handleCounterRate, handleAcceptRate } = useRateNegotiation(id, loadProject)
+
+  const isOwner = currentUser && project && currentUser._id === project.user?._id
+  const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
+  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
+
   // Fetch project on mount or when id/currentUser changes
   useEffect(() => {
     if (authLoading) return
     if (id) loadProject()
   }, [id, currentUser, authLoading])
-
-  // Fetch messages when project loads and user is owner
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (project && currentUser && project.user?._id === currentUser._id) {
-        try {
-          setMessagesLoading(true)
-          const data = await getProjectMessages(project._id)
-          setMessages(data)
-        } catch (error) {
-          console.error('Error fetching messages:', error)
-        } finally {
-          setMessagesLoading(false)
-        }
-      }
-    }
-
-    fetchMessages()
-  }, [project, currentUser])
-
-  // Load favorites when project or user changes
-  useEffect(() => {
-    const loadFavorites = async () => {
-      if (project && currentUser) {
-        try {
-          const favorites = await getFavoriteProjects()
-          const favoriteIds = favorites.map((fav) => fav._id)
-          setIsFavorited(favoriteIds.includes(project._id))
-        } catch (error) {
-          console.error('Error loading favorites:', error)
-          setIsFavorited(false)
-        }
-      }
-    }
-
-    loadFavorites()
-  }, [project, currentUser])
 
   const currentOffer = project?.rateNegotiation?.currentOffer
   const isRateProposedByMe = currentOffer?.proposedBy?.toString() === currentUser?._id
@@ -126,57 +89,6 @@ const ProjectDetail = () => {
       time
     }
   })
-
-  const handleProposeRate = async () => {
-    if (!rateAmount || Number(rateAmount) <= 0) {
-      setRateError('Enter a valid amount')
-      return
-    }
-
-    try {
-      setRateLoading(true)
-      setRateError('')
-      await proposeRate(project._id, { amount: Number(rateAmount), type: rateType })
-      await loadProject()
-      setRateAmount('')
-    } catch (error) {
-      setRateError(error.response?.data?.message || 'Failed to propose rate')
-    } finally {
-      setRateLoading(false)
-    }
-  }
-
-  const handleCounterRate = async () => {
-    if (!rateAmount || Number(rateAmount) <= 0) {
-      setRateError('Enter a valid amount')
-      return
-    }
-
-    try {
-      setRateLoading(true)
-      setRateError('')
-      await counterRate(project._id, { amount: Number(rateAmount), type: rateType })
-      await loadProject()
-      setRateAmount('')
-    } catch (error) {
-      setRateError(error.response?.data?.message || 'Failed to counter rate')
-    } finally {
-      setRateLoading(false)
-    }
-  }
-
-  const handleAcceptRate = async () => {
-    try {
-      setRateLoading(true)
-      setRateError('')
-      await acceptRate(project._id)
-      await loadProject()
-    } catch (error) {
-      setRateError(error.response?.data?.message || 'Failed to accept rate')
-    } finally {
-      setRateLoading(false)
-    }
-  }
 
   const handleBack = () => {
     navigate(-1)
@@ -597,27 +509,12 @@ const ProjectDetail = () => {
                 )}
                 {/* Favorite Button */}
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     if (!currentUser) {
                       alert('Please login to favorite projects')
                       return
                     }
-
-                    setFavoriteLoading(true)
-                    try {
-                      if (isFavorited) {
-                        await removeFromFavorites(project._id)
-                        setIsFavorited(false)
-                      } else {
-                        await addToFavorites(project._id)
-                        setIsFavorited(true)
-                      }
-                    } catch (error) {
-                      console.error('Error toggling favorite:', error)
-                      alert('Failed to update favorites. Please try again.')
-                    } finally {
-                      setFavoriteLoading(false)
-                    }
+                    handleToggleFavorite()
                   }}
                   disabled={favoriteLoading}
                   className={`w-full py-3 border-2 rounded-lg transition-all ${isFavorited ? 'bg-accent text-white border-accent hover:bg-accent/90' : 'border-accent text-accent hover:bg-accent/10'}`}>
