@@ -25,6 +25,17 @@ export const getUserStats = async () => {
   }
 }
 
+// Fetch admin dashboard statistics (global)
+export const getAdminDashboardStats = async () => {
+  try {
+    const response = await authAxios.get('/api/users/admin/stats')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin dashboard stats:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Get user's favorite projects
 export const getFavoriteProjects = async () => {
   try {

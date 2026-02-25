@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getAdminDashboardStats } from '../../services/userService'
 import StatCard from './StatCard'
 import { FaUsers, FaProjectDiagram, FaCheckCircle, FaMoneyBillWave } from 'react-icons/fa'
 
@@ -25,25 +26,11 @@ const AdminStats = () => {
   const fetchDashboardStats = async () => {
     setIsLoading(true)
     try {
-      // TODO: Replace with actual API call in future tasks
-      // Simulated data for now
-      setTimeout(() => {
-        setStats({
-          totalUsers: 0,
-          activeProjects: 0,
-          completedProjects: 0,
-          revenue: 0,
-          comparisons: {
-            users: 0,
-            activeProjects: 0,
-            completedProjects: 0,
-            revenue: 0
-          }
-        })
-        setIsLoading(false)
-      }, 1000)
+      const data = await getAdminDashboardStats()
+      setStats(data)
     } catch (error) {
       console.error('Error fetching dashboard stats:', error)
+    } finally {
       setIsLoading(false)
     }
   }

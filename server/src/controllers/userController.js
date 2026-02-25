@@ -264,6 +264,11 @@ export const getUserStats = async (req, res) => {
 // @route   GET /api/users/admin/stats
 // @access  Admin
 export const getAdminDashboardStats = async (req, res) => {
+  const percentChange = (current, previous) => {
+    if (previous === 0) return current > 0 ? 100 : 0
+    return Math.round(((current - previous) / previous) * 100)
+  }
+
   try {
     const now = new Date()
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
@@ -275,7 +280,7 @@ export const getAdminDashboardStats = async (req, res) => {
     const totalUsers = await User.countDocuments()
     const totalUsersLast30 = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } })
     const totalUsersPrev30 = await User.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } })
-    const usersTrend = totalUsersLast30 - totalUsersPrev30
+    const usersTrend = percentChange(totalUsersLast30, totalUsersPrev30)
 
     // ====================
     // ACTIVE PROJECTS
@@ -290,7 +295,7 @@ export const getAdminDashboardStats = async (req, res) => {
       status: { $in: activeStatuses },
       updatedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
     })
-    const activeProjectsTrend = activeProjectsLast30 - activeProjectsPrev30
+    const activeProjectsTrend = percentChange(activeProjectsLast30, activeProjectsPrev30)
 
     // ====================
     // COMPLETED PROJECTS
@@ -304,7 +309,7 @@ export const getAdminDashboardStats = async (req, res) => {
       status: 'completed',
       updatedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
     })
-    const completedTrend = completedLast30 - completedPrev30
+    const completedTrend = percentChange(completedLast30, completedPrev30)
 
     // ====================
     // REVENUE
@@ -325,8 +330,7 @@ export const getAdminDashboardStats = async (req, res) => {
       })
       .reduce((sum, project) => sum + (project.budget || 0), 0)
 
-    const revenueTrend = revenueLast30 - revenuePrev30
-
+    const revenueTrend = percentChange(revenueLast30, revenuePrev30)
     res.json({
       totalUsers,
       activeProjects,

@@ -10,7 +10,7 @@ import {
   getFreelancers,
   getUserById,
   addFreelancerToFavorites,
-  removeFreelancerFromFavorites, 
+  removeFreelancerFromFavorites,
   getAdminDashboardStats
 } from '../controllers/userController.js'
 import { protect, adminOnly } from '../middleware/authMiddleware.js'
@@ -32,7 +32,7 @@ router.delete('/profile', protect, deleteUserAccount)
 router.get('/stats', protect, getUserStats)
 
 // Admin dashboard stats route
-router.get('/admin/dashboard', protect, adminOnly, getAdminDashboardStats)
+router.get('/admin/stats', protect, adminOnly, getAdminDashboardStats)
 
 // Favorites routes - specific routes first!
 router.get('/favorites', protect, getFavoriteProjects)
