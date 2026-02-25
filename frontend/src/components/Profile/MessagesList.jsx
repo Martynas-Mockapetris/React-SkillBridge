@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaChevronUp } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { sendMessage } from '../../services/messageService' // Import message service
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const MessagesList = ({ messages, loading }) => {
   const navigate = useNavigate()
@@ -37,55 +38,79 @@ const MessagesList = ({ messages, loading }) => {
     return date.toLocaleDateString()
   }
 
-  // Group messages by project ID
+  // Group messages by project ID or conversation (for direct messages)
   const groupMessagesByProject = () => {
     const grouped = {}
 
     messages.forEach((message) => {
-      const projectId = message.project._id
-      if (!grouped[projectId]) {
-        grouped[projectId] = {
-          project: message.project,
-          messages: []
+      // Project-based messages
+      if (message.project) {
+        const projectId = message.project._id
+        if (!grouped[projectId]) {
+          grouped[projectId] = {
+            project: message.project,
+            messages: [],
+            isDirectMessage: false
+          }
         }
+        grouped[projectId].messages.push(message)
+      } else {
+        // Direct messages - group by the other user (not current user)
+        const otherUserId = message.sender._id === currentUser._id ? message.receiver._id : message.sender._id
+        const conversationKey = `direct-${otherUserId}`
+
+        if (!grouped[conversationKey]) {
+          const otherUser = message.sender._id === currentUser._id ? message.receiver : message.sender
+          grouped[conversationKey] = {
+            projectTitle: `Conversation with ${otherUser.firstName} ${otherUser.lastName}`,
+            otherUser: otherUser,
+            messages: [],
+            isDirectMessage: true
+          }
+        }
+        grouped[conversationKey].messages.push(message)
       }
-      grouped[projectId].messages.push(message)
     })
 
     return Object.values(grouped)
   }
 
   // Handle sending a reply
-  const handleReply = async (projectId, receiverId) => {
-    const replyText = replyTexts[projectId]
+  const handleReply = async (conversationKeyOrProjectId, receiverId, isDirectMessage = false) => {
+    const replyText = replyTexts[conversationKeyOrProjectId]
 
     // Don't send if empty
     if (!replyText || !replyText.trim()) return
 
     try {
       // Mark as sending
-      setSendingStates({ ...sendingStates, [projectId]: true })
+      setSendingStates({ ...sendingStates, [conversationKeyOrProjectId]: true })
 
-      // Send the message
-      await sendMessage(projectId, receiverId, replyText)
+      // Send the message with correct signature: sendMessage(receiverId, content, subject, projectId)
+      if (isDirectMessage) {
+        // Direct message: sendMessage(receiverId, content, subject = null, projectId = null)
+        await sendMessage(receiverId, replyText, null, null)
+      } else {
+        // Project message: sendMessage(receiverId, content, subject = null, projectId)
+        await sendMessage(receiverId, replyText, null, conversationKeyOrProjectId)
+      }
 
-      // Clear the input for this project
-      setReplyTexts({ ...replyTexts, [projectId]: '' })
+      // Clear the input
+      setReplyTexts({ ...replyTexts, [conversationKeyOrProjectId]: '' })
 
-      // TODO: Refresh messages to show new reply
-      window.location.reload() // Temporary solution
+      window.location.reload()
     } catch (error) {
       console.error('Failed to send reply:', error)
     } finally {
       // Mark as not sending
-      setSendingStates({ ...sendingStates, [projectId]: false })
+      setSendingStates({ ...sendingStates, [conversationKeyOrProjectId]: false })
     }
   }
 
   if (loading) {
     return (
       <div className='flex justify-center py-8'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+        <LoadingSpinner />
       </div>
     )
   }
@@ -105,16 +130,136 @@ const MessagesList = ({ messages, loading }) => {
   return (
     <div className='space-y-6'>
       {groupedMessages.map((group, groupIndex) => {
-        const { project, messages: projectMessages } = group
+        const { project, otherUser, messages: groupMessages, isDirectMessage, projectTitle } = group
 
-        // Find the OTHER person in the conversation (not current user)
-        const otherPersonMessage = projectMessages.find((msg) => (msg.sender._id || msg.sender) !== currentUser._id)
+        // HANDLE DIRECT MESSAGES
+        if (isDirectMessage) {
+          const conversationKey = `direct-${otherUser._id}`
+          const currentReplyText = replyTexts[conversationKey] || ''
+          const isSending = sendingStates[conversationKey] || false
 
-        // Determine receiver: if you're the owner, send to interested person; if interested person, send to owner
+          return (
+            <motion.div
+              key={conversationKey}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: groupIndex * 0.05 }}
+              className='theme-card p-6 rounded-lg hover:shadow-lg transition-all'>
+              {/* Direct Message Header */}
+              <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(conversationKey)}>
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center gap-3 flex-1'>
+                    <motion.div animate={{ rotate: expandedConversations[conversationKey] ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                      <FaChevronDown className='theme-text-secondary' />
+                    </motion.div>
+                    <FaEnvelope className='text-accent' />
+                    <div className='flex-1'>
+                      <p className='font-semibold theme-text'>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate(`/freelancer/${otherUser._id}`)
+                          }}
+                          className='hover:text-accent transition-colors cursor-pointer underline'>
+                          {projectTitle}
+                        </button>
+                      </p>
+                      <p className='text-sm theme-text-secondary'>Direct message</p>
+                    </div>
+                    <div className='px-3 py-1 bg-accent/10 rounded-full'>
+                      <span className='text-sm font-semibold text-accent'>
+                        {groupMessages.length} {groupMessages.length === 1 ? 'message' : 'messages'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Messages List */}
+              <AnimatePresence>
+                {expandedConversations[conversationKey] && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className='overflow-hidden'>
+                    <div className='space-y-3 mb-4 pt-4'>
+                      {groupMessages.map((message, msgIndex) => {
+                        const isOwnMessage = message.sender._id === currentUser._id || message.sender === currentUser._id
+                        return (
+                          <motion.div
+                            key={message._id}
+                            initial={{ opacity: 0, x: isOwnMessage ? 10 : -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
+                            className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
+                              {!isOwnMessage && (
+                                <div className='flex items-center gap-2 mb-2'>
+                                  <img
+                                    src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`}
+                                    alt={message.sender?.firstName}
+                                    className='w-6 h-6 rounded-full object-cover cursor-pointer hover:opacity-80'
+                                    onClick={() => navigate(`/freelancer/${message.sender?._id}`)}
+                                    title='View profile'
+                                  />
+                                  <button onClick={() => navigate(`/freelancer/${message.sender?._id}`)} className='text-sm font-semibold theme-text hover:text-accent transition-colors underline'>
+                                    {message.sender?.firstName} {message.sender?.lastName}
+                                  </button>
+                                </div>
+                              )}
+                              {message.subject && <p className='text-sm font-semibold text-accent mb-2'>{message.subject}</p>}
+                              <p className={`theme-text leading-relaxed mb-2 ${isOwnMessage ? 'text-right' : ''}`}>{message.content}</p>
+                              <div className={`flex items-center gap-1 text-xs theme-text-secondary ${isOwnMessage ? 'justify-end' : ''}`}>
+                                <FaClock />
+                                <span>{formatDate(message.createdAt)}</span>
+                                {message.isRead && <FaEnvelopeOpen className='text-green-500 ml-1' title='Read' />}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Reply Input */}
+              {expandedConversations[conversationKey] && (
+                <div className='flex gap-2 pt-4 border-t dark:border-light/10 border-primary/10'>
+                  <input
+                    type='text'
+                    value={currentReplyText}
+                    onChange={(e) => setReplyTexts({ ...replyTexts, [conversationKey]: e.target.value })}
+                    placeholder='Type your reply...'
+                    className='flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 border-gray-300 theme-bg theme-text focus:outline-none focus:border-accent'
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleReply(conversationKey, otherUser._id, true)
+                      }
+                    }}
+                  />
+                  <motion.button
+                    onClick={() => handleReply(conversationKey, otherUser._id, true)}
+                    disabled={!currentReplyText.trim() || isSending}
+                    className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2'
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}>
+                    {isSending ? (
+                      'Sending...'
+                    ) : (
+                      <>
+                        <FaPaperPlane /> Reply
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              )}
+            </motion.div>
+          )
+        }
+
+        // HANDLE PROJECT-BASED MESSAGES (existing code)
+        const otherPersonMessage = groupMessages.find((msg) => (msg.sender._id || msg.sender) !== currentUser._id)
         const isProjectOwner = (project.user._id || project.user) === currentUser._id
-        const receiverId = isProjectOwner
-          ? otherPersonMessage?.sender._id || otherPersonMessage?.sender // Owner replies to interested person
-          : project.user._id || project.user // Interested person replies to owner
+        const receiverId = isProjectOwner ? otherPersonMessage?.sender._id || otherPersonMessage?.sender : project.user._id || project.user
 
         const currentReplyText = replyTexts[project._id] || ''
         const isSending = sendingStates[project._id] || false
@@ -145,7 +290,7 @@ const MessagesList = ({ messages, loading }) => {
                   {/* Message Count Badge */}
                   <div className='px-3 py-1 bg-accent/10 rounded-full'>
                     <span className='text-sm font-semibold text-accent'>
-                      {projectMessages.length} {projectMessages.length === 1 ? 'message' : 'messages'}
+                      {groupMessages.length} {groupMessages.length === 1 ? 'message' : 'messages'}
                     </span>
                   </div>
                 </div>
@@ -167,10 +312,10 @@ const MessagesList = ({ messages, loading }) => {
 
               {/* Last Message Preview (when collapsed) - Show most recent message */}
               {!expandedConversations[project._id] &&
-                projectMessages.length > 0 &&
+                groupMessages.length > 0 &&
                 (() => {
                   // Get the most recent message (first in sorted array)
-                  const lastMessage = projectMessages[projectMessages.length - 1] // Newest at end
+                  const lastMessage = groupMessages[groupMessages.length - 1] // Newest at end
                   const isOwnMessage = lastMessage.sender._id === currentUser._id || lastMessage.sender === currentUser._id
 
                   // Format sender name: "You" for own messages, first name for others
@@ -196,7 +341,7 @@ const MessagesList = ({ messages, loading }) => {
               {expandedConversations[project._id] && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }} className='overflow-hidden'>
                   <div className='space-y-3 mb-4 pt-4'>
-                    {projectMessages.map((message, msgIndex) => {
+                    {groupMessages.map((message, msgIndex) => {
                       // Check if this message is from the current user
                       const isOwnMessage = message.sender._id === currentUser._id || message.sender === currentUser._id
 
@@ -211,10 +356,16 @@ const MessagesList = ({ messages, loading }) => {
                             {/* Sender name for received messages */}
                             {!isOwnMessage && (
                               <div className='flex items-center gap-2 mb-2'>
-                                <img src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`} alt={message.sender?.firstName} className='w-6 h-6 rounded-full object-cover' />
-                                <p className='text-sm font-semibold theme-text'>
+                                <img
+                                  src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`}
+                                  alt={message.sender?.firstName}
+                                  className='w-6 h-6 rounded-full object-cover cursor-pointer hover:opacity-80'
+                                  onClick={() => navigate(`/freelancer/${message.sender?._id}`)}
+                                  title='View profile'
+                                />
+                                <button onClick={() => navigate(`/freelancer/${message.sender?._id}`)} className='text-sm font-semibold theme-text hover:text-accent transition-colors underline'>
                                   {message.sender?.firstName} {message.sender?.lastName}
-                                </p>
+                                </button>
                               </div>
                             )}
 

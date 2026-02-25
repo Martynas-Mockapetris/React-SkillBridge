@@ -123,6 +123,7 @@ export const deleteAnnouncement = async (req, res) => {
 }
 
 // Toggle announcement active status (for pause/unpause in Task 10)
+// Toggle announcement active status (for pause/unpause in Task 10)
 export const toggleAnnouncementStatus = async (req, res) => {
   try {
     const { id } = req.params
@@ -134,14 +135,14 @@ export const toggleAnnouncementStatus = async (req, res) => {
       return res.status(404).json({ message: 'Announcement not found' })
     }
 
-    if (announcement.userId.toString() !== userId) {
+    if (announcement.userId.toString() !== userId.toString()) {
       return res.status(403).json({ message: 'You can only toggle your own announcements' })
     }
 
     announcement.isActive = !announcement.isActive
     await announcement.save()
 
-    res.json({ message: `Announcement ${announcement.isActive ? 'paused' : 'resumed'}`, announcement })
+    res.json({ message: `Announcement ${announcement.isActive ? 'resumed' : 'paused'}`, announcement })
   } catch (error) {
     console.error('Error toggling announcement status:', error)
     res.status(500).json({ message: 'Failed to toggle announcement status', error: error.message })

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaProjectDiagram, FaCheckCircle, FaClock, FaStar, FaWallet } from 'react-icons/fa'
 import { getUserStats } from '../../services/userService' // Import stats service
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const ProfileStats = () => {
   // State for storing fetched stats and loading status
@@ -68,7 +69,7 @@ const ProfileStats = () => {
       <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
         <motion.h2 className='text-2xl font-bold theme-text'>Dashboard Overview</motion.h2>
         <div className='flex justify-center py-12'>
-          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+          <LoadingSpinner />
         </div>
       </motion.div>
     )

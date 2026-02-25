@@ -1,28 +1,5 @@
 import axios from 'axios'
-
-// Reuse the same authentication setup from userServices
-const getToken = () => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  return user.token
-}
-
-// Create authenticated axios instance
-const createAuthAxios = () => {
-  const instance = axios.create()
-
-  // Add request interceptor to automatically set auth header
-  instance.interceptors.request.use((config) => {
-    const token = getToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  })
-
-  return instance
-}
-
-const authAxios = createAuthAxios()
+import { authAxios } from '../utils/axiosConfig'
 
 // Create a new project
 export const createProject = async (projectData) => {
@@ -189,6 +166,39 @@ export const reviewProject = async (projectId, reviewData) => {
     return response.data
   } catch (error) {
     console.error('Failed to review project:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Propose a rate (owner only)
+export const proposeRate = async (projectId, rateData) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/rate/propose`, rateData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to propose rate:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Counter a rate (assignee only)
+export const counterRate = async (projectId, rateData) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/rate/counter`, rateData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to counter rate:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Accept current rate (owner or assignee)
+export const acceptRate = async (projectId) => {
+  try {
+    const response = await authAxios.post(`/api/projects/${projectId}/rate/accept`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to accept rate:', error.response?.data || error.message)
     throw error
   }
 }

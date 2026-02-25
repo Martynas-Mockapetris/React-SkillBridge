@@ -7,7 +7,7 @@ import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
 import { getAllProjects } from '../../services/projectService'
-import { getFreelancers } from '../../services/userService'
+import { getAllAnnouncements } from '../../services/announcementService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const ListingTabs = () => {
@@ -59,22 +59,32 @@ const ListingTabs = () => {
           setIsLoading(false)
         }
       } else {
-        // Fetch freelancers from API
+        // Fetch announcements from freelancers
         try {
           setIsLoading(true)
           setError(null)
 
-          const data = await getFreelancers()
+          // Fetch all active announcements with populated user data
+          const announcements = await getAllAnnouncements()
 
-          // Map API users into FreelancerCard format
-          const mapped = data.map((user) => ({
-            id: user._id,
-            name: `${user.firstName} ${user.lastName}`,
-            specialty: user.skills || 'Freelancer',
-            rating: 'New', // placeholder for now (real rating later)
-            hourlyRate: '€—/hr', // placeholder for now (real rate later)
-            image: user.profilePicture || `https://i.pravatar.cc/150?u=${user._id}`,
-            completedProjects: 0 // placeholder (real count later)
+          // Filter to only include announcements from freelancers or both users
+          const filteredAnnouncements = announcements.filter((announcement) => announcement.userId && ['freelancer', 'both'].includes(announcement.userId.userType))
+
+          // Map announcements to card format (each announcement = separate card)
+          const mapped = filteredAnnouncements.map((announcement) => ({
+            _id: announcement._id,
+            title: announcement.title,
+            background: announcement.background,
+            hourlyRate: announcement.hourlyRate,
+            skills: announcement.skills,
+            isActive: announcement.isActive,
+            freelancer: {
+              _id: announcement.userId._id,
+              firstName: announcement.userId.firstName,
+              lastName: announcement.userId.lastName,
+              profilePicture: announcement.userId.profilePicture,
+              userType: announcement.userId.userType
+            }
           }))
 
           setFreelancers(mapped)
@@ -186,7 +196,7 @@ const ListingTabs = () => {
                       .map((_, index) => <CardLoader key={index} />)
                   : activeTab === 'projects'
                     ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
-                    : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer.id} freelancer={freelancer} index={index} />)}
+                    : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer._id} freelancer={freelancer} index={index} />)}
               </div>
             )}
 

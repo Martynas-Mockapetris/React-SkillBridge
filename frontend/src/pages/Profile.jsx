@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
 import SecuritySettings from '../components/Profile/SecuritySettings'
 import FreelanceTab from '../components/Profile/FreelanceTab'
-import molecularPattern from '../assets/molecular-pattern.svg'
+import RatingsSection from '../components/Profile/RatingsSection'
 import MessagesList from '../components/Profile/MessagesList'
+import PageBackground from '../components/shared/PageBackground'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getUserMessages } from '../services/messageService'
+import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -17,6 +20,9 @@ const Profile = () => {
   const [messages, setMessages] = useState([])
   const [messagesLoading, setMessagesLoading] = useState(false)
   const { currentUser } = useAuth()
+  const [ratings, setRatings] = useState(null)
+  const [ratingStats, setRatingStats] = useState(null)
+  const [ratingsLoading, setRatingsLoading] = useState(false)
   const navigate = useNavigate()
 
   // Redirect if not authenticated
@@ -45,38 +51,56 @@ const Profile = () => {
     fetchMessages()
   }, [activeTab])
 
+  // Fetch ratings for freelancers
+  useEffect(() => {
+    const fetchRatings = async () => {
+      // Only fetch if user is freelancer
+      if (!currentUser || (currentUser.userType !== 'freelancer' && currentUser.userType !== 'both')) {
+        return
+      }
+
+      try {
+        setRatingsLoading(true)
+        const ratingsData = await getFreelancerRatings(currentUser._id)
+        const statsData = await getRatingStats(currentUser._id)
+        setRatings(ratingsData)
+        setRatingStats(statsData)
+      } catch (error) {
+        console.error('Error fetching ratings:', error)
+      } finally {
+        setRatingsLoading(false)
+      }
+    }
+
+    fetchRatings()
+  }, [currentUser])
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
-    { id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> },
+    // Projects tab - not visible to admins
+    ...(currentUser?.userType !== 'admin' ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
     { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
-      ? [{ id: 'freelance', label: 'Freelance', icon: <FaBriefcase /> }]
+      ? [
+          { id: 'freelance', label: 'Freelance', icon: <FaBriefcase /> },
+          { id: 'ratings', label: 'Ratings', icon: <FaStar /> }
+        ]
       : []),
+    // Admin tab - only visible to admins
+    ...(currentUser?.userType === 'admin' ? [{ id: 'admin', label: 'Admin', icon: <FaShieldAlt /> }] : []),
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
   ]
 
   // If still loading or no user, could show a loading state
   if (!currentUser) {
-    return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
-      </div>
-    )
+    return <LoadingSpinner fullScreen />
   }
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      {/* Molecular patterns */}
-      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
-        <div className='absolute -left-20 top-10 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[500px] h-[500px] rotate-[40deg]' />
-        </div>
-        <div className='absolute right-0 bottom-20 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-50deg]' />
-        </div>
-      </div>
+      <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         {/* Profile Header */}
@@ -89,6 +113,25 @@ const Profile = () => {
               {currentUser?.firstName} {currentUser?.lastName}
             </h1>
             <p className='theme-text-secondary'>{currentUser?.userType === 'client' ? 'Client' : currentUser?.userType === 'freelancer' ? 'Freelancer' : 'Client & Freelancer'}</p>
+            <div className='flex items-center gap-2'>
+              {ratingStats?.totalRatings > 0 ? (
+                <>
+                  <div className='flex items-center gap-1'>
+                    <span className='text-lg font-semibold text-accent'>{ratingStats.averageRating.toFixed(1)}</span>
+                    <div className='flex'>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <FaStar key={star} size={14} className={star <= Math.round(ratingStats.averageRating) ? 'text-accent' : 'text-gray-300 dark:text-gray-600'} />
+                      ))}
+                    </div>
+                  </div>
+                  <span className='text-sm theme-text-secondary'>
+                    ({ratingStats.totalRatings} {ratingStats.totalRatings === 1 ? 'rating' : 'ratings'})
+                  </span>
+                </>
+              ) : (
+                <p className='text-sm theme-text-secondary'>No ratings yet</p>
+              )}
+            </div>
           </div>
         </motion.div>
 
@@ -117,6 +160,16 @@ const Profile = () => {
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
             {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
+            {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
+            {activeTab === 'admin' && (
+              <div className='p-8 text-center theme-bg-secondary rounded-lg'>
+                <h2 className='text-2xl font-bold theme-text mb-4'>Admin Dashboard</h2>
+                <p className='theme-text-secondary mb-6'>Full admin dashboard coming soon...</p>
+                <button onClick={() => navigate('/admin')} className='px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                  Go to Admin Panel
+                </button>
+              </div>
+            )}
             {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
             {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>

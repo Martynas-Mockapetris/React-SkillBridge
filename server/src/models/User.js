@@ -106,10 +106,63 @@ const UserSchema = new mongoose.Schema({
     default: []
   },
 
+  // Favorite freelancers
+  favoriteFreelancers: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User',
+    default: []
+  },
+
   // Profile picture
   profilePicture: {
     type: String,
     default: ''
+  },
+  // Rating system for freelancers
+  ratings: {
+    type: [
+      {
+        ratedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true
+        },
+        score: {
+          type: Number,
+          min: 1,
+          max: 5,
+          required: true
+        },
+        feedback: {
+          type: String,
+          trim: true
+        },
+        projectId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Project',
+          required: true
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now
+        }
+      }
+    ],
+    default: []
+  },
+
+  // Average rating
+  averageRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5
+  },
+
+  // Total ratings count
+  totalRatings: {
+    type: Number,
+    default: 0
   }
 })
 

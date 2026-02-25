@@ -2,17 +2,20 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
-import { getProjectById, archiveProject } from '../services/projectService'
+import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
-import molecularPattern from '../assets/molecular-pattern.svg'
-import GroupedMessagesList from '../components/Profile/GroupedMessageList'
-import { getProjectMessages } from '../services/messageService'
-import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../services/userService'
 import { formatStatus } from '../utils/formatters'
 import SubmitProjectModal from '../modal/SubmitProjectModal'
+import PageBackground from '../components/shared/PageBackground'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 import ReviewProjectModal from '../modal/ReviewProjectModal'
+import { useRateNegotiation } from '../hooks/useRateNegotiation'
+import { useProjectModals } from '../hooks/useProjectModals'
+import { useFavorites } from '../hooks/useFavorites'
+import { useProjectMessages } from '../hooks/useProjectMessages'
+import { ProjectHeader, SkillsRequired, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
 
 const ProjectDetail = () => {
   const { id } = useParams()
@@ -23,19 +26,15 @@ const ProjectDetail = () => {
   const [activeTab, setActiveTab] = useState('details')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [messages, setMessages] = useState([])
-  const [messagesLoading, setMessagesLoading] = useState(false)
 
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isFavorited, setIsFavorited] = useState(false)
-  const [favoriteLoading, setFavoriteLoading] = useState(false)
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  // Extract modal state into hook
+  const { isContactModalOpen, setIsContactModalOpen, isEditModalOpen, setIsEditModalOpen, isSubmitModalOpen, setIsSubmitModalOpen, isReviewModalOpen, setIsReviewModalOpen } = useProjectModals()
 
-  const isOwner = currentUser && project && currentUser._id === project.user?._id
-  const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
-  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
+  // Extract favorites into hook
+  const { isFavorited, favoriteLoading, handleToggleFavorite } = useFavorites(id, currentUser)
+
+  // Extract messages into hook
+  const { messages, messagesLoading } = useProjectMessages(project, currentUser)
 
   // Load project data
   const loadProject = async () => {
@@ -58,48 +57,41 @@ const ProjectDetail = () => {
     }
   }
 
+  const { rateAmount, setRateAmount, rateType, setRateType, rateLoading, rateError, setRateError, handleProposeRate, handleCounterRate, handleAcceptRate } = useRateNegotiation(id, loadProject)
+
+  const isOwner = currentUser && project && currentUser._id === project.user?._id
+  const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
+
   // Fetch project on mount or when id/currentUser changes
   useEffect(() => {
     if (authLoading) return
+
+    // If user logged out while on this page, redirect to home or show message
+    if (!currentUser) {
+      setError('You have been logged out. Please log in to view this project.')
+      return
+    }
+
     if (id) loadProject()
   }, [id, currentUser, authLoading])
 
-  // Fetch messages when project loads and user is owner
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (project && currentUser && project.user?._id === currentUser._id) {
-        try {
-          setMessagesLoading(true)
-          const data = await getProjectMessages(project._id)
-          setMessages(data)
-        } catch (error) {
-          console.error('Error fetching messages:', error)
-        } finally {
-          setMessagesLoading(false)
-        }
-      }
+  // Build negotiation timeline for MessagesTab
+  const negotiationHistory = project?.rateNegotiation?.history || []
+  const getOfferLabel = (userId) => {
+    if (!userId) return 'User'
+    if (project?.user?._id && userId.toString() === project.user._id.toString()) return 'Client'
+    if (project?.assignee?._id && userId.toString() === project.assignee._id.toString()) return 'Freelancer'
+    return 'User'
+  }
+  const formatOfferType = (type) => (type === 'fixed' ? 'fixed' : '/hr')
+  const negotiationTimeline = negotiationHistory.map((offer) => {
+    const label = getOfferLabel(offer.proposedBy)
+    const time = offer.proposedAt ? new Date(offer.proposedAt) : null
+    return {
+      text: `${label} proposed €${offer.amount} ${formatOfferType(offer.type)}`,
+      time
     }
-
-    fetchMessages()
-  }, [project, currentUser])
-
-  // Load favorites when project or user changes
-  useEffect(() => {
-    const loadFavorites = async () => {
-      if (project && currentUser) {
-        try {
-          const favorites = await getFavoriteProjects()
-          const favoriteIds = favorites.map((fav) => fav._id)
-          setIsFavorited(favoriteIds.includes(project._id))
-        } catch (error) {
-          console.error('Error loading favorites:', error)
-          setIsFavorited(false)
-        }
-      }
-    }
-
-    loadFavorites()
-  }, [project, currentUser])
+  })
 
   const handleBack = () => {
     navigate(-1)
@@ -111,7 +103,7 @@ const ProjectDetail = () => {
       <section className='w-full theme-bg relative z-[1] pt-[80px]'>
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
           <div className='flex items-center justify-center min-h-[400px]'>
-            <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+            <LoadingSpinner />
           </div>
         </div>
       </section>
@@ -152,15 +144,7 @@ const ProjectDetail = () => {
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      {/* Molecular patterns for background consistency */}
-      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
-        <div className='absolute -left-20 top-10 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[500px] h-[500px] rotate-[40deg]' />
-        </div>
-        <div className='absolute right-0 bottom-20 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-50deg]' />
-        </div>
-      </div>
+      <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         {/* Back Button */}
@@ -176,13 +160,7 @@ const ProjectDetail = () => {
         </motion.button>
 
         {/* Project Header */}
-        <motion.div className='mb-4 pb-4 border-b-2 dark:border-light/10 border-primary/10' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className='text-4xl font-bold theme-text mb-2'>{project.title}</h1>
-          <p className='theme-text-secondary flex items-center gap-2'>
-            <FaTags />
-            {project.category}
-          </p>
-        </motion.div>
+        <ProjectHeader project={project} />
 
         {/* Project Content */}
         {/* Tabs for project owner */}
@@ -214,16 +192,7 @@ const ProjectDetail = () => {
               </div>
 
               {/* Skills Required */}
-              <div className='theme-card p-6 rounded-lg'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Skills Required</h3>
-                <div className='flex flex-wrap gap-2'>
-                  {project.skills?.map((skill, index) => (
-                    <motion.span key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className='px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium'>
-                      {skill}
-                    </motion.span>
-                  ))}
-                </div>
-              </div>
+              <SkillsRequired skills={project.skills} />
 
               {/* Review Feedback Section - visible to both */}
               {project.review && project.review.decision && (
@@ -295,18 +264,56 @@ const ProjectDetail = () => {
                 </div>
               )}
 
+              {/* Rate Negotiation */}
+              <RateNegotiationCard
+                project={project}
+                currentUser={currentUser}
+                rateAmount={rateAmount}
+                setRateAmount={setRateAmount}
+                rateType={rateType}
+                setRateType={setRateType}
+                rateLoading={rateLoading}
+                rateError={rateError}
+                handleProposeRate={handleProposeRate}
+                handleCounterRate={handleCounterRate}
+                handleAcceptRate={handleAcceptRate}
+              />
+
               {/* Project Details Card */}
               <div className='theme-card p-6 rounded-lg space-y-4'>
                 <h3 className='text-xl font-semibold theme-text mb-4'>Project Details</h3>
 
                 {/* Budget */}
-                <div className='flex items-center gap-3 theme-text-secondary'>
-                  <FaDollarSign className='text-accent' />
-                  <div>
-                    <p className='text-sm'>Budget</p>
-                    <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
+                {(!project.rateNegotiation || project.rateNegotiation.status === 'accepted') && (
+                  <div className='flex items-center gap-3 theme-text-secondary'>
+                    <FaDollarSign className='text-accent' />
+                    <div>
+                      <p className='text-sm'>Budget</p>
+                      <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Proposed Budget (when negotiating) */}
+                {project.rateNegotiation?.status === 'proposed' && (
+                  <div className='flex items-center gap-3 p-3 rounded-lg bg-orange-100 dark:bg-orange-900/20'>
+                    <FaDollarSign className='text-orange-600 dark:text-orange-400' />
+                    <div>
+                      <p className='text-sm text-orange-800 dark:text-orange-200'>Proposed Budget</p>
+                      <div className='flex items-center gap-2'>
+                        <p className='text-lg font-semibold text-orange-900 dark:text-orange-100'>€{project.rateNegotiation.currentOffer?.amount}</p>
+                        <span className='text-xs px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded font-semibold'>PROPOSED</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rate Type */}
+                {project.rateNegotiation?.currentOffer && (
+                  <div className='flex items-center gap-3 theme-text-secondary text-sm'>
+                    <span className='px-2 py-1 bg-accent/10 dark:bg-accent/20 text-accent rounded font-medium'>{project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}</span>
+                  </div>
+                )}
 
                 {/* Deadline */}
                 <div className='flex items-center gap-3 theme-text-secondary'>
@@ -343,132 +350,27 @@ const ProjectDetail = () => {
                 </div>
               )}
 
-              {/* Action Buttons - Placeholder for future commits */}
-              <div className='theme-card p-6 rounded-lg space-y-3'>
-                {currentUser && currentUser._id === project.user?._id && !['completed', 'archived'].includes(project.status) && (
-                  <button
-                    onClick={() => {
-                      if (isLockedStatus(project.status)) return
-                      setIsEditModalOpen(true)
-                    }}
-                    disabled={isLockedStatus(project.status)}
-                    className={`w-full py-3 rounded-lg transition-all ${
-                      isLockedStatus(project.status) ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'
-                    }`}>
-                    {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
-                  </button>
-                )}
-                {!['completed', 'archived'].includes(project.status) && (
-                  <>
-                    {currentUser && currentUser._id !== project.user?._id ? (
-                      <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                        Contact Creator
-                      </button>
-                    ) : !currentUser ? (
-                      <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                        Login to Contact
-                      </button>
-                    ) : (
-                      <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                        Your Project
-                      </button>
-                    )}
-                  </>
-                )}
-                {/* Submission/Review Buttons */}
-                {isAssignee && project.status === 'in_progress' && (
-                  <button onClick={() => setIsSubmitModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Submit Project
-                  </button>
-                )}
-
-                {isAssignee && project.status === 'under_review' && (
-                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                    Pending Review
-                  </button>
-                )}
-
-                {isOwner && project.status === 'in_progress' && (
-                  <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
-                    Pending Project
-                  </button>
-                )}
-
-                {isOwner && project.status === 'under_review' && (
-                  <button onClick={() => setIsReviewModalOpen(true)} className='w-full py-3 bg-purple-500/10 text-purple-600 rounded-lg hover:bg-purple-500 hover:text-white transition-all'>
-                    Review Submission
-                  </button>
-                )}
-                {project.status === 'completed' && isOwner && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        await archiveProject(project._id)
-                        loadProject() // Reload to get updated status
-                      } catch (error) {
-                        console.error('Error archiving project:', error)
-                        alert('Failed to archive project')
-                      }
-                    }}
-                    className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                    Archive Project
-                  </button>
-                )}
-                {/* Favorite Button */}
-                <button
-                  onClick={async () => {
-                    if (!currentUser) {
-                      alert('Please login to favorite projects')
-                      return
-                    }
-
-                    setFavoriteLoading(true)
-                    try {
-                      if (isFavorited) {
-                        await removeFromFavorites(project._id)
-                        setIsFavorited(false)
-                      } else {
-                        await addToFavorites(project._id)
-                        setIsFavorited(true)
-                      }
-                    } catch (error) {
-                      console.error('Error toggling favorite:', error)
-                      alert('Failed to update favorites. Please try again.')
-                    } finally {
-                      setFavoriteLoading(false)
-                    }
-                  }}
-                  disabled={favoriteLoading}
-                  className={`w-full py-3 border-2 rounded-lg transition-all ${isFavorited ? 'bg-accent text-white border-accent hover:bg-accent/90' : 'border-accent text-accent hover:bg-accent/10'}`}>
-                  {favoriteLoading ? 'Loading...' : isFavorited ? 'Unfavorite' : 'Save to Favorites'}
-                </button>
-              </div>
+              {/* Action Buttons */}
+              <ProjectActions
+                project={project}
+                currentUser={currentUser}
+                isOwner={isOwner}
+                isAssignee={isAssignee}
+                isFavorited={isFavorited}
+                favoriteLoading={favoriteLoading}
+                handleToggleFavorite={handleToggleFavorite}
+                setIsEditModalOpen={setIsEditModalOpen}
+                setIsContactModalOpen={setIsContactModalOpen}
+                setIsSubmitModalOpen={setIsSubmitModalOpen}
+                setIsReviewModalOpen={setIsReviewModalOpen}
+                loadProject={loadProject}
+              />
             </motion.div>
           </div>
         )}
 
         {/* Messages Tab */}
-        {activeTab === 'messages' && project?.user?._id === currentUser?._id && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <GroupedMessagesList
-              messages={messages}
-              loading={messagesLoading}
-              projectId={id}
-              isProjectCreator={true}
-              onRefresh={async () => {
-                try {
-                  const updatedProject = await getProjectById(id)
-                  setProject(updatedProject)
-
-                  const updatedMessages = await getProjectMessages(id)
-                  setMessages(updatedMessages)
-                } catch (error) {
-                  console.error('Error refreshing data:', error)
-                }
-              }}
-            />
-          </motion.div>
-        )}
+        {activeTab === 'messages' && <MessagesTab project={project} currentUser={currentUser} messages={messages} messagesLoading={messagesLoading} negotiationTimeline={negotiationTimeline} id={id} />}
       </div>
       {/* Edit Project Modal */}
       {project && <ProjectModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} mode='edit' initialData={project} onProjectUpdated={loadProject} />}

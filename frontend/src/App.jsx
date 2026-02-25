@@ -18,6 +18,7 @@ import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ProjectDetail from './pages/ProjectDetail'
+import UserDetail from './pages/UserDetail'
 
 function App() {
   return (
@@ -32,7 +33,8 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route path='/project/:id' element={<ProjectDetail />} />
-
+          <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
+          
           {/* Protected routes - require authentication */}
           <Route
             path='/profile'

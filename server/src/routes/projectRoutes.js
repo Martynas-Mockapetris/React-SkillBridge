@@ -1,6 +1,7 @@
 import express from 'express'
 import {
   createProject,
+  publishProject,
   getUserProjects,
   getProjectById,
   getProjectByIdOwner,
@@ -9,6 +10,9 @@ import {
   getAllProjects,
   assignUserToProject,
   reassignProject,
+  proposeRate,
+  counterRate,
+  acceptRate,
   removeAssignee,
   getInterestedProjects,
   removeFromInterested,
@@ -28,6 +32,7 @@ router.get('/test', (req, res) => {
 
 // Project routes
 router.post('/', protect, upload.array('attachments', 5), createProject)
+router.put('/:id/publish', protect, publishProject)
 router.get('/', protect, getUserProjects)
 router.get('/all', getAllProjects)
 router.get('/interested', protect, getInterestedProjects)
@@ -41,6 +46,11 @@ router.post('/:id/assign', protect, assignUserToProject)
 router.put('/:id/reassign', protect, reassignProject)
 router.delete('/:id/assignee', protect, removeAssignee)
 router.delete('/:id/interested', protect, removeFromInterested)
+
+// Rate negotiation routes
+router.post('/:id/rate/propose', protect, proposeRate)
+router.post('/:id/rate/counter', protect, counterRate)
+router.post('/:id/rate/accept', protect, acceptRate)
 
 // Submission & Review routes
 router.post('/:id/submit', protect, upload.array('submissionFiles', 5), submitProject)

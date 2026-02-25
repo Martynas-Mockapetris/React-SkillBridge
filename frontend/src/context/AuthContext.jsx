@@ -54,6 +54,18 @@ export const AuthProvider = ({ children }) => {
       const userData = await loginService(email, password)
       setCurrentUser(userData)
       toast.success('Login successful!')
+
+      // Fetch full profile data to get profilePicture and other fields
+      try {
+        const fullProfileData = await getUserProfileService()
+        const completeUser = mergeWithAuthData(fullProfileData)
+        setCurrentUser(completeUser)
+        localStorage.setItem('user', JSON.stringify(completeUser))
+      } catch (profileError) {
+        console.warn('Failed to fetch full profile on login:', profileError)
+        // Continue with basic login data if profile fetch fails
+      }
+
       return userData
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed'
@@ -75,6 +87,18 @@ export const AuthProvider = ({ children }) => {
       const user = await registerService(userData)
       setCurrentUser(user)
       toast.success('Registration successful!')
+
+      // Fetch full profile data to get profilePicture and other fields
+      try {
+        const fullProfileData = await getUserProfileService()
+        const completeUser = mergeWithAuthData(fullProfileData)
+        setCurrentUser(completeUser)
+        localStorage.setItem('user', JSON.stringify(completeUser))
+      } catch (profileError) {
+        console.warn('Failed to fetch full profile on registration:', profileError)
+        // Continue with basic user data if profile fetch fails
+      }
+
       return user
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed'

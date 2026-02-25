@@ -18,7 +18,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
 
     try {
       setIsSubmitting(true)
-      await sendMessage(project._id, project.user._id, content)
+      await sendMessage(project.user._id, content, null, project._id)
       toast.success('Message sent successfully!')
       setContent('')
       onClose()

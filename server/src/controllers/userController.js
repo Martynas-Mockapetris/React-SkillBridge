@@ -1,5 +1,6 @@
 import User from '../models/User.js'
 import Project from '../models/Project.js'
+import Announcement from '../models/Announcement.js'
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -259,6 +260,95 @@ export const getUserStats = async (req, res) => {
   }
 }
 
+// @desc    Get admin dashboard stats (global)
+// @route   GET /api/users/admin/stats
+// @access  Admin
+export const getAdminDashboardStats = async (req, res) => {
+  const percentChange = (current, previous) => {
+    if (previous === 0) return current > 0 ? 100 : 0
+    return Math.round(((current - previous) / previous) * 100)
+  }
+
+  try {
+    const now = new Date()
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+
+    // ====================
+    // TOTAL USERS
+    // ====================
+    const totalUsers = await User.countDocuments()
+    const totalUsersLast30 = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } })
+    const totalUsersPrev30 = await User.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } })
+    const usersTrend = percentChange(totalUsersLast30, totalUsersPrev30)
+
+    // ====================
+    // ACTIVE PROJECTS
+    // ====================
+    const activeStatuses = ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
+    const activeProjects = await Project.countDocuments({ status: { $in: activeStatuses } })
+    const activeProjectsLast30 = await Project.countDocuments({
+      status: { $in: activeStatuses },
+      updatedAt: { $gte: thirtyDaysAgo }
+    })
+    const activeProjectsPrev30 = await Project.countDocuments({
+      status: { $in: activeStatuses },
+      updatedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    })
+    const activeProjectsTrend = percentChange(activeProjectsLast30, activeProjectsPrev30)
+
+    // ====================
+    // COMPLETED PROJECTS
+    // ====================
+    const completedProjects = await Project.countDocuments({ status: 'completed' })
+    const completedLast30 = await Project.countDocuments({
+      status: 'completed',
+      updatedAt: { $gte: thirtyDaysAgo }
+    })
+    const completedPrev30 = await Project.countDocuments({
+      status: 'completed',
+      updatedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    })
+    const completedTrend = percentChange(completedLast30, completedPrev30)
+
+    // ====================
+    // REVENUE
+    // ====================
+    const completedProjectsRevenue = await Project.find({
+      status: 'completed',
+      budget: { $gt: 0 }
+    }).select('budget updatedAt')
+
+    const revenue = completedProjectsRevenue.reduce((sum, project) => sum + (project.budget || 0), 0)
+
+    const revenueLast30 = completedProjectsRevenue.filter((p) => new Date(p.updatedAt) >= thirtyDaysAgo).reduce((sum, project) => sum + (project.budget || 0), 0)
+
+    const revenuePrev30 = completedProjectsRevenue
+      .filter((p) => {
+        const date = new Date(p.updatedAt)
+        return date >= sixtyDaysAgo && date < thirtyDaysAgo
+      })
+      .reduce((sum, project) => sum + (project.budget || 0), 0)
+
+    const revenueTrend = percentChange(revenueLast30, revenuePrev30)
+    res.json({
+      totalUsers,
+      activeProjects,
+      completedProjects,
+      revenue,
+      comparisons: {
+        users: usersTrend,
+        activeProjects: activeProjectsTrend,
+        completedProjects: completedTrend,
+        revenue: revenueTrend
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin dashboard stats:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Add project to favorites
 // @route   POST /api/users/favorites/:projectId
 // @access  Private
@@ -320,19 +410,101 @@ export const getFavoriteProjects = async (req, res) => {
   }
 }
 
-// @desc    Get all freelancers (freelancer + both)
+// @desc    Get all freelancers (freelancer + both) with their active announcements
 // @route   GET /api/users/freelancers
 // @access  Public
 export const getFreelancers = async (req, res) => {
   try {
-    // Only users who registered as freelancer or both
+    // Get all freelancers
     const freelancers = await User.find({
       userType: { $in: ['freelancer', 'both'] }
-    }).select('firstName lastName profilePicture skills bio userType createdAt')
+    }).select('firstName lastName profilePicture skills bio userType createdAt hourlyRate _id')
 
-    res.json(freelancers)
+    // Fetch announcements for each freelancer
+    const freelancersWithAnnouncements = []
+
+    for (const freelancer of freelancers) {
+      const announcements = await Announcement.find({
+        userId: freelancer._id,
+        isActive: true
+      }).select('title background hourlyRate skills isActive')
+
+      freelancersWithAnnouncements.push({
+        _id: freelancer._id,
+        firstName: freelancer.firstName,
+        lastName: freelancer.lastName,
+        profilePicture: freelancer.profilePicture,
+        skills: freelancer.skills,
+        bio: freelancer.bio,
+        userType: freelancer.userType,
+        createdAt: freelancer.createdAt,
+        hourlyRate: freelancer.hourlyRate,
+        announcements: announcements
+      })
+    }
+
+    res.json(freelancersWithAnnouncements)
   } catch (error) {
     console.error('Error fetching freelancers:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Get user by ID (for freelancer detail view)
+// @route   GET /api/users/:id
+// @access  Public
+export const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password')
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    res.json(user)
+  } catch (error) {
+    console.error('Error fetching user:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Add freelancer to favorites
+// @route   POST /api/users/favorites/freelancer/:freelancerId
+// @access  Private
+export const addFreelancerToFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    const freelancerId = req.params.freelancerId
+
+    // Check if already favorited
+    if (user.favoriteFreelancers.includes(freelancerId)) {
+      return res.status(400).json({ message: 'Freelancer already in favorites' })
+    }
+
+    user.favoriteFreelancers.push(freelancerId)
+    await user.save()
+
+    res.json({ message: 'Added to favorites', favoriteFreelancers: user.favoriteFreelancers })
+  } catch (error) {
+    console.error('Error adding freelancer to favorites:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove freelancer from favorites
+// @route   DELETE /api/users/favorites/freelancer/:freelancerId
+// @access  Private
+export const removeFreelancerFromFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    const freelancerId = req.params.freelancerId
+
+    user.favoriteFreelancers = user.favoriteFreelancers.filter((id) => id.toString() !== freelancerId)
+    await user.save()
+
+    res.json({ message: 'Removed from favorites', favoriteFreelancers: user.favoriteFreelancers })
+  } catch (error) {
+    console.error('Error removing freelancer from favorites:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }

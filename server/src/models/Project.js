@@ -30,7 +30,7 @@ const projectSchema = mongoose.Schema(
     },
     budget: {
       type: Number,
-      required: true
+      required: false
     },
     deadline: {
       type: Date,
@@ -38,7 +38,7 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['draft', 'active', 'completed', 'cancelled', 'inactive', 'archived', 'paused', 'in_progress', 'under_review'],
+      enum: ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused'],
       default: 'draft'
     },
     attachments: [
@@ -106,7 +106,33 @@ const projectSchema = mongoose.Schema(
           default: Date.now
         }
       }
-    ]
+    ],
+    isRated: {
+      type: Boolean,
+      default: false
+    },
+    rateNegotiation: {
+      status: {
+        type: String,
+        enum: ['none', 'proposed', 'countered', 'accepted'],
+        default: 'none'
+      },
+      currentOffer: {
+        amount: { type: Number },
+        type: { type: String, enum: ['hourly', 'fixed'], default: 'hourly' },
+        proposedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        proposedAt: { type: Date }
+      },
+      history: [
+        {
+          amount: { type: Number },
+          type: { type: String, enum: ['hourly', 'fixed'], default: 'hourly' },
+          proposedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+          proposedAt: { type: Date }
+        }
+      ],
+      agreedAt: { type: Date }
+    }
   },
   {
     timestamps: true

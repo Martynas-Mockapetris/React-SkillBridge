@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import MolecularPatterns from '../shared/MolecularPatterns'
+import PageBackground from '../shared/PageBackground'
 
 const HeroSection = () => {
   const navigate = useNavigate()
@@ -11,7 +11,7 @@ const HeroSection = () => {
 
   return (
     <section className='relative h-screen flex items-center justify-center overflow-hidden theme-bg'>
-      <MolecularPatterns />
+      <PageBackground variant='home' />
 
       {/* Turinio konteineris*/}
       <div className='container mx-auto px-4 md:px-6 lg:px-8 relative z-20'>

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import InputMask from 'react-input-mask'
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes } from 'react-icons/fa'
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes, FaSyncAlt } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 // Initial form state with empty values
 const initialFormState = {
@@ -22,7 +22,8 @@ const initialFormState = {
   certifications: '',
   serviceCategories: '',
   upworkProfile: '',
-  fiverrProfile: ''
+  fiverrProfile: '',
+  profilePicture: ''
 }
 
 const ProfileSettings = () => {
@@ -37,10 +38,14 @@ const ProfileSettings = () => {
   const [notification, setNotification] = useState({ type: '', message: '' })
   const [isLoading, setIsLoading] = useState(true)
   const apiCallInProgressRef = useRef(false)
+  const [profileImageFile, setProfileImageFile] = useState(null)
+  const [previewImage, setPreviewImage] = useState(currentUser?.profilePicture || '')
 
   // Helper function to populate form with user data
   const populateFormWithUserData = (user) => {
     if (!user) return
+
+    console.log('Loading user profile - profilePicture from DB:', user.profilePicture)
 
     setFormData({
       fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
@@ -53,6 +58,7 @@ const ProfileSettings = () => {
       github: user.github || '',
       linkedin: user.linkedin || '',
       twitter: user.twitter || '',
+      profilePicture: user.profilePicture || '',
       hourlyRate: user.hourlyRate || '',
       experienceLevel: user.experienceLevel || 'entry',
       languages: user.languages || '',
@@ -160,6 +166,7 @@ const ProfileSettings = () => {
           github: formData.github,
           linkedin: formData.linkedin,
           twitter: formData.twitter,
+          profilePicture: formData.profilePicture,
           hourlyRate: formData.hourlyRate ? Number(formData.hourlyRate) : undefined,
           experienceLevel: formData.experienceLevel,
           languages: formData.languages,
@@ -169,11 +176,22 @@ const ProfileSettings = () => {
           fiverrProfile: formData.fiverrProfile
         }
 
+        console.log('Submitting profile data with profilePicture:', profileData.profilePicture)
+
         // Send profile update to API
-        await updateUserProfile(profileData)
+        const response = await updateUserProfile(profileData)
+        console.log('Profile update response:', response)
+
+        // Update the form state with the response to refresh the image display
+        setFormData((prev) => ({
+          ...prev,
+          profilePicture: response.profilePicture || prev.profilePicture
+        }))
+
         setNotification({ type: 'success', message: 'Changes saved successfully!' })
       } catch (error) {
         console.error('Error updating profile:', error)
+        console.error('Error details:', error.response?.data || error.message)
         setNotification({ type: 'error', message: 'Failed to save changes. Please try again.' })
       } finally {
         setIsSubmitting(false)
@@ -208,7 +226,7 @@ const ProfileSettings = () => {
     <motion.div className='space-y-8 p-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       {isLoading ? (
         <div className='flex justify-center items-center h-64'>
-          <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+          <LoadingSpinner />
         </div>
       ) : (
         <>
@@ -262,7 +280,7 @@ const ProfileSettings = () => {
                       <span className='absolute left-3 top-4 text-accent text-[16px]'>
                         <FaPhone />
                       </span>
-                      <InputMask mask='+999 99 999 9999' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
+                      <input type='tel' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
                       {errors.phone && (
                         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                           {errors.phone}
@@ -293,25 +311,52 @@ const ProfileSettings = () => {
                 </div>
               </motion.div>
 
-              {/* Social Links */}
-              <motion.div className='p-6 h-fit rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
-                <div className='space-y-4'>
-                  {[
-                    { name: 'website', label: 'Website', icon: <FaGlobe />, placeholder: 'Enter your website URL' },
-                    { name: 'github', label: 'GitHub', icon: <FaGithub />, placeholder: 'Enter your GitHub profile' },
-                    { name: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin />, placeholder: 'Enter your LinkedIn profile' },
-                    { name: 'twitter', label: 'Twitter', icon: <FaTwitter />, placeholder: 'Enter your Twitter handle' }
-                  ].map((social) => (
-                    <div key={social.name}>
-                      <label className='block mb-2 theme-text-secondary text-sm'>{social.label}</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-4 text-accent text-[16px]'>{social.icon}</span>
-                        <input type='url' name={social.name} value={formData[social.name]} onChange={handleChange} className={inputClasses(social.name)} placeholder={social.placeholder} />
+              {/* Right Column: Profile Picture and Social Links */}
+              <motion.div className='flex flex-col gap-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+                {/* Profile Picture */}
+                <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex flex-col items-center'>
+                  <h3 className='text-lg font-semibold theme-text mb-4'>Profile Picture</h3>
+                  <img
+                    key={formData.profilePicture}
+                    src={formData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`}
+                    alt='Profile'
+                    className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover'
+                  />
+                  <motion.button
+                    type='button'
+                    onClick={() => {
+                      const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+                      const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
+                      setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
+                    }}
+                    className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}>
+                    <FaSyncAlt className='text-sm' />
+                    <span className='text-sm font-medium'>Generate Avatar</span>
+                  </motion.button>
+                </motion.div>
+
+                {/* Social Links */}
+                <motion.div className='p-6 h-fit rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5'>
+                  <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
+                  <div className='space-y-4'>
+                    {[
+                      { name: 'website', label: 'Website', icon: <FaGlobe />, placeholder: 'Enter your website URL' },
+                      { name: 'github', label: 'GitHub', icon: <FaGithub />, placeholder: 'Enter your GitHub profile' },
+                      { name: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin />, placeholder: 'Enter your LinkedIn profile' },
+                      { name: 'twitter', label: 'Twitter', icon: <FaTwitter />, placeholder: 'Enter your Twitter handle' }
+                    ].map((social) => (
+                      <div key={social.name}>
+                        <label className='block mb-2 theme-text-secondary text-sm'>{social.label}</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>{social.icon}</span>
+                          <input type='url' name={social.name} value={formData[social.name]} onChange={handleChange} className={inputClasses(social.name)} placeholder={social.placeholder} />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </motion.div>
               </motion.div>
             </motion.div>
 

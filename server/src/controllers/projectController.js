@@ -8,7 +8,7 @@ const createProject = async (req, res) => {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
-    const { title, description, category, skills, budget, deadline, status } = req.body
+    const { title, description, category, skills, budget, deadline, status, assigneeId, rateNegotiation } = req.body
 
     // Process attachments if any
     const attachments = req.files
@@ -19,17 +19,60 @@ const createProject = async (req, res) => {
         }))
       : []
 
+    let normalizedStatus = status || 'draft'
+
+    if (assigneeId && !status) {
+      // If initial rate proposal included, set to negotiating instead of assigned
+      normalizedStatus = rateNegotiation?.status === 'proposed' ? 'negotiating' : 'assigned'
+    }
+
+    if (assigneeId && assigneeId.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Cannot assign project to yourself' })
+    }
+
+    // Process rateNegotiation if present - replace 'owner' with actual user ID
+    let processedRateNegotiation = rateNegotiation
+    if (rateNegotiation) {
+      processedRateNegotiation = {
+        ...rateNegotiation,
+        currentOffer: rateNegotiation.currentOffer
+          ? {
+              ...rateNegotiation.currentOffer,
+              proposedBy: req.user._id
+            }
+          : undefined,
+        history:
+          rateNegotiation.history?.map((offer) => ({
+            ...offer,
+            proposedBy: req.user._id
+          })) || []
+      }
+    }
+
+    const shouldSetBudget = !rateNegotiation || rateNegotiation.status !== 'proposed'
+    const finalBudget = shouldSetBudget ? Number(budget) : undefined
+
+    console.log('=== CREATE PROJECT DEBUG ===')
+    console.log('RateNegotiation status:', rateNegotiation?.status)
+    console.log('Should set budget:', shouldSetBudget)
+    console.log('Final budget value:', finalBudget)
+    console.log('Original budget from request:', budget)
+
     // Create new project
     const project = new Project({
       user: req.user._id, // This comes from the protect middleware
+      assignee: assigneeId || null,
       title,
       description,
       category,
       skills: Array.isArray(skills) ? skills : skills.split(','),
-      budget: Number(budget),
+      // Only set budget if there's no rate negotiation (i.e., this is a fixed budget project)
+      // If rate negotiation is proposed, leave budget empty until agreed
+      budget: finalBudget,
       deadline,
-      status: status || 'draft',
-      attachments
+      status: normalizedStatus,
+      attachments,
+      rateNegotiation: processedRateNegotiation || undefined
     })
 
     console.log('Saving project to database:', project)
@@ -41,6 +84,28 @@ const createProject = async (req, res) => {
   } catch (error) {
     console.error('Error creating project:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Publish a draft project
+// @route   PUT /api/projects/:id/publish
+// @access  Private (owner only)
+const publishProject = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized' })
+    }
+
+    project.status = 'active'
+    const updated = await project.save()
+    res.json(updated)
+  } catch (error) {
+    console.error('Error publishing project:', error)
+    res.status(500).json({ message: 'Server error' })
   }
 }
 
@@ -64,7 +129,16 @@ const getAllProjects = async (req, res) => {
 // @access  Private
 const getUserProjects = async (req, res) => {
   try {
-    const projects = await Project.find({ user: req.user._id })
+    const projects = await Project.find({
+      $or: [
+        { user: req.user._id }, // Owner sees all projects including drafts
+        {
+          assignee: req.user._id,
+          status: { $ne: 'draft' } // Assignee only sees non-draft projects
+        }
+      ]
+    })
+      .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
       .populate('assignee', 'firstName lastName email profilePicture')
       .sort({ createdAt: -1 })
@@ -83,11 +157,19 @@ const getProjectById = async (req, res) => {
     const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
 
     if (!project) {
+      console.log(`[GET PROJECT] Project ${req.params.id} not found in DB`)
       return res.status(404).json({ message: 'Project not found' })
     }
 
+    console.log(`[GET PROJECT] Found project ${req.params.id}`)
+    console.log(`[GET PROJECT] Project status: ${project.status}`)
+    console.log(`[GET PROJECT] Project owner: ${project.user?._id || project.user}`)
+    console.log(`[GET PROJECT] Project assignee: ${project.assignee?._id || project.assignee}`)
+    console.log(`[GET PROJECT] Current user from req.user: ${req.user?._id}`)
+
     // Public can see only active
     if (project.status === 'active') {
+      console.log(`[GET PROJECT] Project is active, returning to any user`)
       return res.json(project)
     }
 
@@ -96,10 +178,19 @@ const getProjectById = async (req, res) => {
     const ownerId = project.user?._id ? project.user._id.toString() : project.user.toString()
     const assigneeId = project.assignee?._id ? project.assignee._id.toString() : project.assignee?.toString()
 
+    console.log(`[GET PROJECT] Non-active project - checking permissions`)
+    console.log(`  currentUserId: ${currentUserId}`)
+    console.log(`  ownerId: ${ownerId}`)
+    console.log(`  assigneeId: ${assigneeId}`)
+    console.log(`  isOwner: ${currentUserId === ownerId}`)
+    console.log(`  isAssignee: ${currentUserId === assigneeId}`)
+
     if (currentUserId && (currentUserId === ownerId || currentUserId === assigneeId)) {
+      console.log(`[GET PROJECT] User has permission, returning project`)
       return res.json(project)
     }
 
+    console.log(`[GET PROJECT] User does not have permission to access this project`)
     return res.status(404).json({ message: 'Project not found' })
   } catch (error) {
     console.error('Error fetching project:', error)
@@ -349,6 +440,140 @@ const removeAssignee = async (req, res) => {
   }
 }
 
+// @desc    Propose project rate (owner only)
+// @route   POST /api/projects/:id/rate/propose
+// @access  Private
+const proposeRate = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const { amount, type } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to propose rate' })
+    }
+    if (!project.assignee) {
+      return res.status(400).json({ message: 'Project has no assignee yet' })
+    }
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ message: 'Amount must be greater than 0' })
+    }
+
+    project.rateNegotiation = project.rateNegotiation || {}
+    project.rateNegotiation.status = 'proposed'
+    project.rateNegotiation.currentOffer = {
+      amount: Number(amount),
+      type: type || 'hourly',
+      proposedBy: req.user._id,
+      proposedAt: new Date()
+    }
+    project.rateNegotiation.history = project.rateNegotiation.history || []
+    project.rateNegotiation.history.push(project.rateNegotiation.currentOffer)
+
+    project.status = 'negotiating'
+
+    const updated = await project.save()
+    res.json(updated)
+  } catch (error) {
+    console.error('Error proposing rate:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Counter project rate (assignee only)
+// @route   POST /api/projects/:id/rate/counter
+// @access  Private
+const counterRate = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const { amount, type } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+    if (!project.assignee || project.assignee.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to counter rate' })
+    }
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ message: 'Amount must be greater than 0' })
+    }
+
+    project.rateNegotiation = project.rateNegotiation || {}
+    project.rateNegotiation.status = 'countered'
+    project.rateNegotiation.currentOffer = {
+      amount: Number(amount),
+      type: type || 'hourly',
+      proposedBy: req.user._id,
+      proposedAt: new Date()
+    }
+    project.rateNegotiation.history = project.rateNegotiation.history || []
+    project.rateNegotiation.history.push(project.rateNegotiation.currentOffer)
+
+    project.status = 'negotiating'
+
+    const updated = await project.save()
+    res.json(updated)
+  } catch (error) {
+    console.error('Error countering rate:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Accept current rate (owner or assignee)
+// @route   POST /api/projects/:id/rate/accept
+// @access  Private
+const acceptRate = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const project = await Project.findById(projectId)
+
+    if (!project) return res.status(404).json({ message: 'Project not found' })
+
+    const isOwner = project.user.toString() === req.user._id.toString()
+    const isAssignee = project.assignee?.toString() === req.user._id.toString()
+
+    if (!isOwner && !isAssignee) {
+      return res.status(403).json({ message: 'Not authorized to accept rate' })
+    }
+
+    if (!project.rateNegotiation?.currentOffer) {
+      return res.status(400).json({ message: 'No rate proposal to accept' })
+    }
+
+    console.log('=== ACCEPT RATE DEBUG ===')
+    console.log('Project ID:', projectId)
+    console.log('Before accept:')
+    console.log('  - Budget:', project.budget)
+    console.log('  - RateNegotiation.status:', project.rateNegotiation.status)
+    console.log('  - CurrentOffer:', project.rateNegotiation.currentOffer)
+    console.log('  - CurrentOffer.amount:', project.rateNegotiation.currentOffer.amount)
+
+    project.rateNegotiation.status = 'accepted'
+    project.rateNegotiation.agreedAt = new Date()
+    // Update project budget with the agreed rate amount
+    const agreedAmount = Number(project.rateNegotiation.currentOffer.amount)
+    console.log('Setting budget to agreedAmount:', agreedAmount)
+    project.budget = agreedAmount
+    project.status = 'in_progress'
+
+    console.log('After setting:')
+    console.log('  - Budget:', project.budget)
+
+    const updated = await project.save()
+
+    console.log('After save:')
+    console.log('  - Budget:', updated.budget)
+    console.log('=== END DEBUG ===')
+
+    res.json(updated)
+  } catch (error) {
+    console.error('Error accepting rate:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects current user is interested in
 // @route   GET /api/projects/interested
 // @access  Private
@@ -536,6 +761,7 @@ const archiveProject = async (req, res) => {
 
 export {
   createProject,
+  publishProject,
   getUserProjects,
   getProjectById,
   getProjectByIdOwner,
@@ -544,6 +770,9 @@ export {
   getAllProjects,
   assignUserToProject,
   reassignProject,
+  proposeRate,
+  counterRate,
+  acceptRate,
   removeAssignee,
   getInterestedProjects,
   removeFromInterested,

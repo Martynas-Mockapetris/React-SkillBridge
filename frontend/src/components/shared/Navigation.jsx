@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { HiMenu, HiX } from 'react-icons/hi'
-import MolecularPatterns from '../shared/MolecularPatterns'
+import PageBackground from '../shared/PageBackground'
 import ThemeToggle from './ThemeToggle'
 import { useAuth } from '../../context/AuthContext'
 
@@ -77,7 +77,7 @@ const Navigation = () => {
         <div
           className={`lg:hidden fixed inset-0 transition-all duration-500 ease-in-out theme-bg
             ${isOpen ? 'opacity-100 visible translate-x-0' : 'opacity-0 invisible translate-x-full'}`}>
-          <MolecularPatterns />
+          <PageBackground variant='home' />
 
           <div className='flex flex-col items-center justify-center h-screen space-y-8 relative z-20'>
             <Link to='/listings' className={mobileLinkStyles}>

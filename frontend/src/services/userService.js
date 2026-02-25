@@ -1,41 +1,5 @@
 import axios from 'axios'
-
-// Gets the authentication token from localStorage
-const getToken = () => {
-  // Parse user data from localStorage
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  return user.token
-}
-
-// Configures axios with auth token for API requests
-const setAuthHeader = () => {
-  const token = getToken()
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-  } else {
-    // Remove auth header if no token exists
-    delete axios.defaults.headers.common['Authorization']
-  }
-}
-
-// Creates a pre-configured axios instance with auth headers
-const createAuthAxios = () => {
-  const instance = axios.create()
-
-  // Add request interceptor to automatically set auth header
-  instance.interceptors.request.use((config) => {
-    const token = getToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  })
-
-  return instance
-}
-
-// Create authenticated axios instance
-const authAxios = createAuthAxios()
+import { authAxios } from '../utils/axiosConfig'
 
 // Fetches the current user's profile from the API
 export const getUserProfile = async () => {
@@ -57,6 +21,17 @@ export const getUserStats = async () => {
     return response.data
   } catch (error) {
     console.error('Failed to fetch user stats:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Fetch admin dashboard statistics (global)
+export const getAdminDashboardStats = async () => {
+  try {
+    const response = await authAxios.get('/api/users/admin/stats')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin dashboard stats:', error.response?.data || error.message)
     throw error
   }
 }
@@ -94,6 +69,28 @@ export const removeFromFavorites = async (projectId) => {
   }
 }
 
+// Add freelancer to favorites
+export const addFreelancerToFavorites = async (freelancerId) => {
+  try {
+    const response = await authAxios.post(`/api/users/favorites/freelancer/${freelancerId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to add freelancer to favorites:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Remove freelancer from favorites
+export const removeFreelancerFromFavorites = async (freelancerId) => {
+  try {
+    const response = await authAxios.delete(`/api/users/favorites/freelancer/${freelancerId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove freelancer from favorites:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Updates the user's profile with new data
 export const updateUserProfile = async (profileData) => {
   try {
@@ -112,6 +109,17 @@ export const getFreelancers = async () => {
     return response.data
   } catch (error) {
     console.error('Failed to get freelancers:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Get user by ID
+export const getUserById = async (userId) => {
+  try {
+    const response = await axios.get(`/api/users/${userId}`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching user:', error)
     throw error
   }
 }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaBriefcase, FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
+import { FaBriefcase, FaPlus, FaEdit, FaTrash, FaPlay, FaPause } from 'react-icons/fa'
 import CreateAnnouncementModal from '../../modal/CreateAnnouncementModal'
-import { getUserAnnouncements, deleteAnnouncement } from '../../services/announcementService'
+import { getUserAnnouncements, deleteAnnouncement, toggleAnnouncementStatus } from '../../services/announcementService'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const FreelanceTab = ({ user }) => {
   // Modal state
@@ -49,6 +50,17 @@ const FreelanceTab = ({ user }) => {
     setIsModalOpen(true)
   }
 
+  const handleToggleStatus = async (announcementId) => {
+    try {
+      const response = await toggleAnnouncementStatus(announcementId)
+      const updatedAnnouncement = response.announcement
+      setAnnouncements(announcements.map((a) => (a._id === announcementId ? updatedAnnouncement : a)))
+    } catch (err) {
+      console.error('Error toggling announcement status:', err)
+      setError('Failed to toggle announcement status')
+    }
+  }
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className='space-y-6'>
       {/* Header with Create Announcement Button */}
@@ -70,7 +82,7 @@ const FreelanceTab = ({ user }) => {
       <div className='theme-card p-8 rounded-lg text-center'>
         {loading ? (
           <div className='flex justify-center py-8'>
-            <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent'></div>
+            <LoadingSpinner />
           </div>
         ) : error ? (
           <div className='bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 p-4 rounded-lg'>{error}</div>
@@ -136,6 +148,16 @@ const FreelanceTab = ({ user }) => {
                     {announcement.isActive ? '● Active' : '○ Paused'}
                   </span>
                   <div className='flex gap-2'>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleToggleStatus(announcement._id)}
+                      className={`p-1.5 rounded transition-colors ${
+                        announcement.isActive ? 'text-orange-600 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30' : 'text-green-600 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30'
+                      }`}
+                      title={announcement.isActive ? 'Pause announcement' : 'Resume announcement'}>
+                      {announcement.isActive ? <FaPause size={14} /> : <FaPlay size={14} />}
+                    </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
