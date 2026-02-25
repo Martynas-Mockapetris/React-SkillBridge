@@ -260,6 +260,91 @@ export const getUserStats = async (req, res) => {
   }
 }
 
+// @desc    Get admin dashboard stats (global)
+// @route   GET /api/users/admin/stats
+// @access  Admin
+export const getAdminDashboardStats = async (req, res) => {
+  try {
+    const now = new Date()
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+
+    // ====================
+    // TOTAL USERS
+    // ====================
+    const totalUsers = await User.countDocuments()
+    const totalUsersLast30 = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } })
+    const totalUsersPrev30 = await User.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } })
+    const usersTrend = totalUsersLast30 - totalUsersPrev30
+
+    // ====================
+    // ACTIVE PROJECTS
+    // ====================
+    const activeStatuses = ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
+    const activeProjects = await Project.countDocuments({ status: { $in: activeStatuses } })
+    const activeProjectsLast30 = await Project.countDocuments({
+      status: { $in: activeStatuses },
+      updatedAt: { $gte: thirtyDaysAgo }
+    })
+    const activeProjectsPrev30 = await Project.countDocuments({
+      status: { $in: activeStatuses },
+      updatedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    })
+    const activeProjectsTrend = activeProjectsLast30 - activeProjectsPrev30
+
+    // ====================
+    // COMPLETED PROJECTS
+    // ====================
+    const completedProjects = await Project.countDocuments({ status: 'completed' })
+    const completedLast30 = await Project.countDocuments({
+      status: 'completed',
+      updatedAt: { $gte: thirtyDaysAgo }
+    })
+    const completedPrev30 = await Project.countDocuments({
+      status: 'completed',
+      updatedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    })
+    const completedTrend = completedLast30 - completedPrev30
+
+    // ====================
+    // REVENUE
+    // ====================
+    const completedProjectsRevenue = await Project.find({
+      status: 'completed',
+      budget: { $gt: 0 }
+    }).select('budget updatedAt')
+
+    const revenue = completedProjectsRevenue.reduce((sum, project) => sum + (project.budget || 0), 0)
+
+    const revenueLast30 = completedProjectsRevenue.filter((p) => new Date(p.updatedAt) >= thirtyDaysAgo).reduce((sum, project) => sum + (project.budget || 0), 0)
+
+    const revenuePrev30 = completedProjectsRevenue
+      .filter((p) => {
+        const date = new Date(p.updatedAt)
+        return date >= sixtyDaysAgo && date < thirtyDaysAgo
+      })
+      .reduce((sum, project) => sum + (project.budget || 0), 0)
+
+    const revenueTrend = revenueLast30 - revenuePrev30
+
+    res.json({
+      totalUsers,
+      activeProjects,
+      completedProjects,
+      revenue,
+      comparisons: {
+        users: usersTrend,
+        activeProjects: activeProjectsTrend,
+        completedProjects: completedTrend,
+        revenue: revenueTrend
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin dashboard stats:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Add project to favorites
 // @route   POST /api/users/favorites/:projectId
 // @access  Private

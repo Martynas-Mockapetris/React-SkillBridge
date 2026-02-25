@@ -53,3 +53,15 @@ export const optionalProtect = async (req, res, next) => {
 
   next()
 }
+
+export const adminOnly = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authorized' })
+  }
+
+  if (req.user.userType !== 'admin') {
+    return res.status(403).json({ message: 'Admin access required' })
+  }
+
+  next()
+}

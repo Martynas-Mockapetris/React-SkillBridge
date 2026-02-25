@@ -10,9 +10,10 @@ import {
   getFreelancers,
   getUserById,
   addFreelancerToFavorites,
-  removeFreelancerFromFavorites
+  removeFreelancerFromFavorites, 
+  getAdminDashboardStats
 } from '../controllers/userController.js'
-import { protect } from '../middleware/authMiddleware.js'
+import { protect, adminOnly } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
@@ -29,6 +30,9 @@ router.delete('/profile', protect, deleteUserAccount)
 
 // Stats route
 router.get('/stats', protect, getUserStats)
+
+// Admin dashboard stats route
+router.get('/admin/dashboard', protect, adminOnly, getAdminDashboardStats)
 
 // Favorites routes - specific routes first!
 router.get('/favorites', protect, getFavoriteProjects)
