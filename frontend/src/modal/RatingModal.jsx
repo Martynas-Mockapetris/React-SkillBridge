@@ -1,11 +1,11 @@
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaStar } from 'react-icons/fa'
 import { submitRating } from '../services/ratingService'
-import { AuthContext } from '../context/AuthContext'
+import { useAuth } from '../context/AuthContext'
 
 const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted, ratedUserType = 'freelancer' }) => {
-  const { logout } = useContext(AuthContext)
+  const { logout } = useAuth()
   // Support both freelancer prop (legacy) and generic ratedUser
   const ratedUser = freelancer
   const userTypeLabel = ratedUserType === 'client' ? 'Client' : 'Freelancer'

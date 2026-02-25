@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt } from 'react-icons/fa'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
@@ -77,7 +77,8 @@ const Profile = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
-    { id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> },
+    // Projects tab - not visible to admins
+    ...(currentUser?.userType !== 'admin' ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
     { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
@@ -86,6 +87,8 @@ const Profile = () => {
           { id: 'ratings', label: 'Ratings', icon: <FaStar /> }
         ]
       : []),
+    // Admin tab - only visible to admins
+    ...(currentUser?.userType === 'admin' ? [{ id: 'admin', label: 'Admin', icon: <FaShieldAlt /> }] : []),
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
   ]
@@ -158,6 +161,15 @@ const Profile = () => {
             {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
             {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
+            {activeTab === 'admin' && (
+              <div className='p-8 text-center theme-bg-secondary rounded-lg'>
+                <h2 className='text-2xl font-bold theme-text mb-4'>Admin Dashboard</h2>
+                <p className='theme-text-secondary mb-6'>Full admin dashboard coming soon...</p>
+                <button onClick={() => navigate('/admin')} className='px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+                  Go to Admin Panel
+                </button>
+              </div>
+            )}
             {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
             {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>
