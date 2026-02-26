@@ -349,6 +349,51 @@ export const getAdminDashboardStats = async (req, res) => {
   }
 }
 
+// @desc    Get all users (admin)
+// @route   GET /api/users/admin/users
+// @access  Admin
+export const getAdminUsers = async (req, res) => {
+  try {
+    const { search = '', role = '', status = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
+
+    const query = {}
+
+    // Search by name or email
+    if (search) {
+      query.$or = [{ firstName: { $regex: search, $options: 'i' } }, { lastName: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }]
+    }
+
+    // Filter by userType
+    if (role) {
+      query.userType = role
+    }
+
+    // Filter by status (Active/Locked)
+    if (status) {
+      if (status.toLowerCase() === 'locked') query.isLocked = true
+      if (status.toLowerCase() === 'active') query.isLocked = false
+    }
+
+    // Sorting
+    const [sortField, sortOrder] = sort.split(':')
+    const sortConfig = { [sortField]: sortOrder === 'asc' ? 1 : -1 }
+
+    const skip = (Number(page) - 1) * Number(limit)
+
+    const [users, total] = await Promise.all([User.find(query).select('-password').sort(sortConfig).skip(skip).limit(Number(limit)), User.countDocuments(query)])
+
+    res.json({
+      users,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit))
+    })
+  } catch (error) {
+    console.error('Error fetching admin users:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Add project to favorites
 // @route   POST /api/users/favorites/:projectId
 // @access  Private

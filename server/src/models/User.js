@@ -29,6 +29,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['client', 'freelancer', 'both', 'admin'],
     required: true
   },
+  isLocked: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
