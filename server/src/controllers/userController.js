@@ -394,6 +394,67 @@ export const getAdminUsers = async (req, res) => {
   }
 }
 
+// @desc    Toggle user lock status (admin)
+// @route   PATCH /api/users/admin/:userId/lock
+// @access  Admin
+export const toggleUserLock = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    // Don't allow locking/unlocking admins
+    if (user.userType === 'admin') {
+      return res.status(403).json({ message: 'Cannot lock/unlock admin users' })
+    }
+
+    user.isLocked = !user.isLocked
+    await user.save()
+
+    res.json({
+      message: `User ${user.isLocked ? 'locked' : 'unlocked'} successfully`,
+      isLocked: user.isLocked
+    })
+  } catch (error) {
+    console.error('Error toggling user lock:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Delete user (admin)
+// @route   DELETE /api/users/admin/:userId
+// @access  Admin
+export const deleteAdminUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    // Don't allow deleting admins
+    if (user.userType === 'admin') {
+      return res.status(403).json({ message: 'Cannot delete admin users' })
+    }
+
+    // Delete user's projects too
+    await Project.deleteMany({
+      $or: [{ user: userId }, { assignee: userId }]
+    })
+
+    await user.deleteOne()
+
+    res.json({ message: 'User deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Add project to favorites
 // @route   POST /api/users/favorites/:projectId
 // @access  Private
