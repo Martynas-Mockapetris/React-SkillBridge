@@ -12,7 +12,7 @@ import {
   addFreelancerToFavorites,
   removeFreelancerFromFavorites,
   getAdminDashboardStats,
-  getAdminUsersStats
+  getAdminUsers
 } from '../controllers/userController.js'
 import { protect, adminOnly } from '../middleware/authMiddleware.js'
 
