@@ -1,6 +1,6 @@
 import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
-import { getAdminUsers } from '../../services/userService'
+import { getAdminUsers, toggleUserLock, deleteAdminUser } from '../../services/userService'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -46,6 +46,35 @@ const AdminUsersList = () => {
   useEffect(() => {
     fetchUsers(1)
   }, [searchQuery, selectedRole, selectedStatus, sortConfig])
+
+  const handleLockUser = async (user) => {
+    const action = user.isLocked ? 'unlock' : 'lock'
+    const confirmed = window.confirm(`Are you sure you want to ${action} ${user.firstName} ${user.lastName}?`)
+
+    if (!confirmed) return
+
+    try {
+      await toggleUserLock(user._id)
+      // Refresh the list
+      fetchUsers(currentPage)
+    } catch (error) {
+      alert(`Failed to ${action} user: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
+  const handleDeleteUser = async (user) => {
+    const confirmed = window.confirm(`Are you sure you want to DELETE ${user.firstName} ${user.lastName}? This cannot be undone.`)
+
+    if (!confirmed) return
+
+    try {
+      await deleteAdminUser(user._id)
+      // Refresh the list
+      fetchUsers(currentPage)
+    } catch (error) {
+      alert(`Failed to delete user: ${error.response?.data?.message || error.message}`)
+    }
+  }
 
   const roleTypes = ['client', 'freelancer', 'both']
   const statusTypes = ['Active', 'Locked']
@@ -281,13 +310,13 @@ const AdminUsersList = () => {
                       <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200'>
                         <FaUserCog className='w-4 h-4' />
                       </button>
-                      <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+                      <button onClick={() => handleLockUser(user)} title={user.isLocked ? 'Unlock user' : 'Lock user'} className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
                         <FaLock className='w-4 h-4' />
                       </button>
                       <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
                         <FaEnvelope className='w-4 h-4' />
                       </button>
-                      <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
+                      <button onClick={() => handleDeleteUser(user)} title='Delete user' className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
                         <FaTrash className='w-4 h-4' />
                       </button>
                     </td>
