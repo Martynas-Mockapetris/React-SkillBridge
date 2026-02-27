@@ -5,6 +5,11 @@ import Project from '../models/Project.js'
 // @access  Private
 const createProject = async (req, res) => {
   try {
+    // Check if user is locked
+    if (req.user.isLocked) {
+      return res.status(403).json({ message: 'Your account is locked. You cannot create projects.' })
+    }
+
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
@@ -92,6 +97,10 @@ const createProject = async (req, res) => {
 // @access  Private (owner only)
 const publishProject = async (req, res) => {
   try {
+    // Check if user is locked
+    if (req.user.isLocked) {
+      return res.status(403).json({ message: 'Your account is locked. You cannot publish projects.' })
+    }
     const projectId = req.params.id
     const project = await Project.findById(projectId)
 
@@ -445,6 +454,10 @@ const removeAssignee = async (req, res) => {
 // @access  Private
 const proposeRate = async (req, res) => {
   try {
+    // Check if user is locked
+    if (req.user.isLocked) {
+      return res.status(403).json({ message: 'Your account is locked. You cannot propose rates.' })
+    }
     const projectId = req.params.id
     const { amount, type } = req.body
 
@@ -487,6 +500,10 @@ const proposeRate = async (req, res) => {
 // @access  Private
 const counterRate = async (req, res) => {
   try {
+    // Check if user is locked
+    if (req.user.isLocked) {
+      return res.status(403).json({ message: 'Your account is locked. You cannot counter rates.' })
+    }
     const projectId = req.params.id
     const { amount, type } = req.body
 
@@ -526,6 +543,10 @@ const counterRate = async (req, res) => {
 // @access  Private
 const acceptRate = async (req, res) => {
   try {
+    // Check if user is locked
+    if (req.user.isLocked) {
+      return res.status(403).json({ message: 'Your account is locked. You cannot accept rates.' })
+    }
     const projectId = req.params.id
     const project = await Project.findById(projectId)
 
@@ -623,6 +644,10 @@ const removeFromInterested = async (req, res) => {
 // @access  Private
 const submitProject = async (req, res) => {
   try {
+    // Check if user is locked
+    if (req.user.isLocked) {
+      return res.status(403).json({ message: 'Your account is locked. You cannot submit projects.' })
+    }
     const projectId = req.params.id
     const project = await Project.findById(projectId)
 
