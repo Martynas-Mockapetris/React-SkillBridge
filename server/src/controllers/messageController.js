@@ -7,6 +7,10 @@ import User from '../models/User.js'
 // @access  Private (must be logged in)
 export const sendMessage = async (req, res) => {
   try {
+    // Check if user is locked
+    if (req.user.isLocked) {
+      return res.status(403).json({ message: 'Your account is locked. You cannot send messages.' })
+    }
     const { projectId, receiverId, content, subject } = req.body
 
     // Validate required fields

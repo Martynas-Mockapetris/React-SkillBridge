@@ -11,7 +11,10 @@ import {
   getUserById,
   addFreelancerToFavorites,
   removeFreelancerFromFavorites,
-  getAdminDashboardStats
+  getAdminDashboardStats,
+  getAdminUsers,
+  toggleUserLock,
+  deleteAdminUser
 } from '../controllers/userController.js'
 import { protect, adminOnly } from '../middleware/authMiddleware.js'
 
@@ -33,6 +36,11 @@ router.get('/stats', protect, getUserStats)
 
 // Admin dashboard stats route
 router.get('/admin/stats', protect, adminOnly, getAdminDashboardStats)
+
+// Admin user management routes
+router.get('/admin/users', protect, adminOnly, getAdminUsers)
+router.patch('/admin/:userId/lock', protect, adminOnly, toggleUserLock)
+router.delete('/admin/:userId', protect, adminOnly, deleteAdminUser)
 
 // Favorites routes - specific routes first!
 router.get('/favorites', protect, getFavoriteProjects)

@@ -349,6 +349,112 @@ export const getAdminDashboardStats = async (req, res) => {
   }
 }
 
+// @desc    Get all users (admin)
+// @route   GET /api/users/admin/users
+// @access  Admin
+export const getAdminUsers = async (req, res) => {
+  try {
+    const { search = '', role = '', status = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
+
+    const query = {}
+
+    // Search by name or email
+    if (search) {
+      query.$or = [{ firstName: { $regex: search, $options: 'i' } }, { lastName: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }]
+    }
+
+    // Filter by userType
+    if (role) {
+      query.userType = role
+    }
+
+    // Filter by status (Active/Locked)
+    if (status) {
+      if (status.toLowerCase() === 'locked') query.isLocked = true
+      if (status.toLowerCase() === 'active') query.isLocked = false
+    }
+
+    // Sorting
+    const [sortField, sortOrder] = sort.split(':')
+    const sortConfig = { [sortField]: sortOrder === 'asc' ? 1 : -1 }
+
+    const skip = (Number(page) - 1) * Number(limit)
+
+    const [users, total] = await Promise.all([User.find(query).select('-password').sort(sortConfig).skip(skip).limit(Number(limit)), User.countDocuments(query)])
+
+    res.json({
+      users,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit))
+    })
+  } catch (error) {
+    console.error('Error fetching admin users:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Toggle user lock status (admin)
+// @route   PATCH /api/users/admin/:userId/lock
+// @access  Admin
+export const toggleUserLock = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    // Don't allow locking/unlocking admins
+    if (user.userType === 'admin') {
+      return res.status(403).json({ message: 'Cannot lock/unlock admin users' })
+    }
+
+    user.isLocked = !user.isLocked
+    await user.save()
+
+    res.json({
+      message: `User ${user.isLocked ? 'locked' : 'unlocked'} successfully`,
+      isLocked: user.isLocked
+    })
+  } catch (error) {
+    console.error('Error toggling user lock:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Delete user (admin)
+// @route   DELETE /api/users/admin/:userId
+// @access  Admin
+export const deleteAdminUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    // Don't allow deleting admins
+    if (user.userType === 'admin') {
+      return res.status(403).json({ message: 'Cannot delete admin users' })
+    }
+
+    // Delete user's projects too
+    await Project.deleteMany({
+      $or: [{ user: userId }, { assignee: userId }]
+    })
+
+    await user.deleteOne()
+
+    res.json({ message: 'User deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Add project to favorites
 // @route   POST /api/users/favorites/:projectId
 // @access  Private

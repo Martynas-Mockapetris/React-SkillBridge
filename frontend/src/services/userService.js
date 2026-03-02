@@ -36,6 +36,50 @@ export const getAdminDashboardStats = async () => {
   }
 }
 
+// Fetch all users for admin panel
+export const getAdminUsers = async (params = {}) => {
+  try {
+    const { search = '', role = '', status = '', page = 1, limit = 10, sort = 'createdAt:desc' } = params
+
+    const queryParams = new URLSearchParams({
+      search,
+      role,
+      status,
+      page,
+      limit,
+      sort
+    })
+
+    const response = await authAxios.get(`/api/users/admin/users?${queryParams}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin users:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Toggle user lock status (admin)
+export const toggleUserLock = async (userId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/admin/${userId}/lock`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to toggle user lock:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Delete user (admin)
+export const deleteAdminUser = async (userId) => {
+  try {
+    const response = await authAxios.delete(`/api/users/admin/${userId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to delete user:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Get user's favorite projects
 export const getFavoriteProjects = async () => {
   try {
