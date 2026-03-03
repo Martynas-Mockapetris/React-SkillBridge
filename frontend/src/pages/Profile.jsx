@@ -103,6 +103,18 @@ const Profile = () => {
       <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
+        {/* Locked Account Banner */}
+        {currentUser?.isLocked && (
+          <motion.div className='mb-6 p-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-800/60 dark:bg-red-900/20 flex gap-3 items-start' initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+            <div className='shrink-0 mt-1 text-red-600 dark:text-red-300'>
+              <FaLock size={18} />
+            </div>
+            <div>
+              <p className='font-semibold text-red-700 dark:text-red-200'>Account Locked</p>
+              <p className='text-sm text-red-600 dark:text-red-300'>You can finish ongoing work, but new projects, proposals, and messages are disabled until your account is unlocked.</p>
+            </div>
+          </motion.div>
+        )}
         {/* Profile Header */}
         <motion.div className='flex items-center gap-6 mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <motion.div className='w-24 h-24 rounded-full overflow-hidden border-4 border-accent' whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
