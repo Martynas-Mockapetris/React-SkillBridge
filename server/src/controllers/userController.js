@@ -368,10 +368,24 @@ export const getAdminUsers = async (req, res) => {
       query.userType = role
     }
 
-    // Filter by status (Active/Locked)
+    // Filter by status (Active / Inactive / Locked)
     if (status) {
-      if (status.toLowerCase() === 'locked') query.isLocked = true
-      if (status.toLowerCase() === 'active') query.isLocked = false
+      const normalizedStatus = status.toLowerCase()
+      const inactiveThreshold = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+
+      if (normalizedStatus === 'locked') {
+        query.isLocked = true
+      }
+
+      if (normalizedStatus === 'active') {
+        query.isLocked = false
+        query.$and = [...(query.$and || []), { $or: [{ lastLogin: { $gte: inactiveThreshold } }, { lastLogin: null, createdAt: { $gte: inactiveThreshold } }] }]
+      }
+
+      if (normalizedStatus === 'inactive') {
+        query.isLocked = false
+        query.$and = [...(query.$and || []), { $or: [{ lastLogin: null, createdAt: { $lt: inactiveThreshold } }, { lastLogin: { $lt: inactiveThreshold } }] }]
+      }
     }
 
     // Sorting
