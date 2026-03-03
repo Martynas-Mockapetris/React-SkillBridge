@@ -43,6 +43,24 @@ const AdminUsersList = () => {
     }
   }
 
+  const INACTIVE_THRESHOLD_DAYS = 14
+
+  const getUserStatus = (user) => {
+    if (user.isLocked) return 'Locked'
+    if (!user.lastLogin) return 'Inactive'
+
+    const lastLoginDate = new Date(user.lastLogin)
+    const threshold = new Date(Date.now() - INACTIVE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000)
+
+    return lastLoginDate < threshold ? 'Inactive' : 'Active'
+  }
+
+  const getStatusBadgeClasses = (status) => {
+    if (status === 'Locked') return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+    if (status === 'Inactive') return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+  }
+
   useEffect(() => {
     fetchUsers(1)
   }, [searchQuery, selectedRole, selectedStatus, sortConfig])
@@ -77,7 +95,7 @@ const AdminUsersList = () => {
   }
 
   const roleTypes = ['client', 'freelancer', 'both']
-  const statusTypes = ['Active', 'Locked']
+  const statusTypes = ['Active', 'Inactive', 'Locked']
 
   const renderPagination = () => {
     const handleNextPage = () => {
@@ -261,6 +279,7 @@ const AdminUsersList = () => {
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Status</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Join Date</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Last Login</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
               </tr>
             </thead>
@@ -295,14 +314,13 @@ const AdminUsersList = () => {
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.userType.charAt(0).toUpperCase() + user.userType.slice(1)}</td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.isLocked ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                        }`}>
-                        {user.isLocked ? 'Locked' : 'Active'}
-                      </span>
+                      {(() => {
+                        const status = getUserStatus(user)
+                        return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClasses(status)}`}>{status}</span>
+                      })()}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
                       <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
                         <FaEdit className='w-4 h-4' />
