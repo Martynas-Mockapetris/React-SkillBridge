@@ -69,6 +69,17 @@ export const toggleUserLock = async (userId) => {
   }
 }
 
+// Update user (admin)
+export const updateAdminUser = async (userId, payload) => {
+  try {
+    const response = await authAxios.put(`/api/users/admin/${userId}`, payload)
+    return response.data
+  } catch (error) {
+    console.error('Failed to update admin user:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Delete user (admin)
 export const deleteAdminUser = async (userId) => {
   try {
