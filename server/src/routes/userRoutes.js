@@ -14,6 +14,7 @@ import {
   getAdminDashboardStats,
   getAdminUsers,
   toggleUserLock,
+  updateAdminUser,
   deleteAdminUser
 } from '../controllers/userController.js'
 import { protect, adminOnly } from '../middleware/authMiddleware.js'
@@ -40,7 +41,7 @@ router.get('/admin/stats', protect, adminOnly, getAdminDashboardStats)
 // Admin user management routes
 router.get('/admin/users', protect, adminOnly, getAdminUsers)
 router.patch('/admin/:userId/lock', protect, adminOnly, toggleUserLock)
-router.delete('/admin/:userId', protect, adminOnly, deleteAdminUser)
+router.put('/admin/:userId', protect, adminOnly, updateAdminUser)
 
 // Favorites routes - specific routes first!
 router.get('/favorites', protect, getFavoriteProjects)

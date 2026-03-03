@@ -438,6 +438,44 @@ export const toggleUserLock = async (req, res) => {
   }
 }
 
+// @desc    Update user fields (admin)
+// @route   PUT /api/users/admin/:userId
+// @access  Admin
+export const updateAdminUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const allowedFields = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
+
+    const updates = {}
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field]
+      }
+    })
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No valid fields provided' })
+    }
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.userType === 'admin' && updates.userType && updates.userType !== 'admin') {
+      return res.status(403).json({ message: 'Cannot downgrade admin accounts' })
+    }
+
+    Object.assign(user, updates)
+    const updatedUser = await user.save()
+
+    res.json({ message: 'User updated successfully', user: updatedUser })
+  } catch (error) {
+    console.error('Error updating user:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Delete user (admin)
 // @route   DELETE /api/users/admin/:userId
 // @access  Admin
