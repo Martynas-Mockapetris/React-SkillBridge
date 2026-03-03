@@ -1,6 +1,7 @@
 import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
-import { getAdminUsers, toggleUserLock, deleteAdminUser } from '../../services/userService'
+import { getAdminUsers, toggleUserLock, updateAdminUser, deleteAdminUser } from '../../services/userService'
+import AdminUserEditModal from '../../modal/AdminUserEditModal'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -16,6 +17,8 @@ const AdminUsersList = () => {
   const itemsPerPage = 10
   const [totalPages, setTotalPages] = useState(1)
   const [selectedUsers, setSelectedUsers] = useState([])
+  const [editingUser, setEditingUser] = useState(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const fetchUsers = async (page = 1) => {
     try {
@@ -165,6 +168,26 @@ const AdminUsersList = () => {
         </div>
       </div>
     )
+  }
+
+  const openEditModal = (user) => {
+    setEditingUser(user)
+    setIsEditModalOpen(true)
+  }
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false)
+    setEditingUser(null)
+  }
+
+  const handleSaveUser = async (payload) => {
+    try {
+      await updateAdminUser(payload._id, payload)
+      await fetchUsers(currentPage)
+      closeEditModal()
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to update user')
+    }
   }
 
   // Export to CSV
@@ -322,7 +345,7 @@ const AdminUsersList = () => {
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
-                      <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200'>
+                      <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200' onClick={() => openEditModal(user)} title='Edit user'>
                         <FaUserCog className='w-4 h-4' />
                       </button>
                       <button onClick={() => handleLockUser(user)} title={user.isLocked ? 'Unlock user' : 'Lock user'} className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
@@ -343,6 +366,7 @@ const AdminUsersList = () => {
           {renderPagination()}
         </div>
       </div>
+      <AdminUserEditModal isOpen={isEditModalOpen} onClose={closeEditModal} user={editingUser} onSave={handleSaveUser} />
     </div>
   )
 }
