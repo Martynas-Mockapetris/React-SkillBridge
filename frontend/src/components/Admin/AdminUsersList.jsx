@@ -1,4 +1,4 @@
-import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
+import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 import { getAdminUsers, toggleUserLock, deleteAdminUser } from '../../services/userService'
 
@@ -322,9 +322,6 @@ const AdminUsersList = () => {
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
-                      <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
-                        <FaEdit className='w-4 h-4' />
-                      </button>
                       <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200'>
                         <FaUserCog className='w-4 h-4' />
                       </button>
