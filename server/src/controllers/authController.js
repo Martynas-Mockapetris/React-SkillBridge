@@ -50,12 +50,17 @@ export const loginUser = async (req, res) => {
 
     // Check if user exists and password matches
     if (user && (await user.comparePassword(password))) {
+      user.lastLogin = new Date()
+      await user.save()
+
       res.json({
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         userType: user.userType,
+        isLocked: user.isLocked,
+        lastLogin: user.lastLogin,
         token: generateToken(user._id)
       })
     } else {
