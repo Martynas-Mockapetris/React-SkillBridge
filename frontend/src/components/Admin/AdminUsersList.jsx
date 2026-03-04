@@ -2,6 +2,7 @@ import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChev
 import { useState, useEffect } from 'react'
 import { getAdminUsers, toggleUserLock, updateAdminUser, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
+import AdminLockUserModal from '../../modal/AdminLockUserModal'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -19,6 +20,8 @@ const AdminUsersList = () => {
   const [selectedUsers, setSelectedUsers] = useState([])
   const [editingUser, setEditingUser] = useState(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const [lockingUser, setLockingUser] = useState(null)
 
   const fetchUsers = async (page = 1) => {
     try {
@@ -68,18 +71,40 @@ const AdminUsersList = () => {
     fetchUsers(1)
   }, [searchQuery, selectedRole, selectedStatus, sortConfig])
 
+  const openLockModal = (user) => {
+    setLockingUser(user)
+    setIsLockModalOpen(true)
+  }
+
+  const closeLockModal = () => {
+    setLockingUser(null)
+    setIsLockModalOpen(false)
+  }
+
+  const handleConfirmLock = async ({ reason, durationDays }) => {
+    if (!lockingUser) return
+    try {
+      await toggleUserLock(lockingUser._id, { reason, durationDays })
+      await fetchUsers(currentPage)
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to lock user')
+    } finally {
+      closeLockModal()
+    }
+  }
+
   const handleLockUser = async (user) => {
-    const action = user.isLocked ? 'unlock' : 'lock'
-    const confirmed = window.confirm(`Are you sure you want to ${action} ${user.firstName} ${user.lastName}?`)
-
+    if (!user.isLocked) {
+      openLockModal(user)
+      return
+    }
+    const confirmed = window.confirm(`Unlock ${user.firstName} ${user.lastName}?`)
     if (!confirmed) return
-
     try {
       await toggleUserLock(user._id)
-      // Refresh the list
       fetchUsers(currentPage)
     } catch (error) {
-      alert(`Failed to ${action} user: ${error.response?.data?.message || error.message}`)
+      alert(`Failed to unlock user: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -348,7 +373,16 @@ const AdminUsersList = () => {
                       <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200' onClick={() => openEditModal(user)} title='Edit user'>
                         <FaUserCog className='w-4 h-4' />
                       </button>
-                      <button onClick={() => handleLockUser(user)} title={user.isLocked ? 'Unlock user' : 'Lock user'} className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+                      <button
+                        onClick={() => {
+                          if (user.isLocked) {
+                            handleLockUser(user)
+                          } else {
+                            openLockModal(user)
+                          }
+                        }}
+                        title={user.isLocked ? 'Unlock user' : 'Lock user'}
+                        className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
                         <FaLock className='w-4 h-4' />
                       </button>
                       <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
@@ -367,6 +401,7 @@ const AdminUsersList = () => {
         </div>
       </div>
       <AdminUserEditModal isOpen={isEditModalOpen} onClose={closeEditModal} user={editingUser} onSave={handleSaveUser} />
+      <AdminLockUserModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLock} user={lockingUser} />
     </div>
   )
 }
