@@ -33,6 +33,15 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  lockReason: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  lockExpiresAt: {
+    type: Date,
+    default: null
+  },
   lastLogin: {
     type: Date,
     default: null

@@ -408,6 +408,9 @@ export const getAdminUsers = async (req, res) => {
   }
 }
 
+// @desc    Toggle user lock status (admin)
+// @route   PATCH /api/users/admin/:userId/lock
+// @access  Admin
 export const toggleUserLock = async (req, res) => {
   try {
     const { userId } = req.params
