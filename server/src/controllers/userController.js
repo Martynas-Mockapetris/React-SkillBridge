@@ -408,29 +408,45 @@ export const getAdminUsers = async (req, res) => {
   }
 }
 
-// @desc    Toggle user lock status (admin)
-// @route   PATCH /api/users/admin/:userId/lock
-// @access  Admin
 export const toggleUserLock = async (req, res) => {
   try {
     const { userId } = req.params
+    const { reason = '', durationDays = 14 } = req.body
+
     const user = await User.findById(userId)
+    if (!user) return res.status(404).json({ message: 'User not found' })
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Don't allow locking/unlocking admins
     if (user.userType === 'admin') {
       return res.status(403).json({ message: 'Cannot lock/unlock admin users' })
     }
 
-    user.isLocked = !user.isLocked
+    // Unlock flow
+    if (user.isLocked) {
+      user.isLocked = false
+      user.lockReason = ''
+      user.lockExpiresAt = null
+      await user.save()
+      return res.json({ message: 'User unlocked successfully', isLocked: false })
+    }
+
+    // Lock flow
+    if (!reason.trim()) {
+      return res.status(400).json({ message: 'Lock reason is required' })
+    }
+
+    const days = Number(durationDays) || 0
+    const expiresAt = days > 0 ? new Date(Date.now() + days * 24 * 60 * 60 * 1000) : null
+
+    user.isLocked = true
+    user.lockReason = reason.trim()
+    user.lockExpiresAt = expiresAt
     await user.save()
 
     res.json({
-      message: `User ${user.isLocked ? 'locked' : 'unlocked'} successfully`,
-      isLocked: user.isLocked
+      message: 'User locked successfully',
+      isLocked: true,
+      lockReason: user.lockReason,
+      lockExpiresAt: user.lockExpiresAt
     })
   } catch (error) {
     console.error('Error toggling user lock:', error)
