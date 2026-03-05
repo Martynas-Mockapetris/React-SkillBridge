@@ -83,6 +83,23 @@ const Profile = () => {
     return 'Client & Freelancer'
   }
 
+const formatLockDuration = (durationDays) => {
+  if (!durationDays) return 'Manual review'
+  return `${durationDays} day${durationDays === 1 ? '' : 's'}`
+}
+
+  const getLockCountdown = (lockExpiresAt) => {
+    if (!lockExpiresAt) return 'Pending admin review'
+    const diffMs = new Date(lockExpiresAt) - new Date()
+    if (diffMs <= 0) return 'Unlocking shortly'
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+    if (diffDays > 0) return `${diffDays} day${diffDays === 1 ? '' : 's'} remaining`
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    if (diffHours > 0) return `${diffHours} hour${diffHours === 1 ? '' : 's'} remaining`
+    const diffMinutes = Math.floor(diffMs / (1000 * 60))
+    return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} remaining`
+  }
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     // Projects tab - not visible to admins
@@ -113,13 +130,27 @@ const Profile = () => {
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         {/* Locked Account Banner */}
         {currentUser?.isLocked && (
-          <motion.div className='mb-6 p-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-800/60 dark:bg-red-900/20 flex gap-3 items-start' initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-            <div className='shrink-0 mt-1 text-red-600 dark:text-red-300'>
-              <FaLock size={18} />
-            </div>
-            <div>
-              <p className='font-semibold text-red-700 dark:text-red-200'>Account Locked</p>
-              <p className='text-sm text-red-600 dark:text-red-300'>You can finish ongoing work, but new projects, proposals, and messages are disabled until your account is unlocked.</p>
+          <motion.div className='mb-6 p-5 rounded-lg border border-red-200 bg-red-50 dark:border-red-800/60 dark:bg-red-900/20'>
+            <div className='flex items-start gap-3'>
+              <FaLock className='text-red-600 dark:text-red-300 mt-1' />
+              <div className='flex-1'>
+                <p className='font-semibold text-red-700 dark:text-red-200 mb-1'>Account Locked</p>
+                <p className='text-sm text-red-600 dark:text-red-300 mb-4'>You can finish ongoing work, but new projects, proposals, and outbound messages stay disabled until the lock lifts.</p>
+                <dl className='text-sm text-red-700 dark:text-red-200 space-y-1'>
+                  <div className='flex flex-wrap gap-1'>
+                    <dt className='font-semibold mr-1'>Reason:</dt>
+                    <dd>{currentUser.lockReason || 'No reason provided.'}</dd>
+                  </div>
+                  <div className='flex flex-wrap gap-1'>
+                    <dt className='font-semibold mr-1'>Lock length:</dt>
+                    <dd>{formatLockDuration(currentUser.lockDurationDays)}</dd>
+                  </div>
+                  <div className='flex flex-wrap gap-1'>
+                    <dt className='font-semibold mr-1'>Unlocks:</dt>
+                    <dd>{currentUser.lockExpiresAt ? `${new Date(currentUser.lockExpiresAt).toLocaleString()} · ${getLockCountdown(currentUser.lockExpiresAt)}` : 'Manual admin review required'}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
           </motion.div>
         )}

@@ -42,6 +42,14 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  lockDurationDays: {
+    type: Number,
+    default: null
+  },
+  lockedAt: {
+    type: Date,
+    default: null
+  },
   lastLogin: {
     type: Date,
     default: null
@@ -206,6 +214,8 @@ UserSchema.methods.ensureUnlockedIfExpired = async function () {
     this.isLocked = false
     this.lockReason = ''
     this.lockExpiresAt = null
+    this.lockDurationDays = null
+    this.lockedAt = null
     await this.save()
   }
 }

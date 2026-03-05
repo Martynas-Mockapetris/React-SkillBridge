@@ -436,6 +436,8 @@ export const toggleUserLock = async (req, res) => {
       user.isLocked = false
       user.lockReason = ''
       user.lockExpiresAt = null
+      user.lockDurationDays = null
+      user.lockedAt = null
       await user.save()
       return res.json({ message: 'User unlocked successfully', isLocked: false })
     }
@@ -451,6 +453,8 @@ export const toggleUserLock = async (req, res) => {
     user.isLocked = true
     user.lockReason = reason.trim()
     user.lockExpiresAt = expiresAt
+    user.lockDurationDays = days > 0 ? days : null
+    user.lockedAt = new Date()
     await user.save()
 
     res.json({
