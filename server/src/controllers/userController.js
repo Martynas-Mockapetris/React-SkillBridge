@@ -13,6 +13,8 @@ export const getUserProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
+    await user.ensureUnlockedIfExpired()
+
     res.json(user)
   } catch (error) {
     console.error('Error fetching user profile:', error)
@@ -396,8 +398,12 @@ export const getAdminUsers = async (req, res) => {
 
     const [users, total] = await Promise.all([User.find(query).select('-password').sort(sortConfig).skip(skip).limit(Number(limit)), User.countDocuments(query)])
 
+    await Promise.all(users.map((user) => user.ensureUnlockedIfExpired()))
+
+    const refreshedUsers = await User.find(query).select('-password').sort(sortConfig).skip(skip).limit(Number(limit))
+
     res.json({
-      users,
+      users: refreshedUsers,
       total,
       page: Number(page),
       pages: Math.ceil(total / Number(limit))
@@ -418,6 +424,8 @@ export const toggleUserLock = async (req, res) => {
 
     const user = await User.findById(userId)
     if (!user) return res.status(404).json({ message: 'User not found' })
+
+    await user.ensureUnlockedIfExpired()
 
     if (user.userType === 'admin') {
       return res.status(403).json({ message: 'Cannot lock/unlock admin users' })

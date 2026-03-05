@@ -201,6 +201,15 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }
 
+UserSchema.methods.ensureUnlockedIfExpired = async function () {
+  if (this.isLocked && this.lockExpiresAt && this.lockExpiresAt < new Date()) {
+    this.isLocked = false
+    this.lockReason = ''
+    this.lockExpiresAt = null
+    await this.save()
+  }
+}
+
 const User = mongoose.model('User', UserSchema)
 
 export default User
