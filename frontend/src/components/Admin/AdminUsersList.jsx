@@ -4,6 +4,7 @@ import { getAdminUsers, toggleUserLock, updateAdminUser, deleteAdminUser } from 
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
 import AdminLockUserModal from '../../modal/AdminLockUserModal'
 import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
+import AdminMailUserModal from '../../modal/AdminMailUserModal'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -25,6 +26,8 @@ const AdminUsersList = () => {
   const [lockingUser, setLockingUser] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [isMailModalOpen, setIsMailModalOpen] = useState(false)
+  const [mailRecipient, setMailRecipient] = useState(null)
 
   const fetchUsers = async (page = 1) => {
     try {
@@ -94,6 +97,16 @@ const AdminUsersList = () => {
     setIsDetailsModalOpen(false)
   }
 
+  const openMailModal = (user) => {
+    setMailRecipient(user)
+    setIsMailModalOpen(true)
+  }
+
+  const closeMailModal = () => {
+    setMailRecipient(null)
+    setIsMailModalOpen(false)
+  }
+
   const handleConfirmLock = async ({ reason, durationDays }) => {
     if (!lockingUser) return
     try {
@@ -135,7 +148,7 @@ const AdminUsersList = () => {
     }
   }
 
-  const roleTypes = ['client', 'freelancer', 'both']
+  const roleTypes = ['client', 'freelancer', 'both', 'admin']
   const statusTypes = ['Active', 'Inactive', 'Locked']
 
   const renderPagination = () => {
@@ -398,7 +411,7 @@ const AdminUsersList = () => {
                         className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
                         <FaLock className='w-4 h-4' />
                       </button>
-                      <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
+                      <button onClick={() => openMailModal(user)} title='Send admin mail' className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
                         <FaEnvelope className='w-4 h-4' />
                       </button>
                       <button onClick={() => handleDeleteUser(user)} title='Delete user' className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
@@ -416,6 +429,7 @@ const AdminUsersList = () => {
       <AdminUserEditModal isOpen={isEditModalOpen} onClose={closeEditModal} user={editingUser} onSave={handleSaveUser} />
       <AdminLockUserModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLock} user={lockingUser} />
       <AdminUserDetailsModal isOpen={isDetailsModalOpen} onClose={closeDetailsModal} user={selectedUser} />
+      <AdminMailUserModal isOpen={isMailModalOpen} onClose={closeMailModal} recipient={mailRecipient} onSent={() => fetchUsers(currentPage)} />
     </div>
   )
 }

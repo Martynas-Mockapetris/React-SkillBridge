@@ -74,6 +74,14 @@ const MessagesList = ({ messages, loading }) => {
 
     return Object.values(grouped)
   }
+  const getDisplayName = (user) => {
+    if (!user) return 'Unknown'
+    return user.userType === 'admin' ? 'Administrator' : `${user.firstName} ${user.lastName}`
+  }
+
+  const canReplyToUser = (user) => {
+    return user?.userType !== 'admin'
+  }
 
   // Handle sending a reply
   const handleReply = async (conversationKeyOrProjectId, receiverId, isDirectMessage = false) => {
@@ -137,6 +145,8 @@ const MessagesList = ({ messages, loading }) => {
           const conversationKey = `direct-${otherUser._id}`
           const currentReplyText = replyTexts[conversationKey] || ''
           const isSending = sendingStates[conversationKey] || false
+          const title = otherUser.userType === 'admin' ? 'Message from Administrator' : `Conversation with ${otherUser.firstName} ${otherUser.lastName}`
+          const canReplyDirect = canReplyToUser(otherUser)
 
           return (
             <motion.div
@@ -158,13 +168,15 @@ const MessagesList = ({ messages, loading }) => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            navigate(`/freelancer/${otherUser._id}`)
+                            if (otherUser.userType !== 'admin') {
+                              navigate(`/freelancer/${otherUser._id}`)
+                            }
                           }}
                           className='hover:text-accent transition-colors cursor-pointer underline'>
-                          {projectTitle}
+                          {title}
                         </button>
                       </p>
-                      <p className='text-sm theme-text-secondary'>Direct message</p>
+                      <p className='text-sm theme-text-secondary'>{otherUser.userType === 'admin' ? 'Administrator notice' : 'Direct message'}</p>
                     </div>
                     <div className='px-3 py-1 bg-accent/10 rounded-full'>
                       <span className='text-sm font-semibold text-accent'>
@@ -196,12 +208,20 @@ const MessagesList = ({ messages, loading }) => {
                                     src={message.sender?.profilePicture || `https://i.pravatar.cc/150?u=${message.sender?._id}`}
                                     alt={message.sender?.firstName}
                                     className='w-6 h-6 rounded-full object-cover cursor-pointer hover:opacity-80'
-                                    onClick={() => navigate(`/freelancer/${message.sender?._id}`)}
-                                    title='View profile'
+                                    onClick={() => {
+                                      if (message.sender?.userType !== 'admin') {
+                                        navigate(`/freelancer/${message.sender?._id}`)
+                                      }
+                                    }}
+                                    title={message.sender?.userType === 'admin' ? 'Administrator' : 'View profile'}
                                   />
-                                  <button onClick={() => navigate(`/freelancer/${message.sender?._id}`)} className='text-sm font-semibold theme-text hover:text-accent transition-colors underline'>
-                                    {message.sender?.firstName} {message.sender?.lastName}
-                                  </button>
+                                  {message.sender?.userType === 'admin' ? (
+                                    <span className='text-sm font-semibold theme-text'>Administrator</span>
+                                  ) : (
+                                    <button onClick={() => navigate(`/freelancer/${message.sender?._id}`)} className='text-sm font-semibold theme-text hover:text-accent transition-colors underline'>
+                                      {message.sender?.firstName} {message.sender?.lastName}
+                                    </button>
+                                  )}
                                 </div>
                               )}
                               {message.subject && <p className='text-sm font-semibold text-accent mb-2'>{message.subject}</p>}
@@ -220,38 +240,41 @@ const MessagesList = ({ messages, loading }) => {
                 )}
               </AnimatePresence>
 
-              {/* Reply Input */}
-              {expandedConversations[conversationKey] && (
-                <div className='flex gap-2 pt-4 border-t dark:border-light/10 border-primary/10'>
-                  <input
-                    type='text'
-                    value={currentReplyText}
-                    onChange={(e) => setReplyTexts({ ...replyTexts, [conversationKey]: e.target.value })}
-                    placeholder='Type your reply...'
-                    className='flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 border-gray-300 theme-bg theme-text focus:outline-none focus:border-accent'
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleReply(conversationKey, otherUser._id, true)
-                      }
-                    }}
-                  />
-                  <motion.button
-                    onClick={() => handleReply(conversationKey, otherUser._id, true)}
-                    disabled={!currentReplyText.trim() || isSending}
-                    className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2'
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}>
-                    {isSending ? (
-                      'Sending...'
-                    ) : (
-                      <>
-                        <FaPaperPlane /> Reply
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-              )}
+              {/* Reply Input or Admin Notice */}
+              {expandedConversations[conversationKey] &&
+                (canReplyDirect ? (
+                  <div className='flex gap-2 pt-4 border-t dark:border-light/10 border-primary/10'>
+                    <input
+                      type='text'
+                      value={currentReplyText}
+                      onChange={(e) => setReplyTexts({ ...replyTexts, [conversationKey]: e.target.value })}
+                      placeholder='Type your reply...'
+                      className='flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 border-gray-300 theme-bg theme-text focus:outline-none focus:border-accent'
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleReply(conversationKey, otherUser._id, true)
+                        }
+                      }}
+                    />
+                    <motion.button
+                      onClick={() => handleReply(conversationKey, otherUser._id, true)}
+                      disabled={!currentReplyText.trim() || isSending}
+                      className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      {isSending ? (
+                        'Sending...'
+                      ) : (
+                        <>
+                          <FaPaperPlane /> Reply
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                ) : (
+                  <p className='text-sm theme-text-secondary pt-4 border-t dark:border-light/10 border-primary/10'>Replies are disabled for administrator notices.</p>
+                ))}
             </motion.div>
           )
         }
