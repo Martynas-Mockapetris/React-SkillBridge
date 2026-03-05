@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { getAdminUsers, toggleUserLock, updateAdminUser, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
 import AdminLockUserModal from '../../modal/AdminLockUserModal'
+import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -22,6 +23,8 @@ const AdminUsersList = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
   const [lockingUser, setLockingUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   const fetchUsers = async (page = 1) => {
     try {
@@ -79,6 +82,16 @@ const AdminUsersList = () => {
   const closeLockModal = () => {
     setLockingUser(null)
     setIsLockModalOpen(false)
+  }
+
+  const openDetailsModal = (user) => {
+    setSelectedUser(user)
+    setIsDetailsModalOpen(true)
+  }
+
+  const closeDetailsModal = () => {
+    setSelectedUser(null)
+    setIsDetailsModalOpen(false)
   }
 
   const handleConfirmLock = async ({ reason, durationDays }) => {
@@ -356,7 +369,7 @@ const AdminUsersList = () => {
                     <td className='px-6 py-4 w-4 text-center'>
                       <input type='checkbox' checked={selectedUsers.includes(user._id)} onChange={() => handleSelectUser(user._id)} className='rounded border-gray-300 text-accent focus:ring-accent' />
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 cursor-pointer' onClick={() => openDetailsModal(user)}>
                       {user.firstName} {user.lastName}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
@@ -402,6 +415,7 @@ const AdminUsersList = () => {
       </div>
       <AdminUserEditModal isOpen={isEditModalOpen} onClose={closeEditModal} user={editingUser} onSave={handleSaveUser} />
       <AdminLockUserModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLock} user={lockingUser} />
+      <AdminUserDetailsModal isOpen={isDetailsModalOpen} onClose={closeDetailsModal} user={selectedUser} />
     </div>
   )
 }
