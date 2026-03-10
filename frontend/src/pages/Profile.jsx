@@ -75,6 +75,31 @@ const Profile = () => {
     fetchRatings()
   }, [currentUser])
 
+  const getRoleLabel = () => {
+    if (!currentUser) return ''
+    if (currentUser.userType === 'client') return 'Client'
+    if (currentUser.userType === 'freelancer') return 'Freelancer'
+    if (currentUser.userType === 'admin') return 'Administrator'
+    return 'Client & Freelancer'
+  }
+
+const formatLockDuration = (durationDays) => {
+  if (!durationDays) return 'Manual review'
+  return `${durationDays} day${durationDays === 1 ? '' : 's'}`
+}
+
+  const getLockCountdown = (lockExpiresAt) => {
+    if (!lockExpiresAt) return 'Pending admin review'
+    const diffMs = new Date(lockExpiresAt) - new Date()
+    if (diffMs <= 0) return 'Unlocking shortly'
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+    if (diffDays > 0) return `${diffDays} day${diffDays === 1 ? '' : 's'} remaining`
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    if (diffHours > 0) return `${diffHours} hour${diffHours === 1 ? '' : 's'} remaining`
+    const diffMinutes = Math.floor(diffMs / (1000 * 60))
+    return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} remaining`
+  }
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     // Projects tab - not visible to admins
@@ -103,6 +128,32 @@ const Profile = () => {
       <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
+        {/* Locked Account Banner */}
+        {currentUser?.isLocked && (
+          <motion.div className='mb-6 p-5 rounded-lg border border-red-200 bg-red-50 dark:border-red-800/60 dark:bg-red-900/20'>
+            <div className='flex items-start gap-3'>
+              <FaLock className='text-red-600 dark:text-red-300 mt-1' />
+              <div className='flex-1'>
+                <p className='font-semibold text-red-700 dark:text-red-200 mb-1'>Account Locked</p>
+                <p className='text-sm text-red-600 dark:text-red-300 mb-4'>You can finish ongoing work, but new projects, proposals, and outbound messages stay disabled until the lock lifts.</p>
+                <dl className='text-sm text-red-700 dark:text-red-200 space-y-1'>
+                  <div className='flex flex-wrap gap-1'>
+                    <dt className='font-semibold mr-1'>Reason:</dt>
+                    <dd>{currentUser.lockReason || 'No reason provided.'}</dd>
+                  </div>
+                  <div className='flex flex-wrap gap-1'>
+                    <dt className='font-semibold mr-1'>Lock length:</dt>
+                    <dd>{formatLockDuration(currentUser.lockDurationDays)}</dd>
+                  </div>
+                  <div className='flex flex-wrap gap-1'>
+                    <dt className='font-semibold mr-1'>Unlocks:</dt>
+                    <dd>{currentUser.lockExpiresAt ? `${new Date(currentUser.lockExpiresAt).toLocaleString()} · ${getLockCountdown(currentUser.lockExpiresAt)}` : 'Manual admin review required'}</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </motion.div>
+        )}
         {/* Profile Header */}
         <motion.div className='flex items-center gap-6 mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <motion.div className='w-24 h-24 rounded-full overflow-hidden border-4 border-accent' whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
@@ -112,26 +163,28 @@ const Profile = () => {
             <h1 className='text-3xl font-bold theme-text'>
               {currentUser?.firstName} {currentUser?.lastName}
             </h1>
-            <p className='theme-text-secondary'>{currentUser?.userType === 'client' ? 'Client' : currentUser?.userType === 'freelancer' ? 'Freelancer' : 'Client & Freelancer'}</p>
-            <div className='flex items-center gap-2'>
-              {ratingStats?.totalRatings > 0 ? (
-                <>
-                  <div className='flex items-center gap-1'>
-                    <span className='text-lg font-semibold text-accent'>{ratingStats.averageRating.toFixed(1)}</span>
-                    <div className='flex'>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <FaStar key={star} size={14} className={star <= Math.round(ratingStats.averageRating) ? 'text-accent' : 'text-gray-300 dark:text-gray-600'} />
-                      ))}
+            <p className='theme-text-secondary'>{getRoleLabel()}</p>
+            {currentUser?.userType !== 'admin' && (
+              <div className='flex items-center gap-2'>
+                {ratingStats?.totalRatings > 0 ? (
+                  <>
+                    <div className='flex items-center gap-1'>
+                      <span className='text-lg font-semibold text-accent'>{ratingStats.averageRating.toFixed(1)}</span>
+                      <div className='flex'>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <FaStar key={star} size={14} className={star <= Math.round(ratingStats.averageRating) ? 'text-accent' : 'text-gray-300 dark:text-gray-600'} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <span className='text-sm theme-text-secondary'>
-                    ({ratingStats.totalRatings} {ratingStats.totalRatings === 1 ? 'rating' : 'ratings'})
-                  </span>
-                </>
-              ) : (
-                <p className='text-sm theme-text-secondary'>No ratings yet</p>
-              )}
-            </div>
+                    <span className='text-sm theme-text-secondary'>
+                      ({ratingStats.totalRatings} {ratingStats.totalRatings === 1 ? 'rating' : 'ratings'})
+                    </span>
+                  </>
+                ) : (
+                  <p className='text-sm theme-text-secondary'>No ratings yet</p>
+                )}
+              </div>
+            )}
           </div>
         </motion.div>
 

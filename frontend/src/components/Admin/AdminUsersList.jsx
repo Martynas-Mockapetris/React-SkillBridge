@@ -1,6 +1,10 @@
-import { FaEdit, FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
+import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
-import { getAdminUsers, toggleUserLock, deleteAdminUser } from '../../services/userService'
+import { getAdminUsers, toggleUserLock, updateAdminUser, deleteAdminUser } from '../../services/userService'
+import AdminUserEditModal from '../../modal/AdminUserEditModal'
+import AdminLockUserModal from '../../modal/AdminLockUserModal'
+import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
+import AdminMailUserModal from '../../modal/AdminMailUserModal'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -16,6 +20,14 @@ const AdminUsersList = () => {
   const itemsPerPage = 10
   const [totalPages, setTotalPages] = useState(1)
   const [selectedUsers, setSelectedUsers] = useState([])
+  const [editingUser, setEditingUser] = useState(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const [lockingUser, setLockingUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [isMailModalOpen, setIsMailModalOpen] = useState(false)
+  const [mailRecipient, setMailRecipient] = useState(null)
 
   const fetchUsers = async (page = 1) => {
     try {
@@ -43,22 +55,82 @@ const AdminUsersList = () => {
     }
   }
 
+  const INACTIVE_THRESHOLD_DAYS = 14
+
+  const getUserStatus = (user) => {
+    if (user.isLocked) return 'Locked'
+    if (!user.lastLogin) return 'Inactive'
+
+    const lastLoginDate = new Date(user.lastLogin)
+    const threshold = new Date(Date.now() - INACTIVE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000)
+
+    return lastLoginDate < threshold ? 'Inactive' : 'Active'
+  }
+
+  const getStatusBadgeClasses = (status) => {
+    if (status === 'Locked') return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+    if (status === 'Inactive') return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+  }
+
   useEffect(() => {
     fetchUsers(1)
   }, [searchQuery, selectedRole, selectedStatus, sortConfig])
 
+  const openLockModal = (user) => {
+    setLockingUser(user)
+    setIsLockModalOpen(true)
+  }
+
+  const closeLockModal = () => {
+    setLockingUser(null)
+    setIsLockModalOpen(false)
+  }
+
+  const openDetailsModal = (user) => {
+    setSelectedUser(user)
+    setIsDetailsModalOpen(true)
+  }
+
+  const closeDetailsModal = () => {
+    setSelectedUser(null)
+    setIsDetailsModalOpen(false)
+  }
+
+  const openMailModal = (user) => {
+    setMailRecipient(user)
+    setIsMailModalOpen(true)
+  }
+
+  const closeMailModal = () => {
+    setMailRecipient(null)
+    setIsMailModalOpen(false)
+  }
+
+  const handleConfirmLock = async ({ reason, durationDays }) => {
+    if (!lockingUser) return
+    try {
+      await toggleUserLock(lockingUser._id, { reason, durationDays })
+      await fetchUsers(currentPage)
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to lock user')
+    } finally {
+      closeLockModal()
+    }
+  }
+
   const handleLockUser = async (user) => {
-    const action = user.isLocked ? 'unlock' : 'lock'
-    const confirmed = window.confirm(`Are you sure you want to ${action} ${user.firstName} ${user.lastName}?`)
-
+    if (!user.isLocked) {
+      openLockModal(user)
+      return
+    }
+    const confirmed = window.confirm(`Unlock ${user.firstName} ${user.lastName}?`)
     if (!confirmed) return
-
     try {
       await toggleUserLock(user._id)
-      // Refresh the list
       fetchUsers(currentPage)
     } catch (error) {
-      alert(`Failed to ${action} user: ${error.response?.data?.message || error.message}`)
+      alert(`Failed to unlock user: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -76,8 +148,8 @@ const AdminUsersList = () => {
     }
   }
 
-  const roleTypes = ['client', 'freelancer', 'both']
-  const statusTypes = ['Active', 'Locked']
+  const roleTypes = ['client', 'freelancer', 'both', 'admin']
+  const statusTypes = ['Active', 'Inactive', 'Locked']
 
   const renderPagination = () => {
     const handleNextPage = () => {
@@ -147,6 +219,26 @@ const AdminUsersList = () => {
         </div>
       </div>
     )
+  }
+
+  const openEditModal = (user) => {
+    setEditingUser(user)
+    setIsEditModalOpen(true)
+  }
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false)
+    setEditingUser(null)
+  }
+
+  const handleSaveUser = async (payload) => {
+    try {
+      await updateAdminUser(payload._id, payload)
+      await fetchUsers(currentPage)
+      closeEditModal()
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to update user')
+    }
   }
 
   // Export to CSV
@@ -261,6 +353,7 @@ const AdminUsersList = () => {
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Status</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Join Date</th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Last Login</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Actions</th>
               </tr>
             </thead>
@@ -289,31 +382,36 @@ const AdminUsersList = () => {
                     <td className='px-6 py-4 w-4 text-center'>
                       <input type='checkbox' checked={selectedUsers.includes(user._id)} onChange={() => handleSelectUser(user._id)} className='rounded border-gray-300 text-accent focus:ring-accent' />
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 cursor-pointer' onClick={() => openDetailsModal(user)}>
                       {user.firstName} {user.lastName}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.userType.charAt(0).toUpperCase() + user.userType.slice(1)}</td>
                     <td className='px-6 py-4 whitespace-nowrap'>
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.isLocked ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                        }`}>
-                        {user.isLocked ? 'Locked' : 'Active'}
-                      </span>
+                      {(() => {
+                        const status = getUserStatus(user)
+                        return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClasses(status)}`}>{status}</span>
+                      })()}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
-                      <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
-                        <FaEdit className='w-4 h-4' />
-                      </button>
-                      <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200'>
+                      <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200' onClick={() => openEditModal(user)} title='Edit user'>
                         <FaUserCog className='w-4 h-4' />
                       </button>
-                      <button onClick={() => handleLockUser(user)} title={user.isLocked ? 'Unlock user' : 'Lock user'} className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+                      <button
+                        onClick={() => {
+                          if (user.isLocked) {
+                            handleLockUser(user)
+                          } else {
+                            openLockModal(user)
+                          }
+                        }}
+                        title={user.isLocked ? 'Unlock user' : 'Lock user'}
+                        className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
                         <FaLock className='w-4 h-4' />
                       </button>
-                      <button className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
+                      <button onClick={() => openMailModal(user)} title='Send admin mail' className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
                         <FaEnvelope className='w-4 h-4' />
                       </button>
                       <button onClick={() => handleDeleteUser(user)} title='Delete user' className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
@@ -328,6 +426,10 @@ const AdminUsersList = () => {
           {renderPagination()}
         </div>
       </div>
+      <AdminUserEditModal isOpen={isEditModalOpen} onClose={closeEditModal} user={editingUser} onSave={handleSaveUser} />
+      <AdminLockUserModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLock} user={lockingUser} />
+      <AdminUserDetailsModal isOpen={isDetailsModalOpen} onClose={closeDetailsModal} user={selectedUser} />
+      <AdminMailUserModal isOpen={isMailModalOpen} onClose={closeMailModal} recipient={mailRecipient} onSent={() => fetchUsers(currentPage)} />
     </div>
   )
 }

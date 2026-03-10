@@ -106,8 +106,8 @@ export const getUserMessages = async (req, res) => {
     const messages = await Message.find({
       $or: [{ sender: req.user._id }, { receiver: req.user._id }]
     })
-      .populate('sender', 'firstName lastName email profilePicture')
-      .populate('receiver', 'firstName lastName email profilePicture')
+      .populate('sender', 'firstName lastName email profilePicture userType')
+      .populate('receiver', 'firstName lastName email profilePicture userType')
       .populate('project', 'title category user')
       .sort({ createdAt: -1 })
 
@@ -131,8 +131,8 @@ export const getConversation = async (req, res) => {
         { sender: userId, receiver: req.user._id }
       ]
     })
-      .populate('sender', 'firstName lastName email profilePicture')
-      .populate('receiver', 'firstName lastName email profilePicture')
+      .populate('sender', 'firstName lastName email profilePicture userType')
+      .populate('receiver', 'firstName lastName email profilePicture userType')
       .sort({ createdAt: 1 })
 
     res.json(messages)

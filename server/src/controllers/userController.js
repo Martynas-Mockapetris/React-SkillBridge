@@ -13,6 +13,8 @@ export const getUserProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
+    await user.ensureUnlockedIfExpired()
+
     res.json(user)
   } catch (error) {
     console.error('Error fetching user profile:', error)
@@ -368,10 +370,24 @@ export const getAdminUsers = async (req, res) => {
       query.userType = role
     }
 
-    // Filter by status (Active/Locked)
+    // Filter by status (Active / Inactive / Locked)
     if (status) {
-      if (status.toLowerCase() === 'locked') query.isLocked = true
-      if (status.toLowerCase() === 'active') query.isLocked = false
+      const normalizedStatus = status.toLowerCase()
+      const inactiveThreshold = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+
+      if (normalizedStatus === 'locked') {
+        query.isLocked = true
+      }
+
+      if (normalizedStatus === 'active') {
+        query.isLocked = false
+        query.$and = [...(query.$and || []), { $or: [{ lastLogin: { $gte: inactiveThreshold } }, { lastLogin: null, createdAt: { $gte: inactiveThreshold } }] }]
+      }
+
+      if (normalizedStatus === 'inactive') {
+        query.isLocked = false
+        query.$and = [...(query.$and || []), { $or: [{ lastLogin: null, createdAt: { $lt: inactiveThreshold } }, { lastLogin: { $lt: inactiveThreshold } }] }]
+      }
     }
 
     // Sorting
@@ -382,8 +398,12 @@ export const getAdminUsers = async (req, res) => {
 
     const [users, total] = await Promise.all([User.find(query).select('-password').sort(sortConfig).skip(skip).limit(Number(limit)), User.countDocuments(query)])
 
+    await Promise.all(users.map((user) => user.ensureUnlockedIfExpired()))
+
+    const refreshedUsers = await User.find(query).select('-password').sort(sortConfig).skip(skip).limit(Number(limit))
+
     res.json({
-      users,
+      users: refreshedUsers,
       total,
       page: Number(page),
       pages: Math.ceil(total / Number(limit))
@@ -400,26 +420,89 @@ export const getAdminUsers = async (req, res) => {
 export const toggleUserLock = async (req, res) => {
   try {
     const { userId } = req.params
+    const { reason = '', durationDays = 14 } = req.body
+
     const user = await User.findById(userId)
+    if (!user) return res.status(404).json({ message: 'User not found' })
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
+    await user.ensureUnlockedIfExpired()
 
-    // Don't allow locking/unlocking admins
     if (user.userType === 'admin') {
       return res.status(403).json({ message: 'Cannot lock/unlock admin users' })
     }
 
-    user.isLocked = !user.isLocked
+    // Unlock flow
+    if (user.isLocked) {
+      user.isLocked = false
+      user.lockReason = ''
+      user.lockExpiresAt = null
+      user.lockDurationDays = null
+      user.lockedAt = null
+      await user.save()
+      return res.json({ message: 'User unlocked successfully', isLocked: false })
+    }
+
+    // Lock flow
+    if (!reason.trim()) {
+      return res.status(400).json({ message: 'Lock reason is required' })
+    }
+
+    const days = Number(durationDays) || 0
+    const expiresAt = days > 0 ? new Date(Date.now() + days * 24 * 60 * 60 * 1000) : null
+
+    user.isLocked = true
+    user.lockReason = reason.trim()
+    user.lockExpiresAt = expiresAt
+    user.lockDurationDays = days > 0 ? days : null
+    user.lockedAt = new Date()
     await user.save()
 
     res.json({
-      message: `User ${user.isLocked ? 'locked' : 'unlocked'} successfully`,
-      isLocked: user.isLocked
+      message: 'User locked successfully',
+      isLocked: true,
+      lockReason: user.lockReason,
+      lockExpiresAt: user.lockExpiresAt
     })
   } catch (error) {
     console.error('Error toggling user lock:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Update user fields (admin)
+// @route   PUT /api/users/admin/:userId
+// @access  Admin
+export const updateAdminUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const allowedFields = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
+
+    const updates = {}
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field]
+      }
+    })
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No valid fields provided' })
+    }
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.userType === 'admin' && updates.userType && updates.userType !== 'admin') {
+      return res.status(403).json({ message: 'Cannot downgrade admin accounts' })
+    }
+
+    Object.assign(user, updates)
+    const updatedUser = await user.save()
+
+    res.json({ message: 'User updated successfully', user: updatedUser })
+  } catch (error) {
+    console.error('Error updating user:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }

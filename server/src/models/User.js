@@ -33,6 +33,27 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  lockReason: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  lockExpiresAt: {
+    type: Date,
+    default: null
+  },
+  lockDurationDays: {
+    type: Number,
+    default: null
+  },
+  lockedAt: {
+    type: Date,
+    default: null
+  },
+  lastLogin: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -186,6 +207,17 @@ UserSchema.pre('save', async function (next) {
 // Method to compare password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
+}
+
+UserSchema.methods.ensureUnlockedIfExpired = async function () {
+  if (this.isLocked && this.lockExpiresAt && this.lockExpiresAt < new Date()) {
+    this.isLocked = false
+    this.lockReason = ''
+    this.lockExpiresAt = null
+    this.lockDurationDays = null
+    this.lockedAt = null
+    await this.save()
+  }
 }
 
 const User = mongoose.model('User', UserSchema)

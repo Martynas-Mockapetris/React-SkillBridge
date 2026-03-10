@@ -59,12 +59,23 @@ export const getAdminUsers = async (params = {}) => {
 }
 
 // Toggle user lock status (admin)
-export const toggleUserLock = async (userId) => {
+export const toggleUserLock = async (userId, payload = {}) => {
   try {
-    const response = await authAxios.patch(`/api/users/admin/${userId}/lock`)
+    const response = await authAxios.patch(`/api/users/admin/${userId}/lock`, payload)
     return response.data
   } catch (error) {
     console.error('Failed to toggle user lock:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Update user (admin)
+export const updateAdminUser = async (userId, payload) => {
+  try {
+    const response = await authAxios.put(`/api/users/admin/${userId}`, payload)
+    return response.data
+  } catch (error) {
+    console.error('Failed to update admin user:', error.response?.data || error.message)
     throw error
   }
 }
