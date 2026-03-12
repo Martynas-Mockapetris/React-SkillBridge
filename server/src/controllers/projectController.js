@@ -133,6 +133,23 @@ const getAllProjects = async (req, res) => {
   }
 }
 
+// @desc    Get all projects for admin (all statuses)
+// @route   GET /api/projects/admin/all
+// @access  Admin
+const getAdminAllProjects = async (req, res) => {
+  try {
+    const projects = await Project.find({})
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+      .sort({ createdAt: -1 })
+
+    res.json(projects)
+  } catch (error) {
+    console.error('Error fetching admin projects:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects for the logged-in user
 // @route   GET /api/projects
 // @access  Private
@@ -793,6 +810,7 @@ export {
   updateProject,
   deleteProject,
   getAllProjects,
+  getAdminAllProjects,
   assignUserToProject,
   reassignProject,
   proposeRate,
