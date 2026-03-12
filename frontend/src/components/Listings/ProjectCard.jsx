@@ -31,6 +31,20 @@ const ProjectCard = ({ project, index }) => {
     return favorites.includes(projectId)
   }
 
+  const formatPriority = (priority) => {
+    if (!priority) return 'Medium'
+    return priority.charAt(0).toUpperCase() + priority.slice(1)
+  }
+
+  const getPriorityBadgeClass = (priority) => {
+    const map = {
+      high: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+      medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+      low: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+    }
+    return map[priority] || map.medium
+  }
+
   const handleFavoriteClick = async (e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -70,8 +84,11 @@ const ProjectCard = ({ project, index }) => {
         {/* Project title */}
         <h3 className='text-xl font-bold mb-2 theme-text line-clamp-1 pr-8'>{project.title}</h3>
 
-        {/* Category badge */}
-        <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent mb-4'>{project.category}</span>
+        {/* Category + Priority badges */}
+        <div className='flex items-center gap-2 mb-4 flex-wrap'>
+          <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getPriorityBadgeClass(project.priority)}`}>{formatPriority(project.priority)} Priority</span>
+        </div>
 
         {/* Description */}
         <p className='theme-text-secondary text-sm mb-4 line-clamp-2'>{project.description}</p>
