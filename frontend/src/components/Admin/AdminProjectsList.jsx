@@ -4,9 +4,7 @@ import { getAdminAllProjects } from '../../services/projectService'
 
 const AdminProjectsList = () => {
   // State
-  const STATUS_OPTIONS = ['All', 'Active', 'Planning', 'On Hold', 'Completed']
-  const CATEGORY_OPTIONS = ['All', 'Web Development', 'Mobile Development', 'Analytics', 'Design', 'Marketing']
-  const PRIORITY_OPTIONS = ['All', 'High', 'Medium', 'Low']
+  const PRIORITY_OPTIONS = ['All Priorities', 'High', 'Medium', 'Low']
   const [selectedStatus, setSelectedStatus] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -22,6 +20,14 @@ const AdminProjectsList = () => {
   const [projectsData, setProjectsData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  const formatStatusLabel = (status) => {
+    if (!status) return 'Unknown'
+    return status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+  }
+
+  const statusOptions = ['All', ...new Set(projectsData.map((project) => project.status).filter(Boolean))]
+  const categoryOptions = ['All', ...new Set(projectsData.map((project) => project.category).filter(Boolean))]
 
   const fetchProjects = async () => {
     try {
@@ -75,12 +81,6 @@ const AdminProjectsList = () => {
     }
     return colors[status] || colors.inactive
   }
-
-  const formatStatusLabel = (status) => {
-    if (!status) return 'Unknown'
-    return status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
-  }
-
   // Function to get filtered projects based on selected status
   const getFilteredProjects = () => {
     return projectsData.filter((project) => {
@@ -246,20 +246,22 @@ const AdminProjectsList = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-            {STATUS_OPTIONS.map((status) => (
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            title='Filter by project status'>
+            {statusOptions.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {status === 'All' ? 'All Statuses' : formatStatusLabel(status)}
               </option>
             ))}
           </select>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-            {CATEGORY_OPTIONS.map((category) => (
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            title='Filter by category'>
+            {categoryOptions.map((category) => (
               <option key={category} value={category}>
-                {category}
+                {category === 'All' ? 'All Categories' : category}
               </option>
             ))}
           </select>
