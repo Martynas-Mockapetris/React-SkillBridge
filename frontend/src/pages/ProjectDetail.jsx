@@ -93,6 +93,11 @@ const ProjectDetail = () => {
     }
   })
 
+  const formatPriority = (priority) => {
+    if (!priority) return 'Low'
+    return priority.charAt(0).toUpperCase() + priority.slice(1)
+  }
+
   const handleBack = () => {
     navigate(-1)
   }
@@ -330,6 +335,15 @@ const ProjectDetail = () => {
                   <div>
                     <p className='text-sm'>Status</p>
                     <p className='text-lg font-semibold theme-text'>{formatStatus(project.status)}</p>
+                  </div>
+                </div>
+
+                {/* Priority */}
+                <div className='flex items-center gap-3 theme-text-secondary'>
+                  <FaTags className='text-accent' />
+                  <div>
+                    <p className='text-sm'>Priority</p>
+                    <p className='text-lg font-semibold theme-text'>{formatPriority(project.priority)}</p>
                   </div>
                 </div>
               </div>
