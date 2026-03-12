@@ -32,6 +32,11 @@ const projectSchema = mongoose.Schema(
       type: Number,
       required: false
     },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'medium'
+    },
     deadline: {
       type: Date,
       required: true
