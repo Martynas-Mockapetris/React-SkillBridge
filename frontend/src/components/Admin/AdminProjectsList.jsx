@@ -12,7 +12,7 @@ const AdminProjectsList = () => {
     start: '',
     end: ''
   })
-  const [sortBy, setSortBy] = useState('deadline')
+  const [sortBy, setSortBy] = useState('deadline:asc')
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
 
   // Data
@@ -130,15 +130,27 @@ const AdminProjectsList = () => {
 
   // Sorting
   const getSortedProjects = (projects) => {
+    const [field, direction] = sortBy.split(':')
+    const order = direction === 'desc' ? -1 : 1
+
     return [...projects].sort((a, b) => {
-      switch (sortBy) {
-        case 'deadline':
-          return new Date(a.deadline) - new Date(b.deadline)
+      switch (field) {
+        case 'deadline': {
+          const aDate = a.deadline ? new Date(a.deadline).getTime() : 0
+          const bDate = b.deadline ? new Date(b.deadline).getTime() : 0
+          return (aDate - bDate) * order
+        }
+
         case 'progress':
-          return b.progress - a.progress
-        case 'priority':
+          return (a.progress - b.progress) * order
+
+        case 'priority': {
           const priorityOrder = { high: 3, medium: 2, low: 1 }
-          return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0)
+          const aPriority = priorityOrder[a.priority] || 0
+          const bPriority = priorityOrder[b.priority] || 0
+          return (aPriority - bPriority) * order
+        }
+
         default:
           return 0
       }
@@ -309,9 +321,12 @@ const AdminProjectsList = () => {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-          <option value='deadline'>Sort by Deadline</option>
-          <option value='progress'>Sort by Progress</option>
-          <option value='priority'>Sort by Priority</option>
+          <option value='deadline:asc'>Deadline (Oldest first)</option>
+          <option value='deadline:desc'>Deadline (Newest first)</option>
+          <option value='progress:asc'>Progress (Low to High)</option>
+          <option value='progress:desc'>Progress (High to Low)</option>
+          <option value='priority:asc'>Priority (Low to High)</option>
+          <option value='priority:desc'>Priority (High to Low)</option>
         </select>
       </div>
 
