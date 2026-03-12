@@ -25,6 +25,11 @@ const AdminProjectsList = () => {
     return status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
   }
 
+  const formatPriorityLabel = (priority) => {
+    if (!priority) return 'Low'
+    return priority.charAt(0).toUpperCase() + priority.slice(1)
+  }
+
   const statusOptions = ['All', ...new Set(projectsData.map((project) => project.status).filter(Boolean))]
   const categoryOptions = ['All', ...new Set(projectsData.map((project) => project.category).filter(Boolean))]
   const priorityOptions = ['All', ...new Set(projectsData.map((project) => project.priority).filter(Boolean))]
@@ -273,7 +278,7 @@ const AdminProjectsList = () => {
             title='Filter by priority'>
             {priorityOptions.map((priority) => (
               <option key={priority} value={priority}>
-                {priority === 'All' ? 'All Priorities' : priority}
+                {priority === 'All' ? 'All Priorities' : formatPriorityLabel(priority)}
               </option>
             ))}
           </select>
