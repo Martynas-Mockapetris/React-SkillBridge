@@ -220,6 +220,24 @@ const ProjectsList = () => {
     }
   }
 
+  const formatPriorityLabel = (priority) => {
+    if (!priority) return 'Medium'
+    return priority.charAt(0).toUpperCase() + priority.slice(1)
+  }
+
+  const getPriorityClasses = (priority) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-500/10 text-red-500'
+      case 'medium':
+        return 'bg-amber-500/10 text-amber-500'
+      case 'low':
+        return 'bg-blue-500/10 text-blue-500'
+      default:
+        return 'bg-amber-500/10 text-amber-500'
+    }
+  }
+
   const isCreator = (project) => project.user._id === currentUser._id || project.user === currentUser._id
 
   const isFavorited = (projectId) => {
@@ -440,9 +458,9 @@ const ProjectsList = () => {
                   </div>
                   <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
                   <div className='flex items-center gap-4'>
-                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getStatusColor(project.status)}`}>
-                      {getStatusIcon(project.status)}
-                      <span className='text-sm'>{formatStatus(project.status)}</span>
+                    <div className='flex items-center gap-2'>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(project.status)}`}>{formatStatus(project.status)}</span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityClasses(project.priority)}`}>{formatPriorityLabel(project.priority)} Priority</span>
                     </div>
 
                     {project.assignee && (isCreator(project) || isAssignee(project)) && (
