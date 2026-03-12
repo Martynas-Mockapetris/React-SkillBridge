@@ -12,6 +12,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
     title: '',
     description: '',
     category: '',
+    priority: 'low',
     skills: [],
     budget: '',
     deadline: '',
@@ -43,6 +44,13 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
   // Categories for dropdown
   const categories = ['Web Development', 'Mobile Development', 'UI/UX Design', 'Data Science', 'Machine Learning', 'DevOps', 'Blockchain', 'Content Writing', 'Digital Marketing', 'Other']
+
+  // Priority options
+  const priorityOptions = [
+    { value: 'high', label: 'High' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'low', label: 'Low' }
+  ]
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -215,6 +223,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         title: formData.title,
         description: formData.description,
         category: formData.category,
+        priority: formData.priority,
         skills: formData.skills,
         budget: parseFloat(formData.budget),
         deadline: formData.deadline,
@@ -282,6 +291,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         description: formData.description || '',
         category: formData.category || '',
         skills: formData.skills,
+        priority: formData.priority,
         budget: formData.budget ? parseFloat(formData.budget) : 0,
         deadline: formData.deadline || new Date().toISOString().split('T')[0],
         status: 'draft',
@@ -322,6 +332,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         description: initialData.description || '',
         category: initialData.category || '',
         skills: Array.isArray(initialData.skills) ? initialData.skills : [],
+        priority: initialData.priority || 'low',
         budget: initialData.budget ? String(initialData.budget) : '',
         deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
         type: initialData.type || 'created',
@@ -438,28 +449,51 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
                           />
                         </div>
 
-                        {/* Project Category */}
-                        <div>
-                          <label htmlFor='category' className='block text-sm font-medium theme-text mb-1'>
-                            Category*
-                          </label>
-                          <select
-                            id='category'
-                            name='category'
-                            value={formData.category}
-                            onChange={handleChange}
-                            required
-                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
-                            disabled={isDeadlineOnly}>
-                            <option value='' disabled>
-                              Select a category
-                            </option>
-                            {categories.map((category, index) => (
-                              <option key={index} value={category}>
-                                {category}
+                        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                          {/* Project Category */}
+                          <div className='md:col-span-2'>
+                            <label htmlFor='category' className='block text-sm font-medium theme-text mb-1'>
+                              Category*
+                            </label>
+                            <select
+                              id='category'
+                              name='category'
+                              value={formData.category}
+                              onChange={handleChange}
+                              required
+                              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              disabled={isDeadlineOnly}>
+                              <option value='' disabled>
+                                Select a category
                               </option>
-                            ))}
-                          </select>
+                              {categories.map((category, index) => (
+                                <option key={index} value={category}>
+                                  {category}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Project Priority */}
+                          <div className='md:col-span-1'>
+                            <label htmlFor='priority' className='block text-sm font-medium theme-text mb-1'>
+                              Priority*
+                            </label>
+                            <select
+                              id='priority'
+                              name='priority'
+                              value={formData.priority}
+                              onChange={handleChange}
+                              required
+                              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              disabled={isDeadlineOnly}>
+                              {priorityOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
                       </div>
                     )}
