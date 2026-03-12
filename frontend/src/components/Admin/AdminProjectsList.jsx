@@ -4,7 +4,6 @@ import { getAdminAllProjects } from '../../services/projectService'
 
 const AdminProjectsList = () => {
   // State
-  const PRIORITY_OPTIONS = ['All Priorities', 'High', 'Medium', 'Low']
   const [selectedStatus, setSelectedStatus] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -28,6 +27,7 @@ const AdminProjectsList = () => {
 
   const statusOptions = ['All', ...new Set(projectsData.map((project) => project.status).filter(Boolean))]
   const categoryOptions = ['All', ...new Set(projectsData.map((project) => project.category).filter(Boolean))]
+  const priorityOptions = ['All', ...new Set(projectsData.map((project) => project.priority).filter(Boolean))]
 
   const fetchProjects = async () => {
     try {
@@ -81,6 +81,7 @@ const AdminProjectsList = () => {
     }
     return colors[status] || colors.inactive
   }
+
   // Function to get filtered projects based on selected status
   const getFilteredProjects = () => {
     return projectsData.filter((project) => {
@@ -268,10 +269,11 @@ const AdminProjectsList = () => {
           <select
             value={selectedPriority}
             onChange={(e) => setPriority(e.target.value)}
-            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-            {PRIORITY_OPTIONS.map((priority) => (
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            title='Filter by priority'>
+            {priorityOptions.map((priority) => (
               <option key={priority} value={priority}>
-                {priority}
+                {priority === 'All' ? 'All Priorities' : priority}
               </option>
             ))}
           </select>
