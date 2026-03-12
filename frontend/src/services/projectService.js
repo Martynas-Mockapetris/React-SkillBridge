@@ -69,6 +69,17 @@ export const getProjectByIdOwner = async (projectId) => {
   }
 }
 
+// Get all projects for admin dashboard (all statuses)
+export const getAdminAllProjects = async () => {
+  try {
+    const response = await authAxios.get('/api/projects/admin/all')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin projects:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Update an existing project
 export const updateProject = async (projectId, projectData) => {
   try {
