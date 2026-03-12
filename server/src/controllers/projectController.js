@@ -13,7 +13,7 @@ const createProject = async (req, res) => {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
-    const { title, description, category, skills, budget, deadline, status, assigneeId, rateNegotiation } = req.body
+    const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation } = req.body
 
     // Process attachments if any
     const attachments = req.files
@@ -74,6 +74,7 @@ const createProject = async (req, res) => {
       // Only set budget if there's no rate negotiation (i.e., this is a fixed budget project)
       // If rate negotiation is proposed, leave budget empty until agreed
       budget: finalBudget,
+      priority: priority || 'low',
       deadline,
       status: normalizedStatus,
       attachments,
@@ -138,10 +139,7 @@ const getAllProjects = async (req, res) => {
 // @access  Admin
 const getAdminAllProjects = async (req, res) => {
   try {
-    const projects = await Project.find({})
-      .populate('user', 'firstName lastName email profilePicture')
-      .populate('assignee', 'firstName lastName email profilePicture')
-      .sort({ createdAt: -1 })
+    const projects = await Project.find({}).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
 
     res.json(projects)
   } catch (error) {
@@ -259,7 +257,7 @@ const getProjectByIdOwner = async (req, res) => {
 // @access  Private
 const updateProject = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, deadline } = req.body
+    const { title, description, category, skills, budget, priority, deadline } = req.body
 
     let project = await Project.findById(req.params.id)
 
@@ -276,7 +274,7 @@ const updateProject = async (req, res) => {
 
     // If not draft, only allow extending deadline
     if (!isDraft) {
-      const hasOtherUpdates = title || description || category || skills || budget || (req.files && req.files.length > 0)
+      const hasOtherUpdates = title || description || category || skills || budget || priority || (req.files && req.files.length > 0)
 
       if (hasOtherUpdates) {
         return res.status(400).json({ message: 'Only deadline extension is allowed after publish' })
@@ -318,6 +316,7 @@ const updateProject = async (req, res) => {
     project.category = category || project.category
     project.skills = Array.isArray(skills) ? skills : skills ? skills.split(',') : project.skills
     project.budget = budget || project.budget
+    project.priority = priority || project.priority
     project.deadline = deadline || project.deadline
     project.attachments = [...project.attachments, ...newAttachments]
 
