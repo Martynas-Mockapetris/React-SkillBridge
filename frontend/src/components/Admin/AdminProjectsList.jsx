@@ -44,7 +44,7 @@ const AdminProjectsList = () => {
         status: project.status || 'inactive',
         deadline: project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : '',
         progress: project.status === 'completed' ? 100 : project.status === 'in_progress' ? 65 : project.status === 'under_review' ? 90 : project.status === 'negotiating' ? 35 : project.status === 'assigned' ? 20 : 0,
-        priority: project.budget >= 2000 ? 'High' : project.budget >= 800 ? 'Medium' : 'Low',
+        priority: project.priority || 'low',
         team: [`${project.user?.firstName || ''} ${project.user?.lastName || ''}`.trim() || 'Owner', project.assignee ? `${project.assignee.firstName || ''} ${project.assignee.lastName || ''}`.trim() : null].filter(
           Boolean
         ),
@@ -132,8 +132,8 @@ const AdminProjectsList = () => {
         case 'progress':
           return b.progress - a.progress
         case 'priority':
-          const priorityOrder = { High: 3, Medium: 2, Low: 1 }
-          return priorityOrder[b.priority] - priorityOrder[a.priority]
+          const priorityOrder = { high: 3, medium: 2, low: 1 }
+          return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0)
         default:
           return 0
       }
