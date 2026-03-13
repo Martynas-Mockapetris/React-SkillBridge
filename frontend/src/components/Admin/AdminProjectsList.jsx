@@ -27,6 +27,7 @@ const AdminProjectsList = () => {
 
   const formatStatusLabel = (status) => {
     if (!status) return 'Unknown'
+    if (status === 'cancelled_by_admin') return 'Canceled by Admin'
     return status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
   }
 
@@ -108,8 +109,9 @@ const AdminProjectsList = () => {
       negotiating: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
       in_progress: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
       under_review: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300',
+      completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
       cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      cancelled_by_admin: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300',
       inactive: 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-300',
       archived: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-300',
       paused: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
