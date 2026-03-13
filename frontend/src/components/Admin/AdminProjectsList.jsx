@@ -382,45 +382,45 @@ const AdminProjectsList = () => {
 
           return (
             <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
-            <div className='flex justify-between items-start mb-4'>
-              <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
-              <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>{formatStatusLabel(project.status)}</span>{' '}
-            </div>
-            <p className='text-sm text-gray-500 dark:text-gray-400 mb-4'>{project.description}</p>
-            <div className='space-y-2'>
-              <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
-                <span>Deadline: {project.deadline}</span>
-                <span>Progress: {project.progress}%</span>
+              <div className='flex justify-between items-start mb-4'>
+                <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
+                <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>{formatStatusLabel(project.status)}</span>{' '}
               </div>
-              <ProgressBar progress={project.progress} />
-              <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
-                <span>Priority: {project.priority}</span>
-                <TeamAvatars team={project.team} />
+              <p className='text-sm text-gray-500 dark:text-gray-400 mb-4'>{project.description}</p>
+              <div className='space-y-2'>
+                <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
+                  <span>Deadline: {project.deadline}</span>
+                  <span>Progress: {project.progress}%</span>
+                </div>
+                <ProgressBar progress={project.progress} />
+                <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
+                  <span>Priority: {project.priority}</span>
+                  <TeamAvatars team={project.team} />
+                </div>
               </div>
-            </div>
-            <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
-              <button
-                disabled={isAdminCancelled}
-                title={isAdminCancelled ? 'Project was canceled by admin. Editing is disabled.' : 'Edit project'}
-                className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
-                <FaEdit className='w-4 h-4' />
-              </button>
+              <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
+                <button
+                  disabled={isAdminCancelled}
+                  title={isAdminCancelled ? 'Project was canceled by admin. Editing is disabled.' : 'Edit project'}
+                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
+                  <FaEdit className='w-4 h-4' />
+                </button>
 
-              <button
-                disabled={isAdminCancelled}
-                title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : 'Lock / Pause project'}
-                className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'}`}>
-                <FaLock className='w-4 h-4' />
-              </button>
+                <button
+                  disabled={isAdminCancelled}
+                  title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : 'Lock / Pause project'}
+                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'}`}>
+                  <FaLock className='w-4 h-4' />
+                </button>
 
-              <button
-                onClick={() => openDeleteModal(project)}
-                disabled={isAdminCancelled}
-                title={isAdminCancelled ? 'Project already canceled by admin.' : 'Cancel project as admin'}
-                className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'}`}>
-                <FaTrash className='w-4 h-4' />
-              </button>
-            </div>
+                <button
+                  onClick={() => openDeleteModal(project)}
+                  disabled={isAdminCancelled}
+                  title={isAdminCancelled ? 'Project already canceled by admin.' : 'Cancel project as admin'}
+                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'}`}>
+                  <FaTrash className='w-4 h-4' />
+                </button>
+              </div>
             </div>
           )
         })}
