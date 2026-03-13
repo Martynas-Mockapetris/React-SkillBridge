@@ -80,6 +80,17 @@ export const getAdminAllProjects = async () => {
   }
 }
 
+// Delete project as admin
+export const deleteProjectAsAdmin = async (projectId) => {
+  try {
+    const response = await authAxios.delete(`/api/projects/admin/${projectId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to delete project as admin:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Update an existing project
 export const updateProject = async (projectId, projectData) => {
   try {
