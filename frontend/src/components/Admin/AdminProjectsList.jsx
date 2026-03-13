@@ -1,6 +1,6 @@
 import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
-import { getAdminAllProjects } from '../../services/projectService'
+import { getAdminAllProjects, deleteProjectAsAdmin } from '../../services/projectService'
 
 const AdminProjectsList = () => {
   // State
@@ -68,6 +68,18 @@ const AdminProjectsList = () => {
   useEffect(() => {
     fetchProjects()
   }, [])
+
+  const handleDeleteProject = async (project) => {
+    const confirmed = window.confirm(`Delete project "${project.name}"? This action cannot be undone.`)
+    if (!confirmed) return
+
+    try {
+      await deleteProjectAsAdmin(project.id)
+      await fetchProjects()
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to delete project')
+    }
+  }
 
   // State variables for filtering and sorting
   const getStatusColor = (status) => {
@@ -360,7 +372,7 @@ const AdminProjectsList = () => {
               <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
                 <FaLock className='w-4 h-4' />
               </button>
-              <button className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
+              <button onClick={() => handleDeleteProject(project)} title='Delete project' className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
                 <FaTrash className='w-4 h-4' />
               </button>
             </div>
