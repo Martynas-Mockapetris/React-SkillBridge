@@ -6,7 +6,7 @@ import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import RatingModal from '../../modal/RatingModal'
 import { useAuth } from '../../context/AuthContext' // Import useAuth hook
-import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject } from '../../services/projectService'
+import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject, deleteProject } from '../../services/projectService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import { getFreelancerRatings } from '../../services/ratingService'
 import { formatStatus } from '../../utils/formatters'
@@ -33,7 +33,7 @@ const ProjectsList = () => {
   const [ratingUserType, setRatingUserType] = useState('freelancer')
   const [myRatings, setMyRatings] = useState([])
 
-  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
+  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
   const openModal = () => {
     setModalMode('create')
@@ -164,7 +164,9 @@ const ProjectsList = () => {
         }
       }
 
-      setProjects(allProjects)
+      const sortedProjects = [...allProjects].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+
+      setProjects(sortedProjects)
       setError(null)
     } catch (err) {
       console.error('Error fetching projects:', err)
@@ -188,6 +190,8 @@ const ProjectsList = () => {
         return <FaPause className='text-yellow-500' />
       case 'cancelled':
         return <FaTimes className='text-red-500' />
+      case 'cancelled_by_admin':
+        return <FaTimes className='text-red-600' />
       case 'archived':
         return <FaArchive className='text-gray-500' />
       case 'draft':
@@ -211,6 +215,8 @@ const ProjectsList = () => {
         return 'bg-yellow-500/10 text-yellow-500'
       case 'cancelled':
         return 'bg-red-500/10 text-red-500'
+      case 'cancelled_by_admin':
+        return 'bg-red-500/10 text-red-600'
       case 'archived':
         return 'bg-gray-500/10 text-gray-500'
       case 'draft':
@@ -371,6 +377,7 @@ const ProjectsList = () => {
           <option value='completed'>Completed</option>
           <option value='paused'>Paused</option>
           <option value='cancelled'>Cancelled</option>
+          <option value='cancelled_by_admin'>Canceled by Admin</option>
         </motion.select>
       )}
 
@@ -621,6 +628,25 @@ const ProjectsList = () => {
                     whileTap={isLockedStatus(project.status) ? {} : { scale: 0.98 }}>
                     {isLockedStatus(project.status) ? 'Edit Locked' : 'Edit Project'}
                   </motion.button>
+
+                  <motion.button
+                    onClick={async () => {
+                      const confirmed = window.confirm('Remove this project from your profile? Admin will still keep it in audit logs.')
+                      if (!confirmed) return
+
+                      try {
+                        await deleteProject(project._id)
+                        await fetchProjects()
+                      } catch (err) {
+                        console.error('Error deleting project from profile:', err)
+                      }
+                    }}
+                    className='w-full py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded transition-all'
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}>
+                    Delete from My Profile
+                  </motion.button>
+
                   {project.status === 'draft' && (
                     <motion.button
                       onClick={async () => {

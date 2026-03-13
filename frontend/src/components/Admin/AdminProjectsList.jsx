@@ -12,7 +12,7 @@ const AdminProjectsList = () => {
     start: '',
     end: ''
   })
-  const [sortBy, setSortBy] = useState('deadline:asc')
+  const [sortBy, setSortBy] = useState('createdAt:desc')
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
 
   // Data
@@ -53,6 +53,7 @@ const AdminProjectsList = () => {
         name: project.title || 'Untitled project',
         description: project.description || 'No description',
         status: project.status || 'inactive',
+        createdAt: project.createdAt || '',
         deadline: project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : '',
         progress: project.status === 'completed' ? 100 : project.status === 'in_progress' ? 65 : project.status === 'under_review' ? 90 : project.status === 'negotiating' ? 35 : project.status === 'assigned' ? 20 : 0,
         priority: project.priority || 'low',
@@ -112,6 +113,7 @@ const AdminProjectsList = () => {
       completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
       cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
       cancelled_by_admin: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300',
+      deleted_by_owner: 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-200',
       inactive: 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-300',
       archived: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-300',
       paused: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
@@ -170,6 +172,12 @@ const AdminProjectsList = () => {
         case 'deadline': {
           const aDate = a.deadline ? new Date(a.deadline).getTime() : 0
           const bDate = b.deadline ? new Date(b.deadline).getTime() : 0
+          return (aDate - bDate) * order
+        }
+
+        case 'createdAt': {
+          const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0
+          const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0
           return (aDate - bDate) * order
         }
 
@@ -353,6 +361,8 @@ const AdminProjectsList = () => {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+          <option value='createdAt:desc'>Created (Newest first)</option>
+          <option value='createdAt:asc'>Created (Oldest first)</option>
           <option value='deadline:asc'>Deadline (Oldest first)</option>
           <option value='deadline:desc'>Deadline (Newest first)</option>
           <option value='progress:asc'>Progress (Low to High)</option>

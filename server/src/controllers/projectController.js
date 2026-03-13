@@ -110,6 +110,10 @@ const publishProject = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' })
     }
 
+    if (project.status === 'cancelled_by_admin' || project.status === 'deleted_by_owner') {
+      return res.status(403).json({ message: 'Project is locked and cannot be published' })
+    }
+
     project.status = 'active'
     const updated = await project.save()
     res.json(updated)
@@ -180,10 +184,13 @@ const getUserProjects = async (req, res) => {
   try {
     const projects = await Project.find({
       $or: [
-        { user: req.user._id }, // Owner sees all projects including drafts
+        {
+          user: req.user._id,
+          status: { $ne: 'deleted_by_owner' }
+        },
         {
           assignee: req.user._id,
-          status: { $ne: 'draft' } // Assignee only sees non-draft projects
+          status: { $nin: ['draft', 'deleted_by_owner'] }
         }
       ]
     })
@@ -215,6 +222,10 @@ const getProjectById = async (req, res) => {
     console.log(`[GET PROJECT] Project owner: ${project.user?._id || project.user}`)
     console.log(`[GET PROJECT] Project assignee: ${project.assignee?._id || project.assignee}`)
     console.log(`[GET PROJECT] Current user from req.user: ${req.user?._id}`)
+
+    if (project.status === 'deleted_by_owner') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
 
     // Public can see only active
     if (project.status === 'active') {
@@ -261,6 +272,10 @@ const getProjectByIdOwner = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
+    if (project.status === 'deleted_by_owner') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
     // ✅ Only owner can access draft/private version
     const projectUserId = project.user._id ? project.user._id.toString() : project.user.toString()
     if (projectUserId !== req.user._id.toString()) {
@@ -296,8 +311,8 @@ const updateProject = async (req, res) => {
     }
 
     // Prevent any edits if project was cancelled by admin
-    if (project.status === 'cancelled_by_admin') {
-      return res.status(403).json({ message: 'Project was cancelled by admin and can no longer be edited' })
+    if (project.status === 'cancelled_by_admin' || project.status === 'deleted_by_owner') {
+      return res.status(403).json({ message: 'Project is locked and can no longer be edited' })
     }
 
     const isDraft = project.status === 'draft'
@@ -377,8 +392,14 @@ const deleteProject = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' })
     }
 
-    await project.deleteOne()
-    res.json({ message: 'Project removed' })
+    if (project.status === 'deleted_by_owner') {
+      return res.status(400).json({ message: 'Project already deleted from your profile' })
+    }
+
+    project.status = 'deleted_by_owner'
+    await project.save()
+
+    res.json({ message: 'Project removed from your profile', status: project.status })
   } catch (error) {
     console.error('Error deleting project:', error)
     if (error.kind === 'ObjectId') {
@@ -648,7 +669,8 @@ const getInterestedProjects = async (req, res) => {
   try {
     // Find all projects where current user is in interestedUsers array
     const projects = await Project.find({
-      'interestedUsers.userId': req.user._id
+      'interestedUsers.userId': req.user._id,
+      status: { $ne: 'deleted_by_owner' }
     })
       .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')

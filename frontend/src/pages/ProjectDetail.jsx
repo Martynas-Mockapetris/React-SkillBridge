@@ -255,7 +255,7 @@ const ProjectDetail = () => {
 
                   {/* Contact button */}
                   {/* Only show if project is NOT (completed/archived) */}
-                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && !['completed', 'archived'].includes(project.status) && (
+                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && !['completed', 'archived', 'cancelled_by_admin', 'deleted_by_owner'].includes(project.status) && (
                     <div className='pt-4 border-t dark:border-light/10 border-primary/10'>
                       <motion.button
                         onClick={() => navigate(`/messages`)}

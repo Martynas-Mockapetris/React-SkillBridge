@@ -227,7 +227,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         skills: formData.skills,
         budget: parseFloat(formData.budget),
         deadline: formData.deadline,
-        status: 'draft',
+        status: 'active',
         progress: 0 // Add initial progress
       }
 
@@ -266,7 +266,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         onProjectCreated()
       }
 
-      toast.success('Project created successfully!')
+      toast.success('Project published successfully!')
     } catch (error) {
       console.error('Error creating project:', error)
       toast.error('Failed to create project. Please try again.')
@@ -674,7 +674,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
                             </motion.button>
                           )}
                           <motion.button type='submit' className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} disabled={submitting}>
-                            {submitting ? 'Saving...' : isEditMode ? 'Save Changes' : 'Post Project'}
+                            {submitting ? 'Saving...' : isEditMode ? 'Save Changes' : 'Publish Project'}
                           </motion.button>
                         </>
                       )}
