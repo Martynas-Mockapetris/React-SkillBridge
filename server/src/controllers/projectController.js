@@ -148,6 +148,28 @@ const getAdminAllProjects = async (req, res) => {
   }
 }
 
+// @desc    Delete project (admin)
+// @route   DELETE /api/projects/admin/:id
+// @access  Admin
+const deleteProjectAsAdmin = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    await project.deleteOne()
+    res.json({ message: 'Project deleted by admin' })
+  } catch (error) {
+    console.error('Error deleting project as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects for the logged-in user
 // @route   GET /api/projects
 // @access  Private
@@ -810,6 +832,7 @@ export {
   deleteProject,
   getAllProjects,
   getAdminAllProjects,
+  deleteProjectAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,
