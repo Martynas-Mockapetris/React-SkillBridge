@@ -148,7 +148,7 @@ const getAdminAllProjects = async (req, res) => {
   }
 }
 
-// @desc    Delete project (admin)
+// @desc    Cancel project as admin (soft-delete)
 // @route   DELETE /api/projects/admin/:id
 // @access  Admin
 const deleteProjectAsAdmin = async (req, res) => {
@@ -159,10 +159,13 @@ const deleteProjectAsAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    await project.deleteOne()
-    res.json({ message: 'Project deleted by admin' })
+    // Keep project record, only mark as cancelled by admin
+    project.status = 'cancelled_by_admin'
+    await project.save()
+
+    res.json({ message: 'Project cancelled by admin', status: project.status })
   } catch (error) {
-    console.error('Error deleting project as admin:', error)
+    console.error('Error cancelling project as admin:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -290,6 +293,11 @@ const updateProject = async (req, res) => {
     // Check if the project belongs to the user
     if (project.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized' })
+    }
+
+    // Prevent any edits if project was cancelled by admin
+    if (project.status === 'cancelled_by_admin') {
+      return res.status(403).json({ message: 'Project was cancelled by admin and can no longer be edited' })
     }
 
     const isDraft = project.status === 'draft'
