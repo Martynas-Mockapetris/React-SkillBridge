@@ -367,8 +367,11 @@ const AdminProjectsList = () => {
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {/* Project Card */}
-        {getSortedProjects(getFilteredProjects()).map((project) => (
-          <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
+        {getSortedProjects(getFilteredProjects()).map((project) => {
+          const isAdminCancelled = project.status === 'cancelled_by_admin'
+
+          return (
+            <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
             <div className='flex justify-between items-start mb-4'>
               <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
               <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>{formatStatusLabel(project.status)}</span>{' '}
@@ -386,18 +389,31 @@ const AdminProjectsList = () => {
               </div>
             </div>
             <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
-              <button className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
+              <button
+                disabled={isAdminCancelled}
+                title={isAdminCancelled ? 'Project was canceled by admin. Editing is disabled.' : 'Edit project'}
+                className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
                 <FaEdit className='w-4 h-4' />
               </button>
-              <button className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+
+              <button
+                disabled={isAdminCancelled}
+                title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : 'Lock / Pause project'}
+                className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'}`}>
                 <FaLock className='w-4 h-4' />
               </button>
-              <button onClick={() => openDeleteModal(project)} title='Delete project' className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
+
+              <button
+                onClick={() => openDeleteModal(project)}
+                disabled={isAdminCancelled}
+                title={isAdminCancelled ? 'Project already canceled by admin.' : 'Cancel project as admin'}
+                className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'}`}>
                 <FaTrash className='w-4 h-4' />
               </button>
             </div>
-          </div>
-        ))}
+            </div>
+          )
+        })}
       </div>
       {isDeleteModalOpen && (
         <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
