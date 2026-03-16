@@ -360,13 +360,15 @@ const AdminProjectsList = () => {
           const isProjectLocked = project.status === 'paused'
 
           return (
-            <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
+            <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-4 h-full flex flex-col'>
               <div className='flex justify-between items-start mb-4'>
                 <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
                 <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>{' '}
               </div>
-              <p className='text-sm text-gray-500 dark:text-gray-400 mb-4'>{project.description}</p>
-              <div className='space-y-2'>
+
+              <p className='text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3'>{project.description?.length > 180 ? `${project.description.slice(0, 180)}...` : project.description}</p>
+
+              <div className='mt-auto space-y-2'>
                 <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
                   <span>Deadline: {project.deadline}</span>
                   <span>Progress: {project.progress}%</span>
@@ -377,7 +379,9 @@ const AdminProjectsList = () => {
                   <TeamAvatars team={project.team} />
                 </div>
               </div>
+
               <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
+                {' '}
                 <button
                   onClick={() => openEditModal(project)}
                   disabled={isAdminCancelled}
@@ -385,7 +389,6 @@ const AdminProjectsList = () => {
                   className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
                   <FaEdit className='w-4 h-4' />
                 </button>
-
                 <button
                   onClick={() => handleToggleProjectLock(project)}
                   disabled={isAdminCancelled || lockLoadingProjectId === project.id}
@@ -399,7 +402,6 @@ const AdminProjectsList = () => {
                   }`}>
                   <FaLock className='w-4 h-4' />
                 </button>
-
                 <button
                   onClick={() => openDeleteModal(project)}
                   disabled={isAdminCancelled}
