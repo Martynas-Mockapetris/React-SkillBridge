@@ -32,7 +32,7 @@ const AdminProjectsList = () => {
 
   // Edit modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [projectToEdit, setProjectToEdit] = useState(null)
+  const [editingProjectId, setEditingProjectId] = useState(null)
   const [editLoading, setEditLoading] = useState(false)
   const [editForm, setEditForm] = useState({
     title: '',
@@ -105,7 +105,7 @@ const AdminProjectsList = () => {
   }
 
   const openEditModal = (project) => {
-    setProjectToEdit(project)
+    setEditingProjectId(project.id)
     setEditForm({
       title: project.name || '',
       description: project.description || '',
@@ -118,16 +118,16 @@ const AdminProjectsList = () => {
   }
 
   const closeEditModal = () => {
-    setProjectToEdit(null)
+    setEditingProjectId(null)
     setIsEditModalOpen(false)
   }
 
   const handleEditProject = async () => {
-    if (!projectToEdit) return
+    if (!editingProjectId) return
 
     try {
       setEditLoading(true)
-      await updateProjectAsAdmin(projectToEdit.id, {
+      await updateProjectAsAdmin(editingProjectId, {
         title: editForm.title,
         description: editForm.description,
         category: editForm.category,
