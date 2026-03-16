@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
-import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin } from '../../services/projectService'
+import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin } from '../../services/projectService'
 
 const AdminProjectsList = () => {
   // State
@@ -17,6 +17,7 @@ const AdminProjectsList = () => {
   })
   const [sortBy, setSortBy] = useState('createdAt:desc')
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
+  const [lockLoadingProjectId, setLockLoadingProjectId] = useState(null)
 
   // Data
   const [projectsData, setProjectsData] = useState([])
@@ -154,6 +155,18 @@ const AdminProjectsList = () => {
       alert(error.response?.data?.message || 'Failed to cancel project')
     } finally {
       setDeleteLoading(false)
+    }
+  }
+
+  const handleToggleProjectLock = async (project) => {
+    try {
+      setLockLoadingProjectId(project.id)
+      await toggleProjectLockAsAdmin(project.id)
+      await fetchProjects()
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to change project lock status')
+    } finally {
+      setLockLoadingProjectId(null)
     }
   }
 
@@ -362,6 +375,7 @@ const AdminProjectsList = () => {
         {/* Project Card */}
         {getSortedProjects(getFilteredProjects()).map((project) => {
           const isAdminCancelled = project.status === 'cancelled_by_admin'
+          const isProjectLocked = project.status === 'paused'
 
           return (
             <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
@@ -391,9 +405,16 @@ const AdminProjectsList = () => {
                 </button>
 
                 <button
-                  disabled={isAdminCancelled}
-                  title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : 'Lock / Pause project'}
-                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'}`}>
+                  onClick={() => handleToggleProjectLock(project)}
+                  disabled={isAdminCancelled || lockLoadingProjectId === project.id}
+                  title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : isProjectLocked ? 'Unlock project' : 'Lock / Pause project'}
+                  className={`${
+                    isAdminCancelled || lockLoadingProjectId === project.id
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : isProjectLocked
+                        ? 'text-red-800 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400'
+                        : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'
+                  }`}>
                   <FaLock className='w-4 h-4' />
                 </button>
 

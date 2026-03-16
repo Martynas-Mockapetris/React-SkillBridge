@@ -260,6 +260,44 @@ const getUserProjects = async (req, res) => {
   }
 }
 
+// @desc    Toggle project lock status as admin (pause/unpause)
+// @route   PATCH /api/projects/admin/:id/lock
+// @access  Admin
+const toggleProjectLockAsAdmin = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Moderation-terminal statuses should remain immutable.
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
+    // These statuses are considered final and should not be lock-toggled.
+    if (['completed', 'archived', 'cancelled'].includes(project.status)) {
+      return res.status(400).json({ message: 'Finalized project status cannot be lock-toggled' })
+    }
+
+    // Simple lock model: paused = locked, active = unlocked.
+    project.status = project.status === 'paused' ? 'active' : 'paused'
+    await project.save()
+
+    res.json({
+      message: project.status === 'paused' ? 'Project locked (paused)' : 'Project unlocked (active)',
+      status: project.status
+    })
+  } catch (error) {
+    console.error('Error toggling project lock as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get project by ID (PUBLIC - only active)
 // @route   GET /api/projects/:id
 // @access  Public
@@ -957,6 +995,7 @@ export {
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
+  toggleProjectLockAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,
