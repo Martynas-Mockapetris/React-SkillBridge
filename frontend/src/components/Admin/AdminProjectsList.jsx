@@ -6,6 +6,25 @@ import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin } from '../../services/projectService'
 
+const ProgressBar = ({ progress }) => (
+  <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2'>
+    <div className='bg-accent h-2.5 rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
+  </div>
+)
+
+const TeamAvatars = ({ team }) => (
+  <div className='flex -space-x-2'>
+    {team.map((member, index) => (
+      <div key={index} className='w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-xs border-2 border-white dark:border-gray-800' title={member}>
+        {member
+          .split(' ')
+          .map((n) => n[0])
+          .join('')}
+      </div>
+    ))}
+  </div>
+)
+
 const AdminProjectsList = () => {
   // State
   const [selectedStatus, setSelectedStatus] = useState('All')
@@ -207,25 +226,6 @@ const AdminProjectsList = () => {
       return matchesStatus && matchesCategory && matchesPriority && matchesDateRange && matchesSearch
     })
   }
-
-  const ProgressBar = ({ progress }) => (
-    <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2'>
-      <div className='bg-accent h-2.5 rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
-    </div>
-  )
-
-  const TeamAvatars = ({ team }) => (
-    <div className='flex -space-x-2'>
-      {team.map((member, index) => (
-        <div key={index} className='w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-xs border-2 border-white dark:border-gray-800' title={member}>
-          {member
-            .split(' ')
-            .map((n) => n[0])
-            .join('')}
-        </div>
-      ))}
-    </div>
-  )
 
   const clearFilters = () => {
     setSelectedStatus('All')
