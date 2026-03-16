@@ -1,5 +1,6 @@
 import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock } from 'react-icons/fa'
 import { useState, useEffect, useMemo } from 'react'
+import { toast } from 'react-toastify'
 import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
@@ -136,8 +137,9 @@ const AdminProjectsList = () => {
       })
       await fetchProjects()
       closeEditModal()
+      toast.success('Project updated successfully')
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to update project')
+      toast.error(error.response?.data?.message || 'Failed to update project')
     } finally {
       setEditLoading(false)
     }
@@ -151,8 +153,9 @@ const AdminProjectsList = () => {
       await deleteProjectAsAdmin(projectToDelete.id)
       await fetchProjects()
       closeDeleteModal()
+      toast.success('Project canceled by admin')
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to cancel project')
+      toast.error(error.response?.data?.message || 'Failed to cancel project')
     } finally {
       setDeleteLoading(false)
     }
@@ -161,10 +164,11 @@ const AdminProjectsList = () => {
   const handleToggleProjectLock = async (project) => {
     try {
       setLockLoadingProjectId(project.id)
-      await toggleProjectLockAsAdmin(project.id)
+      const response = await toggleProjectLockAsAdmin(project.id)
       await fetchProjects()
+      toast.success(response?.message || 'Project lock status updated')
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to change project lock status')
+      toast.error(error.response?.data?.message || 'Failed to change project lock status')
     } finally {
       setLockLoadingProjectId(null)
     }
