@@ -1,5 +1,5 @@
 import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock } from 'react-icons/fa'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
@@ -266,14 +266,22 @@ const AdminProjectsList = () => {
     })
   }
 
+  // Memoized derived data to avoid recalculating on every render usage.
+  const filteredProjects = useMemo(() => getFilteredProjects(), [projectsData, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery])
+
+  const sortedProjects = useMemo(() => getSortedProjects(filteredProjects), [filteredProjects, sortBy])
+
+  const visibleCount = filteredProjects.length
+  const totalCount = projectsData.length
+
   return (
     <div>
       <div className='flex justify-between items-center mb-6'>
         <div className='flex flex-col'>
           <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Projects Overview</h2>
           <div className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-            Showing {getFilteredProjects().length} {getFilteredProjects().length === 1 ? 'project' : 'projects'}
-            {getFilteredProjects().length !== projectsData.length && ` out of ${projectsData.length} total`}
+            Showing {visibleCount} {visibleCount === 1 ? 'project' : 'projects'}
+            {visibleCount !== totalCount && ` out of ${totalCount} total`}
           </div>
         </div>
         <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
@@ -373,7 +381,7 @@ const AdminProjectsList = () => {
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {/* Project Card */}
-        {getSortedProjects(getFilteredProjects()).map((project) => {
+        {sortedProjects.map((project) => {
           const isAdminCancelled = project.status === 'cancelled_by_admin'
           const isProjectLocked = project.status === 'paused'
 
