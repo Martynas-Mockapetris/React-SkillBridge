@@ -54,9 +54,9 @@ const AdminProjectsList = () => {
     return priority.charAt(0).toUpperCase() + priority.slice(1)
   }
 
-  const statusOptions = ['All', ...new Set(projectsData.map((project) => project.status).filter(Boolean))]
-  const categoryOptions = ['All', ...new Set(projectsData.map((project) => project.category).filter(Boolean))]
-  const priorityOptions = ['All', ...new Set(projectsData.map((project) => project.priority).filter(Boolean))]
+  const statusOptions = ['All', ...[...new Set(projectsData.map((project) => project.status).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
+  const categoryOptions = ['All', ...[...new Set(projectsData.map((project) => project.category).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
+  const priorityOptions = ['All', ...[...new Set(projectsData.map((project) => project.priority).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
 
   const fetchProjects = async () => {
     try {
