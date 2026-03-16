@@ -5,6 +5,7 @@ import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin } from '../../services/projectService'
+import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
 const ProgressBar = ({ progress }) => (
   <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2'>
@@ -61,17 +62,6 @@ const AdminProjectsList = () => {
     deadline: '',
     status: 'active'
   })
-
-  const formatStatusLabel = (status) => {
-    if (!status) return 'Unknown'
-    if (status === 'cancelled_by_admin') return 'Canceled by Admin'
-    return status.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
-  }
-
-  const formatPriorityLabel = (priority) => {
-    if (!priority) return 'Low'
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
-  }
 
   const statusOptions = ['All', ...[...new Set(projectsData.map((project) => project.status).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
   const categoryOptions = ['All', ...[...new Set(projectsData.map((project) => project.category).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
@@ -193,26 +183,6 @@ const AdminProjectsList = () => {
     }
   }
 
-  // State variables for filtering and sorting
-  const getStatusColor = (status) => {
-    const colors = {
-      draft: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      active: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      assigned: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      negotiating: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-      in_progress: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
-      under_review: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-      cancelled_by_admin: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300',
-      deleted_by_owner: 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-200',
-      inactive: 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-300',
-      archived: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-300',
-      paused: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
-    }
-    return colors[status] || colors.inactive
-  }
-
   // Function to get filtered projects based on selected status
   const getFilteredProjects = () => {
     return projectsData.filter((project) => {
@@ -316,7 +286,7 @@ const AdminProjectsList = () => {
             title='Filter by project status'>
             {statusOptions.map((status) => (
               <option key={status} value={status}>
-                {status === 'All' ? 'All Statuses' : formatStatusLabel(status)}
+                {status === 'All' ? 'All Statuses' : formatProjectStatusLabel(status)}
               </option>
             ))}
           </select>
@@ -338,7 +308,7 @@ const AdminProjectsList = () => {
             title='Filter by priority'>
             {priorityOptions.map((priority) => (
               <option key={priority} value={priority}>
-                {priority === 'All' ? 'All Priorities' : formatPriorityLabel(priority)}
+                {priority === 'All' ? 'All Priorities' : formatProjectPriorityLabel(priority)}
               </option>
             ))}
           </select>
@@ -393,7 +363,7 @@ const AdminProjectsList = () => {
             <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
               <div className='flex justify-between items-start mb-4'>
                 <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
-                <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>{formatStatusLabel(project.status)}</span>{' '}
+                <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>{' '}
               </div>
               <p className='text-sm text-gray-500 dark:text-gray-400 mb-4'>{project.description}</p>
               <div className='space-y-2'>
@@ -403,7 +373,7 @@ const AdminProjectsList = () => {
                 </div>
                 <ProgressBar progress={project.progress} />
                 <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
-                  <span>Priority: {project.priority}</span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
                   <TeamAvatars team={project.team} />
                 </div>
               </div>

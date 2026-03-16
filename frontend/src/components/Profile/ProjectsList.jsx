@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject, deleteProject } from '../../services/projectService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import { getFreelancerRatings } from '../../services/ratingService'
-import { formatStatus } from '../../utils/formatters'
+import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const ProjectsList = () => {
@@ -198,49 +198,6 @@ const ProjectsList = () => {
         return <FaPause className='text-yellow-500' />
       default:
         return null
-    }
-  }
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active':
-        return 'bg-blue-500/10 text-blue-500'
-      case 'in_progress':
-        return 'bg-purple-500/10 text-purple-500'
-      case 'under_review':
-        return 'bg-orange-500/10 text-orange-500'
-      case 'completed':
-        return 'bg-green-500/10 text-green-500'
-      case 'paused':
-        return 'bg-yellow-500/10 text-yellow-500'
-      case 'cancelled':
-        return 'bg-red-500/10 text-red-500'
-      case 'cancelled_by_admin':
-        return 'bg-red-500/10 text-red-600'
-      case 'archived':
-        return 'bg-gray-500/10 text-gray-500'
-      case 'draft':
-        return 'bg-yellow-500/10 text-yellow-500'
-      default:
-        return 'bg-gray-500/10 text-gray-500'
-    }
-  }
-
-  const formatPriorityLabel = (priority) => {
-    if (!priority) return 'Medium'
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
-  }
-
-  const getPriorityClasses = (priority) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-500/10 text-red-500'
-      case 'medium':
-        return 'bg-amber-500/10 text-amber-500'
-      case 'low':
-        return 'bg-blue-500/10 text-blue-500'
-      default:
-        return 'bg-amber-500/10 text-amber-500'
     }
   }
 
@@ -466,8 +423,8 @@ const ProjectsList = () => {
                   <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
                   <div className='flex items-center gap-4'>
                     <div className='flex items-center gap-2'>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(project.status)}`}>{formatStatus(project.status)}</span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityClasses(project.priority)}`}>{formatPriorityLabel(project.priority)} Priority</span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
                     </div>
 
                     {project.assignee && (isCreator(project) || isAssignee(project)) && (

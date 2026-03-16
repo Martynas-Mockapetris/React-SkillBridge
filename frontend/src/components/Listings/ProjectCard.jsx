@@ -4,6 +4,7 @@ import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
+import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
 const ProjectCard = ({ project, index }) => {
   const { currentUser } = useAuth()
@@ -29,20 +30,6 @@ const ProjectCard = ({ project, index }) => {
 
   const isFavorited = (projectId) => {
     return favorites.includes(projectId)
-  }
-
-  const formatPriority = (priority) => {
-    if (!priority) return 'Medium'
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
-  }
-
-  const getPriorityBadgeClass = (priority) => {
-    const map = {
-      high: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-      medium: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-      low: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-    }
-    return map[priority] || map.medium
   }
 
   const handleFavoriteClick = async (e) => {
@@ -84,10 +71,11 @@ const ProjectCard = ({ project, index }) => {
         {/* Project title */}
         <h3 className='text-xl font-bold mb-2 theme-text line-clamp-1 pr-8'>{project.title}</h3>
 
-        {/* Category + Priority badges */}
+        {/* Category + Status + Priority badges */}
         <div className='flex items-center gap-2 mb-4 flex-wrap'>
           <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getPriorityBadgeClass(project.priority)}`}>{formatPriority(project.priority)} Priority</span>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>{formatProjectStatusLabel(project.status || 'active')}</span>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
         </div>
 
         {/* Description */}
