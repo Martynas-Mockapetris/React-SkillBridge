@@ -10,6 +10,7 @@ import {
   getAllProjects,
   getAdminAllProjects,
   deleteProjectAsAdmin,
+  updateProjectAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,
@@ -40,6 +41,7 @@ router.get('/all', getAllProjects)
 router.get('/interested', protect, getInterestedProjects)
 router.get('/admin/all', protect, adminOnly, getAdminAllProjects)
 router.delete('/admin/:id', protect, adminOnly, deleteProjectAsAdmin)
+router.put('/admin/:id', protect, adminOnly, updateProjectAsAdmin)
 router.get('/:id', optionalProtect, getProjectById) // Used by both owners and participants
 router.get('/:id/owner', protect, getProjectByIdOwner)
 router.put('/:id', protect, upload.array('attachments', 5), updateProject)

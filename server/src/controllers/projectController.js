@@ -179,6 +179,59 @@ const deleteProjectAsAdmin = async (req, res) => {
   }
 }
 
+// @desc    Update project as admin
+// @route   PUT /api/projects/admin/:id
+// @access  Admin
+const updateProjectAsAdmin = async (req, res) => {
+  try {
+    const { title, description, category, skills, budget, priority, deadline, status } = req.body
+
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Admin should not edit projects that are already locked by moderation lifecycle.
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be edited' })
+    }
+
+    // Only apply provided fields.
+    if (title !== undefined) project.title = title
+    if (description !== undefined) project.description = description
+    if (category !== undefined) project.category = category
+
+    // Accept both CSV string and string[] to keep API flexible for admin UI.
+    if (skills !== undefined) {
+      project.skills = Array.isArray(skills)
+        ? skills
+        : String(skills)
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+    }
+
+    if (budget !== undefined) project.budget = Number(budget)
+    if (priority !== undefined) project.priority = priority
+    if (deadline !== undefined) project.deadline = deadline
+
+    // Prevent admin update endpoint from setting moderation terminal statuses directly.
+    if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
+      project.status = status
+    }
+
+    const updatedProject = await project.save()
+    res.json(updatedProject)
+  } catch (error) {
+    console.error('Error updating project as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects for the logged-in user
 // @route   GET /api/projects
 // @access  Private
@@ -903,6 +956,7 @@ export {
   getAllProjects,
   getAdminAllProjects,
   deleteProjectAsAdmin,
+  updateProjectAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,
