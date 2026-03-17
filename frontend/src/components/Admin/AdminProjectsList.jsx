@@ -85,16 +85,28 @@ const AdminProjectsList = () => {
       const mapped = data.map((project) => ({
         id: project._id,
         name: project.title || 'Untitled project',
+        title: project.title || 'Untitled project',
         description: project.description || 'No description',
         status: project.status || 'inactive',
         createdAt: project.createdAt || '',
+        updatedAt: project.updatedAt || '',
         deadline: project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : '',
         progress: project.status === 'completed' ? 100 : project.status === 'in_progress' ? 65 : project.status === 'under_review' ? 90 : project.status === 'negotiating' ? 35 : project.status === 'assigned' ? 20 : 0,
         priority: project.priority || 'low',
+        category: project.category || 'General',
+        budget: project.budget ?? null,
+        skills: Array.isArray(project.skills) ? project.skills : [],
+        attachments: Array.isArray(project.attachments) ? project.attachments : [],
+        submission: project.submission || null,
+        review: project.review || null,
+        interestedUsers: Array.isArray(project.interestedUsers) ? project.interestedUsers : [],
+        isRated: Boolean(project.isRated),
+        rateNegotiation: project.rateNegotiation || null,
+        user: project.user || null,
+        assignee: project.assignee || null,
         team: [`${project.user?.firstName || ''} ${project.user?.lastName || ''}`.trim() || 'Owner', project.assignee ? `${project.assignee.firstName || ''} ${project.assignee.lastName || ''}`.trim() : null].filter(
           Boolean
-        ),
-        category: project.category || 'General'
+        )
       }))
 
       setProjectsData(mapped)
