@@ -37,6 +37,8 @@ const AdminProjectsList = () => {
     end: ''
   })
   const [sortBy, setSortBy] = useState('createdAt:desc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(30)
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
   const [lockLoadingProjectId, setLockLoadingProjectId] = useState(null)
 
@@ -99,10 +101,6 @@ const AdminProjectsList = () => {
     }
   }
 
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
   const openDeleteModal = (project) => {
     setProjectToDelete(project)
     setIsDeleteModalOpen(true)
@@ -153,6 +151,10 @@ const AdminProjectsList = () => {
       setEditLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchProjects()
+  }, [])
 
   const handleDeleteProject = async () => {
     if (!projectToDelete) return
@@ -245,8 +247,26 @@ const AdminProjectsList = () => {
 
   const sortedProjects = useMemo(() => getSortedProjects(filteredProjects), [filteredProjects, sortBy])
 
-  const visibleCount = filteredProjects.length
   const totalCount = projectsData.length
+  const totalFilteredCount = sortedProjects.length
+
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize))
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedProjects = sortedProjects.slice(startIndex, endIndex)
+
+  const showingFrom = totalFilteredCount === 0 ? 0 : startIndex + 1
+  const showingTo = Math.min(endIndex, totalFilteredCount)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery, sortBy, pageSize])
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
 
   return (
     <div>
@@ -254,8 +274,8 @@ const AdminProjectsList = () => {
         <div className='flex flex-col'>
           <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Projects Overview</h2>
           <div className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-            Showing {visibleCount} {visibleCount === 1 ? 'project' : 'projects'}
-            {visibleCount !== totalCount && ` out of ${totalCount} total`}
+            Showing {showingFrom}-{showingTo} of {totalFilteredCount} {totalFilteredCount === 1 ? 'project' : 'projects'}
+            {totalFilteredCount !== totalCount && ` (${totalCount} total)`}
           </div>
         </div>
         <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
@@ -333,8 +353,21 @@ const AdminProjectsList = () => {
         </div>
       </div>
 
-      {/* Sort Bar */}
-      <div className='flex justify-end mb-4'>
+      {/* Sort + Pagination Controls */}
+      <div className='flex flex-wrap justify-end items-center gap-3 mb-4'>
+        <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300'>
+          <span>Show</span>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className='px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            title='Projects per page'>
+            <option value={30}>30</option>
+            <option value={60}>60</option>
+            <option value={90}>90</option>
+          </select>
+        </div>
+
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
@@ -355,7 +388,7 @@ const AdminProjectsList = () => {
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {/* Project Card */}
-        {sortedProjects.map((project) => {
+        {paginatedProjects.map((project) => {
           const isAdminCancelled = project.status === 'cancelled_by_admin'
           const isProjectLocked = project.status === 'paused'
 
@@ -414,6 +447,42 @@ const AdminProjectsList = () => {
           )
         })}
       </div>
+      {totalFilteredCount > 0 && (
+        <div className='mt-6 flex flex-wrap items-center justify-between gap-3'>
+          <div className='text-sm text-gray-500 dark:text-gray-400'>
+            Page {currentPage} of {totalPages}
+          </div>
+
+          <div className='flex items-center gap-2'>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className='px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700'>
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((page) => Math.abs(page - currentPage) <= 2 || page === 1 || page === totalPages)
+              .map((page, idx, arr) => (
+                <span key={page} className='flex items-center'>
+                  {idx > 0 && arr[idx - 1] !== page - 1 && <span className='px-1 text-gray-400'>...</span>}
+                  <button
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1.5 text-sm rounded border ${currentPage === page ? 'bg-accent text-white border-accent' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                    {page}
+                  </button>
+                </span>
+              ))}
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className='px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700'>
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       <AdminProjectEditModal isOpen={isEditModalOpen} onClose={closeEditModal} onSave={handleEditProject} loading={editLoading} form={editForm} setForm={setEditForm} />
       <AdminProjectCancelModal isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDeleteProject} projectName={projectToDelete?.name} loading={deleteLoading} />
