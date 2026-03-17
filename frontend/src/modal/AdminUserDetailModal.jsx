@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 const fieldClass = 'text-sm text-gray-600 dark:text-gray-300'
 const labelClass = 'text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500'
@@ -11,7 +12,13 @@ const InfoRow = ({ label, value }) => (
 )
 
 const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
+  const navigate = useNavigate()
   if (!isOpen || !user) return null
+
+  const handleViewDetailedProfile = () => {
+    onClose()
+    navigate(`/freelancer/${user._id}`)
+  }
 
   const lockInfo = user.isLocked
     ? [
@@ -76,7 +83,10 @@ const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
             </div>
           </div>
 
-          <div className='px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end'>
+          <div className='px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3'>
+            <button onClick={handleViewDetailedProfile} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90'>
+              View Detailed Profile
+            </button>
             <button onClick={onClose} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
               Close
             </button>
