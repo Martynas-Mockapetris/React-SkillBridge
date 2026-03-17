@@ -1,9 +1,10 @@
-import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock } from 'react-icons/fa'
+import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye } from 'react-icons/fa'
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
+import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
@@ -64,6 +65,10 @@ const AdminProjectsList = () => {
     deadline: '',
     status: 'active'
   })
+
+  // Detail modal state
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [projectForDetails, setProjectForDetails] = useState(null)
 
   const statusOptions = ['All', ...[...new Set(projectsData.map((project) => project.status).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
   const categoryOptions = ['All', ...[...new Set(projectsData.map((project) => project.category).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
@@ -127,6 +132,16 @@ const AdminProjectsList = () => {
   const closeEditModal = () => {
     setEditingProjectId(null)
     setIsEditModalOpen(false)
+  }
+
+  const openDetailModal = (project) => {
+    setProjectForDetails(project)
+    setIsDetailModalOpen(true)
+  }
+
+  const closeDetailModal = () => {
+    setProjectForDetails(null)
+    setIsDetailModalOpen(false)
   }
 
   const handleEditProject = async () => {
@@ -453,7 +468,9 @@ const AdminProjectsList = () => {
               </div>
 
               <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
-                {' '}
+                <button onClick={() => openDetailModal(project)} title='Quick details' className='text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'>
+                  <FaEye className='w-4 h-4' />
+                </button>
                 <button
                   onClick={() => openEditModal(project)}
                   disabled={isAdminCancelled}
@@ -523,6 +540,7 @@ const AdminProjectsList = () => {
         </div>
       )}
 
+      <AdminProjectDetailModal isOpen={isDetailModalOpen} onClose={closeDetailModal} project={projectForDetails} />
       <AdminProjectEditModal isOpen={isEditModalOpen} onClose={closeEditModal} onSave={handleEditProject} loading={editLoading} form={editForm} setForm={setEditForm} />
       <AdminProjectCancelModal isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDeleteProject} projectName={projectToDelete?.name} loading={deleteLoading} />
     </div>
