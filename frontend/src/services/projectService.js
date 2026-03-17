@@ -69,6 +69,50 @@ export const getProjectByIdOwner = async (projectId) => {
   }
 }
 
+// Get all projects for admin dashboard (all statuses)
+export const getAdminAllProjects = async (params = {}) => {
+  try {
+    const response = await authAxios.get('/api/projects/admin/all', { params })
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin projects:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Delete project as admin
+export const deleteProjectAsAdmin = async (projectId) => {
+  try {
+    const response = await authAxios.delete(`/api/projects/admin/${projectId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to delete project as admin:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Update project as admin
+export const updateProjectAsAdmin = async (projectId, projectData) => {
+  try {
+    const response = await authAxios.put(`/api/projects/admin/${projectId}`, projectData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to update project as admin:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Toggle project lock as admin (pause/unpause)
+export const toggleProjectLockAsAdmin = async (projectId) => {
+  try {
+    const response = await authAxios.patch(`/api/projects/admin/${projectId}/lock`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to toggle project lock as admin:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Update an existing project
 export const updateProject = async (projectId, projectData) => {
   try {

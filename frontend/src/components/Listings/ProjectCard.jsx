@@ -4,6 +4,7 @@ import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
+import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
 const ProjectCard = ({ project, index }) => {
   const { currentUser } = useAuth()
@@ -70,8 +71,12 @@ const ProjectCard = ({ project, index }) => {
         {/* Project title */}
         <h3 className='text-xl font-bold mb-2 theme-text line-clamp-1 pr-8'>{project.title}</h3>
 
-        {/* Category badge */}
-        <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent mb-4'>{project.category}</span>
+        {/* Category + Status + Priority badges */}
+        <div className='flex items-center gap-2 mb-4 flex-wrap'>
+          <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>{formatProjectStatusLabel(project.status || 'active')}</span>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+        </div>
 
         {/* Description */}
         <p className='theme-text-secondary text-sm mb-4 line-clamp-2'>{project.description}</p>

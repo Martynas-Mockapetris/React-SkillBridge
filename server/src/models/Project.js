@@ -32,13 +32,18 @@ const projectSchema = mongoose.Schema(
       type: Number,
       required: false
     },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'low'
+    },
     deadline: {
       type: Date,
       required: true
     },
     status: {
       type: String,
-      enum: ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused'],
+      enum: ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner', 'inactive', 'archived', 'paused'],
       default: 'draft'
     },
     attachments: [

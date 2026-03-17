@@ -19,7 +19,7 @@ const RateNegotiationCard = ({ project, currentUser, rateAmount, setRateAmount, 
   const formatOfferType = (type) => (type === 'fixed' ? 'fixed' : '/hr')
 
   // Only show if user is owner or assignee with an active project
-  if (!(isOwner || isAssignee) || !project.assignee || ['completed', 'archived', 'cancelled'].includes(project.status)) {
+  if (!(isOwner || isAssignee) || !project.assignee || ['completed', 'archived', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner'].includes(project.status)) {
     return null
   }
 

@@ -1,5 +1,7 @@
 import Project from '../models/Project.js'
 
+const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
+
 // @desc    Create a new project
 // @route   POST /api/projects
 // @access  Private
@@ -13,7 +15,7 @@ const createProject = async (req, res) => {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
-    const { title, description, category, skills, budget, deadline, status, assigneeId, rateNegotiation } = req.body
+    const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation } = req.body
 
     // Process attachments if any
     const attachments = req.files
@@ -74,6 +76,7 @@ const createProject = async (req, res) => {
       // Only set budget if there's no rate negotiation (i.e., this is a fixed budget project)
       // If rate negotiation is proposed, leave budget empty until agreed
       budget: finalBudget,
+      priority: priority || 'low',
       deadline,
       status: normalizedStatus,
       attachments,
@@ -109,6 +112,10 @@ const publishProject = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' })
     }
 
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be published' })
+    }
+
     project.status = 'active'
     const updated = await project.save()
     res.json(updated)
@@ -133,6 +140,184 @@ const getAllProjects = async (req, res) => {
   }
 }
 
+// @desc    Get all projects for admin (all statuses)
+// @route   GET /api/projects/admin/all
+// @access  Admin
+const getAdminAllProjects = async (req, res) => {
+  try {
+    const { search = '', status = '', category = '', priority = '', startDate = '', endDate = '', page = 1, limit = 30, sort = 'createdAt:desc' } = req.query
+
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 30, 1), 200)
+
+    const query = {}
+
+    if (status) query.status = status
+    if (category) query.category = category
+    if (priority) query.priority = priority
+
+    if (startDate || endDate) {
+      query.deadline = {}
+      if (startDate) query.deadline.$gte = new Date(startDate)
+      if (endDate) query.deadline.$lte = new Date(endDate)
+    }
+
+    if (search) {
+      const regex = new RegExp(search, 'i')
+      query.$or = [{ title: regex }, { description: regex }, { category: regex }]
+    }
+
+    const [sortField, sortDirection] = String(sort).split(':')
+    const direction = sortDirection === 'asc' ? 1 : -1
+
+    const sortMap = {
+      createdAt: { createdAt: direction },
+      deadline: { deadline: direction },
+      progress: { status: direction },
+      priority: { priority: direction }
+    }
+
+    const sortConfig = sortMap[sortField] || { createdAt: -1 }
+
+    const [projects, filteredTotal, overallTotal, statuses, categories, priorities, summaryRaw] = await Promise.all([
+      Project.find(query)
+        .populate('user', 'firstName lastName email profilePicture')
+        .populate('assignee', 'firstName lastName email profilePicture')
+        .sort(sortConfig)
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      Project.countDocuments(query),
+      Project.countDocuments({}),
+      Project.distinct('status'),
+      Project.distinct('category'),
+      Project.distinct('priority'),
+      Project.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            active: { $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] } },
+            in_progress: { $sum: { $cond: [{ $eq: ['$status', 'in_progress'] }, 1, 0] } },
+            under_review: { $sum: { $cond: [{ $eq: ['$status', 'under_review'] }, 1, 0] } },
+            completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+            cancelled: {
+              $sum: {
+                $cond: [{ $in: ['$status', ['cancelled', 'cancelled_by_admin']] }, 1, 0]
+              }
+            }
+          }
+        }
+      ])
+    ])
+
+    const pages = Math.max(Math.ceil(filteredTotal / pageSize), 1)
+    const summaryCounts = summaryRaw[0] || {
+      total: 0,
+      active: 0,
+      in_progress: 0,
+      under_review: 0,
+      completed: 0,
+      cancelled: 0
+    }
+
+    res.json({
+      projects,
+      page: pageNumber,
+      pages,
+      limit: pageSize,
+      total: filteredTotal,
+      overallTotal,
+      summaryCounts,
+      filterOptions: {
+        statuses: statuses.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        categories: categories.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        priorities: priorities.filter(Boolean).sort((a, b) => a.localeCompare(b))
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin projects:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Cancel project as admin (soft-delete)
+// @route   DELETE /api/projects/admin/:id
+// @access  Admin
+const deleteProjectAsAdmin = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Keep project record, only mark as cancelled by admin
+    project.status = 'cancelled_by_admin'
+    await project.save()
+
+    res.json({ message: 'Project cancelled by admin', status: project.status })
+  } catch (error) {
+    console.error('Error cancelling project as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Update project as admin
+// @route   PUT /api/projects/admin/:id
+// @access  Admin
+const updateProjectAsAdmin = async (req, res) => {
+  try {
+    const { title, description, category, skills, budget, priority, deadline, status } = req.body
+
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Admin should not edit projects that are already locked by moderation lifecycle.
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be edited' })
+    }
+
+    // Only apply provided fields.
+    if (title !== undefined) project.title = title
+    if (description !== undefined) project.description = description
+    if (category !== undefined) project.category = category
+
+    // Accept both CSV string and string[] to keep API flexible for admin UI.
+    if (skills !== undefined) {
+      project.skills = Array.isArray(skills)
+        ? skills
+        : String(skills)
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+    }
+
+    if (budget !== undefined) project.budget = Number(budget)
+    if (priority !== undefined) project.priority = priority
+    if (deadline !== undefined) project.deadline = deadline
+
+    // Prevent admin update endpoint from setting moderation terminal statuses directly.
+    if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
+      project.status = status
+    }
+
+    const updatedProject = await project.save()
+    res.json(updatedProject)
+  } catch (error) {
+    console.error('Error updating project as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects for the logged-in user
 // @route   GET /api/projects
 // @access  Private
@@ -140,10 +325,13 @@ const getUserProjects = async (req, res) => {
   try {
     const projects = await Project.find({
       $or: [
-        { user: req.user._id }, // Owner sees all projects including drafts
+        {
+          user: req.user._id,
+          status: { $ne: 'deleted_by_owner' }
+        },
         {
           assignee: req.user._id,
-          status: { $ne: 'draft' } // Assignee only sees non-draft projects
+          status: { $nin: ['draft', 'deleted_by_owner'] }
         }
       ]
     })
@@ -154,6 +342,44 @@ const getUserProjects = async (req, res) => {
     res.json(projects)
   } catch (error) {
     console.error('Error fetching user projects:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Toggle project lock status as admin (pause/unpause)
+// @route   PATCH /api/projects/admin/:id/lock
+// @access  Admin
+const toggleProjectLockAsAdmin = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Moderation-terminal statuses should remain immutable.
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
+    // These statuses are considered final and should not be lock-toggled.
+    if (['completed', 'archived', 'cancelled'].includes(project.status)) {
+      return res.status(400).json({ message: 'Finalized project status cannot be lock-toggled' })
+    }
+
+    // Simple lock model: paused = locked, active = unlocked.
+    project.status = project.status === 'paused' ? 'active' : 'paused'
+    await project.save()
+
+    res.json({
+      message: project.status === 'paused' ? 'Project locked (paused)' : 'Project unlocked (active)',
+      status: project.status
+    })
+  } catch (error) {
+    console.error('Error toggling project lock as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -175,6 +401,10 @@ const getProjectById = async (req, res) => {
     console.log(`[GET PROJECT] Project owner: ${project.user?._id || project.user}`)
     console.log(`[GET PROJECT] Project assignee: ${project.assignee?._id || project.assignee}`)
     console.log(`[GET PROJECT] Current user from req.user: ${req.user?._id}`)
+
+    if (project.status === 'deleted_by_owner') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
 
     // Public can see only active
     if (project.status === 'active') {
@@ -221,6 +451,10 @@ const getProjectByIdOwner = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
+    if (project.status === 'deleted_by_owner') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
     // ✅ Only owner can access draft/private version
     const projectUserId = project.user._id ? project.user._id.toString() : project.user.toString()
     if (projectUserId !== req.user._id.toString()) {
@@ -242,7 +476,7 @@ const getProjectByIdOwner = async (req, res) => {
 // @access  Private
 const updateProject = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, deadline } = req.body
+    const { title, description, category, skills, budget, priority, deadline } = req.body
 
     let project = await Project.findById(req.params.id)
 
@@ -255,11 +489,16 @@ const updateProject = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' })
     }
 
+    // Prevent any edits if project was cancelled by admin
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and can no longer be edited' })
+    }
+
     const isDraft = project.status === 'draft'
 
     // If not draft, only allow extending deadline
     if (!isDraft) {
-      const hasOtherUpdates = title || description || category || skills || budget || (req.files && req.files.length > 0)
+      const hasOtherUpdates = title || description || category || skills || budget || priority || (req.files && req.files.length > 0)
 
       if (hasOtherUpdates) {
         return res.status(400).json({ message: 'Only deadline extension is allowed after publish' })
@@ -301,6 +540,7 @@ const updateProject = async (req, res) => {
     project.category = category || project.category
     project.skills = Array.isArray(skills) ? skills : skills ? skills.split(',') : project.skills
     project.budget = budget || project.budget
+    project.priority = priority || project.priority
     project.deadline = deadline || project.deadline
     project.attachments = [...project.attachments, ...newAttachments]
 
@@ -331,8 +571,14 @@ const deleteProject = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' })
     }
 
-    await project.deleteOne()
-    res.json({ message: 'Project removed' })
+    if (project.status === 'deleted_by_owner') {
+      return res.status(400).json({ message: 'Project already deleted from your profile' })
+    }
+
+    project.status = 'deleted_by_owner'
+    await project.save()
+
+    res.json({ message: 'Project removed from your profile', status: project.status })
   } catch (error) {
     console.error('Error deleting project:', error)
     if (error.kind === 'ObjectId') {
@@ -359,6 +605,10 @@ const assignUserToProject = async (req, res) => {
 
     if (project.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized to assign this project' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
     // Prevent owner from assigning project to themselves
@@ -404,6 +654,10 @@ const reassignProject = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' })
     }
 
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
     // Verify new assignee is in interestedUsers
     const isInterested = project.interestedUsers.some((u) => u.userId.toString() === userId)
     if (!isInterested) {
@@ -439,6 +693,10 @@ const removeAssignee = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' })
     }
 
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
     project.assignee = null
 
     const updatedProject = await project.save()
@@ -464,6 +722,11 @@ const proposeRate = async (req, res) => {
     const project = await Project.findById(projectId)
 
     if (!project) return res.status(404).json({ message: 'Project not found' })
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
     if (project.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to propose rate' })
     }
@@ -510,6 +773,11 @@ const counterRate = async (req, res) => {
     const project = await Project.findById(projectId)
 
     if (!project) return res.status(404).json({ message: 'Project not found' })
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
     if (!project.assignee || project.assignee.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to counter rate' })
     }
@@ -551,6 +819,10 @@ const acceptRate = async (req, res) => {
     const project = await Project.findById(projectId)
 
     if (!project) return res.status(404).json({ message: 'Project not found' })
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
 
     const isOwner = project.user.toString() === req.user._id.toString()
     const isAssignee = project.assignee?.toString() === req.user._id.toString()
@@ -602,7 +874,8 @@ const getInterestedProjects = async (req, res) => {
   try {
     // Find all projects where current user is in interestedUsers array
     const projects = await Project.find({
-      'interestedUsers.userId': req.user._id
+      'interestedUsers.userId': req.user._id,
+      status: { $ne: 'deleted_by_owner' }
     })
       .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
@@ -626,6 +899,10 @@ const removeFromInterested = async (req, res) => {
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
     // Remove current user from interestedUsers array
@@ -653,6 +930,10 @@ const submitProject = async (req, res) => {
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
     // Only assignee can submit
@@ -717,6 +998,10 @@ const reviewProject = async (req, res) => {
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
     // Only owner can review
@@ -793,6 +1078,10 @@ export {
   updateProject,
   deleteProject,
   getAllProjects,
+  getAdminAllProjects,
+  deleteProjectAsAdmin,
+  updateProjectAsAdmin,
+  toggleProjectLockAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,

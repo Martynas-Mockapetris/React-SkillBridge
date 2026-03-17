@@ -18,7 +18,7 @@ const ProjectActions = ({
 }) => {
   const navigate = useNavigate()
 
-  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled'].includes(status)
+  const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
   const handleArchiveProject = async () => {
     try {
@@ -33,7 +33,7 @@ const ProjectActions = ({
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className='theme-card p-6 rounded-lg space-y-3'>
       {/* Edit Project Button - for owner only */}
-      {isOwner && !['completed', 'archived'].includes(project.status) && (
+      {isOwner && !['completed', 'archived', 'deleted_by_owner'].includes(project.status) && (
         <button
           onClick={() => {
             if (isLockedStatus(project.status)) return
@@ -48,7 +48,7 @@ const ProjectActions = ({
       )}
 
       {/* Contact Creator / Login Button */}
-      {!['completed', 'archived'].includes(project.status) && (
+      {!['completed', 'archived', 'deleted_by_owner'].includes(project.status) && (
         <>
           {currentUser && currentUser._id !== project.user?._id ? (
             <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>

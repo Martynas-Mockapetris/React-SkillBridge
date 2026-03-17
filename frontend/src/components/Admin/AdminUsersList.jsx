@@ -1,10 +1,11 @@
-import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFileExport } from 'react-icons/fa'
+import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 import { getAdminUsers, toggleUserLock, updateAdminUser, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
 import AdminLockUserModal from '../../modal/AdminLockUserModal'
 import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
 import AdminMailUserModal from '../../modal/AdminMailUserModal'
+import PaginationControls from '../shared/PaginationControls'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -17,7 +18,7 @@ const AdminUsersList = () => {
   const [selectedStatus, setSelectedStatus] = useState('')
   const [sortConfig, setSortConfig] = useState('createdAt:desc')
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+  const [pageSize, setPageSize] = useState(10)
   const [totalPages, setTotalPages] = useState(1)
   const [selectedUsers, setSelectedUsers] = useState([])
   const [editingUser, setEditingUser] = useState(null)
@@ -29,7 +30,7 @@ const AdminUsersList = () => {
   const [isMailModalOpen, setIsMailModalOpen] = useState(false)
   const [mailRecipient, setMailRecipient] = useState(null)
 
-  const fetchUsers = async (page = 1) => {
+  const fetchUsers = async () => {
     try {
       setLoading(true)
       setError(null)
@@ -38,15 +39,14 @@ const AdminUsersList = () => {
         search: searchQuery,
         role: selectedRole,
         status: selectedStatus,
-        page,
-        limit: itemsPerPage,
+        page: currentPage,
+        limit: pageSize,
         sort: sortConfig
       })
 
       setUsers(data.users)
       setTotal(data.total)
-      setTotalPages(data.pages)
-      setCurrentPage(page)
+      setTotalPages(Math.max(1, data.pages || 1))
     } catch (err) {
       console.error('Error fetching users:', err)
       setError('Failed to load users')
@@ -74,8 +74,18 @@ const AdminUsersList = () => {
   }
 
   useEffect(() => {
-    fetchUsers(1)
-  }, [searchQuery, selectedRole, selectedStatus, sortConfig])
+    setCurrentPage(1)
+  }, [searchQuery, selectedRole, selectedStatus, sortConfig, pageSize])
+
+  useEffect(() => {
+    if (totalPages >= 1 && currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [currentPage, searchQuery, selectedRole, selectedStatus, sortConfig, pageSize])
 
   const openLockModal = (user) => {
     setLockingUser(user)
@@ -111,7 +121,7 @@ const AdminUsersList = () => {
     if (!lockingUser) return
     try {
       await toggleUserLock(lockingUser._id, { reason, durationDays })
-      await fetchUsers(currentPage)
+      await fetchUsers()
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to lock user')
     } finally {
@@ -128,7 +138,7 @@ const AdminUsersList = () => {
     if (!confirmed) return
     try {
       await toggleUserLock(user._id)
-      fetchUsers(currentPage)
+      fetchUsers()
     } catch (error) {
       alert(`Failed to unlock user: ${error.response?.data?.message || error.message}`)
     }
@@ -142,48 +152,18 @@ const AdminUsersList = () => {
     try {
       await deleteAdminUser(user._id)
       // Refresh the list
-      fetchUsers(currentPage)
+      fetchUsers()
     } catch (error) {
       alert(`Failed to delete user: ${error.response?.data?.message || error.message}`)
     }
   }
 
   const roleTypes = ['client', 'freelancer', 'both', 'admin']
-  const statusTypes = ['Active', 'Inactive', 'Locked']
-
-  const renderPagination = () => {
-    const handleNextPage = () => {
-      fetchUsers(currentPage + 1)
-    }
-
-    const handlePrevPage = () => {
-      fetchUsers(currentPage - 1)
-    }
-
-    return (
-      <div className='flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700'>
-        <div className='flex items-center'>
-          <span className='text-sm text-gray-700 dark:text-gray-300'>
-            Showing page {currentPage} of {totalPages}
-          </span>
-        </div>
-        <div className='flex items-center space-x-2'>
-          <button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            className='px-3 py-1 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50'>
-            <FaChevronLeft className='w-4 h-4' />
-          </button>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className='px-3 py-1 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50'>
-            <FaChevronRight className='w-4 h-4' />
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const statusTypes = [
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+    { value: 'locked', label: 'Locked' }
+  ]
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -234,7 +214,7 @@ const AdminUsersList = () => {
   const handleSaveUser = async (payload) => {
     try {
       await updateAdminUser(payload._id, payload)
-      await fetchUsers(currentPage)
+      await fetchUsers()
       closeEditModal()
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to update user')
@@ -320,11 +300,25 @@ const AdminUsersList = () => {
             className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
             <option value=''>All Status</option>
             {statusTypes.map((status) => (
-              <option key={status} value={status}>
-                {status}
+              <option key={status.value} value={status.value}>
+                {status.label}
               </option>
             ))}
           </select>
+
+          <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300'>
+            <span>Show</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className='px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+              title='Users per page'>
+              <option value={10}>10</option>
+              <option value={30}>30</option>
+              <option value={60}>60</option>
+              <option value={90}>90</option>
+            </select>
+          </div>
 
           <button
             onClick={() => {
@@ -423,13 +417,13 @@ const AdminUsersList = () => {
               )}
             </tbody>
           </table>
-          {renderPagination()}
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPrev={() => setCurrentPage((prev) => Math.max(1, prev - 1))} onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))} />
         </div>
       </div>
       <AdminUserEditModal isOpen={isEditModalOpen} onClose={closeEditModal} user={editingUser} onSave={handleSaveUser} />
       <AdminLockUserModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLock} user={lockingUser} />
       <AdminUserDetailsModal isOpen={isDetailsModalOpen} onClose={closeDetailsModal} user={selectedUser} />
-      <AdminMailUserModal isOpen={isMailModalOpen} onClose={closeMailModal} recipient={mailRecipient} onSent={() => fetchUsers(currentPage)} />
+      <AdminMailUserModal isOpen={isMailModalOpen} onClose={closeMailModal} recipient={mailRecipient} onSent={fetchUsers} />
     </div>
   )
 }

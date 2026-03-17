@@ -8,6 +8,10 @@ import {
   updateProject,
   deleteProject,
   getAllProjects,
+  getAdminAllProjects,
+  deleteProjectAsAdmin,
+  updateProjectAsAdmin,
+  toggleProjectLockAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,
@@ -19,7 +23,7 @@ import {
   submitProject,
   reviewProject
 } from '../controllers/projectController.js'
-import { protect, optionalProtect } from '../middleware/authMiddleware.js'
+import { protect, optionalProtect, adminOnly } from '../middleware/authMiddleware.js'
 import upload from '../middleware/uploadMiddleware.js'
 
 const router = express.Router()
@@ -36,6 +40,10 @@ router.put('/:id/publish', protect, publishProject)
 router.get('/', protect, getUserProjects)
 router.get('/all', getAllProjects)
 router.get('/interested', protect, getInterestedProjects)
+router.get('/admin/all', protect, adminOnly, getAdminAllProjects)
+router.delete('/admin/:id', protect, adminOnly, deleteProjectAsAdmin)
+router.put('/admin/:id', protect, adminOnly, updateProjectAsAdmin)
+router.patch('/admin/:id/lock', protect, adminOnly, toggleProjectLockAsAdmin)
 router.get('/:id', optionalProtect, getProjectById) // Used by both owners and participants
 router.get('/:id/owner', protect, getProjectByIdOwner)
 router.put('/:id', protect, upload.array('attachments', 5), updateProject)
