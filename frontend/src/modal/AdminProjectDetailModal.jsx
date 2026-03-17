@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../utils/projectStatusUI'
 
 const formatDateTime = (value) => {
@@ -65,10 +66,26 @@ const AdminProjectDetailModal = ({ isOpen, onClose, project }) => {
             <div className='text-gray-900 dark:text-white font-medium'>{project.isRated ? 'Yes' : 'No'}</div>
           </div>
           <div className='rounded-lg bg-gray-50 dark:bg-gray-700/50 p-3 md:col-span-2'>
-            <div className='text-gray-500 dark:text-gray-400'>Owner / Assignee</div>
-            <div className='text-gray-900 dark:text-white font-medium'>
-              Owner: {project.user ? `${project.user.firstName || ''} ${project.user.lastName || ''}`.trim() || project.user._id : 'N/A'} | Assignee:{' '}
-              {project.assignee ? `${project.assignee.firstName || ''} ${project.assignee.lastName || ''}`.trim() || project.assignee._id : 'None'}
+            <div className='text-gray-500 dark:text-gray-400 mb-1'>Owner / Assignee</div>
+            <div className='text-gray-900 dark:text-white font-medium flex flex-wrap items-center gap-2'>
+              <span>Owner:</span>
+              {project.user?._id ? (
+                <Link to={`/freelancer/${project.user._id}`} className='text-accent hover:underline'>
+                  {`${project.user.firstName || ''} ${project.user.lastName || ''}`.trim() || project.user._id}
+                </Link>
+              ) : (
+                <span>N/A</span>
+              )}
+
+              <span className='text-gray-400 mx-1'>|</span>
+              <span>Assignee:</span>
+              {project.assignee?._id ? (
+                <Link to={`/freelancer/${project.assignee._id}`} className='text-accent hover:underline'>
+                  {`${project.assignee.firstName || ''} ${project.assignee.lastName || ''}`.trim() || project.assignee._id}
+                </Link>
+              ) : (
+                <span>None</span>
+              )}
             </div>
           </div>
         </div>
