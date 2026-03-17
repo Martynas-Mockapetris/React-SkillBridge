@@ -152,10 +152,6 @@ const AdminProjectsList = () => {
     }
   }
 
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
   const handleDeleteProject = async () => {
     if (!projectToDelete) return
 
@@ -258,6 +254,37 @@ const AdminProjectsList = () => {
   const showingFrom = totalFilteredCount === 0 ? 0 : startIndex + 1
   const showingTo = Math.min(endIndex, totalFilteredCount)
 
+  const summaryCounts = useMemo(() => {
+    return projectsData.reduce(
+      (acc, project) => {
+        acc.total += 1
+        if (project.status === 'active') acc.active += 1
+        if (project.status === 'in_progress') acc.in_progress += 1
+        if (project.status === 'under_review') acc.under_review += 1
+        if (project.status === 'completed') acc.completed += 1
+        if (project.status === 'cancelled' || project.status === 'cancelled_by_admin') acc.cancelled += 1
+        return acc
+      },
+      {
+        total: 0,
+        active: 0,
+        in_progress: 0,
+        under_review: 0,
+        completed: 0,
+        cancelled: 0
+      }
+    )
+  }, [projectsData])
+
+  const summaryChips = [
+    { key: 'total', label: 'Total', className: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200' },
+    { key: 'active', label: 'Active', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
+    { key: 'in_progress', label: 'In Progress', className: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300' },
+    { key: 'under_review', label: 'Under Review', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
+    { key: 'completed', label: 'Completed', className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
+    { key: 'cancelled', label: 'Cancelled', className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' }
+  ]
+
   useEffect(() => {
     setCurrentPage(1)
   }, [selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery, sortBy, pageSize])
@@ -268,11 +295,23 @@ const AdminProjectsList = () => {
     }
   }, [currentPage, totalPages])
 
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
   return (
     <div>
-      <div className='flex justify-between items-center mb-6'>
+      <div className='flex justify-between items-center mb-4'>
         <div className='flex flex-col'>
           <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>Projects Overview</h2>
+          <div className='mb-2 mt-4 flex flex-wrap gap-2'>
+            {summaryChips.map((chip) => (
+              <span key={chip.key} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${chip.className}`}>
+                {chip.label}
+                <span className='opacity-80'>{summaryCounts[chip.key]}</span>
+              </span>
+            ))}
+          </div>
           <div className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
             Showing {showingFrom}-{showingTo} of {totalFilteredCount} {totalFilteredCount === 1 ? 'project' : 'projects'}
             {totalFilteredCount !== totalCount && ` (${totalCount} total)`}
