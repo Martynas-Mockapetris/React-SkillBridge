@@ -70,9 +70,9 @@ export const getProjectByIdOwner = async (projectId) => {
 }
 
 // Get all projects for admin dashboard (all statuses)
-export const getAdminAllProjects = async () => {
+export const getAdminAllProjects = async (params = {}) => {
   try {
-    const response = await authAxios.get('/api/projects/admin/all')
+    const response = await authAxios.get('/api/projects/admin/all', { params })
     return response.data
   } catch (error) {
     console.error('Failed to fetch admin projects:', error.response?.data || error.message)

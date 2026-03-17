@@ -145,9 +145,95 @@ const getAllProjects = async (req, res) => {
 // @access  Admin
 const getAdminAllProjects = async (req, res) => {
   try {
-    const projects = await Project.find({}).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
+    const { search = '', status = '', category = '', priority = '', startDate = '', endDate = '', page = 1, limit = 30, sort = 'createdAt:desc' } = req.query
 
-    res.json(projects)
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 30, 1), 200)
+
+    const query = {}
+
+    if (status) query.status = status
+    if (category) query.category = category
+    if (priority) query.priority = priority
+
+    if (startDate || endDate) {
+      query.deadline = {}
+      if (startDate) query.deadline.$gte = new Date(startDate)
+      if (endDate) query.deadline.$lte = new Date(endDate)
+    }
+
+    if (search) {
+      const regex = new RegExp(search, 'i')
+      query.$or = [{ title: regex }, { description: regex }, { category: regex }]
+    }
+
+    const [sortField, sortDirection] = String(sort).split(':')
+    const direction = sortDirection === 'asc' ? 1 : -1
+
+    const sortMap = {
+      createdAt: { createdAt: direction },
+      deadline: { deadline: direction },
+      progress: { status: direction },
+      priority: { priority: direction }
+    }
+
+    const sortConfig = sortMap[sortField] || { createdAt: -1 }
+
+    const [projects, filteredTotal, overallTotal, statuses, categories, priorities, summaryRaw] = await Promise.all([
+      Project.find(query)
+        .populate('user', 'firstName lastName email profilePicture')
+        .populate('assignee', 'firstName lastName email profilePicture')
+        .sort(sortConfig)
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      Project.countDocuments(query),
+      Project.countDocuments({}),
+      Project.distinct('status'),
+      Project.distinct('category'),
+      Project.distinct('priority'),
+      Project.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            active: { $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] } },
+            in_progress: { $sum: { $cond: [{ $eq: ['$status', 'in_progress'] }, 1, 0] } },
+            under_review: { $sum: { $cond: [{ $eq: ['$status', 'under_review'] }, 1, 0] } },
+            completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+            cancelled: {
+              $sum: {
+                $cond: [{ $in: ['$status', ['cancelled', 'cancelled_by_admin']] }, 1, 0]
+              }
+            }
+          }
+        }
+      ])
+    ])
+
+    const pages = Math.max(Math.ceil(filteredTotal / pageSize), 1)
+    const summaryCounts = summaryRaw[0] || {
+      total: 0,
+      active: 0,
+      in_progress: 0,
+      under_review: 0,
+      completed: 0,
+      cancelled: 0
+    }
+
+    res.json({
+      projects,
+      page: pageNumber,
+      pages,
+      limit: pageSize,
+      total: filteredTotal,
+      overallTotal,
+      summaryCounts,
+      filterOptions: {
+        statuses: statuses.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        categories: categories.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        priorities: priorities.filter(Boolean).sort((a, b) => a.localeCompare(b))
+      }
+    })
   } catch (error) {
     console.error('Error fetching admin projects:', error)
     res.status(500).json({ message: 'Server error' })

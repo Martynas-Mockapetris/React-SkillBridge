@@ -1,10 +1,11 @@
 import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye } from 'react-icons/fa'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
+import PaginationControls from '../shared/PaginationControls'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
@@ -45,6 +46,22 @@ const AdminProjectsList = () => {
 
   // Data
   const [projectsData, setProjectsData] = useState([])
+  const [overallTotalCount, setOverallTotalCount] = useState(0)
+  const [totalFilteredCount, setTotalFilteredCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [summaryCounts, setSummaryCounts] = useState({
+    total: 0,
+    active: 0,
+    in_progress: 0,
+    under_review: 0,
+    completed: 0,
+    cancelled: 0
+  })
+  const [filterOptions, setFilterOptions] = useState({
+    statuses: [],
+    categories: [],
+    priorities: []
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -70,16 +87,28 @@ const AdminProjectsList = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [projectForDetails, setProjectForDetails] = useState(null)
 
-  const statusOptions = ['All', ...[...new Set(projectsData.map((project) => project.status).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
-  const categoryOptions = ['All', ...[...new Set(projectsData.map((project) => project.category).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
-  const priorityOptions = ['All', ...[...new Set(projectsData.map((project) => project.priority).filter(Boolean))].sort((a, b) => a.localeCompare(b))]
+  const statusOptions = ['All', ...filterOptions.statuses]
+  const categoryOptions = ['All', ...filterOptions.categories]
+  const priorityOptions = ['All', ...filterOptions.priorities]
 
   const fetchProjects = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const data = await getAdminAllProjects()
+      const response = await getAdminAllProjects({
+        search: searchQuery,
+        status: selectedStatus === 'All' ? '' : selectedStatus,
+        category: selectedCategory === 'All' ? '' : selectedCategory,
+        priority: selectedPriority === 'All' ? '' : selectedPriority,
+        startDate: dateRange.start,
+        endDate: dateRange.end,
+        page: currentPage,
+        limit: pageSize,
+        sort: sortBy
+      })
+
+      const data = response.projects || []
 
       // Map backend project shape to current card UI shape
       const mapped = data.map((project) => ({
@@ -110,6 +139,11 @@ const AdminProjectsList = () => {
       }))
 
       setProjectsData(mapped)
+      setOverallTotalCount(response.overallTotal || 0)
+      setTotalFilteredCount(response.total || 0)
+      setTotalPages(response.pages || 1)
+      setSummaryCounts(response.summaryCounts || { total: 0, active: 0, in_progress: 0, under_review: 0, completed: 0, cancelled: 0 })
+      setFilterOptions(response.filterOptions || { statuses: [], categories: [], priorities: [] })
     } catch (err) {
       console.error('Error fetching admin projects:', err)
       setError('Failed to load projects')
@@ -208,100 +242,18 @@ const AdminProjectsList = () => {
     }
   }
 
-  // Function to get filtered projects based on selected status
-  const getFilteredProjects = () => {
-    return projectsData.filter((project) => {
-      const matchesStatus = selectedStatus === 'All' || project.status === selectedStatus
-      const matchesCategory = selectedCategory === 'All' || project.category === selectedCategory
-      const matchesPriority = selectedPriority === 'All' || project.priority === selectedPriority
-      const matchesDateRange = (!dateRange.start || project.deadline >= dateRange.start) && (!dateRange.end || project.deadline <= dateRange.end)
-      const matchesSearch =
-        project.name.toLowerCase().includes(searchQuery.toLowerCase()) || project.description.toLowerCase().includes(searchQuery.toLowerCase()) || project.category.toLowerCase().includes(searchQuery.toLowerCase())
-
-      return matchesStatus && matchesCategory && matchesPriority && matchesDateRange && matchesSearch
-    })
-  }
-
   const clearFilters = () => {
     setSelectedStatus('All')
     setSelectedCategory('All')
     setPriority('All')
     setDateRange({ start: '', end: '' })
     setSearchQuery('')
+    setSortBy('createdAt:desc')
+    setCurrentPage(1)
   }
 
-  // Sorting
-  const getSortedProjects = (projects) => {
-    const [field, direction] = sortBy.split(':')
-    const order = direction === 'desc' ? -1 : 1
-
-    return [...projects].sort((a, b) => {
-      switch (field) {
-        case 'deadline': {
-          const aDate = a.deadline ? new Date(a.deadline).getTime() : 0
-          const bDate = b.deadline ? new Date(b.deadline).getTime() : 0
-          return (aDate - bDate) * order
-        }
-
-        case 'createdAt': {
-          const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0
-          const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0
-          return (aDate - bDate) * order
-        }
-
-        case 'progress':
-          return (a.progress - b.progress) * order
-
-        case 'priority': {
-          const priorityOrder = { high: 3, medium: 2, low: 1 }
-          const aPriority = priorityOrder[a.priority] || 0
-          const bPriority = priorityOrder[b.priority] || 0
-          return (aPriority - bPriority) * order
-        }
-
-        default:
-          return 0
-      }
-    })
-  }
-
-  // Memoized derived data to avoid recalculating on every render usage.
-  const filteredProjects = useMemo(() => getFilteredProjects(), [projectsData, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery])
-
-  const sortedProjects = useMemo(() => getSortedProjects(filteredProjects), [filteredProjects, sortBy])
-
-  const totalCount = projectsData.length
-  const totalFilteredCount = sortedProjects.length
-
-  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize))
-  const startIndex = (currentPage - 1) * pageSize
-  const endIndex = startIndex + pageSize
-  const paginatedProjects = sortedProjects.slice(startIndex, endIndex)
-
-  const showingFrom = totalFilteredCount === 0 ? 0 : startIndex + 1
-  const showingTo = Math.min(endIndex, totalFilteredCount)
-
-  const summaryCounts = useMemo(() => {
-    return projectsData.reduce(
-      (acc, project) => {
-        acc.total += 1
-        if (project.status === 'active') acc.active += 1
-        if (project.status === 'in_progress') acc.in_progress += 1
-        if (project.status === 'under_review') acc.under_review += 1
-        if (project.status === 'completed') acc.completed += 1
-        if (project.status === 'cancelled' || project.status === 'cancelled_by_admin') acc.cancelled += 1
-        return acc
-      },
-      {
-        total: 0,
-        active: 0,
-        in_progress: 0,
-        under_review: 0,
-        completed: 0,
-        cancelled: 0
-      }
-    )
-  }, [projectsData])
+  const showingFrom = totalFilteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1
+  const showingTo = Math.min(currentPage * pageSize, totalFilteredCount)
 
   const summaryChips = [
     { key: 'total', label: 'Total', className: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200' },
@@ -324,7 +276,7 @@ const AdminProjectsList = () => {
 
   useEffect(() => {
     fetchProjects()
-  }, [])
+  }, [currentPage, pageSize, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery, sortBy])
 
   return (
     <div>
@@ -341,7 +293,7 @@ const AdminProjectsList = () => {
           </div>
           <div className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
             Showing {showingFrom}-{showingTo} of {totalFilteredCount} {totalFilteredCount === 1 ? 'project' : 'projects'}
-            {totalFilteredCount !== totalCount && ` (${totalCount} total)`}
+            {totalFilteredCount !== overallTotalCount && ` (${overallTotalCount} total)`}
           </div>
         </div>
         <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
@@ -454,7 +406,7 @@ const AdminProjectsList = () => {
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {/* Project Card */}
-        {paginatedProjects.map((project) => {
+        {projectsData.map((project) => {
           const isAdminCancelled = project.status === 'cancelled_by_admin'
           const isProjectLocked = project.status === 'paused'
 
@@ -515,43 +467,10 @@ const AdminProjectsList = () => {
           )
         })}
       </div>
+
       {totalFilteredCount > 0 && (
-        <div className='mt-6 flex flex-wrap items-center justify-between gap-3'>
-          <div className='text-sm text-gray-500 dark:text-gray-400'>
-            Page {currentPage} of {totalPages}
-          </div>
-
-          <div className='flex items-center gap-2'>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className='px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700'>
-              Previous
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((page) => Math.abs(page - currentPage) <= 2 || page === 1 || page === totalPages)
-              .map((page, idx, arr) => (
-                <span key={page} className='flex items-center'>
-                  {idx > 0 && arr[idx - 1] !== page - 1 && <span className='px-1 text-gray-400'>...</span>}
-                  <button
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1.5 text-sm rounded border ${currentPage === page ? 'bg-accent text-white border-accent' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
-                    {page}
-                  </button>
-                </span>
-              ))}
-
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className='px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700'>
-              Next
-            </button>
-          </div>
-        </div>
+        <PaginationControls currentPage={currentPage} totalPages={totalPages} onPrev={() => setCurrentPage((prev) => Math.max(1, prev - 1))} onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))} />
       )}
-
       <AdminProjectDetailModal isOpen={isDetailModalOpen} onClose={closeDetailModal} project={projectForDetails} />
       <AdminProjectEditModal isOpen={isEditModalOpen} onClose={closeEditModal} onSave={handleEditProject} loading={editLoading} form={editForm} setForm={setEditForm} />
       <AdminProjectCancelModal isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDeleteProject} projectName={projectToDelete?.name} loading={deleteLoading} />
