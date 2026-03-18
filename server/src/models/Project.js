@@ -164,6 +164,24 @@ const projectSchema = mongoose.Schema(
   }
 )
 
+projectSchema.methods.ensureUnlockedIfExpired = async function () {
+  if (this.isLocked && this.lockExpiresAt && this.lockExpiresAt < new Date()) {
+    this.isLocked = false
+    this.lockReason = ''
+    this.lockDurationDays = null
+    this.lockedAt = null
+    this.lockExpiresAt = null
+
+    if (this.status === 'paused') {
+      this.status = 'active'
+    }
+
+    await this.save()
+  }
+
+  return this
+}
+
 const Project = mongoose.model('Project', projectSchema)
 
 export default Project

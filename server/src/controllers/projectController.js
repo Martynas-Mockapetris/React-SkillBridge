@@ -210,6 +210,15 @@ const getAdminAllProjects = async (req, res) => {
       ])
     ])
 
+    await Promise.all(projects.map((project) => project.ensureUnlockedIfExpired()))
+
+    const refreshedProjects = await Project.find(query)
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+      .sort(sortConfig)
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+
     const pages = Math.max(Math.ceil(filteredTotal / pageSize), 1)
     const summaryCounts = summaryRaw[0] || {
       total: 0,
@@ -221,7 +230,7 @@ const getAdminAllProjects = async (req, res) => {
     }
 
     res.json({
-      projects,
+      projects: refreshedProjects,
       page: pageNumber,
       pages,
       limit: pageSize,
@@ -278,6 +287,8 @@ const updateProjectAsAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
+    await project.ensureUnlockedIfExpired()
+
     // Admin should not edit projects that are already locked by moderation lifecycle.
     if (isImmutableProjectStatus(project.status)) {
       return res.status(403).json({ message: 'Project is locked and cannot be edited' })
@@ -333,7 +344,7 @@ const updateProjectAsAdmin = async (req, res) => {
 // @access  Private
 const getUserProjects = async (req, res) => {
   try {
-    const projects = await Project.find({
+    const query = {
       $or: [
         {
           user: req.user._id,
@@ -344,12 +355,23 @@ const getUserProjects = async (req, res) => {
           status: { $nin: ['draft', 'deleted_by_owner'] }
         }
       ]
-    })
+    }
+
+    const projects = await Project.find(query)
       .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
       .populate('assignee', 'firstName lastName email profilePicture')
       .sort({ createdAt: -1 })
-    res.json(projects)
+
+    await Promise.all(projects.map((project) => project.ensureUnlockedIfExpired()))
+
+    const refreshedProjects = await Project.find(query)
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+      .sort({ createdAt: -1 })
+
+    res.json(refreshedProjects)
   } catch (error) {
     console.error('Error fetching user projects:', error)
     res.status(500).json({ message: 'Server error' })
@@ -493,6 +515,8 @@ const getProjectById = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
+    await project.ensureUnlockedIfExpired()
+
     console.log(`[GET PROJECT] Found project ${req.params.id}`)
     console.log(`[GET PROJECT] Project status: ${project.status}`)
     console.log(`[GET PROJECT] Project owner: ${project.user?._id || project.user}`)
@@ -547,6 +571,8 @@ const getProjectByIdOwner = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
     }
+
+    await project.ensureUnlockedIfExpired()
 
     if (project.status === 'deleted_by_owner') {
       return res.status(404).json({ message: 'Project not found' })
