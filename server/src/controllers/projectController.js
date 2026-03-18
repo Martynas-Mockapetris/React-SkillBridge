@@ -356,11 +356,13 @@ const getUserProjects = async (req, res) => {
   }
 }
 
-// @desc    Toggle project lock status as admin (pause/unpause)
+// @desc    Toggle project lock status as admin (pause/unpause) with reason + duration
 // @route   PATCH /api/projects/admin/:id/lock
 // @access  Admin
 const toggleProjectLockAsAdmin = async (req, res) => {
   try {
+    const { reason = '', durationDays = 14 } = req.body || {}
+
     const project = await Project.findById(req.params.id)
 
     if (!project) {
@@ -377,13 +379,57 @@ const toggleProjectLockAsAdmin = async (req, res) => {
       return res.status(400).json({ message: 'Finalized project status cannot be lock-toggled' })
     }
 
-    // Simple lock model: paused = locked, active = unlocked.
-    project.status = project.status === 'paused' ? 'active' : 'paused'
+    // Unlock flow
+    if (project.isLocked) {
+      project.isLocked = false
+      project.lockReason = ''
+      project.lockDurationDays = null
+      project.lockedAt = null
+      project.lockExpiresAt = null
+
+      // Keep existing status behavior parity: unlock to active
+      if (project.status === 'paused') {
+        project.status = 'active'
+      }
+
+      await project.save()
+
+      return res.json({
+        message: 'Project unlocked successfully',
+        isLocked: false,
+        status: project.status
+      })
+    }
+
+    // Lock flow
+    if (!reason.trim()) {
+      return res.status(400).json({ message: 'Lock reason is required' })
+    }
+
+    const days = Number(durationDays) || 0
+    if (days < 0) {
+      return res.status(400).json({ message: 'Lock duration must be 0 or greater' })
+    }
+
+    const now = new Date()
+    const expiresAt = days > 0 ? new Date(now.getTime() + days * 24 * 60 * 60 * 1000) : null
+
+    project.isLocked = true
+    project.lockReason = reason.trim()
+    project.lockDurationDays = days > 0 ? days : null
+    project.lockedAt = now
+    project.lockExpiresAt = expiresAt
+    project.status = 'paused'
+
     await project.save()
 
     res.json({
-      message: project.status === 'paused' ? 'Project locked (paused)' : 'Project unlocked (active)',
-      status: project.status
+      message: 'Project locked successfully',
+      isLocked: true,
+      status: project.status,
+      lockReason: project.lockReason,
+      lockDurationDays: project.lockDurationDays,
+      lockExpiresAt: project.lockExpiresAt
     })
   } catch (error) {
     console.error('Error toggling project lock as admin:', error)
