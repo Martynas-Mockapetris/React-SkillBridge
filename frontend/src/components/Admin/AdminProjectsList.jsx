@@ -5,6 +5,7 @@ import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
+import AdminLockProjectModal from '../../modal/AdminLockProjectModal'
 import PaginationControls from '../shared/PaginationControls'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
@@ -43,6 +44,8 @@ const AdminProjectsList = () => {
   const [pageSize, setPageSize] = useState(30)
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
   const [lockLoadingProjectId, setLockLoadingProjectId] = useState(null)
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const [projectToLock, setProjectToLock] = useState(null)
 
   // Data
   const [projectsData, setProjectsData] = useState([])
@@ -140,6 +143,11 @@ const AdminProjectsList = () => {
         rateNegotiation: project.rateNegotiation || null,
         user: project.user || null,
         assignee: project.assignee || null,
+        isLocked: Boolean(project.isLocked),
+        lockReason: project.lockReason || '',
+        lockDurationDays: project.lockDurationDays ?? null,
+        lockExpiresAt: project.lockExpiresAt || null,
+        lockedAt: project.lockedAt || null,
         team: [`${project.user?.firstName || ''} ${project.user?.lastName || ''}`.trim() || 'Owner', project.assignee ? `${project.assignee.firstName || ''} ${project.assignee.lastName || ''}`.trim() : null].filter(
           Boolean
         )
@@ -206,6 +214,16 @@ const AdminProjectsList = () => {
   const closeDetailModal = () => {
     setProjectForDetails(null)
     setIsDetailModalOpen(false)
+  }
+
+  const openLockModal = (project) => {
+    setProjectToLock(project)
+    setIsLockModalOpen(true)
+  }
+
+  const closeLockModal = () => {
+    setProjectToLock(null)
+    setIsLockModalOpen(false)
   }
 
   const handleEditProject = async () => {
@@ -287,11 +305,33 @@ const AdminProjectsList = () => {
   const handleToggleProjectLock = async (project) => {
     try {
       setLockLoadingProjectId(project.id)
-      const response = await toggleProjectLockAsAdmin(project.id)
-      await fetchProjects()
-      toast.success(response?.message || 'Project lock status updated')
+
+      if (project.isLocked) {
+        const response = await toggleProjectLockAsAdmin(project.id)
+        await fetchProjects()
+        toast.success(response?.message || 'Project unlocked successfully')
+        return
+      }
+
+      openLockModal(project)
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to change project lock status')
+    } finally {
+      setLockLoadingProjectId(null)
+    }
+  }
+
+  const handleConfirmLockProject = async ({ reason, durationDays }) => {
+    if (!projectToLock) return
+
+    try {
+      setLockLoadingProjectId(projectToLock.id)
+      const response = await toggleProjectLockAsAdmin(projectToLock.id, { reason, durationDays })
+      await fetchProjects()
+      closeLockModal()
+      toast.success(response?.message || 'Project locked successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to lock project')
     } finally {
       setLockLoadingProjectId(null)
     }
@@ -497,7 +537,7 @@ const AdminProjectsList = () => {
         {/* Project Card */}
         {projectsData.map((project) => {
           const isAdminCancelled = project.status === 'cancelled_by_admin'
-          const isProjectLocked = project.status === 'paused'
+          const isProjectLocked = Boolean(project.isLocked)
 
           return (
             <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-4 h-full flex flex-col'>
@@ -519,7 +559,6 @@ const AdminProjectsList = () => {
                   <TeamAvatars team={project.team} />
                 </div>
               </div>
-
               <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
                 <button onClick={() => openDetailModal(project)} title='Quick details' className='text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'>
                   <FaEye className='w-4 h-4' />
@@ -552,6 +591,16 @@ const AdminProjectsList = () => {
                   <FaTrash className='w-4 h-4' />
                 </button>
               </div>
+              {project.isLocked && (
+                <div className='mt-4 rounded-md border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 p-3 text-xs text-red-700 dark:text-red-300'>
+                  <div>
+                    <span className='font-semibold'>Lock reason:</span> {project.lockReason || 'Not specified'}
+                  </div>
+                  <div>
+                    <span className='font-semibold'>Unlocks:</span> {project.lockExpiresAt ? new Date(project.lockExpiresAt).toLocaleString() : 'No end date'}
+                  </div>
+                </div>
+              )}
             </div>
           )
         })}
@@ -575,6 +624,7 @@ const AdminProjectsList = () => {
         removeAssigneeLoading={removeAssigneeLoading}
       />
       <AdminProjectCancelModal isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDeleteProject} projectName={projectToDelete?.name} loading={deleteLoading} />
+      <AdminLockProjectModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLockProject} project={projectToLock} loading={lockLoadingProjectId === projectToLock?.id} />
     </div>
   )
 }

@@ -103,9 +103,9 @@ export const updateProjectAsAdmin = async (projectId, projectData) => {
 }
 
 // Toggle project lock as admin (pause/unpause)
-export const toggleProjectLockAsAdmin = async (projectId) => {
+export const toggleProjectLockAsAdmin = async (projectId, payload = {}) => {
   try {
-    const response = await authAxios.patch(`/api/projects/admin/${projectId}/lock`)
+    const response = await authAxios.patch(`/api/projects/admin/${projectId}/lock`, payload)
     return response.data
   } catch (error) {
     console.error('Failed to toggle project lock as admin:', error.response?.data || error.message)
