@@ -1,10 +1,12 @@
 const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm }) => {
   if (!isOpen) return null
 
+  const skillsValue = Array.isArray(form.skills) ? form.skills.join(', ') : form.skills || ''
+
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <div className='absolute inset-0 bg-black/50 backdrop-blur-sm' onClick={onClose} />
-      <div className='relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6'>
+      <div className='relative w-full max-w-3xl bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto'>
         <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>Edit Project</h3>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -12,7 +14,7 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
             <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Title</label>
             <input
               type='text'
-              value={form.title}
+              value={form.title || ''}
               onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
               className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
             />
@@ -21,8 +23,8 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
           <div className='md:col-span-2'>
             <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Description</label>
             <textarea
-              rows='3'
-              value={form.description}
+              rows='4'
+              value={form.description || ''}
               onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
               className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
             />
@@ -32,16 +34,40 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
             <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Category</label>
             <input
               type='text'
-              value={form.category}
+              value={form.category || ''}
               onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
               className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
             />
           </div>
 
           <div>
+            <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Budget</label>
+            <input
+              type='number'
+              min='0'
+              step='1'
+              value={form.budget ?? ''}
+              onChange={(e) => setForm((prev) => ({ ...prev, budget: e.target.value }))}
+              className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
+              placeholder='e.g. 1200'
+            />
+          </div>
+
+          <div className='md:col-span-2'>
+            <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Skills (comma separated)</label>
+            <input
+              type='text'
+              value={skillsValue}
+              onChange={(e) => setForm((prev) => ({ ...prev, skills: e.target.value }))}
+              className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
+              placeholder='React, Node.js, MongoDB'
+            />
+          </div>
+
+          <div>
             <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Priority</label>
             <select
-              value={form.priority}
+              value={form.priority || 'low'}
               onChange={(e) => setForm((prev) => ({ ...prev, priority: e.target.value }))}
               className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'>
               <option value='low'>Low</option>
@@ -54,16 +80,16 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
             <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Deadline</label>
             <input
               type='date'
-              value={form.deadline}
+              value={form.deadline || ''}
               onChange={(e) => setForm((prev) => ({ ...prev, deadline: e.target.value }))}
               className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
             />
           </div>
 
-          <div>
+          <div className='md:col-span-2'>
             <label className='block text-sm text-gray-600 dark:text-gray-300 mb-1'>Status</label>
             <select
-              value={form.status}
+              value={form.status || 'active'}
               onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
               className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white'>
               <option value='draft'>Draft</option>

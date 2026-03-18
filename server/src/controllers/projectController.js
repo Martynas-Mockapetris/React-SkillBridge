@@ -298,7 +298,17 @@ const updateProjectAsAdmin = async (req, res) => {
             .filter(Boolean)
     }
 
-    if (budget !== undefined) project.budget = Number(budget)
+    if (budget !== undefined) {
+      if (budget === '' || budget === null) {
+        project.budget = undefined
+      } else {
+        const parsedBudget = Number(budget)
+        if (Number.isNaN(parsedBudget) || parsedBudget < 0) {
+          return res.status(400).json({ message: 'Budget must be a valid non-negative number' })
+        }
+        project.budget = parsedBudget
+      }
+    }
     if (priority !== undefined) project.priority = priority
     if (deadline !== undefined) project.deadline = deadline
 

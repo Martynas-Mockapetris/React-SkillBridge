@@ -78,6 +78,8 @@ const AdminProjectsList = () => {
     title: '',
     description: '',
     category: '',
+    skills: '',
+    budget: '',
     priority: 'low',
     deadline: '',
     status: 'active'
@@ -168,6 +170,8 @@ const AdminProjectsList = () => {
       title: project.name || '',
       description: project.description || '',
       category: project.category || '',
+      skills: Array.isArray(project.skills) ? project.skills.join(', ') : '',
+      budget: project.budget ?? '',
       priority: project.priority || 'low',
       deadline: project.deadline || '',
       status: project.status || 'active'
@@ -193,16 +197,53 @@ const AdminProjectsList = () => {
   const handleEditProject = async () => {
     if (!editingProjectId) return
 
+    const title = (editForm.title || '').trim()
+    const description = (editForm.description || '').trim()
+    const category = (editForm.category || '').trim()
+    const skills = String(editForm.skills || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+
+    if (!title) {
+      toast.warning('Project title is required')
+      return
+    }
+
+    if (!description) {
+      toast.warning('Project description is required')
+      return
+    }
+
+    if (!category) {
+      toast.warning('Project category is required')
+      return
+    }
+
+    if (!editForm.deadline) {
+      toast.warning('Project deadline is required')
+      return
+    }
+
+    if (editForm.budget !== '' && Number(editForm.budget) < 0) {
+      toast.error('Budget cannot be negative')
+      return
+    }
+
     try {
       setEditLoading(true)
+
       await updateProjectAsAdmin(editingProjectId, {
-        title: editForm.title,
-        description: editForm.description,
-        category: editForm.category,
+        title,
+        description,
+        category,
+        skills,
+        budget: editForm.budget === '' ? undefined : Number(editForm.budget),
         priority: editForm.priority,
         deadline: editForm.deadline,
         status: editForm.status
       })
+
       await fetchProjects()
       closeEditModal()
       toast.success('Project updated successfully')
