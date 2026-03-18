@@ -1,4 +1,4 @@
-const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm }) => {
+const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm, assigneeName, ownerName, canRemoveAssignee, onRemoveAssignee, removeAssigneeLoading }) => {
   if (!isOpen) return null
 
   const skillsValue = Array.isArray(form.skills) ? form.skills.join(', ') : form.skills || ''
@@ -105,13 +105,40 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
               <option value='paused'>Paused</option>
             </select>
           </div>
+
+          <div className='md:col-span-2 border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4'>
+            <div className='flex items-start justify-between gap-4'>
+              <div>
+                <p className='text-sm font-semibold text-amber-900 dark:text-amber-200'>Assignment Control</p>
+                <p className='text-sm text-amber-800 dark:text-amber-300 mt-1'>
+                  <span className='font-medium'>Owner:</span> {ownerName || 'Unknown'}
+                </p>
+                <p className='text-sm text-amber-800 dark:text-amber-300'>
+                  <span className='font-medium'>Assignee:</span> {assigneeName || 'No assignee'}
+                </p>
+                <p className='text-xs text-amber-700 dark:text-amber-400 mt-2'>Only assignee can be removed here. Project owner cannot be removed.</p>
+              </div>
+
+              <button
+                type='button'
+                onClick={onRemoveAssignee}
+                disabled={!canRemoveAssignee || loading || removeAssigneeLoading}
+                className='px-3 py-2 text-sm rounded-lg bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-60 disabled:cursor-not-allowed'>
+                {removeAssigneeLoading ? 'Removing...' : 'Remove Assignee'}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className='mt-6 flex justify-end gap-3'>
-          <button type='button' onClick={onClose} disabled={loading} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'>
+          <button
+            type='button'
+            onClick={onClose}
+            disabled={loading || removeAssigneeLoading}
+            className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'>
             Cancel
           </button>
-          <button type='button' onClick={onSave} disabled={loading} className='px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60'>
+          <button type='button' onClick={onSave} disabled={loading || removeAssigneeLoading} className='px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60'>
             {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

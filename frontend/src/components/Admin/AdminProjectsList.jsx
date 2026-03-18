@@ -6,7 +6,7 @@ import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
 import PaginationControls from '../shared/PaginationControls'
-import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin } from '../../services/projectService'
+import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
 const ProgressBar = ({ progress }) => (
@@ -83,6 +83,11 @@ const AdminProjectsList = () => {
     priority: 'low',
     deadline: '',
     status: 'active'
+  })
+  const [removeAssigneeLoading, setRemoveAssigneeLoading] = useState(false)
+  const [editingProjectMeta, setEditingProjectMeta] = useState({
+    assignee: null,
+    owner: null
   })
 
   // Detail modal state
@@ -165,6 +170,10 @@ const AdminProjectsList = () => {
   }
 
   const openEditModal = (project) => {
+    setEditingProjectMeta({
+      assignee: project.assignee || null,
+      owner: project.user || null
+    })
     setEditingProjectId(project.id)
     setEditForm({
       title: project.name || '',
@@ -182,6 +191,11 @@ const AdminProjectsList = () => {
   const closeEditModal = () => {
     setEditingProjectId(null)
     setIsEditModalOpen(false)
+    setRemoveAssigneeLoading(false)
+    setEditingProjectMeta({
+      assignee: null,
+      owner: null
+    })
   }
 
   const openDetailModal = (project) => {
@@ -280,6 +294,40 @@ const AdminProjectsList = () => {
       toast.error(error.response?.data?.message || 'Failed to change project lock status')
     } finally {
       setLockLoadingProjectId(null)
+    }
+  }
+
+  const handleRemoveAssigneeFromEditModal = async () => {
+    if (!editingProjectId) {
+      toast.error('No project selected')
+      return
+    }
+
+    if (!editingProjectMeta?.assignee) {
+      toast.info('This project has no assignee to remove')
+      return
+    }
+
+    const fullName = `${editingProjectMeta.assignee.firstName || ''} ${editingProjectMeta.assignee.lastName || ''}`.trim()
+    const confirmed = window.confirm(`Remove assignee "${fullName || 'Unknown user'}" from this project?`)
+    if (!confirmed) return
+
+    try {
+      setRemoveAssigneeLoading(true)
+      const response = await removeAssigneeAsAdmin(editingProjectId)
+      await fetchProjects()
+
+      setEditingProjectMeta((prev) => ({ ...prev, assignee: null }))
+
+      if (['assigned', 'in_progress', 'negotiating', 'under_review'].includes(editForm.status)) {
+        setEditForm((prev) => ({ ...prev, status: 'active' }))
+      }
+
+      toast.success(response?.message || 'Assignee removed successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to remove assignee')
+    } finally {
+      setRemoveAssigneeLoading(false)
     }
   }
 
@@ -513,7 +561,19 @@ const AdminProjectsList = () => {
         <PaginationControls currentPage={currentPage} totalPages={totalPages} onPrev={() => setCurrentPage((prev) => Math.max(1, prev - 1))} onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))} />
       )}
       <AdminProjectDetailModal isOpen={isDetailModalOpen} onClose={closeDetailModal} project={projectForDetails} />
-      <AdminProjectEditModal isOpen={isEditModalOpen} onClose={closeEditModal} onSave={handleEditProject} loading={editLoading} form={editForm} setForm={setEditForm} />
+      <AdminProjectEditModal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        onSave={handleEditProject}
+        loading={editLoading}
+        form={editForm}
+        setForm={setEditForm}
+        assigneeName={editingProjectMeta?.assignee ? `${editingProjectMeta.assignee.firstName || ''} ${editingProjectMeta.assignee.lastName || ''}`.trim() : ''}
+        ownerName={editingProjectMeta?.owner ? `${editingProjectMeta.owner.firstName || ''} ${editingProjectMeta.owner.lastName || ''}`.trim() : ''}
+        canRemoveAssignee={Boolean(editingProjectMeta?.assignee)}
+        onRemoveAssignee={handleRemoveAssigneeFromEditModal}
+        removeAssigneeLoading={removeAssigneeLoading}
+      />
       <AdminProjectCancelModal isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDeleteProject} projectName={projectToDelete?.name} loading={deleteLoading} />
     </div>
   )

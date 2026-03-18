@@ -113,6 +113,17 @@ export const toggleProjectLockAsAdmin = async (projectId) => {
   }
 }
 
+// Remove assignee as admin
+export const removeAssigneeAsAdmin = async (projectId) => {
+  try {
+    const response = await authAxios.delete(`/api/projects/admin/${projectId}/assignee`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove assignee as admin:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Update an existing project
 export const updateProject = async (projectId, projectData) => {
   try {

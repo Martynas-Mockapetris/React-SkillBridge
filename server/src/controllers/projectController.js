@@ -394,6 +394,47 @@ const toggleProjectLockAsAdmin = async (req, res) => {
   }
 }
 
+// @desc    Remove assignee from project as admin (owner remains unchanged)
+// @route   DELETE /api/projects/admin/:id/assignee
+// @access  Admin
+const removeAssigneeAsAdmin = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
+    if (!project.assignee) {
+      return res.status(400).json({ message: 'Project has no assigned user' })
+    }
+
+    // Remove assignee only (owner is never touched)
+    project.assignee = null
+
+    // Reopen workflow statuses when assignee is removed
+    if (['assigned', 'in_progress', 'negotiating', 'under_review'].includes(project.status)) {
+      project.status = 'active'
+    }
+
+    const updatedProject = await project.save()
+    res.json({
+      message: 'Assignee removed successfully',
+      project: updatedProject
+    })
+  } catch (error) {
+    console.error('Error removing assignee as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get project by ID (PUBLIC - only active)
 // @route   GET /api/projects/:id
 // @access  Public
@@ -1092,6 +1133,7 @@ export {
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
   toggleProjectLockAsAdmin,
+  removeAssigneeAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,
