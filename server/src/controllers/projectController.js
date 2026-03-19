@@ -2,6 +2,71 @@ import Project from '../models/Project.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
+const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status']
+
+const ALLOWED_PROJECT_PRIORITIES = ['low', 'medium', 'high']
+const ALLOWED_PROJECT_STATUSES = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
+
+const ALLOWED_ADMIN_STATUS_TRANSITIONS = {
+  draft: ['active', 'inactive', 'archived', 'paused', 'cancelled'],
+  active: ['assigned', 'negotiating', 'in_progress', 'under_review', 'inactive', 'archived', 'paused', 'cancelled'],
+  assigned: ['negotiating', 'in_progress', 'active', 'paused', 'cancelled'],
+  negotiating: ['assigned', 'in_progress', 'active', 'paused', 'cancelled'],
+  in_progress: ['under_review', 'active', 'paused', 'cancelled'],
+  under_review: ['in_progress', 'completed', 'active', 'paused', 'cancelled'],
+  completed: ['archived'],
+  cancelled: ['active', 'archived'],
+  inactive: ['active', 'archived'],
+  archived: [],
+  paused: ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
+}
+
+const validateAdminProjectUpdatePayload = (payload) => {
+  const providedFields = Object.keys(payload || {})
+  const invalidFields = providedFields.filter((field) => !ADMIN_EDITABLE_PROJECT_FIELDS.includes(field))
+
+  if (invalidFields.length > 0) {
+    return { valid: false, message: `Unsupported fields: ${invalidFields.join(', ')}` }
+  }
+
+  if (payload.priority !== undefined && !ALLOWED_PROJECT_PRIORITIES.includes(payload.priority)) {
+    return { valid: false, message: 'Invalid priority value' }
+  }
+
+  if (payload.status !== undefined && !ALLOWED_PROJECT_STATUSES.includes(payload.status)) {
+    return { valid: false, message: 'Invalid status value' }
+  }
+
+  if (payload.deadline !== undefined) {
+    const parsedDeadline = new Date(payload.deadline)
+    if (Number.isNaN(parsedDeadline.getTime())) {
+      return { valid: false, message: 'Invalid deadline value' }
+    }
+  }
+
+  if (payload.budget !== undefined && payload.budget !== '' && payload.budget !== null) {
+    const parsedBudget = Number(payload.budget)
+    if (Number.isNaN(parsedBudget) || parsedBudget < 0) {
+      return { valid: false, message: 'Budget must be a valid non-negative number' }
+    }
+  }
+
+  if (payload.skills !== undefined) {
+    const normalizedSkills = Array.isArray(payload.skills)
+      ? payload.skills.map((s) => String(s).trim()).filter(Boolean)
+      : String(payload.skills)
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+
+    if (normalizedSkills.length === 0) {
+      return { valid: false, message: 'At least one skill is required' }
+    }
+  }
+
+  return { valid: true }
+}
+
 // @desc    Create a new project
 // @route   POST /api/projects
 // @access  Private
@@ -278,7 +343,13 @@ const deleteProjectAsAdmin = async (req, res) => {
 // @access  Admin
 const updateProjectAsAdmin = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, priority, deadline, status } = req.body
+    const payload = req.body || {}
+    const { title, description, category, skills, budget, priority, deadline, status } = payload
+
+    const validation = validateAdminProjectUpdatePayload(payload)
+    if (!validation.valid) {
+      return res.status(400).json({ message: validation.message })
+    }
 
     const project = await Project.findById(req.params.id)
 
@@ -288,20 +359,27 @@ const updateProjectAsAdmin = async (req, res) => {
 
     await project.ensureUnlockedIfExpired()
 
-    // Admin should not edit projects that are already locked by moderation lifecycle.
     if (isImmutableProjectStatus(project.status)) {
       return res.status(403).json({ message: 'Project is locked and cannot be edited' })
     }
 
-    // Only apply provided fields.
-    if (title !== undefined) project.title = title
-    if (description !== undefined) project.description = description
-    if (category !== undefined) project.category = category
+    if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
+      const currentStatus = project.status
+      const allowedNextStatuses = ALLOWED_ADMIN_STATUS_TRANSITIONS[currentStatus] || []
+      if (status !== currentStatus && !allowedNextStatuses.includes(status)) {
+        return res.status(400).json({
+          message: `Status transition not allowed: ${currentStatus} -> ${status}`
+        })
+      }
+    }
 
-    // Accept both CSV string and string[] to keep API flexible for admin UI.
+    if (title !== undefined) project.title = String(title).trim()
+    if (description !== undefined) project.description = String(description).trim()
+    if (category !== undefined) project.category = String(category).trim()
+
     if (skills !== undefined) {
       project.skills = Array.isArray(skills)
-        ? skills
+        ? skills.map((s) => String(s).trim()).filter(Boolean)
         : String(skills)
             .split(',')
             .map((s) => s.trim())
@@ -312,17 +390,13 @@ const updateProjectAsAdmin = async (req, res) => {
       if (budget === '' || budget === null) {
         project.budget = undefined
       } else {
-        const parsedBudget = Number(budget)
-        if (Number.isNaN(parsedBudget) || parsedBudget < 0) {
-          return res.status(400).json({ message: 'Budget must be a valid non-negative number' })
-        }
-        project.budget = parsedBudget
+        project.budget = Number(budget)
       }
     }
+
     if (priority !== undefined) project.priority = priority
     if (deadline !== undefined) project.deadline = deadline
 
-    // Prevent admin update endpoint from setting moderation terminal statuses directly.
     if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
       project.status = status
     }
