@@ -8,6 +8,7 @@ import projectRoutes from './src/routes/projectRoutes.js'
 import messageRoutes from './src/routes/messageRoutes.js'
 import announcementRoutes from './src/routes/announcementRoutes.js'
 import ratingRoutes from './src/routes/ratingRoutes.js'
+import { startProjectAutoUnlockScheduler } from './src/utils/projectLockScheduler.js'
 
 dotenv.config()
 
@@ -22,6 +23,8 @@ mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.log('MongoDB connection error:', error))
+
+startProjectAutoUnlockScheduler()
 
 // Routes
 app.get('/', (req, res) => {
