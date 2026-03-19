@@ -19,6 +19,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import ProjectDetail from './pages/ProjectDetail'
 import UserDetail from './pages/UserDetail'
+import AdminUserDetail from './pages/AdminUserDetail'
 
 function App() {
   return (
@@ -34,7 +35,7 @@ function App() {
           <Route path='/register' element={<Register />} />
           <Route path='/project/:id' element={<ProjectDetail />} />
           <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
-          
+
           {/* Protected routes - require authentication */}
           <Route
             path='/profile'
@@ -51,6 +52,14 @@ function App() {
             element={
               <AdminRoute>
                 <Admin />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/admin/users/:id'
+            element={
+              <AdminRoute>
+                <AdminUserDetail />
               </AdminRoute>
             }
           />
