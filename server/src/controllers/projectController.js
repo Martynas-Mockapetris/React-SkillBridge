@@ -179,6 +179,14 @@ const getAdminAllProjects = async (req, res) => {
 
     const sortConfig = sortMap[sortField] || { createdAt: -1 }
 
+    // Keep counts and list consistent by unlocking all expired project locks first.
+    const expiredLockedProjects = await Project.find({
+      isLocked: true,
+      lockExpiresAt: { $lt: new Date() }
+    })
+
+    await Promise.all(expiredLockedProjects.map((project) => project.ensureUnlockedIfExpired()))
+
     const [projects, filteredTotal, overallTotal, statuses, categories, priorities, summaryRaw] = await Promise.all([
       Project.find(query)
         .populate('user', 'firstName lastName email profilePicture')
@@ -210,15 +218,6 @@ const getAdminAllProjects = async (req, res) => {
       ])
     ])
 
-    await Promise.all(projects.map((project) => project.ensureUnlockedIfExpired()))
-
-    const refreshedProjects = await Project.find(query)
-      .populate('user', 'firstName lastName email profilePicture')
-      .populate('assignee', 'firstName lastName email profilePicture')
-      .sort(sortConfig)
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-
     const pages = Math.max(Math.ceil(filteredTotal / pageSize), 1)
     const summaryCounts = summaryRaw[0] || {
       total: 0,
@@ -230,7 +229,7 @@ const getAdminAllProjects = async (req, res) => {
     }
 
     res.json({
-      projects: refreshedProjects,
+      projects,
       page: pageNumber,
       pages,
       limit: pageSize,
@@ -606,6 +605,8 @@ const updateProject = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
     }
+
+    await project.ensureUnlockedIfExpired()
 
     // Check if the project belongs to the user
     if (project.user.toString() !== req.user._id.toString()) {
