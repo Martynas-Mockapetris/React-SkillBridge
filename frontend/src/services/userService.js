@@ -36,6 +36,17 @@ export const getAdminDashboardStats = async () => {
   }
 }
 
+// Get admin-safe user detail
+export const getAdminUserDetail = async (userId) => {
+  try {
+    const response = await authAxios.get(`/api/users/admin/users/${userId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin user detail:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Fetch all users for admin panel
 export const getAdminUsers = async (params = {}) => {
   try {
