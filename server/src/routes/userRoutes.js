@@ -12,6 +12,7 @@ import {
   addFreelancerToFavorites,
   removeFreelancerFromFavorites,
   getAdminDashboardStats,
+  getAdminUserDetail,
   getAdminUsers,
   toggleUserLock,
   updateAdminUser,
@@ -39,6 +40,7 @@ router.get('/stats', protect, getUserStats)
 router.get('/admin/stats', protect, adminOnly, getAdminDashboardStats)
 
 // Admin user management routes
+router.get('/admin/users/:userId', protect, adminOnly, getAdminUserDetail)
 router.get('/admin/users', protect, adminOnly, getAdminUsers)
 router.patch('/admin/:userId/lock', protect, adminOnly, toggleUserLock)
 router.put('/admin/:userId', protect, adminOnly, updateAdminUser)

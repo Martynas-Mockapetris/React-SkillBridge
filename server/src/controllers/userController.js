@@ -351,6 +351,47 @@ export const getAdminDashboardStats = async (req, res) => {
   }
 }
 
+// @desc    Get admin-safe user detail (admin)
+// @route   GET /api/users/admin/users/:userId
+// @access  Admin
+export const getAdminUserDetail = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId).select('-password -favorites -favoriteFreelancers')
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    await user.ensureUnlockedIfExpired()
+
+    const [createdProjects, assignedProjects, completedProjects, totalAnnouncements, activeAnnouncements] = await Promise.all([
+      Project.countDocuments({ user: userId }),
+      Project.countDocuments({ assignee: userId }),
+      Project.countDocuments({
+        $or: [{ user: userId }, { assignee: userId }],
+        status: 'completed'
+      }),
+      Announcement.countDocuments({ userId }),
+      Announcement.countDocuments({ userId, isActive: true })
+    ])
+
+    res.json({
+      user,
+      metrics: {
+        createdProjects,
+        assignedProjects,
+        completedProjects,
+        totalAnnouncements,
+        activeAnnouncements
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin user detail:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Get all users (admin)
 // @route   GET /api/users/admin/users
 // @access  Admin
