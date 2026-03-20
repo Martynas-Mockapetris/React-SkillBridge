@@ -392,6 +392,126 @@ export const getAdminUserDetail = async (req, res) => {
   }
 }
 
+// @desc    Get paginated projects for a specific user (admin)
+// @route   GET /api/users/admin/users/:userId/projects
+// @access  Admin
+export const getAdminUserProjects = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { page = 1, limit = 10, status = '', scope = 'all', sort = 'createdAt:desc' } = req.query
+
+    const userExists = await User.exists({ _id: userId })
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 100)
+
+    const query = {}
+    if (scope === 'created') {
+      query.user = userId
+    } else if (scope === 'assigned') {
+      query.assignee = userId
+    } else {
+      query.$or = [{ user: userId }, { assignee: userId }]
+    }
+
+    if (status && status !== 'all') {
+      query.status = status
+    }
+
+    const [sortField, sortDirection] = String(sort).split(':')
+    const direction = sortDirection === 'asc' ? 1 : -1
+    const sortMap = {
+      createdAt: { createdAt: direction },
+      deadline: { deadline: direction },
+      budget: { budget: direction },
+      status: { status: direction }
+    }
+    const sortConfig = sortMap[sortField] || { createdAt: -1 }
+
+    // Unlock expired locks before counting/fetching to keep pagination consistent
+    const expiredLockedProjects = await Project.find({
+      ...query,
+      isLocked: true,
+      lockExpiresAt: { $lt: new Date() }
+    })
+    await Promise.all(expiredLockedProjects.map((project) => project.ensureUnlockedIfExpired()))
+
+    const [projects, total] = await Promise.all([
+      Project.find(query)
+        .populate('user', 'firstName lastName email profilePicture')
+        .populate('assignee', 'firstName lastName email profilePicture')
+        .sort(sortConfig)
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      Project.countDocuments(query)
+    ])
+
+    res.json({
+      projects,
+      total,
+      page: pageNumber,
+      pages: Math.max(Math.ceil(total / pageSize), 1),
+      limit: pageSize
+    })
+  } catch (error) {
+    console.error('Error fetching admin user projects:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Get paginated announcements for a specific user (admin)
+// @route   GET /api/users/admin/users/:userId/announcements
+// @access  Admin
+export const getAdminUserAnnouncements = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { page = 1, limit = 10, status = 'all', sort = 'createdAt:desc' } = req.query
+
+    const userExists = await User.exists({ _id: userId })
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 100)
+
+    const query = { userId }
+    if (status === 'active') query.isActive = true
+    if (status === 'inactive') query.isActive = false
+
+    const [sortField, sortDirection] = String(sort).split(':')
+    const direction = sortDirection === 'asc' ? 1 : -1
+    const sortMap = {
+      createdAt: { createdAt: direction },
+      title: { title: direction },
+      hourlyRate: { hourlyRate: direction }
+    }
+    const sortConfig = sortMap[sortField] || { createdAt: -1 }
+
+    const [announcements, total] = await Promise.all([
+      Announcement.find(query)
+        .sort(sortConfig)
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      Announcement.countDocuments(query)
+    ])
+
+    res.json({
+      announcements,
+      total,
+      page: pageNumber,
+      pages: Math.max(Math.ceil(total / pageSize), 1),
+      limit: pageSize
+    })
+  } catch (error) {
+    console.error('Error fetching admin user announcements:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Get all users (admin)
 // @route   GET /api/users/admin/users
 // @access  Admin
