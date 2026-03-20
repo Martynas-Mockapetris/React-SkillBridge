@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { getAdminUserDetail } from '../services/userService'
+import { getAdminUserAnnouncements, getAdminUserDetail, getAdminUserProjects } from '../services/userService'
 
 const tabs = [
   { id: 'details', label: 'User Details' },
@@ -17,14 +17,31 @@ const formatDateTime = (value) => {
   return date.toLocaleString()
 }
 
+const formatMoney = (value) => {
+  if (value === undefined || value === null || Number.isNaN(Number(value))) return 'N/A'
+  return `€${Number(value)}`
+}
+
 const AdminUserDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+
   const [activeTab, setActiveTab] = useState('details')
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [user, setUser] = useState(null)
   const [metrics, setMetrics] = useState(null)
+
+  const [projects, setProjects] = useState([])
+  const [projectsMeta, setProjectsMeta] = useState({ total: 0, page: 1, pages: 1 })
+  const [projectsLoading, setProjectsLoading] = useState(false)
+  const [projectsLoaded, setProjectsLoaded] = useState(false)
+
+  const [announcements, setAnnouncements] = useState([])
+  const [announcementsMeta, setAnnouncementsMeta] = useState({ total: 0, page: 1, pages: 1 })
+  const [announcementsLoading, setAnnouncementsLoading] = useState(false)
+  const [announcementsLoaded, setAnnouncementsLoaded] = useState(false)
 
   const headerSubtitle = useMemo(() => {
     if (!id) return 'No user selected'
@@ -57,6 +74,61 @@ const AdminUserDetail = () => {
 
     loadUserDetail()
   }, [id])
+
+  useEffect(() => {
+    setProjects([])
+    setProjectsMeta({ total: 0, page: 1, pages: 1 })
+    setProjectsLoaded(false)
+    setAnnouncements([])
+    setAnnouncementsMeta({ total: 0, page: 1, pages: 1 })
+    setAnnouncementsLoaded(false)
+  }, [id])
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      if (!id || activeTab !== 'projects' || projectsLoaded) return
+      try {
+        setProjectsLoading(true)
+        const response = await getAdminUserProjects(id, { page: 1, limit: 10, status: 'all', scope: 'all', sort: 'createdAt:desc' })
+        setProjects(response.projects || [])
+        setProjectsMeta({
+          total: response.total || 0,
+          page: response.page || 1,
+          pages: response.pages || 1
+        })
+        setProjectsLoaded(true)
+      } catch (err) {
+        toast.error(err?.response?.data?.message || 'Failed to load user projects')
+      } finally {
+        setProjectsLoading(false)
+      }
+    }
+
+    loadProjects()
+  }, [activeTab, id, projectsLoaded])
+
+  useEffect(() => {
+    const loadAnnouncements = async () => {
+      if (!id || activeTab !== 'announcements' || announcementsLoaded) return
+      try {
+        setAnnouncementsLoading(true)
+        const response = await getAdminUserAnnouncements(id, { page: 1, limit: 10, status: 'all', sort: 'createdAt:desc' })
+        setAnnouncements(response.announcements || [])
+        setAnnouncementsMeta({
+          total: response.total || 0,
+          page: response.page || 1,
+          pages: response.pages || 1
+        })
+        setAnnouncementsLoaded(true)
+      } catch (err) {
+        toast.error(err?.response?.data?.message || 'Failed to load user announcements')
+      } finally {
+        setAnnouncementsLoading(false)
+      }
+    }
+
+    loadAnnouncements()
+  }, [activeTab, announcementsLoaded, id])
 
   const statusLabel = useMemo(() => {
     if (!user) return 'Unknown'
@@ -154,9 +226,77 @@ const AdminUserDetail = () => {
               </div>
             )}
 
-            {!loading && !error && activeTab === 'profile' && <p className='text-gray-700 dark:text-gray-200'>Profile tab</p>}
-            {!loading && !error && activeTab === 'projects' && <p className='text-gray-700 dark:text-gray-200'>Projects tab</p>}
-            {!loading && !error && activeTab === 'announcements' && <p className='text-gray-700 dark:text-gray-200'>Announcements tab</p>}
+            {!loading && !error && activeTab === 'profile' && (
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Phone</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{user?.phone || 'N/A'}</p>
+                </div>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Location</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{user?.location || 'N/A'}</p>
+                </div>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Skills</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{user?.skills || 'N/A'}</p>
+                </div>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Hourly Rate</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{formatMoney(user?.hourlyRate)}</p>
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && activeTab === 'projects' && (
+              <div className='space-y-4'>
+                <div className='text-sm text-gray-500 dark:text-gray-400'>Total projects: {projectsMeta.total}</div>
+
+                {projectsLoading && <p className='text-gray-700 dark:text-gray-200'>Loading projects...</p>}
+
+                {!projectsLoading && projects.length === 0 && <p className='text-gray-700 dark:text-gray-200'>No projects found.</p>}
+
+                {!projectsLoading &&
+                  projects.map((project) => (
+                    <div key={project._id} className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                      <div className='flex items-center justify-between gap-3'>
+                        <p className='text-gray-900 dark:text-white font-medium'>{project.title || 'Untitled project'}</p>
+                        <span className='text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 capitalize'>{project.status || 'unknown'}</span>
+                      </div>
+                      <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>
+                        Budget: {formatMoney(project.budget)} | Deadline: {formatDateTime(project.deadline)}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {!loading && !error && activeTab === 'announcements' && (
+              <div className='space-y-4'>
+                <div className='text-sm text-gray-500 dark:text-gray-400'>Total announcements: {announcementsMeta.total}</div>
+
+                {announcementsLoading && <p className='text-gray-700 dark:text-gray-200'>Loading announcements...</p>}
+
+                {!announcementsLoading && announcements.length === 0 && <p className='text-gray-700 dark:text-gray-200'>No announcements found.</p>}
+
+                {!announcementsLoading &&
+                  announcements.map((announcement) => (
+                    <div key={announcement._id} className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                      <div className='flex items-center justify-between gap-3'>
+                        <p className='text-gray-900 dark:text-white font-medium'>{announcement.title}</p>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            announcement.isActive ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                          }`}>
+                          {announcement.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                      <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>
+                        Hourly: {formatMoney(announcement.hourlyRate)} | Skills: {(announcement.skills || []).join(', ') || 'N/A'}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
