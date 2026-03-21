@@ -39,12 +39,23 @@ const AdminUserDetail = () => {
   const [projects, setProjects] = useState([])
   const [projectsMeta, setProjectsMeta] = useState({ total: 0, page: 1, pages: 1 })
   const [projectsLoading, setProjectsLoading] = useState(false)
-  const [projectsLoaded, setProjectsLoaded] = useState(false)
+  const [projectQuery, setProjectQuery] = useState({
+    page: 1,
+    limit: 10,
+    status: 'all',
+    scope: 'all',
+    sort: 'createdAt:desc'
+  })
 
   const [announcements, setAnnouncements] = useState([])
   const [announcementsMeta, setAnnouncementsMeta] = useState({ total: 0, page: 1, pages: 1 })
   const [announcementsLoading, setAnnouncementsLoading] = useState(false)
-  const [announcementsLoaded, setAnnouncementsLoaded] = useState(false)
+  const [announcementQuery, setAnnouncementQuery] = useState({
+    page: 1,
+    limit: 10,
+    status: 'all',
+    sort: 'createdAt:desc'
+  })
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
@@ -60,7 +71,7 @@ const AdminUserDetail = () => {
     if (!id) {
       setError('Missing user id in route')
       setLoading(false)
-      return
+      return false
     }
 
     try {
@@ -69,10 +80,12 @@ const AdminUserDetail = () => {
       const response = await getAdminUserDetail(id)
       setUser(response.user || null)
       setMetrics(response.metrics || null)
+      return true
     } catch (err) {
       const message = err?.response?.data?.message || 'Failed to load user details'
       setError(message)
       if (showToastOnError) toast.error(message)
+      return false
     } finally {
       setLoading(false)
     }
@@ -83,27 +96,22 @@ const AdminUserDetail = () => {
   }, [id])
 
   useEffect(() => {
-    setProjects([])
-    setProjectsMeta({ total: 0, page: 1, pages: 1 })
-    setProjectsLoaded(false)
-    setAnnouncements([])
-    setAnnouncementsMeta({ total: 0, page: 1, pages: 1 })
-    setAnnouncementsLoaded(false)
+    setProjectQuery((prev) => ({ ...prev, page: 1 }))
+    setAnnouncementQuery((prev) => ({ ...prev, page: 1 }))
   }, [id])
 
   useEffect(() => {
     const loadProjects = async () => {
-      if (!id || activeTab !== 'projects' || projectsLoaded) return
+      if (!id || activeTab !== 'projects') return
       try {
         setProjectsLoading(true)
-        const response = await getAdminUserProjects(id, { page: 1, limit: 10, status: 'all', scope: 'all', sort: 'createdAt:desc' })
+        const response = await getAdminUserProjects(id, projectQuery)
         setProjects(response.projects || [])
         setProjectsMeta({
           total: response.total || 0,
           page: response.page || 1,
           pages: response.pages || 1
         })
-        setProjectsLoaded(true)
       } catch (err) {
         toast.error(err?.response?.data?.message || 'Failed to load user projects')
       } finally {
@@ -112,21 +120,20 @@ const AdminUserDetail = () => {
     }
 
     loadProjects()
-  }, [activeTab, id, projectsLoaded])
+  }, [activeTab, id, projectQuery])
 
   useEffect(() => {
     const loadAnnouncements = async () => {
-      if (!id || activeTab !== 'announcements' || announcementsLoaded) return
+      if (!id || activeTab !== 'announcements') return
       try {
         setAnnouncementsLoading(true)
-        const response = await getAdminUserAnnouncements(id, { page: 1, limit: 10, status: 'all', sort: 'createdAt:desc' })
+        const response = await getAdminUserAnnouncements(id, announcementQuery)
         setAnnouncements(response.announcements || [])
         setAnnouncementsMeta({
           total: response.total || 0,
           page: response.page || 1,
           pages: response.pages || 1
         })
-        setAnnouncementsLoaded(true)
       } catch (err) {
         toast.error(err?.response?.data?.message || 'Failed to load user announcements')
       } finally {
@@ -135,7 +142,7 @@ const AdminUserDetail = () => {
     }
 
     loadAnnouncements()
-  }, [activeTab, announcementsLoaded, id])
+  }, [activeTab, announcementQuery, id])
 
   const statusLabel = useMemo(() => {
     if (!user) return 'Unknown'
@@ -144,9 +151,17 @@ const AdminUserDetail = () => {
   }, [user])
 
   const refreshAll = async () => {
-    await loadUserDetail({ showToastOnError: true })
-    setProjectsLoaded(false)
-    setAnnouncementsLoaded(false)
+    const ok = await loadUserDetail({ showToastOnError: true })
+    if (!ok) return
+
+    if (activeTab === 'projects') {
+      setProjectQuery((prev) => ({ ...prev }))
+    }
+
+    if (activeTab === 'announcements') {
+      setAnnouncementQuery((prev) => ({ ...prev }))
+    }
+
     toast.success('User data refreshed')
   }
 
@@ -259,47 +274,38 @@ const AdminUserDetail = () => {
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Full Name</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'N/A'}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Email</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{user.email || 'N/A'}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Role</p>
                   <p className='text-gray-900 dark:text-white font-medium capitalize'>{user.userType || 'N/A'}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Status</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{statusLabel}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Created At</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{formatDateTime(user.createdAt)}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Last Login</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{formatDateTime(user.lastLogin)}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Created Projects</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{metrics?.createdProjects ?? 0}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Assigned Projects</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{metrics?.assignedProjects ?? 0}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Completed Projects</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{metrics?.completedProjects ?? 0}</p>
                 </div>
-
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Active Announcements</p>
                   <p className='text-gray-900 dark:text-white font-medium'>
@@ -332,10 +338,57 @@ const AdminUserDetail = () => {
 
             {!loading && !error && activeTab === 'projects' && (
               <div className='space-y-4'>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <select
+                    value={projectQuery.scope}
+                    onChange={(e) => setProjectQuery((prev) => ({ ...prev, scope: e.target.value, page: 1 }))}
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    <option value='all'>All Scopes</option>
+                    <option value='created'>Created</option>
+                    <option value='assigned'>Assigned</option>
+                  </select>
+
+                  <select
+                    value={projectQuery.status}
+                    onChange={(e) => setProjectQuery((prev) => ({ ...prev, status: e.target.value, page: 1 }))}
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    <option value='all'>All Statuses</option>
+                    <option value='draft'>Draft</option>
+                    <option value='active'>Active</option>
+                    <option value='assigned'>Assigned</option>
+                    <option value='in_progress'>In Progress</option>
+                    <option value='under_review'>Under Review</option>
+                    <option value='completed'>Completed</option>
+                    <option value='cancelled'>Cancelled</option>
+                    <option value='archived'>Archived</option>
+                    <option value='paused'>Paused</option>
+                  </select>
+
+                  <select
+                    value={projectQuery.sort}
+                    onChange={(e) => setProjectQuery((prev) => ({ ...prev, sort: e.target.value, page: 1 }))}
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    <option value='createdAt:desc'>Newest</option>
+                    <option value='createdAt:asc'>Oldest</option>
+                    <option value='deadline:asc'>Deadline ↑</option>
+                    <option value='deadline:desc'>Deadline ↓</option>
+                    <option value='budget:desc'>Budget ↓</option>
+                    <option value='budget:asc'>Budget ↑</option>
+                  </select>
+
+                  <select
+                    value={projectQuery.limit}
+                    onChange={(e) => setProjectQuery((prev) => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    <option value={10}>10 / page</option>
+                    <option value={20}>20 / page</option>
+                    <option value={30}>30 / page</option>
+                  </select>
+                </div>
+
                 <div className='text-sm text-gray-500 dark:text-gray-400'>Total projects: {projectsMeta.total}</div>
 
                 {projectsLoading && <p className='text-gray-700 dark:text-gray-200'>Loading projects...</p>}
-
                 {!projectsLoading && projects.length === 0 && <p className='text-gray-700 dark:text-gray-200'>No projects found.</p>}
 
                 {!projectsLoading &&
@@ -350,15 +403,64 @@ const AdminUserDetail = () => {
                       </p>
                     </div>
                   ))}
+
+                <div className='flex items-center justify-between pt-2'>
+                  <button
+                    onClick={() => setProjectQuery((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+                    disabled={projectsMeta.page <= 1 || projectsLoading}
+                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
+                    Previous
+                  </button>
+                  <span className='text-sm text-gray-600 dark:text-gray-300'>
+                    Page {projectsMeta.page} / {projectsMeta.pages}
+                  </span>
+                  <button
+                    onClick={() => setProjectQuery((prev) => ({ ...prev, page: Math.min(projectsMeta.pages, prev.page + 1) }))}
+                    disabled={projectsMeta.page >= projectsMeta.pages || projectsLoading}
+                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
+                    Next
+                  </button>
+                </div>
               </div>
             )}
 
             {!loading && !error && activeTab === 'announcements' && (
               <div className='space-y-4'>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <select
+                    value={announcementQuery.status}
+                    onChange={(e) => setAnnouncementQuery((prev) => ({ ...prev, status: e.target.value, page: 1 }))}
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    <option value='all'>All Statuses</option>
+                    <option value='active'>Active</option>
+                    <option value='inactive'>Inactive</option>
+                  </select>
+
+                  <select
+                    value={announcementQuery.sort}
+                    onChange={(e) => setAnnouncementQuery((prev) => ({ ...prev, sort: e.target.value, page: 1 }))}
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    <option value='createdAt:desc'>Newest</option>
+                    <option value='createdAt:asc'>Oldest</option>
+                    <option value='title:asc'>Title A-Z</option>
+                    <option value='title:desc'>Title Z-A</option>
+                    <option value='hourlyRate:desc'>Rate ↓</option>
+                    <option value='hourlyRate:asc'>Rate ↑</option>
+                  </select>
+
+                  <select
+                    value={announcementQuery.limit}
+                    onChange={(e) => setAnnouncementQuery((prev) => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    <option value={10}>10 / page</option>
+                    <option value={20}>20 / page</option>
+                    <option value={30}>30 / page</option>
+                  </select>
+                </div>
+
                 <div className='text-sm text-gray-500 dark:text-gray-400'>Total announcements: {announcementsMeta.total}</div>
 
                 {announcementsLoading && <p className='text-gray-700 dark:text-gray-200'>Loading announcements...</p>}
-
                 {!announcementsLoading && announcements.length === 0 && <p className='text-gray-700 dark:text-gray-200'>No announcements found.</p>}
 
                 {!announcementsLoading &&
@@ -378,6 +480,24 @@ const AdminUserDetail = () => {
                       </p>
                     </div>
                   ))}
+
+                <div className='flex items-center justify-between pt-2'>
+                  <button
+                    onClick={() => setAnnouncementQuery((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+                    disabled={announcementsMeta.page <= 1 || announcementsLoading}
+                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
+                    Previous
+                  </button>
+                  <span className='text-sm text-gray-600 dark:text-gray-300'>
+                    Page {announcementsMeta.page} / {announcementsMeta.pages}
+                  </span>
+                  <button
+                    onClick={() => setAnnouncementQuery((prev) => ({ ...prev, page: Math.min(announcementsMeta.pages, prev.page + 1) }))}
+                    disabled={announcementsMeta.page >= announcementsMeta.pages || announcementsLoading}
+                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
+                    Next
+                  </button>
+                </div>
               </div>
             )}
           </div>
