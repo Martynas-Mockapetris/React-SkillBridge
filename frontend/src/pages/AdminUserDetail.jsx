@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { getAdminUserAnnouncements, getAdminUserDetail, getAdminUserProjects } from '../services/userService'
+import { getAdminUserAnnouncements, getAdminUserDetail, getAdminUserProjects, toggleUserLock, updateAdminUser } from '../services/userService'
+import AdminUserEditModal from '../modal/AdminUserEditModal'
+import AdminLockUserModal from '../modal/AdminLockUserModal'
+import AdminMailUserModal from '../modal/AdminMailUserModal'
 
 const tabs = [
   { id: 'details', label: 'User Details' },
@@ -43,35 +46,39 @@ const AdminUserDetail = () => {
   const [announcementsLoading, setAnnouncementsLoading] = useState(false)
   const [announcementsLoaded, setAnnouncementsLoaded] = useState(false)
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const [isMailModalOpen, setIsMailModalOpen] = useState(false)
+
   const headerSubtitle = useMemo(() => {
     if (!id) return 'No user selected'
     if (!user) return `User ID: ${id}`
     return `${user.firstName || ''} ${user.lastName || ''}`.trim() || `User ID: ${id}`
   }, [id, user])
 
-  useEffect(() => {
-    const loadUserDetail = async () => {
-      if (!id) {
-        setError('Missing user id in route')
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        setError('')
-        const response = await getAdminUserDetail(id)
-        setUser(response.user || null)
-        setMetrics(response.metrics || null)
-      } catch (err) {
-        const message = err?.response?.data?.message || 'Failed to load user details'
-        setError(message)
-        toast.error(message)
-      } finally {
-        setLoading(false)
-      }
+  const loadUserDetail = async ({ showToastOnError = true } = {}) => {
+    if (!id) {
+      setError('Missing user id in route')
+      setLoading(false)
+      return
     }
 
+    try {
+      setLoading(true)
+      setError('')
+      const response = await getAdminUserDetail(id)
+      setUser(response.user || null)
+      setMetrics(response.metrics || null)
+    } catch (err) {
+      const message = err?.response?.data?.message || 'Failed to load user details'
+      setError(message)
+      if (showToastOnError) toast.error(message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     loadUserDetail()
   }, [id])
 
@@ -136,18 +143,94 @@ const AdminUserDetail = () => {
     return 'Active'
   }, [user])
 
+  const refreshAll = async () => {
+    await loadUserDetail({ showToastOnError: true })
+    setProjectsLoaded(false)
+    setAnnouncementsLoaded(false)
+    toast.success('User data refreshed')
+  }
+
+  const handleSaveUser = async (payload) => {
+    try {
+      if (!payload?._id) {
+        toast.error('Invalid user payload')
+        return
+      }
+      await updateAdminUser(payload._id, payload)
+      setIsEditModalOpen(false)
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('User updated successfully')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to update user')
+    }
+  }
+
+  const handleConfirmLock = async ({ reason, durationDays }) => {
+    try {
+      if (!user?._id) return
+      await toggleUserLock(user._id, { reason, durationDays })
+      setIsLockModalOpen(false)
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('User locked successfully')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to lock user')
+    }
+  }
+
+  const handleUnlock = async () => {
+    if (!user?._id) return
+    const confirmed = window.confirm(`Unlock ${user.firstName} ${user.lastName}?`)
+    if (!confirmed) return
+
+    try {
+      await toggleUserLock(user._id)
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('User unlocked successfully')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to unlock user')
+    }
+  }
+
   return (
     <div className='min-h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
       <div className='container mx-auto px-6 py-8'>
-        <div className='mb-6 flex items-center justify-between'>
+        <div className='mb-6 flex items-start justify-between gap-4'>
           <div>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>Admin User Detail</h1>
             <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>{headerSubtitle}</p>
           </div>
 
-          <button onClick={() => navigate('/admin')} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
-            Back to Admin
-          </button>
+          <div className='flex flex-wrap items-center gap-2'>
+            <button onClick={refreshAll} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
+              Refresh
+            </button>
+
+            {user && (
+              <>
+                <button onClick={() => setIsEditModalOpen(true)} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90'>
+                  Edit User
+                </button>
+
+                {!user.isLocked ? (
+                  <button onClick={() => setIsLockModalOpen(true)} className='px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700'>
+                    Lock User
+                  </button>
+                ) : (
+                  <button onClick={handleUnlock} className='px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700'>
+                    Unlock User
+                  </button>
+                )}
+
+                <button onClick={() => setIsMailModalOpen(true)} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
+                  Mail User
+                </button>
+              </>
+            )}
+
+            <button onClick={() => navigate('/admin')} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
+              Back to Admin
+            </button>
+          </div>
         </div>
 
         <div className='bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm'>
@@ -300,6 +383,19 @@ const AdminUserDetail = () => {
           </div>
         </div>
       </div>
+
+      <AdminUserEditModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user} onSave={handleSaveUser} />
+
+      <AdminLockUserModal isOpen={isLockModalOpen} onClose={() => setIsLockModalOpen(false)} onConfirm={handleConfirmLock} user={user} />
+
+      <AdminMailUserModal
+        isOpen={isMailModalOpen}
+        onClose={() => setIsMailModalOpen(false)}
+        recipient={user}
+        onSent={() => {
+          toast.success('Mail sent successfully')
+        }}
+      />
     </div>
   )
 }
