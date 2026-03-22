@@ -1,6 +1,15 @@
 import express from 'express'
 import { protect } from '../middleware/authMiddleware.js'
-import { createAnnouncement, getAnnouncementsByUser, getAllAnnouncements, updateAnnouncement, deleteAnnouncement, toggleAnnouncementStatus } from '../controllers/announcementController.js'
+import {
+  createAnnouncement,
+  getAnnouncementsByUser,
+  getAllAnnouncements,
+  updateAnnouncement,
+  deleteAnnouncement,
+  toggleAnnouncementStatus,
+  toggleAnnouncementStatusAsAdmin,
+  deleteAnnouncementAsAdmin
+} from '../controllers/announcementController.js'
 
 const router = express.Router()
 
@@ -33,5 +42,9 @@ router.delete('/:id', protect, deleteAnnouncement)
 // Toggle announcement status (pause/unpause)
 // PATCH /api/announcements/:id/toggle
 router.patch('/:id/toggle', protect, toggleAnnouncementStatus)
+
+// Admin moderation routes
+router.patch('/admin/:id/toggle', protect, adminOnly, toggleAnnouncementStatusAsAdmin)
+router.delete('/admin/:id', protect, adminOnly, deleteAnnouncementAsAdmin)
 
 export default router
