@@ -84,3 +84,25 @@ export const toggleAnnouncementStatus = async (id) => {
     throw error
   }
 }
+
+// Admin: Toggle announcement status
+export const toggleAnnouncementStatusAsAdmin = async (id) => {
+  try {
+    const response = await authAxios.patch(`/api/announcements/admin/${id}/toggle`)
+    return response.data
+  } catch (error) {
+    console.error('Error toggling announcement status as admin:', error)
+    throw error
+  }
+}
+
+// Admin: Delete announcement
+export const deleteAnnouncementAsAdmin = async (id) => {
+  try {
+    const response = await authAxios.delete(`/api/announcements/admin/${id}`)
+    return response.data
+  } catch (error) {
+    console.error('Error deleting announcement as admin:', error)
+    throw error
+  }
+}

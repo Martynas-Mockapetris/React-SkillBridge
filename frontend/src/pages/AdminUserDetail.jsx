@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getAdminUserAnnouncements, getAdminUserDetail, getAdminUserProjects, toggleUserLock, updateAdminUser } from '../services/userService'
+import { deleteAnnouncementAsAdmin, toggleAnnouncementStatusAsAdmin } from '../services/announcementService'
 import AdminUserEditModal from '../modal/AdminUserEditModal'
 import AdminLockUserModal from '../modal/AdminLockUserModal'
 import AdminMailUserModal from '../modal/AdminMailUserModal'
@@ -206,6 +207,49 @@ const AdminUserDetail = () => {
     }
   }
 
+  const reloadAnnouncements = async () => {
+    if (!id) return
+    try {
+      setAnnouncementsLoading(true)
+      const response = await getAdminUserAnnouncements(id, announcementQuery)
+      setAnnouncements(response.announcements || [])
+      setAnnouncementsMeta({
+        total: response.total || 0,
+        page: response.page || 1,
+        pages: response.pages || 1
+      })
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to reload announcements')
+    } finally {
+      setAnnouncementsLoading(false)
+    }
+  }
+
+  const handleToggleAnnouncement = async (announcementId) => {
+    try {
+      await toggleAnnouncementStatusAsAdmin(announcementId)
+      await reloadAnnouncements()
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('Announcement status updated')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to update announcement status')
+    }
+  }
+
+  const handleDeleteAnnouncement = async (announcementId, title) => {
+    const confirmed = window.confirm(`Delete announcement "${title}"?`)
+    if (!confirmed) return
+
+    try {
+      await deleteAnnouncementAsAdmin(announcementId)
+      await reloadAnnouncements()
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('Announcement deleted')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to delete announcement')
+    }
+  }
+
   return (
     <div className='min-h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
       <div className='container mx-auto px-6 py-8'>
@@ -264,6 +308,7 @@ const AdminUserDetail = () => {
             </div>
           </div>
 
+          {/* Announcements Tab */}
           <div className='p-6'>
             {loading && <p className='text-gray-700 dark:text-gray-200'>Loading user details...</p>}
             {!loading && error && <p className='text-red-600 dark:text-red-400'>{error}</p>}
@@ -478,6 +523,15 @@ const AdminUserDetail = () => {
                       <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>
                         Hourly: {formatMoney(announcement.hourlyRate)} | Skills: {(announcement.skills || []).join(', ') || 'N/A'}
                       </p>
+                      <div className='mt-3 flex flex-wrap gap-2'>
+                        <button onClick={() => handleToggleAnnouncement(announcement._id)} className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'>
+                          {announcement.isActive ? 'Pause' : 'Resume'}
+                        </button>
+
+                        <button onClick={() => handleDeleteAnnouncement(announcement._id, announcement.title)} className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700'>
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
 
