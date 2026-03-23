@@ -70,6 +70,7 @@ const AdminUserDetail = () => {
   const [isProjectLockModalOpen, setIsProjectLockModalOpen] = useState(false)
   const [projectToLock, setProjectToLock] = useState(null)
   const [projectActionLoadingId, setProjectActionLoadingId] = useState(null)
+  const [announcementActionLoadingId, setAnnouncementActionLoadingId] = useState(null)
 
   const headerSubtitle = useMemo(() => {
     if (!id) return 'No user selected'
@@ -338,12 +339,15 @@ const AdminUserDetail = () => {
 
   const handleToggleAnnouncement = async (announcementId) => {
     try {
+      setAnnouncementActionLoadingId(announcementId)
       await toggleAnnouncementStatusAsAdmin(announcementId)
       await reloadAnnouncements()
       await loadUserDetail({ showToastOnError: false })
       toast.success('Announcement status updated')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to update announcement status')
+    } finally {
+      setAnnouncementActionLoadingId(null)
     }
   }
 
@@ -352,12 +356,15 @@ const AdminUserDetail = () => {
     if (!confirmed) return
 
     try {
+      setAnnouncementActionLoadingId(announcementId)
       await deleteAnnouncementAsAdmin(announcementId)
       await reloadAnnouncements()
       await loadUserDetail({ showToastOnError: false })
       toast.success('Announcement deleted')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to delete announcement')
+    } finally {
+      setAnnouncementActionLoadingId(null)
     }
   }
 
@@ -676,11 +683,15 @@ const AdminUserDetail = () => {
                       <div className='mt-3 flex flex-wrap gap-2'>
                         <button
                           onClick={() => handleToggleAnnouncement(announcement._id)}
-                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'>
+                          disabled={announcementActionLoadingId === announcement._id}
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-60'>
                           {announcement.isActive ? 'Pause' : 'Resume'}
                         </button>
 
-                        <button onClick={() => handleDeleteAnnouncement(announcement._id, announcement.title)} className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors'>
+                        <button
+                          onClick={() => handleDeleteAnnouncement(announcement._id, announcement.title)}
+                          disabled={announcementActionLoadingId === announcement._id}
+                          className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-60'>
                           Delete
                         </button>
                       </div>
