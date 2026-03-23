@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getAdminUserAnnouncements, getAdminUserDetail, getAdminUserProjects, toggleUserLock, updateAdminUser } from '../services/userService'
 import { deleteAnnouncementAsAdmin, toggleAnnouncementStatusAsAdmin } from '../services/announcementService'
+import { deleteProjectAsAdmin, removeAssigneeAsAdmin, toggleProjectLockAsAdmin } from '../services/projectService'
+import AdminLockProjectModal from '../modal/AdminLockProjectModal'
 import AdminUserEditModal from '../modal/AdminUserEditModal'
 import AdminLockUserModal from '../modal/AdminLockUserModal'
 import AdminMailUserModal from '../modal/AdminMailUserModal'
@@ -29,14 +31,15 @@ const formatMoney = (value) => {
 const AdminUserDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-
   const [activeTab, setActiveTab] = useState('details')
 
+  // User detail state
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [user, setUser] = useState(null)
   const [metrics, setMetrics] = useState(null)
 
+  // Projects state
   const [projects, setProjects] = useState([])
   const [projectsMeta, setProjectsMeta] = useState({ total: 0, page: 1, pages: 1 })
   const [projectsLoading, setProjectsLoading] = useState(false)
@@ -48,6 +51,7 @@ const AdminUserDetail = () => {
     sort: 'createdAt:desc'
   })
 
+  // Announcements state
   const [announcements, setAnnouncements] = useState([])
   const [announcementsMeta, setAnnouncementsMeta] = useState({ total: 0, page: 1, pages: 1 })
   const [announcementsLoading, setAnnouncementsLoading] = useState(false)
@@ -58,9 +62,13 @@ const AdminUserDetail = () => {
     sort: 'createdAt:desc'
   })
 
+  // Modals state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
   const [isMailModalOpen, setIsMailModalOpen] = useState(false)
+  const [isProjectLockModalOpen, setIsProjectLockModalOpen] = useState(false)
+  const [projectToLock, setProjectToLock] = useState(null)
+  const [projectActionLoadingId, setProjectActionLoadingId] = useState(null)
 
   const headerSubtitle = useMemo(() => {
     if (!id) return 'No user selected'
@@ -204,6 +212,108 @@ const AdminUserDetail = () => {
       toast.success('User unlocked successfully')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to unlock user')
+    }
+  }
+
+  const reloadProjects = async () => {
+    if (!id) return
+    try {
+      setProjectsLoading(true)
+      const response = await getAdminUserProjects(id, projectQuery)
+      setProjects(response.projects || [])
+      setProjectsMeta({
+        total: response.total || 0,
+        page: response.page || 1,
+        pages: response.pages || 1
+      })
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to reload projects')
+    } finally {
+      setProjectsLoading(false)
+    }
+  }
+
+  const handleToggleProjectLock = async (project) => {
+    if (!project?._id) return
+
+    if (!project.isLocked) {
+      setProjectToLock(project)
+      setIsProjectLockModalOpen(true)
+      return
+    }
+
+    try {
+      setProjectActionLoadingId(project._id)
+      await toggleProjectLockAsAdmin(project._id)
+      await reloadProjects()
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('Project unlocked successfully')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to unlock project')
+    } finally {
+      setProjectActionLoadingId(null)
+    }
+  }
+
+  const handleConfirmProjectLock = async ({ reason, durationDays }) => {
+    if (!projectToLock?._id) return
+
+    try {
+      setProjectActionLoadingId(projectToLock._id)
+      await toggleProjectLockAsAdmin(projectToLock._id, { reason, durationDays })
+      setIsProjectLockModalOpen(false)
+      setProjectToLock(null)
+      await reloadProjects()
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('Project locked successfully')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to lock project')
+    } finally {
+      setProjectActionLoadingId(null)
+    }
+  }
+
+  const handleRemoveProjectAssignee = async (project) => {
+    if (!project?._id) return
+
+    if (!project.assignee) {
+      toast.info('This project has no assignee')
+      return
+    }
+
+    const assigneeName = `${project.assignee.firstName || ''} ${project.assignee.lastName || ''}`.trim() || 'Unknown user'
+    const confirmed = window.confirm(`Remove assignee "${assigneeName}" from this project?`)
+    if (!confirmed) return
+
+    try {
+      setProjectActionLoadingId(project._id)
+      await removeAssigneeAsAdmin(project._id)
+      await reloadProjects()
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('Assignee removed successfully')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to remove assignee')
+    } finally {
+      setProjectActionLoadingId(null)
+    }
+  }
+
+  const handleCancelProject = async (project) => {
+    if (!project?._id) return
+
+    const confirmed = window.confirm(`Cancel project "${project.title || 'Untitled project'}" as admin?`)
+    if (!confirmed) return
+
+    try {
+      setProjectActionLoadingId(project._id)
+      await deleteProjectAsAdmin(project._id)
+      await reloadProjects()
+      await loadUserDetail({ showToastOnError: false })
+      toast.success('Project canceled by admin')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to cancel project')
+    } finally {
+      setProjectActionLoadingId(null)
     }
   }
 
@@ -446,6 +556,28 @@ const AdminUserDetail = () => {
                       <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>
                         Budget: {formatMoney(project.budget)} | Deadline: {formatDateTime(project.deadline)}
                       </p>
+                      <div className='mt-3 flex flex-wrap gap-2'>
+                        <button
+                          onClick={() => handleToggleProjectLock(project)}
+                          disabled={projectActionLoadingId === project._id}
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60'>
+                          {project.isLocked ? 'Unlock' : 'Lock'}
+                        </button>
+
+                        <button
+                          onClick={() => handleRemoveProjectAssignee(project)}
+                          disabled={projectActionLoadingId === project._id}
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60'>
+                          Remove Assignee
+                        </button>
+
+                        <button
+                          onClick={() => handleCancelProject(project)}
+                          disabled={projectActionLoadingId === project._id}
+                          className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60'>
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   ))}
 
@@ -569,6 +701,17 @@ const AdminUserDetail = () => {
         onSent={() => {
           toast.success('Mail sent successfully')
         }}
+      />
+
+      <AdminLockProjectModal
+        isOpen={isProjectLockModalOpen}
+        onClose={() => {
+          setIsProjectLockModalOpen(false)
+          setProjectToLock(null)
+        }}
+        onConfirm={handleConfirmProjectLock}
+        project={projectToLock ? { id: projectToLock._id, name: projectToLock.title || 'Untitled project' } : null}
+        loading={projectActionLoadingId === projectToLock?._id}
       />
     </div>
   )
