@@ -400,6 +400,9 @@ const AdminUserDetail = () => {
     return null
   }
 
+  const hasProjectFilters = projectQuery.scope !== 'all' || projectQuery.status !== 'all' || projectQuery.sort !== 'createdAt:desc' || projectQuery.limit !== 10
+  const hasAnnouncementFilters = announcementQuery.status !== 'all' || announcementQuery.sort !== 'createdAt:desc' || announcementQuery.limit !== 10
+
   return (
     <div className='min-h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
       <div className='container mx-auto px-6 py-8'>
@@ -598,7 +601,16 @@ const AdminUserDetail = () => {
                 <div className='text-sm text-gray-500 dark:text-gray-400'>Total projects: {projectsMeta.total}</div>
 
                 {projectsLoading && <p className='text-gray-700 dark:text-gray-200'>Loading projects...</p>}
-                {!projectsLoading && projects.length === 0 && <p className='text-gray-700 dark:text-gray-200'>No projects found.</p>}
+                {!projectsLoading && projects.length === 0 && (
+                  <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                    <p className='text-gray-700 dark:text-gray-200'>No projects found.</p>
+                    {hasProjectFilters && (
+                      <button onClick={resetProjectFilters} className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {!projectsLoading &&
                   projects.map((project) => (
@@ -701,7 +713,16 @@ const AdminUserDetail = () => {
                 <div className='text-sm text-gray-500 dark:text-gray-400'>Total announcements: {announcementsMeta.total}</div>
 
                 {announcementsLoading && <p className='text-gray-700 dark:text-gray-200'>Loading announcements...</p>}
-                {!announcementsLoading && announcements.length === 0 && <p className='text-gray-700 dark:text-gray-200'>No announcements found.</p>}
+                {!announcementsLoading && announcements.length === 0 && (
+                  <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                    <p className='text-gray-700 dark:text-gray-200'>No announcements found.</p>
+                    {hasAnnouncementFilters && (
+                      <button onClick={resetAnnouncementFilters} className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {!announcementsLoading &&
                   announcements.map((announcement) => (
