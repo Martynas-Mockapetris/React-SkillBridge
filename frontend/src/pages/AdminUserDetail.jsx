@@ -582,11 +582,26 @@ const AdminUserDetail = () => {
                     <div key={project._id} className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                       <div className='flex items-center justify-between gap-3'>
                         <p className='text-gray-900 dark:text-white font-medium'>{project.title || 'Untitled project'}</p>
-                        <span className='text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 capitalize'>{project.status || 'unknown'}</span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded capitalize ${
+                            project.isLocked ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
+                          }`}>
+                          {project.status || 'unknown'}
+                        </span>
                       </div>
                       <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>
                         Budget: {formatMoney(project.budget)} | Deadline: {formatDateTime(project.deadline)}
                       </p>
+
+                      {project.isLocked && (
+                        <div className='mt-2 rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2'>
+                          <p className='text-xs font-medium text-red-700 dark:text-red-300'>
+                            Locked
+                            {project.lockExpiresAt ? ` until ${formatDateTime(project.lockExpiresAt)}` : ''}
+                          </p>
+                          {project.lockReason && <p className='text-xs text-red-600 dark:text-red-300/90 mt-1'>Reason: {project.lockReason}</p>}
+                        </div>
+                      )}
                       <div className='mt-3 flex flex-wrap gap-2'>
                         <button
                           onClick={() => handleToggleProjectLock(project)}
