@@ -8,6 +8,7 @@ import AdminLockProjectModal from '../modal/AdminLockProjectModal'
 import AdminUserEditModal from '../modal/AdminUserEditModal'
 import AdminLockUserModal from '../modal/AdminLockUserModal'
 import AdminMailUserModal from '../modal/AdminMailUserModal'
+import PaginationControls from '../components/shared/PaginationControls'
 
 const tabs = [
   { id: 'details', label: 'User Details' },
@@ -581,23 +582,13 @@ const AdminUserDetail = () => {
                     </div>
                   ))}
 
-                <div className='flex items-center justify-between pt-2'>
-                  <button
-                    onClick={() => setProjectQuery((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
-                    disabled={projectsMeta.page <= 1 || projectsLoading}
-                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
-                    Previous
-                  </button>
-                  <span className='text-sm text-gray-600 dark:text-gray-300'>
-                    Page {projectsMeta.page} / {projectsMeta.pages}
-                  </span>
-                  <button
-                    onClick={() => setProjectQuery((prev) => ({ ...prev, page: Math.min(projectsMeta.pages, prev.page + 1) }))}
-                    disabled={projectsMeta.page >= projectsMeta.pages || projectsLoading}
-                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
-                    Next
-                  </button>
-                </div>
+                <PaginationControls
+                  currentPage={projectsMeta.page}
+                  totalPages={projectsMeta.pages}
+                  onPrev={() => setProjectQuery((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+                  onNext={() => setProjectQuery((prev) => ({ ...prev, page: Math.min(projectsMeta.pages, prev.page + 1) }))}
+                  label={`Page ${projectsMeta.page} of ${projectsMeta.pages}`}
+                />
               </div>
             )}
 
@@ -667,23 +658,13 @@ const AdminUserDetail = () => {
                     </div>
                   ))}
 
-                <div className='flex items-center justify-between pt-2'>
-                  <button
-                    onClick={() => setAnnouncementQuery((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
-                    disabled={announcementsMeta.page <= 1 || announcementsLoading}
-                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
-                    Previous
-                  </button>
-                  <span className='text-sm text-gray-600 dark:text-gray-300'>
-                    Page {announcementsMeta.page} / {announcementsMeta.pages}
-                  </span>
-                  <button
-                    onClick={() => setAnnouncementQuery((prev) => ({ ...prev, page: Math.min(announcementsMeta.pages, prev.page + 1) }))}
-                    disabled={announcementsMeta.page >= announcementsMeta.pages || announcementsLoading}
-                    className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 disabled:opacity-50'>
-                    Next
-                  </button>
-                </div>
+                <PaginationControls
+                  currentPage={announcementsMeta.page}
+                  totalPages={announcementsMeta.pages}
+                  onPrev={() => setAnnouncementQuery((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+                  onNext={() => setAnnouncementQuery((prev) => ({ ...prev, page: Math.min(announcementsMeta.pages, prev.page + 1) }))}
+                  label={`Page ${announcementsMeta.page} of ${announcementsMeta.pages}`}
+                />
               </div>
             )}
           </div>
