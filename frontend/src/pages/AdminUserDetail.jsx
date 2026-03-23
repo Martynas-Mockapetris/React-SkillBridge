@@ -498,7 +498,7 @@ const AdminUserDetail = () => {
                   <select
                     value={projectQuery.scope}
                     onChange={(e) => setProjectQuery((prev) => ({ ...prev, scope: e.target.value, page: 1 }))}
-                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
                     <option value='all'>All Scopes</option>
                     <option value='created'>Created</option>
                     <option value='assigned'>Assigned</option>
@@ -507,7 +507,7 @@ const AdminUserDetail = () => {
                   <select
                     value={projectQuery.status}
                     onChange={(e) => setProjectQuery((prev) => ({ ...prev, status: e.target.value, page: 1 }))}
-                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
                     <option value='all'>All Statuses</option>
                     <option value='draft'>Draft</option>
                     <option value='active'>Active</option>
@@ -523,7 +523,7 @@ const AdminUserDetail = () => {
                   <select
                     value={projectQuery.sort}
                     onChange={(e) => setProjectQuery((prev) => ({ ...prev, sort: e.target.value, page: 1 }))}
-                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
                     <option value='createdAt:desc'>Newest</option>
                     <option value='createdAt:asc'>Oldest</option>
                     <option value='deadline:asc'>Deadline ↑</option>
@@ -535,7 +535,7 @@ const AdminUserDetail = () => {
                   <select
                     value={projectQuery.limit}
                     onChange={(e) => setProjectQuery((prev) => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
-                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
                     <option value={10}>10 / page</option>
                     <option value={20}>20 / page</option>
                     <option value={30}>30 / page</option>
@@ -561,14 +561,14 @@ const AdminUserDetail = () => {
                         <button
                           onClick={() => handleToggleProjectLock(project)}
                           disabled={projectActionLoadingId === project._id}
-                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60'>
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-60'>
                           {project.isLocked ? 'Unlock' : 'Lock'}
                         </button>
 
                         <button
                           onClick={() => handleRemoveProjectAssignee(project)}
                           disabled={projectActionLoadingId === project._id}
-                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60'>
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-60'>
                           Remove Assignee
                         </button>
 
@@ -598,7 +598,7 @@ const AdminUserDetail = () => {
                   <select
                     value={announcementQuery.status}
                     onChange={(e) => setAnnouncementQuery((prev) => ({ ...prev, status: e.target.value, page: 1 }))}
-                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
                     <option value='all'>All Statuses</option>
                     <option value='active'>Active</option>
                     <option value='inactive'>Inactive</option>
@@ -607,7 +607,7 @@ const AdminUserDetail = () => {
                   <select
                     value={announcementQuery.sort}
                     onChange={(e) => setAnnouncementQuery((prev) => ({ ...prev, sort: e.target.value, page: 1 }))}
-                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    className='px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
                     <option value='createdAt:desc'>Newest</option>
                     <option value='createdAt:asc'>Oldest</option>
                     <option value='title:asc'>Title A-Z</option>
@@ -619,7 +619,7 @@ const AdminUserDetail = () => {
                   <select
                     value={announcementQuery.limit}
                     onChange={(e) => setAnnouncementQuery((prev) => ({ ...prev, limit: Number(e.target.value), page: 1 }))}
-                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white'>
+                    className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
                     <option value={10}>10 / page</option>
                     <option value={20}>20 / page</option>
                     <option value={30}>30 / page</option>
