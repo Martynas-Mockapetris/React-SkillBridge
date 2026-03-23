@@ -12,7 +12,7 @@ import PaginationControls from '../components/shared/PaginationControls'
 
 const tabs = [
   { id: 'details', label: 'User Details' },
-  { id: 'profile', label: 'Profile' },
+  { id: 'stats', label: 'Stats' },
   { id: 'projects', label: 'Projects' },
   { id: 'announcements', label: 'Announcements' }
 ]
@@ -451,6 +451,27 @@ const AdminUserDetail = () => {
                   <p className='text-gray-900 dark:text-white font-medium'>{formatDateTime(user.lastLogin)}</p>
                 </div>
                 <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Phone</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{user?.phone || 'N/A'}</p>
+                </div>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Location</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{user?.location || 'N/A'}</p>
+                </div>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Skills</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{user?.skills || 'N/A'}</p>
+                </div>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Hourly Rate</p>
+                  <p className='text-gray-900 dark:text-white font-medium'>{formatMoney(user?.hourlyRate)}</p>
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && activeTab === 'stats' && (
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Created Projects</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{metrics?.createdProjects ?? 0}</p>
                 </div>
@@ -467,27 +488,6 @@ const AdminUserDetail = () => {
                   <p className='text-gray-900 dark:text-white font-medium'>
                     {metrics?.activeAnnouncements ?? 0} / {metrics?.totalAnnouncements ?? 0}
                   </p>
-                </div>
-              </div>
-            )}
-
-            {!loading && !error && activeTab === 'profile' && (
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
-                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Phone</p>
-                  <p className='text-gray-900 dark:text-white font-medium'>{user?.phone || 'N/A'}</p>
-                </div>
-                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
-                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Location</p>
-                  <p className='text-gray-900 dark:text-white font-medium'>{user?.location || 'N/A'}</p>
-                </div>
-                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
-                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Skills</p>
-                  <p className='text-gray-900 dark:text-white font-medium'>{user?.skills || 'N/A'}</p>
-                </div>
-                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
-                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Hourly Rate</p>
-                  <p className='text-gray-900 dark:text-white font-medium'>{formatMoney(user?.hourlyRate)}</p>
                 </div>
               </div>
             )}
@@ -647,11 +647,13 @@ const AdminUserDetail = () => {
                         Hourly: {formatMoney(announcement.hourlyRate)} | Skills: {(announcement.skills || []).join(', ') || 'N/A'}
                       </p>
                       <div className='mt-3 flex flex-wrap gap-2'>
-                        <button onClick={() => handleToggleAnnouncement(announcement._id)} className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'>
+                        <button
+                          onClick={() => handleToggleAnnouncement(announcement._id)}
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'>
                           {announcement.isActive ? 'Pause' : 'Resume'}
                         </button>
 
-                        <button onClick={() => handleDeleteAnnouncement(announcement._id, announcement.title)} className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700'>
+                        <button onClick={() => handleDeleteAnnouncement(announcement._id, announcement.title)} className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors'>
                           Delete
                         </button>
                       </div>
