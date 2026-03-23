@@ -387,6 +387,19 @@ const AdminUserDetail = () => {
     })
   }
 
+  const getTabCount = (tabId) => {
+    if (tabId === 'stats') {
+      return (metrics?.createdProjects ?? 0) + (metrics?.assignedProjects ?? 0)
+    }
+    if (tabId === 'projects') {
+      return projectsMeta?.total ?? 0
+    }
+    if (tabId === 'announcements') {
+      return announcementsMeta?.total ?? 0
+    }
+    return null
+  }
+
   return (
     <div className='min-h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
       <div className='container mx-auto px-6 py-8'>
@@ -439,7 +452,17 @@ const AdminUserDetail = () => {
                   className={`px-4 py-2 rounded-t-lg text-sm font-medium transition ${
                     activeTab === tab.id ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}>
-                  {tab.label}
+                  <span className='inline-flex items-center gap-2'>
+                    <span>{tab.label}</span>
+                    {getTabCount(tab.id) !== null && (
+                      <span
+                        className={`inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold ${
+                          activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200'
+                        }`}>
+                        {getTabCount(tab.id)}
+                      </span>
+                    )}
+                  </span>
                 </button>
               ))}
             </div>
