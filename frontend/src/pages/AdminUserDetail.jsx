@@ -361,6 +361,25 @@ const AdminUserDetail = () => {
     }
   }
 
+  const resetProjectFilters = () => {
+    setProjectQuery({
+      page: 1,
+      limit: 10,
+      status: 'all',
+      scope: 'all',
+      sort: 'createdAt:desc'
+    })
+  }
+
+  const resetAnnouncementFilters = () => {
+    setAnnouncementQuery({
+      page: 1,
+      limit: 10,
+      status: 'all',
+      sort: 'createdAt:desc'
+    })
+  }
+
   return (
     <div className='min-h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
       <div className='container mx-auto px-6 py-8'>
@@ -540,6 +559,10 @@ const AdminUserDetail = () => {
                     <option value={20}>20 / page</option>
                     <option value={30}>30 / page</option>
                   </select>
+
+                  <button onClick={resetProjectFilters} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                    Reset
+                  </button>
                 </div>
 
                 <div className='text-sm text-gray-500 dark:text-gray-400'>Total projects: {projectsMeta.total}</div>
@@ -624,6 +647,10 @@ const AdminUserDetail = () => {
                     <option value={20}>20 / page</option>
                     <option value={30}>30 / page</option>
                   </select>
+
+                  <button onClick={resetAnnouncementFilters} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                    Reset
+                  </button>
                 </div>
 
                 <div className='text-sm text-gray-500 dark:text-gray-400'>Total announcements: {announcementsMeta.total}</div>
