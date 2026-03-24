@@ -4,6 +4,7 @@ import AdminSidebar from '../components/Admin/AdminSidebar'
 import AdminStats from '../components/Admin/AdminStats'
 import AdminUsersList from '../components/Admin/AdminUsersList'
 import AdminProjectsList from '../components/Admin/AdminProjectsList'
+import AdminSettings from '../components/Admin/AdminSettings'
 
 const Admin = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
@@ -18,6 +19,7 @@ const Admin = () => {
             {activeSection === 'dashboard' && <AdminStats />}
             {activeSection === 'users' && <AdminUsersList />}
             {activeSection === 'projects' && <AdminProjectsList />}
+            {activeSection === 'settings' && <AdminSettings />}
           </div>
         </main>
       </div>
