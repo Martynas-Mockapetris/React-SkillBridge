@@ -2,7 +2,11 @@ import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const PricingSection = () => {
+const PricingSection = ({ content = {} }) => {
+  const pricingTitleLead = content.pricingTitleLead || 'Flexible'
+  const pricingTitleAccent = content.pricingTitleAccent || 'Pricing'
+  const pricingSubtitle = content.pricingSubtitle || 'Choose the perfect plan that suits your needs and budget'
+
   const pricingData = [
     {
       title: 'Basic',
@@ -58,10 +62,10 @@ const PricingSection = () => {
       <div className='container mx-auto px-4 relative z-10'>
         <motion.div className='text-center mb-16' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h2 className='text-4xl font-heading font-bold mb-4'>
-            <span className='theme-text'>Flexible</span>
-            <span className='text-accent'> Pricing</span>
+            <span className='theme-text'>{pricingTitleLead}</span>
+            <span className='text-accent'> {pricingTitleAccent}</span>
           </h2>
-          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>Choose the perfect plan that suits your needs and budget</p>
+          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>{pricingSubtitle}</p>
         </motion.div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 max-w-8xl mx-auto'>

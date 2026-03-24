@@ -3,8 +3,14 @@ import { useState } from 'react'
 import { FaUser, FaBriefcase, FaUserCircle, FaSearch, FaHandshake, FaFileAlt, FaUserCheck, FaCheckCircle } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const HowItWorksSection = () => {
+const HowItWorksSection = ({ content = {} }) => {
   const [activeTab, setActiveTab] = useState('talent')
+
+  const howTitleLead = content.howTitleLead || 'How'
+  const howTitleAccent = content.howTitleAccent || 'It Works'
+  const howSubtitle = content.howSubtitle || 'Choose your path and discover how SkillBridge works for you'
+  const talentTabLabel = content.talentTabLabel || 'For Talent'
+  const clientTabLabel = content.clientTabLabel || 'For Clients'
 
   const talentSteps = [
     {
@@ -78,10 +84,10 @@ const HowItWorksSection = () => {
         {/* Sekcijos antraste */}
         <div className='text-center mb-16'>
           <h2 className='text-4xl font-heading font-bold mb-4'>
-            <span className='theme-text'>How</span>
-            <span className='text-accent'> It Works</span>
+            <span className='theme-text'>{howTitleLead}</span>
+            <span className='text-accent'> {howTitleAccent}</span>
           </h2>
-          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>Choose your path and discover how SkillBridge works for you</p>
+          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>{howSubtitle}</p>
 
           {/* Tabu mygtukai ir konteineris */}
           <div className='max-w-6xl mx-auto'>
@@ -94,7 +100,7 @@ const HowItWorksSection = () => {
                     : 'dark:border-light/10 border-primary/10 dark:text-light/60 text-primary/60 dark:hover:text-light/80 hover:text-primary/80 dark:hover:bg-light/5 hover:bg-primary/5'
                 }`}>
                 <FaUser className='text-lg' />
-                <span className='font-medium'>For Talent</span>
+                <span className='font-medium'>{talentTabLabel}</span>
               </button>
               <button
                 onClick={() => setActiveTab('client')}
@@ -104,7 +110,7 @@ const HowItWorksSection = () => {
                     : 'dark:border-light/10 border-primary/10 dark:text-light/60 text-primary/60 dark:hover:text-light/80 hover:text-primary/80 dark:hover:bg-light/5 hover:bg-primary/5'
                 }`}>
                 <FaBriefcase className='text-lg' />
-                <span className='font-medium'>For Clients</span>
+                <span className='font-medium'>{clientTabLabel}</span>
               </button>
             </div>
 

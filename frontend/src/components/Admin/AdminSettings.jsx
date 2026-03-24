@@ -3,6 +3,35 @@ import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
 
 const SECTION_DEFS = {
+  home: {
+    title: 'Home Page',
+    description: 'Manage public text content for the Home page sections.',
+    fields: [
+      { key: 'heroTitleLead', label: 'Hero Title (Lead)', type: 'text', placeholder: 'Find Your Next' },
+      { key: 'heroTitleAccent', label: 'Hero Title (Accent)', type: 'text', placeholder: 'Opportunity' },
+      { key: 'heroDescriptionLine1', label: 'Hero Description Line 1', type: 'text', placeholder: 'Connect with top talent and clients worldwide on our platform.' },
+      { key: 'heroDescriptionLine2', label: 'Hero Description Line 2', type: 'text', placeholder: 'Start your success story today.' },
+      { key: 'heroTalentButton', label: 'Hero Talent Button', type: 'text', placeholder: 'Find Talent' },
+      { key: 'heroWorkButton', label: 'Hero Work Button', type: 'text', placeholder: 'Find Work' },
+      { key: 'featuresTitleLead', label: 'Features Title (Lead)', type: 'text', placeholder: 'Why Choose' },
+      { key: 'featuresTitleAccent', label: 'Features Title (Accent)', type: 'text', placeholder: 'SkillBridge' },
+      { key: 'featuresSubtitle', label: 'Features Subtitle', type: 'textarea', placeholder: 'Discover the advantages that make SkillBridge the preferred platform for connecting talent with opportunities' },
+      { key: 'howTitleLead', label: 'How It Works Title (Lead)', type: 'text', placeholder: 'How' },
+      { key: 'howTitleAccent', label: 'How It Works Title (Accent)', type: 'text', placeholder: 'It Works' },
+      { key: 'howSubtitle', label: 'How It Works Subtitle', type: 'textarea', placeholder: 'Choose your path and discover how SkillBridge works for you' },
+      { key: 'talentTabLabel', label: 'How It Works Talent Tab Label', type: 'text', placeholder: 'For Talent' },
+      { key: 'clientTabLabel', label: 'How It Works Client Tab Label', type: 'text', placeholder: 'For Clients' },
+      { key: 'testimonialsTitleLead', label: 'Testimonials Title (Lead)', type: 'text', placeholder: 'What Our' },
+      { key: 'testimonialsTitleAccent', label: 'Testimonials Title (Accent)', type: 'text', placeholder: 'Clients Say' },
+      { key: 'testimonialsSubtitle', label: 'Testimonials Subtitle', type: 'textarea', placeholder: 'Discover how our platform has transformed businesses and careers through real success stories' },
+      { key: 'pricingTitleLead', label: 'Pricing Title (Lead)', type: 'text', placeholder: 'Flexible' },
+      { key: 'pricingTitleAccent', label: 'Pricing Title (Accent)', type: 'text', placeholder: 'Pricing' },
+      { key: 'pricingSubtitle', label: 'Pricing Subtitle', type: 'textarea', placeholder: 'Choose the perfect plan that suits your needs and budget' },
+      { key: 'contactTitleLead', label: 'Contact Title (Lead)', type: 'text', placeholder: 'Get In' },
+      { key: 'contactTitleAccent', label: 'Contact Title (Accent)', type: 'text', placeholder: 'Touch' },
+      { key: 'contactSubtitle', label: 'Contact Subtitle', type: 'textarea', placeholder: "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon." }
+    ]
+  },
   about: {
     title: 'About Page',
     description: 'Manage About page content and visibility settings.',
@@ -47,6 +76,7 @@ const SECTION_DEFS = {
 }
 
 const initialDrafts = {
+  home: { enabled: true, values: {} },
   about: { enabled: true, values: {} },
   contact: { enabled: true, values: {} },
   mail: { enabled: true, values: {} },
@@ -62,6 +92,7 @@ const AdminSettings = () => {
   const sectionMap = useMemo(() => {
     if (!config) return {}
     return {
+      home: config.home || {},
       about: config.about || {},
       contact: config.contact || {},
       mail: config.mail || {},
@@ -77,6 +108,7 @@ const AdminSettings = () => {
         setConfig(data)
 
         setDrafts({
+          home: { enabled: data?.home?.enabled ?? true, values: data?.home?.values || {} },
           about: { enabled: data?.about?.enabled ?? true, values: data?.about?.values || {} },
           contact: { enabled: data?.contact?.enabled ?? true, values: data?.contact?.values || {} },
           mail: { enabled: data?.mail?.enabled ?? true, values: data?.mail?.values || {} },

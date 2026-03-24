@@ -12,6 +12,7 @@ const sectionSchema = new mongoose.Schema(
 
 const systemConfigSchema = new mongoose.Schema(
   {
+    home: { type: sectionSchema, default: () => ({}) },
     about: { type: sectionSchema, default: () => ({}) },
     contact: { type: sectionSchema, default: () => ({}) },
     mail: { type: sectionSchema, default: () => ({}) },

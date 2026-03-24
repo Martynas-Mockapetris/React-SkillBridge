@@ -3,8 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const TestimonialsSection = () => {
+const TestimonialsSection = ({ content = {} }) => {
   const [expandedId, setExpandedId] = useState(null)
+
+  const testimonialsTitleLead = content.testimonialsTitleLead || 'What Our'
+  const testimonialsTitleAccent = content.testimonialsTitleAccent || 'Clients Say'
+  const testimonialsSubtitle = content.testimonialsSubtitle || 'Discover how our platform has transformed businesses and careers through real success stories'
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id)
@@ -128,10 +132,10 @@ const TestimonialsSection = () => {
         {/* Sekcijos antraste */}
         <div className='text-center mb-16'>
           <h2 className='text-4xl font-heading font-bold mb-4'>
-            <span className='theme-text'>What Our</span>
-            <span className='text-accent'> Clients Say</span>
+            <span className='theme-text'>{testimonialsTitleLead}</span>
+            <span className='text-accent'> {testimonialsTitleAccent}</span>
           </h2>
-          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>Discover how our platform has transformed businesses and careers through real success stories</p>
+          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>{testimonialsSubtitle}</p>
         </div>
 
         {/* Testimonials Grid */}

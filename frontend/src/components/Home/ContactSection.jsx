@@ -2,7 +2,25 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const ContactSection = () => {
+const ContactSection = ({ content = {}, contactValues = {} }) => {
+  const contactTitleLead = content.contactTitleLead || 'Get In'
+  const contactTitleAccent = content.contactTitleAccent || 'Touch'
+  const contactSubtitle = content.contactSubtitle || "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon."
+
+  const supportEmail = contactValues.supportEmail || ''
+  const businessEmail = contactValues.businessEmail || ''
+  const phone = contactValues.phone || ''
+  const address = contactValues.address || ''
+  const workingHours = contactValues.workingHours || ''
+
+  const infoItems = [
+    supportEmail ? { label: 'Support', value: supportEmail } : null,
+    businessEmail ? { label: 'Business', value: businessEmail } : null,
+    phone ? { label: 'Phone', value: phone } : null,
+    workingHours ? { label: 'Hours', value: workingHours } : null,
+    address ? { label: 'Address', value: address } : null
+  ].filter(Boolean)
+
   // Formos duomenys
   const [formData, setFormData] = useState({
     name: '',
@@ -82,11 +100,22 @@ const ContactSection = () => {
       <div className='container mx-auto px-4 relative z-10'>
         <motion.div className='text-center mb-16' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h2 className='text-4xl font-heading font-bold mb-4'>
-            <span className='theme-text'>Get In</span>
-            <span className='text-accent'> Touch</span>
+            <span className='theme-text'>{contactTitleLead}</span>
+            <span className='text-accent'> {contactTitleAccent}</span>
           </h2>
-          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>Have a question or want to collaborate? Drop us a message, and we'll get back to you soon.</p>
+          <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>{contactSubtitle}</p>
         </motion.div>
+
+        {infoItems.length > 0 && (
+          <div className='max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6'>
+            {infoItems.map((item) => (
+              <div key={item.label} className='rounded-lg border theme-border bg-light/5 dark:bg-light/5 px-4 py-3'>
+                <p className='text-xs uppercase tracking-wide theme-text-secondary'>{item.label}</p>
+                <p className='theme-text text-sm break-words'>{item.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         <motion.div className='max-w-3xl mx-auto' initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
           <form onSubmit={handleSubmit} className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-8 rounded-lg backdrop-blur-sm'>

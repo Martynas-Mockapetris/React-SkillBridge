@@ -21,13 +21,39 @@ export const getSystemConfig = async (req, res) => {
   }
 }
 
+// @desc    Get public config for site content
+// @route   GET /api/config/public
+// @access  Public
+export const getPublicSystemConfig = async (req, res) => {
+  try {
+    const config = await ensureConfig()
+
+    const publicSections = ['home', 'about', 'contact', 'system']
+    const payload = publicSections.reduce((acc, section) => {
+      const sectionData = config[section]
+
+      acc[section] = {
+        enabled: sectionData?.enabled ?? true,
+        values: sectionData?.values || {}
+      }
+
+      return acc
+    }, {})
+
+    res.json(payload)
+  } catch (error) {
+    console.error('Error fetching public system config:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Update one config section (admin)
 // @route   PUT /api/config/:section
 // @access  Admin
 export const updateSystemConfigSection = async (req, res) => {
   try {
     const { section } = req.params
-    const allowedSections = ['about', 'contact', 'mail', 'system']
+    const allowedSections = ['home', 'about', 'contact', 'mail', 'system']
 
     if (!allowedSections.includes(section)) {
       return res.status(400).json({ message: 'Invalid config section' })
