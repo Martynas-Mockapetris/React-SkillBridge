@@ -8,10 +8,12 @@ import AdminSettings from '../components/Admin/AdminSettings'
 
 const Admin = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
+  const [activeSettingsSection, setActiveSettingsSection] = useState('home')
 
   return (
     <div className='flex h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
-      <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} />
+      <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} activeSettingsSection={activeSettingsSection} setActiveSettingsSection={setActiveSettingsSection} />
+
       <div className='flex-1 flex flex-col overflow-hidden'>
         <AdminHeader />
         <main className='flex-1 overflow-x-hidden overflow-y-auto'>
@@ -19,7 +21,7 @@ const Admin = () => {
             {activeSection === 'dashboard' && <AdminStats />}
             {activeSection === 'users' && <AdminUsersList />}
             {activeSection === 'projects' && <AdminProjectsList />}
-            {activeSection === 'settings' && <AdminSettings />}
+            {activeSection === 'settings' && <AdminSettings activeSectionId={activeSettingsSection} setActiveSectionId={setActiveSettingsSection} />}
           </div>
         </main>
       </div>

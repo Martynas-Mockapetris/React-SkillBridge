@@ -112,7 +112,7 @@ const initialDrafts = {
   system: { enabled: true, values: {} }
 }
 
-const AdminSettings = () => {
+const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
   const [loading, setLoading] = useState(true)
   const [config, setConfig] = useState(null)
   const [savingSection, setSavingSection] = useState('')
@@ -253,13 +253,14 @@ const AdminSettings = () => {
           <p className='text-gray-700 dark:text-gray-300'>Loading settings...</p>
         </div>
       ) : (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {SETTINGS_DISPLAY_ORDER.map((sectionId) => {
+        <div>
+          {(() => {
+            const sectionId = activeSectionId
             const section = SECTION_DEFS[sectionId]
             if (!section) return null
 
             return (
-              <div key={sectionId} className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 ${sectionId === 'home' ? 'md:col-span-2' : ''}`}>
+              <div className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5'>
                 <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section.title}</h3>
                 <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{section.description}</p>
 
@@ -280,12 +281,14 @@ const AdminSettings = () => {
 
                 <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
 
-                <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='mt-4 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
-                  {savingSection === sectionId ? 'Saving...' : 'Save Section'}
-                </button>
+                <div className='mt-4 flex flex-wrap items-center gap-2'>
+                  <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+                    {savingSection === sectionId ? 'Saving...' : 'Save Section'}
+                  </button>
+                </div>
               </div>
             )
-          })}
+          })()}
         </div>
       )}
     </div>
