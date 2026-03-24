@@ -75,6 +75,33 @@ const SECTION_DEFS = {
   }
 }
 
+const HOME_FIELD_GROUPS = [
+  {
+    title: 'Hero Section',
+    keys: ['heroTitleLead', 'heroTitleAccent', 'heroDescriptionLine1', 'heroDescriptionLine2', 'heroTalentButton', 'heroWorkButton']
+  },
+  {
+    title: 'Features Section',
+    keys: ['featuresTitleLead', 'featuresTitleAccent', 'featuresSubtitle']
+  },
+  {
+    title: 'How It Works Section',
+    keys: ['howTitleLead', 'howTitleAccent', 'howSubtitle', 'talentTabLabel', 'clientTabLabel']
+  },
+  {
+    title: 'Testimonials Section',
+    keys: ['testimonialsTitleLead', 'testimonialsTitleAccent', 'testimonialsSubtitle']
+  },
+  {
+    title: 'Pricing Section',
+    keys: ['pricingTitleLead', 'pricingTitleAccent', 'pricingSubtitle']
+  },
+  {
+    title: 'Contact Section',
+    keys: ['contactTitleLead', 'contactTitleAccent', 'contactSubtitle']
+  }
+]
+
 const initialDrafts = {
   home: { enabled: true, values: {} },
   about: { enabled: true, values: {} },
@@ -166,6 +193,52 @@ const AdminSettings = () => {
     }
   }
 
+  const renderField = (sectionId, field) => (
+    <div key={field.key}>
+      <label className='block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>{field.label}</label>
+
+      {field.type === 'textarea' ? (
+        <textarea
+          rows={3}
+          value={drafts[sectionId]?.values?.[field.key] || ''}
+          onChange={(e) => handleFieldChange(sectionId, field.key, e.target.value)}
+          placeholder={field.placeholder}
+          className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
+        />
+      ) : (
+        <input
+          type={field.type}
+          value={drafts[sectionId]?.values?.[field.key] || ''}
+          onChange={(e) => handleFieldChange(sectionId, field.key, e.target.value)}
+          placeholder={field.placeholder}
+          className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+        />
+      )}
+    </div>
+  )
+
+  const renderSectionFields = (sectionId, section) => {
+    if (sectionId !== 'home') {
+      return <div className='mt-4 space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+    }
+
+    return (
+      <div className='mt-4 space-y-4'>
+        {HOME_FIELD_GROUPS.map((group) => {
+          const groupFields = section.fields.filter((field) => group.keys.includes(field.key))
+          if (!groupFields.length) return null
+
+          return (
+            <div key={group.title} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
+              <h4 className='text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3'>{group.title}</h4>
+              <div className='space-y-3'>{groupFields.map((field) => renderField(sectionId, field))}</div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div>
       <div className='mb-6'>
@@ -197,31 +270,7 @@ const AdminSettings = () => {
                 </label>
               </div>
 
-              <div className='mt-4 space-y-3'>
-                {section.fields.map((field) => (
-                  <div key={field.key}>
-                    <label className='block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>{field.label}</label>
-
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        rows={3}
-                        value={drafts[sectionId]?.values?.[field.key] || ''}
-                        onChange={(e) => handleFieldChange(sectionId, field.key, e.target.value)}
-                        placeholder={field.placeholder}
-                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
-                      />
-                    ) : (
-                      <input
-                        type={field.type}
-                        value={drafts[sectionId]?.values?.[field.key] || ''}
-                        onChange={(e) => handleFieldChange(sectionId, field.key, e.target.value)}
-                        placeholder={field.placeholder}
-                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+              {renderSectionFields(sectionId, section)}
 
               <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
 
