@@ -197,7 +197,7 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
 
   const renderInputControl = (sectionId, field, customLabel) => (
     <div key={field.key}>
-      <label className='block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>{customLabel || field.label}</label>
+      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap overflow-hidden text-ellipsis'>{customLabel || field.label}</label>
 
       {field.type === 'textarea' ? (
         <textarea
@@ -219,7 +219,21 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
     </div>
   )
 
-  const renderField = (sectionId, field) => renderInputControl(sectionId, field)
+  const getCompactHomeLabel = (field) => {
+    if (field.key.endsWith('Subtitle')) return 'Subtitle'
+    if (field.key === 'talentTabLabel') return 'Talent Tab'
+    if (field.key === 'clientTabLabel') return 'Client Tab'
+    if (field.key === 'heroDescriptionLine1') return 'Description 1'
+    if (field.key === 'heroDescriptionLine2') return 'Description 2'
+    return field.label
+  }
+
+  const renderField = (sectionId, field) => {
+    if (sectionId === 'home') {
+      return renderInputControl(sectionId, field, getCompactHomeLabel(field))
+    }
+    return renderInputControl(sectionId, field)
+  }
 
   const renderHomeGroupFields = (sectionId, groupFields) => {
     const rendered = []
@@ -232,14 +246,13 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
       if (field.key.endsWith('TitleLead')) {
         const accentKey = field.key.replace('TitleLead', 'TitleAccent')
         const accentField = groupFields.find((f) => f.key === accentKey)
-        const titleGroupLabel = field.label.replace(' (Lead)', '')
 
         used.add(field.key)
         if (accentField) used.add(accentField.key)
 
         rendered.push(
           <div key={`${field.key}-pair`} className='space-y-2'>
-            <p className='text-sm font-semibold text-gray-800 dark:text-gray-200'>{titleGroupLabel}</p>
+            <p className='text-sm font-semibold text-gray-800 dark:text-gray-200'>Title</p>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
               {renderInputControl(sectionId, field, 'Lead')}
               {accentField ? renderInputControl(sectionId, accentField, 'Accent') : null}
@@ -249,7 +262,25 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
         return
       }
 
-      // Render Hero buttons in one row for cleaner editing.
+      // Render How It Works tabs in one row.
+      if (field.key === 'talentTabLabel') {
+        const clientTabField = groupFields.find((f) => f.key === 'clientTabLabel')
+
+        used.add(field.key)
+        if (clientTabField) used.add(clientTabField.key)
+
+        rendered.push(
+          <div key='how-tabs-row' className='space-y-2'>
+            <p className='text-sm font-semibold text-gray-800 dark:text-gray-200'>Tabs</p>
+            <div className='grid grid-cols-2 gap-3'>
+              {renderInputControl(sectionId, field, 'Talent')}
+              {clientTabField ? renderInputControl(sectionId, clientTabField, 'Client') : null}
+            </div>
+          </div>
+        )
+        return
+      }
+
       if (field.key === 'heroTalentButton') {
         const workButtonField = groupFields.find((f) => f.key === 'heroWorkButton')
 
@@ -258,10 +289,10 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
 
         rendered.push(
           <div key='hero-buttons-row' className='space-y-2'>
-            <p className='text-sm font-semibold text-gray-800 dark:text-gray-200'>Hero Buttons</p>
+            <p className='text-sm font-semibold text-gray-800 dark:text-gray-200'>Buttons</p>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-              {renderInputControl(sectionId, field, 'Talent Button')}
-              {workButtonField ? renderInputControl(sectionId, workButtonField, 'Work Button') : null}
+              {renderInputControl(sectionId, field, 'Button')}
+              {workButtonField ? renderInputControl(sectionId, workButtonField, 'Button') : null}
             </div>
           </div>
         )
