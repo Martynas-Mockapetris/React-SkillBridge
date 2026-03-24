@@ -195,9 +195,9 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
     }
   }
 
-  const renderField = (sectionId, field) => (
+  const renderInputControl = (sectionId, field, customLabel) => (
     <div key={field.key}>
-      <label className='block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>{field.label}</label>
+      <label className='block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>{customLabel || field.label}</label>
 
       {field.type === 'textarea' ? (
         <textarea
@@ -219,6 +219,62 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
     </div>
   )
 
+  const renderField = (sectionId, field) => renderInputControl(sectionId, field)
+
+  const renderHomeGroupFields = (sectionId, groupFields) => {
+    const rendered = []
+    const used = new Set()
+
+    groupFields.forEach((field) => {
+      if (used.has(field.key)) return
+
+      // Render title lead + accent in one row with compact labels.
+      if (field.key.endsWith('TitleLead')) {
+        const accentKey = field.key.replace('TitleLead', 'TitleAccent')
+        const accentField = groupFields.find((f) => f.key === accentKey)
+        const titleGroupLabel = field.label.replace(' (Lead)', '')
+
+        used.add(field.key)
+        if (accentField) used.add(accentField.key)
+
+        rendered.push(
+          <div key={`${field.key}-pair`} className='space-y-2'>
+            <p className='text-sm font-semibold text-gray-800 dark:text-gray-200'>{titleGroupLabel}</p>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+              {renderInputControl(sectionId, field, 'Lead')}
+              {accentField ? renderInputControl(sectionId, accentField, 'Accent') : null}
+            </div>
+          </div>
+        )
+        return
+      }
+
+      // Render Hero buttons in one row for cleaner editing.
+      if (field.key === 'heroTalentButton') {
+        const workButtonField = groupFields.find((f) => f.key === 'heroWorkButton')
+
+        used.add(field.key)
+        if (workButtonField) used.add(workButtonField.key)
+
+        rendered.push(
+          <div key='hero-buttons-row' className='space-y-2'>
+            <p className='text-sm font-semibold text-gray-800 dark:text-gray-200'>Hero Buttons</p>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+              {renderInputControl(sectionId, field, 'Talent Button')}
+              {workButtonField ? renderInputControl(sectionId, workButtonField, 'Work Button') : null}
+            </div>
+          </div>
+        )
+        return
+      }
+
+      used.add(field.key)
+      rendered.push(renderField(sectionId, field))
+    })
+
+    return <div className='space-y-3'>{rendered}</div>
+  }
+
   const renderSectionFields = (sectionId, section) => {
     if (sectionId !== 'home') {
       return <div className='mt-4 space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
@@ -232,8 +288,8 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
 
           return (
             <div key={group.title} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
-              <h4 className='text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3'>{group.title}</h4>
-              <div className='space-y-3'>{groupFields.map((field) => renderField(sectionId, field))}</div>
+              <h4 className='text-lg font-bold text-gray-900 dark:text-white mb-3'>{group.title}</h4>
+              {renderHomeGroupFields(sectionId, groupFields)}
             </div>
           )
         })}
