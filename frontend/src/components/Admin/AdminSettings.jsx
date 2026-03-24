@@ -75,6 +75,8 @@ const SECTION_DEFS = {
   }
 }
 
+const SETTINGS_DISPLAY_ORDER = ['home', 'about', 'contact', 'mail', 'system']
+
 const HOME_FIELD_GROUPS = [
   {
     title: 'Hero Section',
@@ -223,7 +225,7 @@ const AdminSettings = () => {
     }
 
     return (
-      <div className='mt-4 space-y-4'>
+      <div className='mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4'>
         {HOME_FIELD_GROUPS.map((group) => {
           const groupFields = section.fields.filter((field) => group.keys.includes(field.key))
           if (!groupFields.length) return null
@@ -252,33 +254,38 @@ const AdminSettings = () => {
         </div>
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {Object.entries(SECTION_DEFS).map(([sectionId, section]) => (
-            <div key={sectionId} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5'>
-              <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section.title}</h3>
-              <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{section.description}</p>
+          {SETTINGS_DISPLAY_ORDER.map((sectionId) => {
+            const section = SECTION_DEFS[sectionId]
+            if (!section) return null
 
-              <div className='mt-4 flex items-center gap-2'>
-                <input
-                  id={`enabled-${sectionId}`}
-                  type='checkbox'
-                  checked={!!drafts[sectionId]?.enabled}
-                  onChange={(e) => handleEnabledChange(sectionId, e.target.checked)}
-                  className='rounded border-gray-300 text-accent focus:ring-accent'
-                />
-                <label htmlFor={`enabled-${sectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
-                  Enabled
-                </label>
+            return (
+              <div key={sectionId} className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 ${sectionId === 'home' ? 'md:col-span-2' : ''}`}>
+                <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section.title}</h3>
+                <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{section.description}</p>
+
+                <div className='mt-4 flex items-center gap-2'>
+                  <input
+                    id={`enabled-${sectionId}`}
+                    type='checkbox'
+                    checked={!!drafts[sectionId]?.enabled}
+                    onChange={(e) => handleEnabledChange(sectionId, e.target.checked)}
+                    className='rounded border-gray-300 text-accent focus:ring-accent'
+                  />
+                  <label htmlFor={`enabled-${sectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
+                    Enabled
+                  </label>
+                </div>
+
+                {renderSectionFields(sectionId, section)}
+
+                <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
+
+                <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='mt-4 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+                  {savingSection === sectionId ? 'Saving...' : 'Save Section'}
+                </button>
               </div>
-
-              {renderSectionFields(sectionId, section)}
-
-              <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
-
-              <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='mt-4 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
-                {savingSection === sectionId ? 'Saving...' : 'Save Section'}
-              </button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
