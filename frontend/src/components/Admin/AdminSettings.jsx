@@ -75,8 +75,6 @@ const SECTION_DEFS = {
   }
 }
 
-const SETTINGS_DISPLAY_ORDER = ['home', 'about', 'contact', 'mail', 'system']
-
 const HOME_FIELD_GROUPS = [
   {
     title: 'Hero Section',
@@ -104,6 +102,53 @@ const HOME_FIELD_GROUPS = [
   }
 ]
 
+const DEFAULT_PRICING_PLANS = [
+  {
+    title: 'Basic',
+    price: 'Free',
+    period: '',
+    description: 'Perfect for exploring the platform',
+    users: '8.4k',
+    isRecommended: false,
+    badgeText: '',
+    buttonLabel: 'Get Started',
+    features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access']
+  },
+  {
+    title: 'Creator Premium',
+    price: '€19.99',
+    period: 'month',
+    description: 'Perfect for businesses and startups',
+    users: '1.2k',
+    isRecommended: false,
+    badgeText: '',
+    buttonLabel: 'Get Started',
+    features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge']
+  },
+  {
+    title: 'Freelancer Premium',
+    price: '€19.99',
+    period: 'month',
+    description: 'Perfect for professional freelancers',
+    users: '0.8k',
+    isRecommended: false,
+    badgeText: '',
+    buttonLabel: 'Get Started',
+    features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system']
+  },
+  {
+    title: 'Full Package',
+    price: '€29.99',
+    period: 'month',
+    description: 'Perfect for agencies and growing freelancers',
+    users: '0.5k',
+    isRecommended: true,
+    badgeText: 'Recommended',
+    buttonLabel: 'Get Started',
+    features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools']
+  }
+]
+
 const initialDrafts = {
   home: { enabled: true, values: {} },
   about: { enabled: true, values: {} },
@@ -112,7 +157,7 @@ const initialDrafts = {
   system: { enabled: true, values: {} }
 }
 
-const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
+const AdminSettings = ({ activeSectionId = 'home' }) => {
   const [loading, setLoading] = useState(true)
   const [config, setConfig] = useState(null)
   const [savingSection, setSavingSection] = useState('')
@@ -193,6 +238,66 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
     } finally {
       setSavingSection('')
     }
+  }
+
+  const getPricingPlans = () => {
+    const plans = drafts?.home?.values?.pricingPlans
+    return Array.isArray(plans) && plans.length ? plans : DEFAULT_PRICING_PLANS
+  }
+
+  const updatePricingPlans = (updater) => {
+    setDrafts((prev) => {
+      const currentPlans = Array.isArray(prev?.home?.values?.pricingPlans) && prev.home.values.pricingPlans.length ? prev.home.values.pricingPlans : DEFAULT_PRICING_PLANS
+      const nextPlans = typeof updater === 'function' ? updater(currentPlans) : updater
+
+      return {
+        ...prev,
+        home: {
+          ...prev.home,
+          values: {
+            ...prev.home.values,
+            pricingPlans: nextPlans
+          }
+        }
+      }
+    })
+  }
+
+  const handlePricingPlanField = (index, key, value) => {
+    updatePricingPlans((plans) => plans.map((plan, i) => (i === index ? { ...plan, [key]: value } : plan)))
+  }
+
+  const handlePricingPlanFeatures = (index, value) => {
+    const features = value
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+    updatePricingPlans((plans) => plans.map((plan, i) => (i === index ? { ...plan, features } : plan)))
+  }
+
+  const addPricingPlan = () => {
+    updatePricingPlans((plans) => [
+      ...plans,
+      {
+        title: 'New Plan',
+        price: '',
+        period: 'month',
+        description: '',
+        users: '',
+        isRecommended: false,
+        badgeText: '',
+        buttonLabel: 'Get Started',
+        features: []
+      }
+    ])
+  }
+
+  const removePricingPlan = (index) => {
+    updatePricingPlans((plans) => {
+      if (plans.length <= 1) return plans
+      return plans.filter((_, i) => i !== index)
+    })
   }
 
   const renderInputControl = (sectionId, field, customLabel) => (
@@ -303,7 +408,138 @@ const AdminSettings = ({ activeSectionId = 'home', setActiveSectionId }) => {
       rendered.push(renderField(sectionId, field))
     })
 
-    return <div className='space-y-3'>{rendered}</div>
+    const isPricingGroup = groupFields.some((field) => field.key === 'pricingTitleLead')
+
+    return (
+      <div className='space-y-3'>
+        {rendered}
+        {isPricingGroup ? renderPricingPlansEditor() : null}
+      </div>
+    )
+  }
+
+  const renderPricingPlansEditor = () => {
+    const plans = getPricingPlans()
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
+        <div className='flex items-center justify-between mb-3'>
+          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Plans</h5>
+          <button type='button' onClick={addPricingPlan} className='px-3 py-1.5 text-xs rounded-md bg-accent text-white hover:bg-accent/90'>
+            Add Plan
+          </button>
+        </div>
+
+        <div className='space-y-4'>
+          {plans.map((plan, index) => (
+            <div key={index} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3 space-y-3'>
+              <div className='flex items-center justify-between'>
+                <p className='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400'>Plan {index + 1}</p>
+                <button type='button' onClick={() => removePricingPlan(index)} className='px-2 py-1 text-xs rounded-md border border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'>
+                  Remove
+                </button>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Title</label>
+                  <input
+                    type='text'
+                    value={plan.title || ''}
+                    onChange={(e) => handlePricingPlanField(index, 'title', e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Price</label>
+                  <input
+                    type='text'
+                    value={plan.price || ''}
+                    onChange={(e) => handlePricingPlanField(index, 'price', e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Period</label>
+                  <input
+                    type='text'
+                    value={plan.period || ''}
+                    onChange={(e) => handlePricingPlanField(index, 'period', e.target.value)}
+                    placeholder='month'
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Description</label>
+                <input
+                  type='text'
+                  value={plan.description || ''}
+                  onChange={(e) => handlePricingPlanField(index, 'description', e.target.value)}
+                  className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                />
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Users</label>
+                  <input
+                    type='text'
+                    value={plan.users || ''}
+                    onChange={(e) => handlePricingPlanField(index, 'users', e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Badge</label>
+                  <input
+                    type='text'
+                    value={plan.badgeText || ''}
+                    onChange={(e) => handlePricingPlanField(index, 'badgeText', e.target.value)}
+                    placeholder='Recommended'
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Button</label>
+                  <input
+                    type='text'
+                    value={plan.buttonLabel || ''}
+                    onChange={(e) => handlePricingPlanField(index, 'buttonLabel', e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+              </div>
+
+              <div className='flex items-center gap-2'>
+                <input
+                  type='checkbox'
+                  checked={!!plan.isRecommended}
+                  onChange={(e) => handlePricingPlanField(index, 'isRecommended', e.target.checked)}
+                  className='rounded border-gray-300 text-accent focus:ring-accent'
+                />
+                <label className='text-xs font-semibold text-gray-600 dark:text-gray-300'>Recommended</label>
+              </div>
+
+              <div>
+                <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Features (one per line)</label>
+                <textarea
+                  rows={4}
+                  value={(plan.features || []).join('\n')}
+                  onChange={(e) => handlePricingPlanFeatures(index, e.target.value)}
+                  className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   const renderSectionFields = (sectionId, section) => {

@@ -7,36 +7,50 @@ const PricingSection = ({ content = {} }) => {
   const pricingTitleAccent = content.pricingTitleAccent || 'Pricing'
   const pricingSubtitle = content.pricingSubtitle || 'Choose the perfect plan that suits your needs and budget'
 
-  const pricingData = [
+  const defaultPricingData = [
     {
       title: 'Basic',
       price: 'Free',
+      period: '',
       description: 'Perfect for exploring the platform',
       features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access'],
-      users: '8.4k'
+      users: '8.4k',
+      isRecommended: false,
+      badgeText: ''
     },
     {
       title: 'Creator Premium',
       price: '€19.99',
+      period: 'month',
       description: 'Perfect for businesses and startups',
       features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge'],
-      users: '1.2k'
+      users: '1.2k',
+      isRecommended: false,
+      badgeText: ''
     },
     {
       title: 'Freelancer Premium',
       price: '€19.99',
+      period: 'month',
       description: 'Perfect for professional freelancers',
       features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system'],
-      users: '0.8k'
+      users: '0.8k',
+      isRecommended: false,
+      badgeText: ''
     },
     {
       title: 'Full Package',
       price: '€29.99',
+      period: 'month',
       description: 'Perfect for agencies and growing freelancers',
       features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools'],
-      users: '0.5k'
+      users: '0.5k',
+      isRecommended: true,
+      badgeText: 'Recommended'
     }
   ]
+
+  const pricingData = Array.isArray(content.pricingPlans) && content.pricingPlans.length ? content.pricingPlans : defaultPricingData
 
   return (
     <section className='w-full py-20 theme-bg relative z-[1]'>
@@ -73,7 +87,7 @@ const PricingSection = ({ content = {} }) => {
             <motion.div
               key={index}
               className={`bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-8 rounded-lg backdrop-blur-sm
-                ${plan.title === 'Full Package' ? 'shadow-lg hover:shadow-accent/10' : ''}`}
+                ${plan.isRecommended ? 'shadow-lg hover:shadow-accent/10' : ''}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{
                 opacity: 1,
@@ -95,7 +109,7 @@ const PricingSection = ({ content = {} }) => {
                 }
               }}
               viewport={{ once: true, margin: '-50px' }}>
-              {plan.title === 'Full Package' && (
+              {plan.isRecommended && (
                 <motion.div className='absolute top-5 right-5' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}>
                   <motion.span
                     className='bg-accent/20 text-accent text-sm py-1 px-3 rounded-full inline-block'
@@ -108,7 +122,7 @@ const PricingSection = ({ content = {} }) => {
                       repeat: Infinity,
                       ease: 'easeInOut'
                     }}>
-                    Recommended
+                    {plan.badgeText || 'Recommended'}
                   </motion.span>
                 </motion.div>
               )}
@@ -117,7 +131,7 @@ const PricingSection = ({ content = {} }) => {
                 <h3 className='theme-text text-2xl font-bold mb-6'>{plan.title}</h3>
                 <div className='flex items-baseline gap-2 mb-4'>
                   <div className='text-accent text-4xl font-bold'>{plan.price}</div>
-                  {plan.price !== 'Free' && <div className='theme-text-secondary text-lg'>/ month</div>}
+                  {plan.price !== 'Free' && (plan.period || '').trim() && <div className='theme-text-secondary text-lg'>/ {plan.period}</div>}
                 </div>
                 <div className='flex items-center gap-2 mb-4'>
                   <motion.div className='theme-text-secondary text-sm' initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.6 + index * 0.1 }}>
@@ -150,7 +164,7 @@ const PricingSection = ({ content = {} }) => {
                   hover:bg-accent hover:text-primary'
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}>
-                Get Started
+                {plan.buttonLabel || 'Get Started'}
               </motion.button>
             </motion.div>
           ))}

@@ -21,7 +21,7 @@ const Admin = () => {
             {activeSection === 'dashboard' && <AdminStats />}
             {activeSection === 'users' && <AdminUsersList />}
             {activeSection === 'projects' && <AdminProjectsList />}
-            {activeSection === 'settings' && <AdminSettings activeSectionId={activeSettingsSection} setActiveSectionId={setActiveSettingsSection} />}
+            {activeSection === 'settings' && <AdminSettings activeSectionId={activeSettingsSection} />}
           </div>
         </main>
       </div>
