@@ -24,12 +24,18 @@ const SECTION_DEFS = {
       { key: 'testimonialsTitleLead', label: 'Testimonials Title (Lead)', type: 'text', placeholder: 'What Our' },
       { key: 'testimonialsTitleAccent', label: 'Testimonials Title (Accent)', type: 'text', placeholder: 'Clients Say' },
       { key: 'testimonialsSubtitle', label: 'Testimonials Subtitle', type: 'textarea', placeholder: 'Discover how our platform has transformed businesses and careers through real success stories' },
-      { key: 'pricingTitleLead', label: 'Pricing Title (Lead)', type: 'text', placeholder: 'Flexible' },
-      { key: 'pricingTitleAccent', label: 'Pricing Title (Accent)', type: 'text', placeholder: 'Pricing' },
-      { key: 'pricingSubtitle', label: 'Pricing Subtitle', type: 'textarea', placeholder: 'Choose the perfect plan that suits your needs and budget' },
       { key: 'contactTitleLead', label: 'Contact Title (Lead)', type: 'text', placeholder: 'Get In' },
       { key: 'contactTitleAccent', label: 'Contact Title (Accent)', type: 'text', placeholder: 'Touch' },
       { key: 'contactSubtitle', label: 'Contact Subtitle', type: 'textarea', placeholder: "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon." }
+    ]
+  },
+  pricing: {
+    title: 'Pricing',
+    description: 'Manage pricing section title and plans.',
+    fields: [
+      { key: 'pricingTitleLead', label: 'Title Lead', type: 'text', placeholder: 'Flexible' },
+      { key: 'pricingTitleAccent', label: 'Title Accent', type: 'text', placeholder: 'Pricing' },
+      { key: 'pricingSubtitle', label: 'Subtitle', type: 'textarea', placeholder: 'Choose the perfect plan that suits your needs and budget' }
     ]
   },
   about: {
@@ -93,10 +99,6 @@ const HOME_FIELD_GROUPS = [
     keys: ['testimonialsTitleLead', 'testimonialsTitleAccent', 'testimonialsSubtitle']
   },
   {
-    title: 'Pricing Section',
-    keys: ['pricingTitleLead', 'pricingTitleAccent', 'pricingSubtitle']
-  },
-  {
     title: 'Contact Section',
     keys: ['contactTitleLead', 'contactTitleAccent', 'contactSubtitle']
   }
@@ -151,6 +153,7 @@ const DEFAULT_PRICING_PLANS = [
 
 const initialDrafts = {
   home: { enabled: true, values: {} },
+  pricing: { enabled: true, values: {} },
   about: { enabled: true, values: {} },
   contact: { enabled: true, values: {} },
   mail: { enabled: true, values: {} },
@@ -167,6 +170,7 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
     if (!config) return {}
     return {
       home: config.home || {},
+      pricing: config.pricing || {},
       about: config.about || {},
       contact: config.contact || {},
       mail: config.mail || {},
@@ -183,6 +187,7 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
 
         setDrafts({
           home: { enabled: data?.home?.enabled ?? true, values: data?.home?.values || {} },
+          pricing: { enabled: data?.pricing?.enabled ?? true, values: data?.pricing?.values || {} },
           about: { enabled: data?.about?.enabled ?? true, values: data?.about?.values || {} },
           contact: { enabled: data?.contact?.enabled ?? true, values: data?.contact?.values || {} },
           mail: { enabled: data?.mail?.enabled ?? true, values: data?.mail?.values || {} },
@@ -241,21 +246,21 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
   }
 
   const getPricingPlans = () => {
-    const plans = drafts?.home?.values?.pricingPlans
+    const plans = drafts?.pricing?.values?.pricingPlans
     return Array.isArray(plans) && plans.length ? plans : DEFAULT_PRICING_PLANS
   }
 
   const updatePricingPlans = (updater) => {
     setDrafts((prev) => {
-      const currentPlans = Array.isArray(prev?.home?.values?.pricingPlans) && prev.home.values.pricingPlans.length ? prev.home.values.pricingPlans : DEFAULT_PRICING_PLANS
+      const currentPlans = Array.isArray(prev?.pricing?.values?.pricingPlans) && prev.pricing.values.pricingPlans.length ? prev.pricing.values.pricingPlans : DEFAULT_PRICING_PLANS
       const nextPlans = typeof updater === 'function' ? updater(currentPlans) : updater
 
       return {
         ...prev,
-        home: {
-          ...prev.home,
+        pricing: {
+          ...prev.pricing,
           values: {
-            ...prev.home.values,
+            ...prev.pricing.values,
             pricingPlans: nextPlans
           }
         }
@@ -408,14 +413,7 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
       rendered.push(renderField(sectionId, field))
     })
 
-    const isPricingGroup = groupFields.some((field) => field.key === 'pricingTitleLead')
-
-    return (
-      <div className='space-y-3'>
-        {rendered}
-        {isPricingGroup ? renderPricingPlansEditor() : null}
-      </div>
-    )
+    return <div className='space-y-3'>{rendered}</div>
   }
 
   const renderPricingPlansEditor = () => {
@@ -543,25 +541,34 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
   }
 
   const renderSectionFields = (sectionId, section) => {
-    if (sectionId !== 'home') {
-      return <div className='mt-4 space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+    if (sectionId === 'home') {
+      return (
+        <div className='mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4'>
+          {HOME_FIELD_GROUPS.map((group) => {
+            const groupFields = section.fields.filter((field) => group.keys.includes(field.key))
+            if (!groupFields.length) return null
+
+            return (
+              <div key={group.title} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
+                <h4 className='text-lg font-bold text-gray-900 dark:text-white mb-3'>{group.title}</h4>
+                {renderHomeGroupFields(sectionId, groupFields)}
+              </div>
+            )
+          })}
+        </div>
+      )
     }
 
-    return (
-      <div className='mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4'>
-        {HOME_FIELD_GROUPS.map((group) => {
-          const groupFields = section.fields.filter((field) => group.keys.includes(field.key))
-          if (!groupFields.length) return null
+    if (sectionId === 'pricing') {
+      return (
+        <div className='mt-4 space-y-4'>
+          <div className='space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+          {renderPricingPlansEditor()}
+        </div>
+      )
+    }
 
-          return (
-            <div key={group.title} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
-              <h4 className='text-lg font-bold text-gray-900 dark:text-white mb-3'>{group.title}</h4>
-              {renderHomeGroupFields(sectionId, groupFields)}
-            </div>
-          )
-        })}
-      </div>
-    )
+    return <div className='mt-4 space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
   }
 
   return (
