@@ -41,13 +41,19 @@ const Home = () => {
     return publicConfig.system.values || {}
   }, [publicConfig])
 
+  const pricingValues = useMemo(() => {
+    const pricingSectionValues = publicConfig?.pricing?.enabled ? publicConfig.pricing.values || {} : {}
+    const legacyHomeValues = publicConfig?.home?.enabled ? publicConfig.home.values || {} : {}
+    return { ...legacyHomeValues, ...pricingSectionValues }
+  }, [publicConfig])
+
   return (
     <main className={`transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
       <HeroSection content={homeValues} />
       <FeaturesSection content={homeValues} systemValues={systemValues} />
       <HowItWorksSection content={homeValues} />
       <TestimonialsSection content={homeValues} />
-      <PricingSection content={homeValues} />
+      <PricingSection content={pricingValues} />
       <ContactSection content={homeValues} contactValues={contactValues} />
     </main>
   )
