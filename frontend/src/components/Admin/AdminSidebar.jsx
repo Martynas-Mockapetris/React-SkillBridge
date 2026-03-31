@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 const SETTINGS_SUB_ITEMS = [
   { id: 'home', label: 'Home Page' },
   { id: 'pricing', label: 'Pricing' },
+  { id: 'testimonials', label: 'Testimonials' },
   { id: 'about', label: 'About Page' },
   { id: 'contact', label: 'Contact Info' },
   { id: 'mail', label: 'Mail Settings' },
