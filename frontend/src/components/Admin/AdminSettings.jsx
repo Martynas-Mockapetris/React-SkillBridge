@@ -21,9 +21,6 @@ const SECTION_DEFS = {
       { key: 'howSubtitle', label: 'How It Works Subtitle', type: 'textarea', placeholder: 'Choose your path and discover how SkillBridge works for you' },
       { key: 'talentTabLabel', label: 'How It Works Talent Tab Label', type: 'text', placeholder: 'For Talent' },
       { key: 'clientTabLabel', label: 'How It Works Client Tab Label', type: 'text', placeholder: 'For Clients' },
-      { key: 'testimonialsTitleLead', label: 'Testimonials Title (Lead)', type: 'text', placeholder: 'What Our' },
-      { key: 'testimonialsTitleAccent', label: 'Testimonials Title (Accent)', type: 'text', placeholder: 'Clients Say' },
-      { key: 'testimonialsSubtitle', label: 'Testimonials Subtitle', type: 'textarea', placeholder: 'Discover how our platform has transformed businesses and careers through real success stories' },
       { key: 'contactTitleLead', label: 'Contact Title (Lead)', type: 'text', placeholder: 'Get In' },
       { key: 'contactTitleAccent', label: 'Contact Title (Accent)', type: 'text', placeholder: 'Touch' },
       { key: 'contactSubtitle', label: 'Contact Subtitle', type: 'textarea', placeholder: "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon." }
@@ -36,6 +33,15 @@ const SECTION_DEFS = {
       { key: 'pricingTitleLead', label: 'Title Lead', type: 'text', placeholder: 'Flexible' },
       { key: 'pricingTitleAccent', label: 'Title Accent', type: 'text', placeholder: 'Pricing' },
       { key: 'pricingSubtitle', label: 'Subtitle', type: 'textarea', placeholder: 'Choose the perfect plan that suits your needs and budget' }
+    ]
+  },
+  testimonials: {
+    title: 'Testimonials',
+    description: 'Manage testimonials section title and cards.',
+    fields: [
+      { key: 'testimonialsTitleLead', label: 'Title Lead', type: 'text', placeholder: 'What Our' },
+      { key: 'testimonialsTitleAccent', label: 'Title Accent', type: 'text', placeholder: 'Clients Say' },
+      { key: 'testimonialsSubtitle', label: 'Subtitle', type: 'textarea', placeholder: 'Discover how our platform has transformed businesses and careers through real success stories' }
     ]
   },
   about: {
@@ -95,10 +101,6 @@ const HOME_FIELD_GROUPS = [
     keys: ['howTitleLead', 'howTitleAccent', 'howSubtitle', 'talentTabLabel', 'clientTabLabel']
   },
   {
-    title: 'Testimonials Section',
-    keys: ['testimonialsTitleLead', 'testimonialsTitleAccent', 'testimonialsSubtitle']
-  },
-  {
     title: 'Contact Section',
     keys: ['contactTitleLead', 'contactTitleAccent', 'contactSubtitle']
   }
@@ -151,9 +153,34 @@ const DEFAULT_PRICING_PLANS = [
   }
 ]
 
+const DEFAULT_TESTIMONIALS = [
+  {
+    name: 'Sarah Johnson',
+    role: 'CEO, TechStart Inc.',
+    content: 'SkillBridge helped us find exceptional freelance talent for our projects. The quality of work and professionalism exceeded our expectations.',
+    rating: 5,
+    avatarSeed: 'sarah-johnson'
+  },
+  {
+    name: 'Michael Chen',
+    role: 'Full Stack Developer',
+    content: 'I found amazing clients and projects through SkillBridge. The platform made it easy to showcase my skills and grow my freelance career.',
+    rating: 5,
+    avatarSeed: 'michael-chen'
+  },
+  {
+    name: 'Emma Rodriguez',
+    role: 'Marketing Director, GrowthCo',
+    content: 'The platform streamlined our hiring process significantly. We found the perfect freelancer within days, not weeks.',
+    rating: 5,
+    avatarSeed: 'emma-rodriguez'
+  }
+]
+
 const initialDrafts = {
   home: { enabled: true, values: {} },
   pricing: { enabled: true, values: {} },
+  testimonials: { enabled: true, values: {} },
   about: { enabled: true, values: {} },
   contact: { enabled: true, values: {} },
   mail: { enabled: true, values: {} },
@@ -171,6 +198,7 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
     return {
       home: config.home || {},
       pricing: config.pricing || {},
+      testimonials: config.testimonials || {},
       about: config.about || {},
       contact: config.contact || {},
       mail: config.mail || {},
@@ -188,6 +216,7 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
         setDrafts({
           home: { enabled: data?.home?.enabled ?? true, values: data?.home?.values || {} },
           pricing: { enabled: data?.pricing?.enabled ?? true, values: data?.pricing?.values || {} },
+          testimonials: { enabled: data?.testimonials?.enabled ?? true, values: data?.testimonials?.values || {} },
           about: { enabled: data?.about?.enabled ?? true, values: data?.about?.values || {} },
           contact: { enabled: data?.contact?.enabled ?? true, values: data?.contact?.values || {} },
           mail: { enabled: data?.mail?.enabled ?? true, values: data?.mail?.values || {} },
@@ -302,6 +331,53 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
     updatePricingPlans((plans) => {
       if (plans.length <= 1) return plans
       return plans.filter((_, i) => i !== index)
+    })
+  }
+
+  const getTestimonials = () => {
+    const testimonials = drafts?.testimonials?.values?.testimonials
+    return Array.isArray(testimonials) && testimonials.length ? testimonials : DEFAULT_TESTIMONIALS
+  }
+
+  const updateTestimonials = (updater) => {
+    setDrafts((prev) => {
+      const currentTestimonials = Array.isArray(prev?.testimonials?.values?.testimonials) && prev.testimonials.values.testimonials.length ? prev.testimonials.values.testimonials : DEFAULT_TESTIMONIALS
+      const nextTestimonials = typeof updater === 'function' ? updater(currentTestimonials) : updater
+
+      return {
+        ...prev,
+        testimonials: {
+          ...prev.testimonials,
+          values: {
+            ...prev.testimonials.values,
+            testimonials: nextTestimonials
+          }
+        }
+      }
+    })
+  }
+
+  const handleTestimonialField = (index, key, value) => {
+    updateTestimonials((items) => items.map((item, i) => (i === index ? { ...item, [key]: value } : item)))
+  }
+
+  const addTestimonial = () => {
+    updateTestimonials((items) => [
+      ...items,
+      {
+        name: 'New Person',
+        role: '',
+        content: '',
+        rating: 5,
+        avatarSeed: 'new-person'
+      }
+    ])
+  }
+
+  const removeTestimonial = (index) => {
+    updateTestimonials((items) => {
+      if (items.length <= 1) return items
+      return items.filter((_, i) => i !== index)
     })
   }
 
@@ -540,6 +616,95 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
     )
   }
 
+  const renderTestimonialsEditor = () => {
+    const testimonials = getTestimonials()
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
+        <div className='flex items-center justify-between mb-3'>
+          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Testimonials</h5>
+          <button type='button' onClick={addTestimonial} className='px-3 py-1.5 text-xs rounded-md bg-accent text-white hover:bg-accent/90'>
+            Add Testimonial
+          </button>
+        </div>
+
+        <div className='space-y-4'>
+          {testimonials.map((item, index) => (
+            <div key={index} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3 space-y-3'>
+              <div className='flex items-center justify-between'>
+                <p className='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400'>Card {index + 1}</p>
+                <button type='button' onClick={() => removeTestimonial(index)} className='px-2 py-1 text-xs rounded-md border border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'>
+                  Remove
+                </button>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Name</label>
+                  <input
+                    type='text'
+                    value={item.name || ''}
+                    onChange={(e) => handleTestimonialField(index, 'name', e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Role</label>
+                  <input
+                    type='text'
+                    value={item.role || ''}
+                    onChange={(e) => handleTestimonialField(index, 'role', e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Content</label>
+                <textarea
+                  rows={4}
+                  value={item.content || ''}
+                  onChange={(e) => handleTestimonialField(index, 'content', e.target.value)}
+                  className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
+                />
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Rating (1-5)</label>
+                  <input
+                    type='number'
+                    min='1'
+                    max='5'
+                    value={item.rating ?? 5}
+                    onChange={(e) => {
+                      const parsed = Number(e.target.value)
+                      const safeRating = Number.isNaN(parsed) ? 5 : Math.min(5, Math.max(1, parsed))
+                      handleTestimonialField(index, 'rating', safeRating)
+                    }}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap'>Avatar Seed</label>
+                  <input
+                    type='text'
+                    value={item.avatarSeed || ''}
+                    onChange={(e) => handleTestimonialField(index, 'avatarSeed', e.target.value)}
+                    placeholder='jane-doe'
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   const renderSectionFields = (sectionId, section) => {
     if (sectionId === 'home') {
       return (
@@ -564,6 +729,15 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
         <div className='mt-4 space-y-4'>
           <div className='space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
           {renderPricingPlansEditor()}
+        </div>
+      )
+    }
+
+    if (sectionId === 'testimonials') {
+      return (
+        <div className='mt-4 space-y-4'>
+          <div className='space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+          {renderTestimonialsEditor()}
         </div>
       )
     }
