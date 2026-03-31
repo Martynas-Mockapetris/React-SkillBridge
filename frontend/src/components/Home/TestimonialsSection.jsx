@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
@@ -14,84 +14,62 @@ const TestimonialsSection = ({ content = {} }) => {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  // Atsiliepimu duomenys
-  const testimonialData = [
+  const fallbackTestimonials = [
     {
       id: 1,
       name: 'Emma Wilson',
       rating: 5,
       role: 'Project Owner',
-      projectType: 'E-commerce Website',
       content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
-      image: 'https://i.pravatar.cc/150?img=1',
-      projectDetails: {
-        category: 'Web Development',
-        duration: '3 months',
-        completedDate: 'June 2023'
-      },
-      extendedContent: 'The collaboration tools and project management features made the development process smooth and efficient. Communication was seamless, and the final result exceeded my expectations.'
+      avatarSeed: 'emma-wilson'
     },
     {
       id: 2,
       name: 'Michael Chen',
       rating: 4,
       role: 'Freelance Developer',
-      expertise: 'Full-Stack Development',
       content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
-      image: 'https://i.pravatar.cc/150?img=8',
-      projectDetails: {
-        category: 'Mobile Development',
-        duration: '5 months',
-        completedDate: 'August 2023'
-      },
-      extendedContent: "The developer's expertise in React Native and attention to detail resulted in a polished, user-friendly app that our customers love."
+      avatarSeed: 'michael-chen'
     },
     {
       id: 3,
       name: 'Sarah Johnson',
       rating: 5,
       role: 'Project Owner',
-      projectType: 'Mobile App Development',
       content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
-      image: 'https://i.pravatar.cc/150?img=5',
-      projectDetails: {
-        category: 'Digital Marketing',
-        duration: '4 months',
-        completedDate: 'July 2023'
-      },
-      extendedContent: 'The marketing team provided innovative strategies and maintained transparent communication throughout the campaign duration.'
+      avatarSeed: 'sarah-johnson'
     },
     {
       id: 4,
       name: 'David Rodriguez',
       rating: 4.5,
       role: 'Freelance Designer',
-      expertise: 'UI/UX Design',
       content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
-      image: 'https://i.pravatar.cc/150?img=12',
-      projectDetails: {
-        category: 'System Design',
-        duration: '6 months',
-        completedDate: 'September 2023'
-      },
-      extendedContent: "The expertise and professionalism of the talent we found through SkillBridge significantly contributed to our project's success."
+      avatarSeed: 'david-rodriguez'
     },
     {
       id: 5,
       name: 'Lisa Chang',
       rating: 5,
       role: 'Project Owner',
-      projectType: 'Brand Identity Design',
       content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
-      image: 'https://i.pravatar.cc/150?img=9',
-      projectDetails: {
-        category: 'Brand Design',
-        duration: '2 months',
-        completedDate: 'May 2023'
-      },
-      extendedContent: "The designer's creative approach and understanding of our vision resulted in a brand identity that truly resonates with our audience."
+      avatarSeed: 'lisa-chang'
     }
   ]
+
+  const testimonialData = useMemo(() => {
+    const configured = Array.isArray(content.testimonials) ? content.testimonials : []
+    const source = configured.length ? [...configured, ...fallbackTestimonials.slice(configured.length)] : fallbackTestimonials
+
+    return source.map((item, index) => ({
+      id: index + 1,
+      name: item.name || 'Anonymous',
+      rating: typeof item.rating === 'number' ? Math.min(5, Math.max(1, item.rating)) : 5,
+      role: item.role || '',
+      content: item.content || '',
+      image: `https://i.pravatar.cc/150?u=${encodeURIComponent(item.avatarSeed || item.name || `testimonial-${index + 1}`)}`
+    }))
+  }, [content.testimonials])
 
   // Reitingas
   const Rating = ({ rating, className }) => {
@@ -157,7 +135,6 @@ const TestimonialsSection = ({ content = {} }) => {
                     <h3 className='theme-text font-medium'>{testimonial.name}</h3>
                     <Rating rating={testimonial.rating} className='text-sm my-1' />
                     <p className='text-accent text-sm'>{testimonial.role}</p>
-                    <p className='theme-text-secondary text-sm'>{testimonial.projectType || testimonial.expertise}</p>
                   </div>
                 </div>
                 <p className='theme-text-secondary line-clamp-2'>{testimonial.content}</p>
@@ -181,28 +158,11 @@ const TestimonialsSection = ({ content = {} }) => {
                         <h3 className='theme-text font-medium text-lg'>{testimonial.name}</h3>
                         <Rating rating={testimonial.rating} className='text-base my-2' />
                         <p className='text-accent text-sm'>{testimonial.role}</p>
-                        <p className='theme-text-secondary text-sm'>{testimonial.projectType || testimonial.expertise}</p>
                       </div>
                     </div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className='mb-6'>
-                      <p className='theme-text mb-4'>{testimonial.content}</p>
-                      <p className='theme-text-secondary'>{testimonial.extendedContent}</p>
-                    </motion.div>
-
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className='grid grid-cols-4 gap-4 pt-4 border-t theme-border'>
-                      <div className='col-span-2'>
-                        <p className='text-accent text-sm'>Category</p>
-                        <p className='theme-text text-sm'>{testimonial.projectDetails.category}</p>
-                      </div>
-                      <div>
-                        <p className='text-accent text-sm'>Duration</p>
-                        <p className='theme-text text-sm'>{testimonial.projectDetails.duration}</p>
-                      </div>
-                      <div>
-                        <p className='text-accent text-sm'>Completed</p>
-                        <p className='theme-text text-sm'>{testimonial.projectDetails.completedDate}</p>
-                      </div>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className='mb-2'>
+                      <p className='theme-text'>{testimonial.content}</p>
                     </motion.div>
                   </motion.div>
                 )}

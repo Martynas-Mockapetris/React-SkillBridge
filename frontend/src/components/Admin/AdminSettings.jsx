@@ -155,25 +155,39 @@ const DEFAULT_PRICING_PLANS = [
 
 const DEFAULT_TESTIMONIALS = [
   {
+    name: 'Emma Wilson',
+    role: 'Project Owner',
+    content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
+    rating: 5,
+    avatarSeed: 'emma-wilson'
+  },
+  {
+    name: 'Michael Chen',
+    role: 'Freelance Developer',
+    content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
+    rating: 4,
+    avatarSeed: 'michael-chen'
+  },
+  {
     name: 'Sarah Johnson',
-    role: 'CEO, TechStart Inc.',
-    content: 'SkillBridge helped us find exceptional freelance talent for our projects. The quality of work and professionalism exceeded our expectations.',
+    role: 'Project Owner',
+    content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
     rating: 5,
     avatarSeed: 'sarah-johnson'
   },
   {
-    name: 'Michael Chen',
-    role: 'Full Stack Developer',
-    content: 'I found amazing clients and projects through SkillBridge. The platform made it easy to showcase my skills and grow my freelance career.',
-    rating: 5,
-    avatarSeed: 'michael-chen'
+    name: 'David Rodriguez',
+    role: 'Freelance Designer',
+    content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
+    rating: 4.5,
+    avatarSeed: 'david-rodriguez'
   },
   {
-    name: 'Emma Rodriguez',
-    role: 'Marketing Director, GrowthCo',
-    content: 'The platform streamlined our hiring process significantly. We found the perfect freelancer within days, not weeks.',
+    name: 'Lisa Chang',
+    role: 'Project Owner',
+    content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
     rating: 5,
-    avatarSeed: 'emma-rodriguez'
+    avatarSeed: 'lisa-chang'
   }
 ]
 
@@ -336,7 +350,8 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
 
   const getTestimonials = () => {
     const testimonials = drafts?.testimonials?.values?.testimonials
-    return Array.isArray(testimonials) && testimonials.length ? testimonials : DEFAULT_TESTIMONIALS
+    if (!Array.isArray(testimonials) || !testimonials.length) return DEFAULT_TESTIMONIALS
+    return [...testimonials, ...DEFAULT_TESTIMONIALS.slice(testimonials.length)]
   }
 
   const updateTestimonials = (updater) => {

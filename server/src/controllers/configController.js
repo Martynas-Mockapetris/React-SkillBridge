@@ -28,7 +28,7 @@ export const getPublicSystemConfig = async (req, res) => {
   try {
     const config = await ensureConfig()
 
-    const publicSections = ['home', 'pricing', 'about', 'contact', 'system']
+    const publicSections = ['home', 'pricing', 'testimonials', 'about', 'contact', 'system']
     const payload = publicSections.reduce((acc, section) => {
       const sectionData = config[section]
 
@@ -53,7 +53,7 @@ export const getPublicSystemConfig = async (req, res) => {
 export const updateSystemConfigSection = async (req, res) => {
   try {
     const { section } = req.params
-    const allowedSections = ['home', 'pricing', 'about', 'contact', 'mail', 'system']
+    const allowedSections = ['home', 'pricing', 'testimonials', 'about', 'contact', 'mail', 'system']
     
     if (!allowedSections.includes(section)) {
       return res.status(400).json({ message: 'Invalid config section' })
