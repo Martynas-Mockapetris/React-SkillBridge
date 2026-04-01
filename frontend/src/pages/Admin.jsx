@@ -4,6 +4,7 @@ import AdminSidebar from '../components/Admin/AdminSidebar'
 import AdminStats from '../components/Admin/AdminStats'
 import AdminUsersList from '../components/Admin/AdminUsersList'
 import AdminProjectsList from '../components/Admin/AdminProjectsList'
+import AdminAnnouncementsList from '../components/Admin/AdminAnnouncementsList'
 import AdminSettings from '../components/Admin/AdminSettings'
 
 const Admin = () => {
@@ -21,6 +22,7 @@ const Admin = () => {
             {activeSection === 'dashboard' && <AdminStats />}
             {activeSection === 'users' && <AdminUsersList />}
             {activeSection === 'projects' && <AdminProjectsList />}
+            {activeSection === 'announcements' && <AdminAnnouncementsList />}
             {activeSection === 'settings' && <AdminSettings activeSectionId={activeSettingsSection} />}
           </div>
         </main>

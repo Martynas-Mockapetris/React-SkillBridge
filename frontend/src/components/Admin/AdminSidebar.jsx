@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FaChartBar, FaUsers, FaProjectDiagram, FaCog, FaBars, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
+import { FaChartBar, FaUsers, FaProjectDiagram, FaBullhorn, FaCog, FaBars, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 
 const SETTINGS_SUB_ITEMS = [
@@ -20,6 +20,7 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
     { id: 'dashboard', label: 'Dashboard', icon: <FaChartBar /> },
     { id: 'users', label: 'Users', icon: <FaUsers /> },
     { id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> },
+    { id: 'announcements', label: 'Announcements', icon: <FaBullhorn /> },
     { id: 'settings', label: 'Settings', icon: <FaCog /> }
   ]
 
