@@ -35,6 +35,10 @@ const Navigation = () => {
 
         {/* Desktop Menu */}
         <div className='hidden lg:flex items-center space-x-6'>
+          <Link to='/' className={desktopLinkStyles}>
+            Home
+          </Link>
+
           <Link to='/listings' className={desktopLinkStyles}>
             Listings
           </Link>
@@ -80,6 +84,10 @@ const Navigation = () => {
           <PageBackground variant='home' />
 
           <div className='flex flex-col items-center justify-center h-screen space-y-8 relative z-20'>
+            <Link to='/' className={mobileLinkStyles}>
+              Home
+            </Link>
+
             <Link to='/listings' className={mobileLinkStyles}>
               Listings
             </Link>
