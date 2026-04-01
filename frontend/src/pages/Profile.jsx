@@ -83,10 +83,10 @@ const Profile = () => {
     return 'Client & Freelancer'
   }
 
-const formatLockDuration = (durationDays) => {
-  if (!durationDays) return 'Manual review'
-  return `${durationDays} day${durationDays === 1 ? '' : 's'}`
-}
+  const formatLockDuration = (durationDays) => {
+    if (!durationDays) return 'Manual review'
+    return `${durationDays} day${durationDays === 1 ? '' : 's'}`
+  }
 
   const getLockCountdown = (lockExpiresAt) => {
     if (!lockExpiresAt) return 'Pending admin review'
@@ -112,7 +112,7 @@ const formatLockDuration = (durationDays) => {
           { id: 'ratings', label: 'Ratings', icon: <FaStar /> }
         ]
       : []),
-    // Admin tab - only visible to admins
+    // Admin tab - visible only to admins; click redirects immediately
     ...(currentUser?.userType === 'admin' ? [{ id: 'admin', label: 'Admin', icon: <FaShieldAlt /> }] : []),
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
@@ -121,6 +121,15 @@ const formatLockDuration = (durationDays) => {
   // If still loading or no user, could show a loading state
   if (!currentUser) {
     return <LoadingSpinner fullScreen />
+  }
+
+  const handleTabClick = (tabId) => {
+    if (tabId === 'admin') {
+      navigate('/admin')
+      return
+    }
+
+    setActiveTab(tabId)
   }
 
   return (
@@ -193,8 +202,8 @@ const formatLockDuration = (durationDays) => {
           {tabs.map((tab, index) => (
             <motion.button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-4 px-6 transition-all duration-300 ${activeTab === tab.id ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent'}`}
+              onClick={() => handleTabClick(tab.id)}
+              className={`flex items-center gap-2 px-6 py-3 font-medium transition-all ${activeTab === tab.id ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent'}`}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, y: 20 }}
@@ -214,15 +223,6 @@ const formatLockDuration = (durationDays) => {
             {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
             {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
-            {activeTab === 'admin' && (
-              <div className='p-8 text-center theme-bg-secondary rounded-lg'>
-                <h2 className='text-2xl font-bold theme-text mb-4'>Admin Dashboard</h2>
-                <p className='theme-text-secondary mb-6'>Full admin dashboard coming soon...</p>
-                <button onClick={() => navigate('/admin')} className='px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                  Go to Admin Panel
-                </button>
-              </div>
-            )}
             {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
             {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>
