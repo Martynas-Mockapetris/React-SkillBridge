@@ -11,6 +11,7 @@ import MessagesList from '../components/Profile/MessagesList'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getUserMessages } from '../services/messageService'
+import { calculateProfileCompleteness } from '../utils/profileCompleteness'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -24,6 +25,7 @@ const Profile = () => {
   const [ratingStats, setRatingStats] = useState(null)
   const [ratingsLoading, setRatingsLoading] = useState(false)
   const navigate = useNavigate()
+  const profileCompleteness = calculateProfileCompleteness(currentUser)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -218,7 +220,7 @@ const Profile = () => {
         {/* Content Area */}
         <AnimatePresence mode='wait'>
           <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-            {activeTab === 'overview' && <ProfileStats user={currentUser} />}
+            {activeTab === 'overview' && <ProfileStats user={currentUser} profileCompleteness={profileCompleteness} />}
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
             {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
