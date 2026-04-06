@@ -6,7 +6,7 @@ import { getUserAnnouncements } from '../../services/announcementService'
 import { getUserMessages } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
-const ProfileStats = ({ user }) => {
+const ProfileStats = ({ user, profileCompleteness }) => {
   const [statsData, setStatsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -111,12 +111,39 @@ const ProfileStats = ({ user }) => {
   }
 
   const stats = statsData || []
+  const completion = profileCompleteness?.percentage ?? 0
+  const missingRequired = profileCompleteness?.missingRequired ?? []
+  const missingOptional = profileCompleteness?.missingOptional ?? []
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.h2 className='text-2xl font-bold theme-text' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         Dashboard Overview
       </motion.h2>
+
+      <motion.div
+        className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}>
+        <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
+          <div>
+            <p className='text-sm theme-text-secondary'>Profile Completion</p>
+            <p className='text-2xl font-bold theme-text mt-1'>{completion}%</p>
+          </div>
+
+          <div className='text-sm theme-text-secondary'>
+            <p>Missing required: {missingRequired.length}</p>
+            <p>Missing optional: {missingOptional.length}</p>
+          </div>
+        </div>
+
+        <div className='mt-4 w-full h-3 rounded-full bg-light/30 dark:bg-light/20 overflow-hidden'>
+          <motion.div className='h-full bg-accent' initial={{ width: 0 }} animate={{ width: `${completion}%` }} transition={{ duration: 0.6 }} />
+        </div>
+
+        {missingRequired.length > 0 && <p className='text-xs text-red-500 mt-3'>Complete required fields first to unlock full profile quality.</p>}
+      </motion.div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6'>
         {stats.map((stat, index) => (
