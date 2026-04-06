@@ -6,7 +6,7 @@ import { getUserAnnouncements } from '../../services/announcementService'
 import { getUserMessages } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
-const ProfileStats = ({ user, profileCompleteness }) => {
+const ProfileStats = ({ user, profileCompleteness, onOpenSettings }) => {
   const [statsData, setStatsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -114,6 +114,8 @@ const ProfileStats = ({ user, profileCompleteness }) => {
   const completion = profileCompleteness?.percentage ?? 0
   const missingRequired = profileCompleteness?.missingRequired ?? []
   const missingOptional = profileCompleteness?.missingOptional ?? []
+  const requiredPreview = missingRequired.slice(0, 3)
+  const optionalPreview = missingOptional.slice(0, 3)
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -142,7 +144,45 @@ const ProfileStats = ({ user, profileCompleteness }) => {
           <motion.div className='h-full bg-accent' initial={{ width: 0 }} animate={{ width: `${completion}%` }} transition={{ duration: 0.6 }} />
         </div>
 
-        {missingRequired.length > 0 && <p className='text-xs text-red-500 mt-3'>Complete required fields first to unlock full profile quality.</p>}
+        <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-3'>
+          <div className='p-3 rounded-lg bg-white/30 dark:bg-black/20'>
+            <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Missing required</p>
+            {requiredPreview.length > 0 ? (
+              <ul className='space-y-1'>
+                {requiredPreview.map((item) => (
+                  <li key={item.key} className='text-sm text-red-500'>
+                    • {item.label}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className='text-sm text-green-500'>All required fields are complete.</p>
+            )}
+          </div>
+
+          <div className='p-3 rounded-lg bg-white/30 dark:bg-black/20'>
+            <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Recommended next</p>
+            {optionalPreview.length > 0 ? (
+              <ul className='space-y-1'>
+                {optionalPreview.map((item) => (
+                  <li key={item.key} className='text-sm theme-text-secondary'>
+                    • {item.label}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className='text-sm text-green-500'>Optional fields are complete.</p>
+            )}
+          </div>
+        </div>
+
+        {(missingRequired.length > 0 || missingOptional.length > 0) && (
+          <div className='mt-4'>
+            <button type='button' onClick={() => onOpenSettings?.()} className='px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>
+              Complete Profile in Settings
+            </button>
+          </div>
+        )}
       </motion.div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6'>
