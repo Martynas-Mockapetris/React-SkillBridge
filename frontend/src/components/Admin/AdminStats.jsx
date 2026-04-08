@@ -2,20 +2,11 @@ import { useState, useEffect } from 'react'
 import { getAdminDashboardStats } from '../../services/userService'
 import AdminAlertsPanel from './AdminAlertsPanel'
 import StatCard from './StatCard'
-import {
-  FaUsers,
-  FaProjectDiagram,
-  FaCheckCircle,
-  FaMoneyBillWave,
-  FaUserCheck,
-  FaDollarSign,
-  FaBullseye,
-  FaLayerGroup,
-  FaChartLine
-} from 'react-icons/fa'
+import { FaUsers, FaProjectDiagram, FaCheckCircle, FaMoneyBillWave, FaUserCheck, FaDollarSign, FaBullseye, FaLayerGroup, FaChartLine} from 'react-icons/fa'
 
 const AdminStats = () => {
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeProjects: 0,
@@ -54,11 +45,14 @@ const AdminStats = () => {
 
   const fetchDashboardStats = async () => {
     setIsLoading(true)
+    setError('')
+
     try {
       const data = await getAdminDashboardStats()
       setStats(data)
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error)
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err)
+      setError(err.response?.data?.message || 'Failed to load dashboard stats.')
     } finally {
       setIsLoading(false)
     }
@@ -126,6 +120,8 @@ const AdminStats = () => {
           Refresh Stats
         </button>
       </div>
+
+      {error && <div className='mb-6 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300'>{error}</div>}
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         {statCards.map((stat, index) => (
