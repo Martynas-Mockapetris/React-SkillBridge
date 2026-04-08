@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getAdminUserAnnouncements, getAdminUserDetail, getAdminUserProjects, toggleUserLock, updateAdminUser } from '../services/userService'
 import { deleteAnnouncementAsAdmin, toggleAnnouncementStatusAsAdmin } from '../services/announcementService'
@@ -76,6 +76,23 @@ const AdminUserDetail = () => {
     if (!id) return 'No user selected'
     if (!user) return `User ID: ${id}`
     return `${user.firstName || ''} ${user.lastName || ''}`.trim() || `User ID: ${id}`
+  }, [id, user])
+
+  const breadcrumbItems = useMemo(() => {
+    const items = [
+      { label: 'Admin', to: '/admin' },
+      { label: 'Users', to: '/admin' }
+    ]
+
+    if (user) {
+      items.push({
+        label: `${user.firstName || ''} ${user.lastName || ''}`.trim() || `User ID: ${id}`
+      })
+    } else if (id) {
+      items.push({ label: `User ID: ${id}` })
+    }
+
+    return items
   }, [id, user])
 
   const loadUserDetail = async ({ showToastOnError = true } = {}) => {
@@ -408,6 +425,26 @@ const AdminUserDetail = () => {
       <div className='container mx-auto px-6 py-8'>
         <div className='mb-6 flex items-start justify-between gap-4'>
           <div>
+            <nav aria-label='Breadcrumb' className='mb-3'>
+              <ol className='flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
+                {breadcrumbItems.map((item, index) => {
+                  const isLast = index === breadcrumbItems.length - 1
+
+                  return (
+                    <li key={`${item.label}-${index}`} className='flex items-center gap-2'>
+                      {index > 0 && <span>/</span>}
+                      {item.to && !isLast ? (
+                        <Link to={item.to} className='hover:text-accent transition-colors'>
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span className={isLast ? 'text-gray-900 dark:text-white font-medium' : ''}>{item.label}</span>
+                      )}
+                    </li>
+                  )
+                })}
+              </ol>
+            </nav>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>Admin User Detail</h1>
             <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>{headerSubtitle}</p>
           </div>
