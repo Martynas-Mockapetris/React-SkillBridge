@@ -333,6 +333,74 @@ export const getAdminDashboardStats = async (req, res) => {
       .reduce((sum, project) => sum + (project.budget || 0), 0)
 
     const revenueTrend = percentChange(revenueLast30, revenuePrev30)
+
+    // ====================
+    // ALERT SIGNALS
+    // ====================
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+
+    const lockedUsers = await User.countDocuments({ isLocked: true })
+
+    const inactiveUsers = await User.countDocuments({
+      isLocked: false,
+      userType: { $ne: 'admin' },
+      lastLogin: { $ne: null, $lt: twoWeeksAgo }
+    })
+
+    const stalledProjects = await Project.countDocuments({
+      status: { $in: activeStatuses },
+      updatedAt: { $lt: twoWeeksAgo }
+    })
+
+    const alerts = []
+
+    if (lockedUsers >= 5) {
+      alerts.push({
+        id: 'locked-users',
+        severity: lockedUsers >= 15 ? 'critical' : 'warning',
+        title: 'High number of locked users',
+        message: `${lockedUsers} users are currently locked.`,
+        metric: lockedUsers
+      })
+    }
+
+    if (inactiveUsers >= 20) {
+      alerts.push({
+        id: 'inactive-users',
+        severity: inactiveUsers >= 50 ? 'critical' : 'warning',
+        title: 'User inactivity spike',
+        message: `${inactiveUsers} users inactive for 14+ days.`,
+        metric: inactiveUsers
+      })
+    }
+
+    if (stalledProjects >= 5) {
+      alerts.push({
+        id: 'stalled-projects',
+        severity: stalledProjects >= 15 ? 'critical' : 'warning',
+        title: 'Stalled active projects',
+        message: `${stalledProjects} active projects not updated in 14+ days.`,
+        metric: stalledProjects
+      })
+    }
+
+    if (revenueTrend < -20) {
+      alerts.push({
+        id: 'revenue-drop',
+        severity: 'warning',
+        title: 'Revenue trend dropped',
+        message: `Revenue trend is down ${Math.abs(revenueTrend)}% compared to previous 30 days.`,
+        metric: revenueTrend
+      })
+    }
+
+    const alertSummary = {
+      total: alerts.length,
+      critical: alerts.filter((a) => a.severity === 'critical').length,
+      warning: alerts.filter((a) => a.severity === 'warning').length,
+      info: alerts.filter((a) => a.severity === 'info').length
+    }
+
     res.json({
       totalUsers,
       activeProjects,
@@ -343,6 +411,10 @@ export const getAdminDashboardStats = async (req, res) => {
         activeProjects: activeProjectsTrend,
         completedProjects: completedTrend,
         revenue: revenueTrend
+      },
+      alerts: {
+        summary: alertSummary,
+        details: alerts
       }
     })
   } catch (error) {
