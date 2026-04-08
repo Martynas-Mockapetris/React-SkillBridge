@@ -412,9 +412,12 @@ export const getAdminDashboardStats = async (req, res) => {
         completedProjects: completedTrend,
         revenue: revenueTrend
       },
-      alerts: {
-        summary: alertSummary,
-        details: alerts
+      alertSummary,
+      alerts,
+      healthSignals: {
+        lockedUsers,
+        inactiveUsers,
+        stalledProjects
       }
     })
   } catch (error) {
