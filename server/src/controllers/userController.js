@@ -334,6 +334,23 @@ export const getAdminDashboardStats = async (req, res) => {
 
     const revenueTrend = percentChange(revenueLast30, revenuePrev30)
 
+    const totalNonAdminUsers = await User.countDocuments({ userType: { $ne: 'admin' } })
+    const activeUsersLast30 = await User.countDocuments({
+      userType: { $ne: 'admin' },
+      isLocked: false,
+      lastLogin: { $gte: thirtyDaysAgo }
+    })
+    const activeUserRate = totalNonAdminUsers === 0 ? 0 : Math.round((activeUsersLast30 / totalNonAdminUsers) * 100)
+
+    const newProjectsLast30 = await Project.countDocuments({ createdAt: { $gte: thirtyDaysAgo } })
+    const newProjectsPrev30 = await Project.countDocuments({
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    })
+    const newProjectsTrend = percentChange(newProjectsLast30, newProjectsPrev30)
+
+    const avgCompletedProjectValue = completedProjects === 0 ? 0 : Math.round(revenue / completedProjects)
+    const completionRate = activeProjects + completedProjects === 0 ? 0 : Math.round((completedProjects / (activeProjects + completedProjects)) * 100)
+
     // ====================
     // ALERT SIGNALS
     // ====================
@@ -411,6 +428,13 @@ export const getAdminDashboardStats = async (req, res) => {
         activeProjects: activeProjectsTrend,
         completedProjects: completedTrend,
         revenue: revenueTrend
+      },
+      kpis: {
+        activeUserRate,
+        avgCompletedProjectValue,
+        completionRate,
+        newProjectsLast30,
+        newProjectsTrend
       },
       alertSummary,
       alerts,
