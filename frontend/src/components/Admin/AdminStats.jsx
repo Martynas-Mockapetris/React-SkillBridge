@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getAdminDashboardStats } from '../../services/userService'
+import AdminAlertsPanel from './AdminAlertsPanel'
 import StatCard from './StatCard'
 import { FaUsers, FaProjectDiagram, FaCheckCircle, FaMoneyBillWave } from 'react-icons/fa'
 
@@ -16,6 +17,18 @@ const AdminStats = () => {
       activeProjects: 0,
       completedProjects: 0,
       revenue: 0
+    },
+    alertSummary: {
+      total: 0,
+      critical: 0,
+      warning: 0,
+      info: 0
+    },
+    alerts: [],
+    healthSignals: {
+      lockedUsers: 0,
+      inactiveUsers: 0,
+      stalledProjects: 0
     }
   })
 
@@ -79,6 +92,13 @@ const AdminStats = () => {
           <StatCard key={index} {...stat} isLoading={isLoading} />
         ))}
       </div>
+
+      <AdminAlertsPanel
+        isLoading={isLoading}
+        alertSummary={stats.alertSummary}
+        alerts={stats.alerts}
+        healthSignals={stats.healthSignals}
+      />
     </div>
   )
 }
