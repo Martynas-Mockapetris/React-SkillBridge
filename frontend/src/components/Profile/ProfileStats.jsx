@@ -6,7 +6,7 @@ import { getUserAnnouncements } from '../../services/announcementService'
 import { getUserMessages } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
-const ProfileStats = ({ user, profileCompleteness, onOpenSettings }) => {
+const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProjects, onOpenMessages, onOpenFreelance }) => {
   const [statsData, setStatsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -117,6 +117,41 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings }) => {
   const requiredPreview = missingRequired.slice(0, 3)
   const optionalPreview = missingOptional.slice(0, 3)
 
+  const quickActions = [
+    onOpenProjects
+      ? {
+          key: 'projects',
+          label: 'View Projects',
+          description: 'Open your projects tab',
+          onClick: onOpenProjects
+        }
+      : null,
+    onOpenMessages
+      ? {
+          key: 'messages',
+          label: 'Open Messages',
+          description: 'Review recent conversations',
+          onClick: onOpenMessages
+        }
+      : null,
+    onOpenFreelance
+      ? {
+          key: 'freelance',
+          label: 'Manage Freelance',
+          description: 'Update your freelancer presence',
+          onClick: onOpenFreelance
+        }
+      : null,
+    onOpenSettings
+      ? {
+          key: 'settings',
+          label: 'Complete Profile',
+          description: 'Update missing profile details',
+          onClick: onOpenSettings
+        }
+      : null
+  ].filter(Boolean)
+
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.h2 className='text-2xl font-bold theme-text' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -184,6 +219,30 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings }) => {
           </div>
         )}
       </motion.div>
+
+      {quickActions.length > 0 && (
+        <motion.div className='p-6 rounded-lg bg-white/40 dark:bg-black/20 border theme-border' initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}>
+          <div className='flex items-center justify-between gap-4 mb-4'>
+            <div>
+              <p className='text-xs uppercase tracking-wide theme-text-secondary'>Quick Actions</p>
+              <h3 className='text-lg font-semibold theme-text mt-1'>Jump to common tasks</h3>
+            </div>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
+            {quickActions.map((action) => (
+              <button
+                key={action.key}
+                type='button'
+                onClick={action.onClick}
+                className='text-left p-4 rounded-lg border theme-border bg-white/40 dark:bg-black/20 hover:border-accent hover:bg-white/60 dark:hover:bg-black/30 transition-colors'>
+                <p className='font-medium theme-text'>{action.label}</p>
+                <p className='text-sm theme-text-secondary mt-1'>{action.description}</p>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6'>
         {stats.map((stat, index) => (

@@ -138,6 +138,18 @@ const Profile = () => {
     setActiveTab('settings')
   }
 
+  const handleOpenProjects = () => {
+    setActiveTab('projects')
+  }
+
+  const handleOpenMessages = () => {
+    setActiveTab('messages')
+  }
+
+  const handleOpenFreelance = () => {
+    setActiveTab('freelance')
+  }
+
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
@@ -224,7 +236,16 @@ const Profile = () => {
         {/* Content Area */}
         <AnimatePresence mode='wait'>
           <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-            {activeTab === 'overview' && <ProfileStats user={currentUser} profileCompleteness={profileCompleteness} onOpenSettings={handleOpenSettings} />}{' '}
+            {activeTab === 'overview' && (
+              <ProfileStats
+                user={currentUser}
+                profileCompleteness={profileCompleteness}
+                onOpenSettings={handleOpenSettings}
+                onOpenProjects={currentUser?.userType !== 'admin' ? handleOpenProjects : undefined}
+                onOpenMessages={handleOpenMessages}
+                onOpenFreelance={currentUser?.userType === 'freelancer' || currentUser?.userType === 'both' ? handleOpenFreelance : undefined}
+              />
+            )}
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
             {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
