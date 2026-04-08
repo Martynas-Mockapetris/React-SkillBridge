@@ -26,6 +26,10 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
     )
   }
 
+  const summary = alertSummary || { total: 0, critical: 0, warning: 0, info: 0 }
+  const list = Array.isArray(alerts) ? alerts : []
+  const signals = healthSignals || { lockedUsers: 0, inactiveUsers: 0, stalledProjects: 0 }
+
   return (
     <motion.section className='mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6' initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
       <div className='xl:col-span-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6'>
@@ -35,17 +39,17 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
             <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>Active Alerts</h3>
           </div>
           <div className='flex items-center gap-2 text-xs'>
-            <span className='px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'>Total: {alertSummary.total || 0}</span>
-            <span className='px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'>Critical: {alertSummary.critical || 0}</span>
-            <span className='px-2 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'>Warning: {alertSummary.warning || 0}</span>
+            <span className='px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'>Total: {summary.total}</span>
+            <span className='px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'>Critical: {summary.critical}</span>
+            <span className='px-2 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'>Warning: {summary.warning}</span>
           </div>
         </div>
 
-        {!alerts?.length ? (
+        {!list.length ? (
           <div className='rounded-lg border border-green-200 dark:border-green-900/40 bg-green-50 dark:bg-green-900/20 p-4 text-green-800 dark:text-green-300 text-sm'>No active alerts. System health looks stable.</div>
         ) : (
           <div className='space-y-3'>
-            {alerts.map((alert) => (
+            {list.map((alert) => (
               <div key={alert.id} className='rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/40'>
                 <div className='flex items-start justify-between gap-4'>
                   <div>
@@ -67,9 +71,9 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
         </div>
 
         <div className='space-y-3'>
-          <HealthCard label='Locked Users' value={healthSignals.lockedUsers || 0} icon={<FaUserLock />} />
-          <HealthCard label='Inactive Users (14+ d)' value={healthSignals.inactiveUsers || 0} icon={<FaUserClock />} />
-          <HealthCard label='Stalled Projects (14+ d)' value={healthSignals.stalledProjects || 0} icon={<FaProjectDiagram />} />
+          <HealthCard label='Locked Users' value={signals.lockedUsers || 0} icon={<FaUserLock />} />
+          <HealthCard label='Inactive Users (14+ d)' value={signals.inactiveUsers || 0} icon={<FaUserClock />} />
+          <HealthCard label='Stalled Projects (14+ d)' value={signals.stalledProjects || 0} icon={<FaProjectDiagram />} />
         </div>
       </div>
     </motion.section>
