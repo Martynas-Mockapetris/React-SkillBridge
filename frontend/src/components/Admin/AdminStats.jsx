@@ -2,42 +2,12 @@ import { useState, useEffect } from 'react'
 import { getAdminDashboardStats } from '../../services/userService'
 import AdminAlertsPanel from './AdminAlertsPanel'
 import StatCard from './StatCard'
-import { FaUsers, FaProjectDiagram, FaCheckCircle, FaMoneyBillWave, FaUserCheck, FaDollarSign, FaBullseye, FaLayerGroup, FaChartLine} from 'react-icons/fa'
+import { FaUsers, FaProjectDiagram, FaCheckCircle, FaMoneyBillWave, FaUserCheck, FaDollarSign, FaBullseye, FaLayerGroup, FaChartLine } from 'react-icons/fa'
 
 const AdminStats = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    activeProjects: 0,
-    completedProjects: 0,
-    revenue: 0,
-    comparisons: {
-      users: 0,
-      activeProjects: 0,
-      completedProjects: 0,
-      revenue: 0
-    },
-    alertSummary: {
-      total: 0,
-      critical: 0,
-      warning: 0,
-      info: 0
-    },
-    alerts: [],
-    healthSignals: {
-      lockedUsers: 0,
-      inactiveUsers: 0,
-      stalledProjects: 0
-    },
-    kpis: {
-      activeUserRate: 0,
-      avgCompletedProjectValue: 0,
-      completionRate: 0,
-      newProjectsLast30: 0,
-      newProjectsTrend: 0
-    }
-  })
+  const [stats, setStats] = useState(defaultStats)
 
   useEffect(() => {
     fetchDashboardStats()
@@ -49,7 +19,28 @@ const AdminStats = () => {
 
     try {
       const data = await getAdminDashboardStats()
-      setStats(data)
+
+      setStats({
+        ...defaultStats,
+        ...data,
+        comparisons: {
+          ...defaultStats.comparisons,
+          ...(data?.comparisons || {})
+        },
+        alertSummary: {
+          ...defaultStats.alertSummary,
+          ...(data?.alertSummary || {})
+        },
+        healthSignals: {
+          ...defaultStats.healthSignals,
+          ...(data?.healthSignals || {})
+        },
+        kpis: {
+          ...defaultStats.kpis,
+          ...(data?.kpis || {})
+        },
+        alerts: Array.isArray(data?.alerts) ? data.alerts : []
+      })
     } catch (err) {
       console.error('Error fetching dashboard stats:', err)
       setError(err.response?.data?.message || 'Failed to load dashboard stats.')
