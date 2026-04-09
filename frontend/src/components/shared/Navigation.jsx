@@ -43,6 +43,10 @@ const Navigation = () => {
             Listings
           </Link>
 
+          <Link to='/blog' className={desktopLinkStyles}>
+            Blog
+          </Link>
+
           {/* Only show Profile link if user is logged in */}
           {currentUser && (
             <Link to='/profile' className={desktopLinkStyles}>
@@ -90,6 +94,10 @@ const Navigation = () => {
 
             <Link to='/listings' className={mobileLinkStyles}>
               Listings
+            </Link>
+
+            <Link to='/blog' className={mobileLinkStyles}>
+              Blog
             </Link>
 
             {/* Only show Profile link if user is logged in */}
