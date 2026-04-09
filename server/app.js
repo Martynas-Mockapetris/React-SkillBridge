@@ -9,6 +9,7 @@ import messageRoutes from './src/routes/messageRoutes.js'
 import announcementRoutes from './src/routes/announcementRoutes.js'
 import ratingRoutes from './src/routes/ratingRoutes.js'
 import configRoutes from './src/routes/configRoutes.js'
+import blogRoutes from './src/routes/blogRoutes.js'
 import { startProjectAutoUnlockScheduler } from './src/utils/projectLockScheduler.js'
 
 dotenv.config()
@@ -40,6 +41,7 @@ app.use('/api/messages', messageRoutes)
 app.use('/api/announcements', announcementRoutes)
 app.use('/api/ratings', ratingRoutes)
 app.use('/api/config', configRoutes)
+app.use('/api/blog', blogRoutes)
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'))
