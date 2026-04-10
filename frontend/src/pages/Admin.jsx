@@ -7,6 +7,7 @@ import AdminUsersList from '../components/Admin/AdminUsersList'
 import AdminProjectsList from '../components/Admin/AdminProjectsList'
 import AdminAnnouncementsList from '../components/Admin/AdminAnnouncementsList'
 import AdminSettings from '../components/Admin/AdminSettings'
+import AdminBlogPostsList from '../components/Admin/AdminBlogPostsList'
 
 const formatLabel = (value) => {
   if (!value) return ''
@@ -67,6 +68,7 @@ const Admin = () => {
             {activeSection === 'users' && <AdminUsersList />}
             {activeSection === 'projects' && <AdminProjectsList />}
             {activeSection === 'announcements' && <AdminAnnouncementsList />}
+            {activeSection === 'blog' && <AdminBlogPostsList />}
             {activeSection === 'settings' && <AdminSettings activeSectionId={activeSettingsSection} />}
           </div>
         </main>
