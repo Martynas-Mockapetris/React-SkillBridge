@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
-import { FaTrash, FaToggleOn, FaToggleOff, FaSyncAlt, FaNewspaper } from 'react-icons/fa'
+import { FaTrash, FaToggleOn, FaToggleOff, FaSyncAlt, FaNewspaper, FaPlus, FaPen } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { deleteBlogPost, getAdminBlogPosts, toggleBlogPostPublish } from '../../services/blogService'
+import AdminBlogPostModal from '../../modal/AdminBlogPostModal'
 
 const AdminBlogPostsList = () => {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionLoadingId, setActionLoadingId] = useState(null)
+  const [isEditorOpen, setIsEditorOpen] = useState(false)
+  const [editorMode, setEditorMode] = useState('create')
+  const [selectedPost, setSelectedPost] = useState(null)
 
   const fetchPosts = async () => {
     try {
@@ -61,6 +65,29 @@ const AdminBlogPostsList = () => {
     }
   }
 
+  const handleOpenCreate = () => {
+    setEditorMode('create')
+    setSelectedPost(null)
+    setIsEditorOpen(true)
+  }
+
+  const handleOpenEdit = (post) => {
+    setEditorMode('edit')
+    setSelectedPost(post)
+    setIsEditorOpen(true)
+  }
+
+  const handleCloseEditor = () => {
+    setIsEditorOpen(false)
+    setSelectedPost(null)
+    setEditorMode('create')
+  }
+
+  const handleEditorSubmit = (payload, submitMode) => {
+    console.log('Blog modal UI payload preview:', payload, submitMode, selectedPost?._id || 'new')
+    toast.info(`UI only: ${submitMode === 'publish' ? 'Publish' : 'Save draft'} action not connected yet`)
+  }
+
   const formatDate = (value) => {
     if (!value) return 'N/A'
     const date = new Date(value)
@@ -83,10 +110,19 @@ const AdminBlogPostsList = () => {
           <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Manage published posts and drafts for the public blog</p>
         </div>
 
-        <button onClick={fetchPosts} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all text-sm font-medium inline-flex items-center gap-2'>
-          <FaSyncAlt />
-          Refresh
-        </button>
+        <div className='flex items-center gap-3'>
+          <button onClick={handleOpenCreate} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all text-sm font-medium inline-flex items-center gap-2'>
+            <FaPlus />
+            New Post
+          </button>
+
+          <button
+            onClick={fetchPosts}
+            className='px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all text-sm font-medium inline-flex items-center gap-2'>
+            <FaSyncAlt />
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
@@ -171,6 +207,10 @@ const AdminBlogPostsList = () => {
 
                       <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
                         <div className='flex items-center justify-end gap-2'>
+                          <button onClick={() => handleOpenEdit(post)} disabled={isBusy} className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50' title='Edit'>
+                            <FaPen />
+                          </button>
+
                           <button
                             onClick={() => handleTogglePublish(post)}
                             disabled={isBusy}
@@ -192,6 +232,8 @@ const AdminBlogPostsList = () => {
           </div>
         )}
       </div>
+
+      <AdminBlogPostModal isOpen={isEditorOpen} mode={editorMode} post={selectedPost} onClose={handleCloseEditor} onSubmit={handleEditorSubmit} />
     </div>
   )
 }
