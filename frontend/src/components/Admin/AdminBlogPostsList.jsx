@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { FaTrash, FaToggleOn, FaToggleOff, FaSyncAlt, FaNewspaper, FaPlus, FaPen } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import { useAuth } from '../../context/AuthContext'
 import { deleteBlogPost, getAdminBlogPosts, toggleBlogPostPublish } from '../../services/blogService'
 import AdminBlogPostModal from '../../modal/AdminBlogPostModal'
 
 const AdminBlogPostsList = () => {
+  const { currentUser } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -192,7 +194,7 @@ const AdminBlogPostsList = () => {
 
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{post.slug}</td>
 
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white'>{post.author ? `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim() : 'Unknown'}</td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white'>{post.author ? `${(post.author.firstName || '') + ' ' + (post.author.lastName || '')}`.trim() : 'Unknown'}</td>
 
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <span
@@ -233,7 +235,7 @@ const AdminBlogPostsList = () => {
         )}
       </div>
 
-      <AdminBlogPostModal isOpen={isEditorOpen} mode={editorMode} post={selectedPost} onClose={handleCloseEditor} onSubmit={handleEditorSubmit} />
+      <AdminBlogPostModal isOpen={isEditorOpen} mode={editorMode} post={selectedPost} currentUser={currentUser} onClose={handleCloseEditor} onSubmit={handleEditorSubmit} />
     </div>
   )
 }
