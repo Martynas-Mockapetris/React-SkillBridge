@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowRight, FaCalendarAlt } from 'react-icons/fa'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getPublishedBlogPosts } from '../services/blogService'
+import { getPublicSystemConfig } from '../services/configService'
 
 const EXCERPT_PREVIEW_LIMIT = 200
 
@@ -19,14 +20,18 @@ const Blog = () => {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [publicConfig, setPublicConfig] = useState(null)
 
   useEffect(() => {
-    const loadPosts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true)
         setError('')
-        const data = await getPublishedBlogPosts()
-        setPosts(Array.isArray(data) ? data : [])
+
+        const [postsData, configData] = await Promise.all([getPublishedBlogPosts(), getPublicSystemConfig()])
+
+        setPosts(Array.isArray(postsData) ? postsData : [])
+        setPublicConfig(configData || null)
       } catch (err) {
         console.error('Failed to load blog posts:', err)
         setError(err.response?.data?.message || 'Failed to load blog posts.')
@@ -35,8 +40,22 @@ const Blog = () => {
       }
     }
 
-    loadPosts()
+    loadData()
   }, [])
+
+  const blogContent = useMemo(() => {
+    if (!publicConfig?.blog?.enabled) return {}
+
+    return publicConfig.blog.values || {}
+  }, [publicConfig])
+
+  const blogEyebrow = blogContent.blogEyebrow || 'SkillBridge Blog'
+  const blogTitleLead = blogContent.blogTitleLead || 'Ideas, platform updates, and practical freelance'
+  const blogTitleAccent = blogContent.blogTitleAccent || 'guidance'
+  const blogSubtitle = blogContent.blogSubtitle || 'Read platform news, workflow tips, and articles for clients and freelancers building better projects together.'
+  const blogEmptyTitle = blogContent.blogEmptyTitle || 'No blog posts yet'
+  const blogEmptySubtitle = blogContent.blogEmptySubtitle || 'Published articles will appear here once the blog starts rolling.'
+  const blogReadMoreLabel = blogContent.blogReadMoreLabel || 'Read article'
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
@@ -44,9 +63,12 @@ const Blog = () => {
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         <motion.div className='max-w-3xl mb-10' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <p className='text-sm uppercase tracking-[0.2em] text-accent mb-3'>SkillBridge Blog</p>
-          <h1 className='text-4xl md:text-5xl font-bold theme-text leading-tight'>Ideas, platform updates, and practical freelance guidance</h1>
-          <p className='theme-text-secondary mt-4 text-lg'>Read platform news, workflow tips, and articles for clients and freelancers building better projects together.</p>
+          <p className='text-sm uppercase tracking-[0.2em] text-accent mb-3'>{blogEyebrow}</p>
+          <h1 className='text-4xl md:text-5xl font-bold theme-text leading-tight'>
+            <span>{blogTitleLead} </span>
+            <span className='text-accent'>{blogTitleAccent}</span>
+          </h1>
+          <p className='theme-text-secondary mt-4 text-lg'>{blogSubtitle}</p>
         </motion.div>
 
         {loading && (
@@ -59,8 +81,8 @@ const Blog = () => {
 
         {!loading && !error && posts.length === 0 && (
           <div className='rounded-xl border theme-border bg-white/40 dark:bg-black/20 px-6 py-10 text-center'>
-            <h2 className='text-2xl font-semibold theme-text mb-2'>No blog posts yet</h2>
-            <p className='theme-text-secondary'>Published articles will appear here once the blog starts rolling.</p>
+            <h2 className='text-2xl font-semibold theme-text mb-2'>{blogEmptyTitle}</h2>
+            <p className='theme-text-secondary'>{blogEmptySubtitle}</p>
           </div>
         )}
 
@@ -101,7 +123,7 @@ const Blog = () => {
                     )}
 
                     <Link to={`/blog/${post.slug}`} className='inline-flex items-center gap-2 text-accent font-semibold hover:opacity-80 transition-opacity'>
-                      Read article
+                      {blogReadMoreLabel}
                       <FaArrowRight />
                     </Link>
                   </div>

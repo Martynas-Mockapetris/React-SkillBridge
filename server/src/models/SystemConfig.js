@@ -15,6 +15,7 @@ const systemConfigSchema = new mongoose.Schema(
     home: { type: sectionSchema, default: () => ({}) },
     pricing: { type: sectionSchema, default: () => ({}) },
     testimonials: { type: sectionSchema, default: () => ({}) },
+    blog: { type: sectionSchema, default: () => ({}) },
     about: { type: sectionSchema, default: () => ({}) },
     contact: { type: sectionSchema, default: () => ({}) },
     mail: { type: sectionSchema, default: () => ({}) },

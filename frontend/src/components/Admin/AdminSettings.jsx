@@ -44,6 +44,19 @@ const SECTION_DEFS = {
       { key: 'testimonialsSubtitle', label: 'Subtitle', type: 'textarea', placeholder: 'Discover how our platform has transformed businesses and careers through real success stories' }
     ]
   },
+  blog: {
+    title: 'Blog Page',
+    description: 'Manage public Blog page text content and labels.',
+    fields: [
+      { key: 'blogEyebrow', label: 'Eyebrow', type: 'text', placeholder: 'SkillBridge Blog' },
+      { key: 'blogTitleLead', label: 'Title Lead', type: 'text', placeholder: 'Ideas, platform updates, and practical freelance' },
+      { key: 'blogTitleAccent', label: 'Title Accent', type: 'text', placeholder: 'guidance' },
+      { key: 'blogSubtitle', label: 'Subtitle', type: 'textarea', placeholder: 'Read platform news, workflow tips, and articles for clients and freelancers building better projects together.' },
+      { key: 'blogEmptyTitle', label: 'Empty State Title', type: 'text', placeholder: 'No blog posts yet' },
+      { key: 'blogEmptySubtitle', label: 'Empty State Subtitle', type: 'textarea', placeholder: 'Published articles will appear here once the blog starts rolling.' },
+      { key: 'blogReadMoreLabel', label: 'Read More Label', type: 'text', placeholder: 'Read article' }
+    ]
+  },
   about: {
     title: 'About Page',
     description: 'Manage About page content and visibility settings.',
@@ -195,6 +208,7 @@ const initialDrafts = {
   home: { enabled: true, values: {} },
   pricing: { enabled: true, values: {} },
   testimonials: { enabled: true, values: {} },
+  blog: { enabled: true, values: {} },
   about: { enabled: true, values: {} },
   contact: { enabled: true, values: {} },
   mail: { enabled: true, values: {} },
@@ -216,6 +230,11 @@ const SETTINGS_VIEW_MAP = {
     pageTitle: 'Home Page',
     pageDescription: 'Manage all Home page content pages and sections.',
     sectionId: 'testimonials'
+  },
+  blog: {
+    pageTitle: 'Blog Page',
+    pageDescription: 'Manage public Blog page text content and labels.',
+    sectionId: 'blog'
   },
   about: {
     pageTitle: 'About Page',
@@ -251,6 +270,7 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
       home: config.home || {},
       pricing: config.pricing || {},
       testimonials: config.testimonials || {},
+      blog: config.blog || {},
       about: config.about || {},
       contact: config.contact || {},
       mail: config.mail || {},
@@ -269,6 +289,7 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
           home: { enabled: data?.home?.enabled ?? true, values: data?.home?.values || {} },
           pricing: { enabled: data?.pricing?.enabled ?? true, values: data?.pricing?.values || {} },
           testimonials: { enabled: data?.testimonials?.enabled ?? true, values: data?.testimonials?.values || {} },
+          blog: { enabled: data?.blog?.enabled ?? true, values: data?.blog?.values || {} },
           about: { enabled: data?.about?.enabled ?? true, values: data?.about?.values || {} },
           contact: { enabled: data?.contact?.enabled ?? true, values: data?.contact?.values || {} },
           mail: { enabled: data?.mail?.enabled ?? true, values: data?.mail?.values || {} },

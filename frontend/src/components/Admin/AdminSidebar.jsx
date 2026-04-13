@@ -12,6 +12,7 @@ const SETTINGS_PAGES = [
       { id: 'home.testimonials', label: 'Testimonials' }
     ]
   },
+  { id: 'blog', label: 'Blog Page' },
   { id: 'about', label: 'About Page' },
   { id: 'contact', label: 'Contact Info' },
   { id: 'mail', label: 'Mail Settings' },
