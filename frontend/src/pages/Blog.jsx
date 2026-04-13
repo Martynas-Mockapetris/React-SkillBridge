@@ -6,6 +6,15 @@ import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getPublishedBlogPosts } from '../services/blogService'
 
+const EXCERPT_PREVIEW_LIMIT = 140
+
+const truncateText = (value = '', limit = EXCERPT_PREVIEW_LIMIT) => {
+  const normalized = value.trim()
+
+  if (normalized.length <= limit) return normalized
+  return `${normalized.slice(0, limit).trimEnd()}...`
+}
+
 const Blog = () => {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -79,7 +88,7 @@ const Blog = () => {
                   </div>
 
                   <h2 className='text-2xl font-semibold theme-text mb-3'>{post.title}</h2>
-                  <p className='theme-text-secondary leading-relaxed mb-4'>{post.excerpt}</p>
+                  <p className='theme-text-secondary leading-relaxed mb-4'>{truncateText(post.excerpt)}</p>
 
                   {Array.isArray(post.tags) && post.tags.length > 0 && (
                     <div className='flex flex-wrap gap-2 mb-5'>
