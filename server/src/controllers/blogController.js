@@ -30,9 +30,7 @@ const ensureUniqueSlug = async (baseSlug, excludeId = null) => {
 // @access  Public
 export const getPublishedBlogPosts = async (req, res) => {
   try {
-    const posts = await BlogPost.find({ isPublished: true })
-      .populate('author', 'firstName lastName profilePicture')
-      .sort({ publishedAt: -1, createdAt: -1 })
+    const posts = await BlogPost.find({ isPublished: true }).populate('author', 'firstName lastName profilePicture').sort({ publishedAt: -1, createdAt: -1 })
 
     res.json(posts)
   } catch (error) {
@@ -66,9 +64,7 @@ export const getPublishedBlogPostBySlug = async (req, res) => {
 // @access  Admin
 export const getAllBlogPostsAdmin = async (req, res) => {
   try {
-    const posts = await BlogPost.find()
-      .populate('author', 'firstName lastName profilePicture')
-      .sort({ updatedAt: -1 })
+    const posts = await BlogPost.find().populate('author', 'firstName lastName profilePicture').sort({ updatedAt: -1 })
 
     res.json(posts)
   } catch (error) {
@@ -82,7 +78,7 @@ export const getAllBlogPostsAdmin = async (req, res) => {
 // @access  Admin
 export const createBlogPost = async (req, res) => {
   try {
-    const { title, excerpt, content, coverImage = '', tags = [], isPublished = false } = req.body
+    const { title, excerpt, content, coverImage = '', tags = [], isPublished = false, author = '', includeAuthor = true } = req.body
 
     if (!title || !excerpt || !content) {
       return res.status(400).json({ message: 'Title, excerpt, and content are required' })
@@ -95,13 +91,19 @@ export const createBlogPost = async (req, res) => {
 
     const slug = await ensureUniqueSlug(baseSlug)
 
+    const defaultAuthorName = `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() || req.user?.email || ''
+    const showAuthor = Boolean(includeAuthor)
+    const authorName = showAuthor ? (typeof author === 'string' && author.trim() ? author.trim() : defaultAuthorName) : ''
+
     const post = await BlogPost.create({
       title,
       slug,
       excerpt,
       content,
       coverImage,
-      tags: Array.isArray(tags) ? tags : [],
+      tags: Array.isArray(tags) ? tags.map((tag) => String(tag).trim()).filter(Boolean) : [],
+      authorName,
+      showAuthor,
       isPublished,
       publishedAt: isPublished ? new Date() : null,
       author: req.user._id
@@ -122,7 +124,7 @@ export const createBlogPost = async (req, res) => {
 export const updateBlogPost = async (req, res) => {
   try {
     const { id } = req.params
-    const { title, excerpt, content, coverImage, tags, isPublished } = req.body
+    const { title, excerpt, content, coverImage, tags, isPublished, author, includeAuthor } = req.body
 
     const post = await BlogPost.findById(id)
     if (!post) {
@@ -138,11 +140,21 @@ export const updateBlogPost = async (req, res) => {
     if (excerpt !== undefined) post.excerpt = excerpt
     if (content !== undefined) post.content = content
     if (coverImage !== undefined) post.coverImage = coverImage
-    if (tags !== undefined) post.tags = Array.isArray(tags) ? tags : post.tags
+    if (tags !== undefined) {
+      post.tags = Array.isArray(tags) ? tags.map((tag) => String(tag).trim()).filter(Boolean) : post.tags
+    }
 
     if (typeof isPublished === 'boolean') {
       post.isPublished = isPublished
       post.publishedAt = isPublished ? post.publishedAt || new Date() : null
+    }
+
+    if (includeAuthor !== undefined || author !== undefined) {
+      const defaultAuthorName = `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() || req.user?.email || ''
+      const showAuthor = Boolean(includeAuthor)
+
+      post.showAuthor = showAuthor
+      post.authorName = showAuthor ? (typeof author === 'string' && author.trim() ? author.trim() : defaultAuthorName) : ''
     }
 
     await post.save()

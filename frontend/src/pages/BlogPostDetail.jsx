@@ -65,6 +65,8 @@ const BlogPostDetail = () => {
     )
   }
 
+  const displayAuthor = post?.showAuthor === false ? '' : post?.authorName?.trim() || `${post?.author?.firstName || ''} ${post?.author?.lastName || ''}`.trim()
+
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
@@ -95,12 +97,7 @@ const BlogPostDetail = () => {
                 <FaCalendarAlt className='text-accent' />
                 {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Unpublished'}
               </span>
-
-              {post.author && (
-                <span>
-                  By {post.author.firstName} {post.author.lastName}
-                </span>
-              )}
+              {displayAuthor && <span>By {displayAuthor}</span>}
             </div>
 
             <h1 className='text-4xl md:text-5xl font-bold theme-text leading-tight mb-4'>{post.title}</h1>

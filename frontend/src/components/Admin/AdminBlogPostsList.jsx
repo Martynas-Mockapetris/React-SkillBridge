@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { FaTrash, FaToggleOn, FaToggleOff, FaSyncAlt, FaNewspaper, FaPlus, FaPen } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useAuth } from '../../context/AuthContext'
-import { deleteBlogPost, getAdminBlogPosts, toggleBlogPostPublish } from '../../services/blogService'
+import { createBlogPost, deleteBlogPost, getAdminBlogPosts, toggleBlogPostPublish, updateBlogPost } from '../../services/blogService'
 import AdminBlogPostModal from '../../modal/AdminBlogPostModal'
 
 const AdminBlogPostsList = () => {
@@ -14,6 +14,7 @@ const AdminBlogPostsList = () => {
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [editorMode, setEditorMode] = useState('create')
   const [selectedPost, setSelectedPost] = useState(null)
+  const [isEditorSubmitting, setIsEditorSubmitting] = useState(false)
 
   const fetchPosts = async () => {
     try {
@@ -85,9 +86,26 @@ const AdminBlogPostsList = () => {
     setEditorMode('create')
   }
 
-  const handleEditorSubmit = (payload, submitMode) => {
-    console.log('Blog modal UI payload preview:', payload, submitMode, selectedPost?._id || 'new')
-    toast.info(`UI only: ${submitMode === 'publish' ? 'Publish' : 'Save draft'} action not connected yet`)
+  const handleEditorSubmit = async (payload, submitMode) => {
+    try {
+      setIsEditorSubmitting(true)
+
+      if (editorMode === 'edit' && selectedPost?._id) {
+        await updateBlogPost(selectedPost._id, payload)
+        toast.success(`Blog post ${submitMode === 'publish' ? 'updated and published' : 'updated'} successfully`)
+      } else {
+        await createBlogPost(payload)
+        toast.success(`Blog post ${submitMode === 'publish' ? 'created and published' : 'saved as draft'} successfully`)
+      }
+
+      handleCloseEditor()
+      await fetchPosts()
+    } catch (err) {
+      console.error('Failed to save blog post:', err)
+      toast.error(err.response?.data?.message || 'Failed to save blog post')
+    } finally {
+      setIsEditorSubmitting(false)
+    }
   }
 
   const formatDate = (value) => {
@@ -103,6 +121,19 @@ const AdminBlogPostsList = () => {
 
   const publishedCount = posts.filter((post) => post.isPublished).length
   const draftCount = posts.length - publishedCount
+
+  const getDisplayAuthor = (post) => {
+    if (post?.showAuthor === false) return 'Hidden'
+
+    if (post?.authorName?.trim()) return post.authorName.trim()
+
+    if (post?.author) {
+      const fullName = `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim()
+      if (fullName) return fullName
+    }
+
+    return 'Unknown'
+  }
 
   return (
     <div>
@@ -194,7 +225,7 @@ const AdminBlogPostsList = () => {
 
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{post.slug}</td>
 
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white'>{post.author ? `${(post.author.firstName || '') + ' ' + (post.author.lastName || '')}`.trim() : 'Unknown'}</td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white'>{getDisplayAuthor(post)}</td>
 
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <span
@@ -235,7 +266,7 @@ const AdminBlogPostsList = () => {
         )}
       </div>
 
-      <AdminBlogPostModal isOpen={isEditorOpen} mode={editorMode} post={selectedPost} currentUser={currentUser} onClose={handleCloseEditor} onSubmit={handleEditorSubmit} />
+      <AdminBlogPostModal isOpen={isEditorOpen} mode={editorMode} post={selectedPost} currentUser={currentUser} isSubmitting={isEditorSubmitting} onClose={handleCloseEditor} onSubmit={handleEditorSubmit} />
     </div>
   )
 }

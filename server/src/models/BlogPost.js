@@ -34,6 +34,15 @@ const blogPostSchema = new mongoose.Schema(
       type: [String],
       default: []
     },
+    authorName: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    showAuthor: {
+      type: Boolean,
+      default: true
+    },
     isPublished: {
       type: Boolean,
       default: false

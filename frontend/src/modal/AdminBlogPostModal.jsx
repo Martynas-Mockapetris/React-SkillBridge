@@ -23,6 +23,8 @@ const getLoggedInAuthorValue = (currentUser) => {
 }
 
 const getExistingAuthorValue = (post) => {
+  if (post?.showAuthor === false) return ''
+
   if (post?.authorName) return post.authorName
 
   if (typeof post?.author === 'string') {
@@ -35,7 +37,7 @@ const getExistingAuthorValue = (post) => {
   return post?.author?.email || ''
 }
 
-const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, onClose, onSubmit }) => {
+const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubmitting = false, onClose, onSubmit }) => {
   const [formData, setFormData] = useState(emptyForm)
 
   const loggedInAuthorValue = useMemo(() => getLoggedInAuthorValue(currentUser), [currentUser])
@@ -220,14 +222,26 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, onClos
           </div>
 
           <div className='flex justify-end gap-3 border-t border-gray-100 dark:border-gray-800 px-6 py-5 bg-white dark:bg-gray-950'>
-            <button type='button' onClick={onClose} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition'>
+            <button
+              type='button'
+              onClick={onClose}
+              disabled={isSubmitting}
+              className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed'>
               Cancel
             </button>
-            <button type='button' onClick={() => handleSubmit('draft')} className='px-5 py-2 rounded-lg bg-gray-900 text-white dark:bg-gray-700 font-semibold hover:opacity-90'>
-              Save Draft
+            <button
+              type='button'
+              onClick={() => handleSubmit('draft')}
+              disabled={isSubmitting}
+              className='px-5 py-2 rounded-lg bg-gray-900 text-white dark:bg-gray-700 font-semibold hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed'>
+              {isSubmitting ? 'Saving...' : 'Save Draft'}
             </button>
-            <button type='button' onClick={() => handleSubmit('publish')} className='px-5 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-accent/90'>
-              Publish
+            <button
+              type='button'
+              onClick={() => handleSubmit('publish')}
+              disabled={isSubmitting}
+              className='px-5 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-accent/90 disabled:opacity-60 disabled:cursor-not-allowed'>
+              {isSubmitting ? 'Publishing...' : 'Publish'}
             </button>
           </div>
         </motion.div>
