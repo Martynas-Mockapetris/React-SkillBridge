@@ -4,8 +4,8 @@ import { getSystemConfig, updateSystemConfigSection } from '../../services/confi
 
 const SECTION_DEFS = {
   home: {
-    title: 'Home Page',
-    description: 'Manage public text content for the Home page sections.',
+    title: 'Hero Sections',
+    description: 'Manage hero and core Home page section content.',
     fields: [
       { key: 'heroTitleLead', label: 'Hero Title (Lead)', type: 'text', placeholder: 'Find Your Next' },
       { key: 'heroTitleAccent', label: 'Hero Title (Accent)', type: 'text', placeholder: 'Opportunity' },
@@ -201,7 +201,45 @@ const initialDrafts = {
   system: { enabled: true, values: {} }
 }
 
-const AdminSettings = ({ activeSectionId = 'home' }) => {
+const SETTINGS_VIEW_MAP = {
+  'home.hero': {
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage all Home page content pages and sections.',
+    sectionId: 'home'
+  },
+  'home.pricing': {
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage all Home page content pages and sections.',
+    sectionId: 'pricing'
+  },
+  'home.testimonials': {
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage all Home page content pages and sections.',
+    sectionId: 'testimonials'
+  },
+  about: {
+    pageTitle: 'About Page',
+    pageDescription: 'Manage About page content and visibility settings.',
+    sectionId: 'about'
+  },
+  contact: {
+    pageTitle: 'Contact Info',
+    pageDescription: 'Manage platform contact channels and support details.',
+    sectionId: 'contact'
+  },
+  mail: {
+    pageTitle: 'Mail Settings',
+    pageDescription: 'Configure mail defaults shown to users.',
+    sectionId: 'mail'
+  },
+  system: {
+    pageTitle: 'System Settings',
+    pageDescription: 'General platform settings and admin defaults.',
+    sectionId: 'system'
+  }
+}
+
+const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
   const [loading, setLoading] = useState(true)
   const [config, setConfig] = useState(null)
   const [savingSection, setSavingSection] = useState('')
@@ -774,14 +812,20 @@ const AdminSettings = ({ activeSectionId = 'home' }) => {
       ) : (
         <div>
           {(() => {
-            const sectionId = activeSectionId
+            const activeView = SETTINGS_VIEW_MAP[activeSectionId] || SETTINGS_VIEW_MAP['home.hero']
+            const sectionId = activeView.sectionId
             const section = SECTION_DEFS[sectionId]
             if (!section) return null
 
             return (
               <div className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5'>
-                <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section.title}</h3>
-                <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{section.description}</p>
+                <div className='flex flex-wrap items-start justify-between gap-3'>
+                  <div>
+                    <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-2'>{activeView.pageTitle}</p>
+                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section.title}</h3>
+                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView.pageDescription}</p>
+                  </div>
+                </div>
 
                 <div className='mt-4 flex items-center gap-2'>
                   <input

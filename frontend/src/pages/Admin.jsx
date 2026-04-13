@@ -11,28 +11,37 @@ import AdminBlogPostsList from '../components/Admin/AdminBlogPostsList'
 
 const formatLabel = (value) => {
   if (!value) return ''
-  return value.replace(/[-_]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+  return value.replace(/[-_.]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+const getSettingsBreadcrumbItems = (activeSettingsSection) => {
+  const items = [{ label: 'Admin', to: '/admin' }, { label: 'Settings' }]
+
+  if (!activeSettingsSection) {
+    return items
+  }
+
+  if (activeSettingsSection.startsWith('home.')) {
+    const [, child] = activeSettingsSection.split('.')
+    items.push({ label: 'Home Page' })
+    items.push({ label: formatLabel(child === 'hero' ? 'hero sections' : child) })
+    return items
+  }
+
+  items.push({ label: formatLabel(activeSettingsSection) })
+  return items
 }
 
 const Admin = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
-  const [activeSettingsSection, setActiveSettingsSection] = useState('home')
+  const [activeSettingsSection, setActiveSettingsSection] = useState('home.hero')
 
   const breadcrumbItems = useMemo(() => {
-    const items = [{ label: 'Admin', to: '/admin' }]
-
     if (activeSection === 'settings') {
-      items.push({ label: 'Settings' })
-
-      if (activeSettingsSection) {
-        items.push({ label: formatLabel(activeSettingsSection) })
-      }
-
-      return items
+      return getSettingsBreadcrumbItems(activeSettingsSection)
     }
 
-    items.push({ label: formatLabel(activeSection) })
-    return items
+    return [{ label: 'Admin', to: '/admin' }, { label: formatLabel(activeSection) }]
   }, [activeSection, activeSettingsSection])
 
   return (

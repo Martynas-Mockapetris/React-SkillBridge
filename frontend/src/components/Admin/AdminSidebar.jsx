@@ -2,10 +2,16 @@ import { useState } from 'react'
 import { FaChartBar, FaUsers, FaProjectDiagram, FaBullhorn, FaNewspaper, FaCog, FaBars, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 
-const SETTINGS_SUB_ITEMS = [
-  { id: 'home', label: 'Home Page' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'testimonials', label: 'Testimonials' },
+const SETTINGS_PAGES = [
+  {
+    id: 'home',
+    label: 'Home Page',
+    children: [
+      { id: 'home.hero', label: 'Hero Sections' },
+      { id: 'home.pricing', label: 'Pricing' },
+      { id: 'home.testimonials', label: 'Testimonials' }
+    ]
+  },
   { id: 'about', label: 'About Page' },
   { id: 'contact', label: 'Contact Info' },
   { id: 'mail', label: 'Mail Settings' },
@@ -15,6 +21,7 @@ const SETTINGS_SUB_ITEMS = [
 const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, setActiveSettingsSection }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(true)
+  const [isHomePageOpen, setIsHomePageOpen] = useState(true)
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <FaChartBar /> },
@@ -30,16 +37,34 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
 
     if (itemId === 'settings') {
       setIsSettingsOpen(true)
+      if (!activeSettingsSection) {
+        setActiveSettingsSection('home.hero')
+      }
     }
 
     setIsMobileMenuOpen(false)
   }
 
-  const handleSettingsSubClick = (subId) => {
+  const handleSettingsPageClick = (page) => {
     setActiveSection('settings')
-    setActiveSettingsSection(subId)
+
+    if (page.id === 'home') {
+      setIsHomePageOpen(true)
+      setActiveSettingsSection(page.children?.[0]?.id || 'home.hero')
+    } else {
+      setActiveSettingsSection(page.id)
+    }
+
     setIsMobileMenuOpen(false)
   }
+
+  const handleSettingsChildClick = (childId) => {
+    setActiveSection('settings')
+    setActiveSettingsSection(childId)
+    setIsMobileMenuOpen(false)
+  }
+
+  const isHomePageActive = activeSection === 'settings' && activeSettingsSection?.startsWith('home.')
 
   return (
     <>
@@ -87,18 +112,52 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
 
                   {isSettingsItem && isSettingsOpen && (
                     <div className='mt-1 ml-7 space-y-1'>
-                      {SETTINGS_SUB_ITEMS.map((sub) => {
-                        const isSubActive = activeSection === 'settings' && activeSettingsSection === sub.id
+                      {SETTINGS_PAGES.map((page) => {
+                        const hasChildren = Array.isArray(page.children) && page.children.length > 0
+                        const isPageActive = activeSection === 'settings' && (page.id === 'home' ? isHomePageActive : activeSettingsSection === page.id)
+
                         return (
-                          <button
-                            key={sub.id}
-                            type='button'
-                            onClick={() => handleSettingsSubClick(sub.id)}
-                            className={`w-full text-left text-sm rounded-md px-3 py-2 transition ${
-                              isSubActive ? 'bg-accent/15 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
-                            }`}>
-                            {sub.label}
-                          </button>
+                          <div key={page.id}>
+                            <button
+                              type='button'
+                              onClick={() => handleSettingsPageClick(page)}
+                              className={`w-full flex items-center justify-between text-left text-sm rounded-md px-3 py-2 transition ${
+                                isPageActive ? 'bg-accent/15 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
+                              }`}>
+                              <span>{page.label}</span>
+
+                              {hasChildren && (
+                                <span
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setIsHomePageOpen((prev) => !prev)
+                                  }}
+                                  className='p-1 rounded hover:bg-black/10 dark:hover:bg-white/10'>
+                                  {isHomePageOpen ? <FaChevronDown size={10} /> : <FaChevronRight size={10} />}
+                                </span>
+                              )}
+                            </button>
+
+                            {hasChildren && isHomePageOpen && (
+                              <div className='mt-1 ml-4 space-y-1'>
+                                {page.children.map((child) => {
+                                  const isChildActive = activeSection === 'settings' && activeSettingsSection === child.id
+
+                                  return (
+                                    <button
+                                      key={child.id}
+                                      type='button'
+                                      onClick={() => handleSettingsChildClick(child.id)}
+                                      className={`w-full text-left text-sm rounded-md px-3 py-2 transition ${
+                                        isChildActive ? 'bg-accent/15 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
+                                      }`}>
+                                      {child.label}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
                         )
                       })}
                     </div>
