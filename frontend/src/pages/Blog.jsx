@@ -6,7 +6,7 @@ import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getPublishedBlogPosts } from '../services/blogService'
 
-const EXCERPT_PREVIEW_LIMIT = 140
+const EXCERPT_PREVIEW_LIMIT = 200
 
 const truncateText = (value = '', limit = EXCERPT_PREVIEW_LIMIT) => {
   const normalized = value.trim()
@@ -65,47 +65,48 @@ const Blog = () => {
         )}
 
         {!loading && !error && posts.length > 0 && (
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          <div className='columns-1 lg:columns-2 gap-6 [column-fill:_balance]'>
             {posts.map((post, index) => (
-              <motion.article
-                key={post._id}
-                className='rounded-2xl border theme-border bg-white/50 dark:bg-black/20 overflow-hidden hover:shadow-xl transition-all'
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: index * 0.06 }}>
-                {post.coverImage ? (
-                  <div className='h-56 overflow-hidden'>
-                    <img src={post.coverImage} alt={post.title} className='w-full h-full object-cover' />
-                  </div>
-                ) : (
-                  <div className='h-56 bg-gradient-to-br from-accent/20 via-primary/10 to-transparent' />
-                )}
-
-                <div className='p-6'>
-                  <div className='flex items-center gap-2 text-sm theme-text-secondary mb-3'>
-                    <FaCalendarAlt className='text-accent' />
-                    <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Draft date unavailable'}</span>
-                  </div>
-
-                  <h2 className='text-2xl font-semibold theme-text mb-3'>{post.title}</h2>
-                  <p className='theme-text-secondary leading-relaxed mb-4'>{truncateText(post.excerpt)}</p>
-
-                  {Array.isArray(post.tags) && post.tags.length > 0 && (
-                    <div className='flex flex-wrap gap-2 mb-5'>
-                      {post.tags.slice(0, 4).map((tag) => (
-                        <span key={tag} className='px-3 py-1 text-sm rounded-full bg-accent/10 text-accent'>
-                          {tag}
-                        </span>
-                      ))}
+              <div key={post._id} className='inline-block w-full mb-6 break-inside-avoid'>
+                <motion.article
+                  className='rounded-2xl border theme-border bg-white/50 dark:bg-black/20 overflow-hidden hover:shadow-xl transition-all'
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: index * 0.06 }}>
+                  {post.coverImage ? (
+                    <div className='h-56 overflow-hidden'>
+                      <img src={post.coverImage} alt={post.title} className='w-full h-full object-cover' />
                     </div>
+                  ) : (
+                    <div className='h-56 bg-gradient-to-br from-accent/20 via-primary/10 to-transparent' />
                   )}
 
-                  <Link to={`/blog/${post.slug}`} className='inline-flex items-center gap-2 text-accent font-semibold hover:opacity-80 transition-opacity'>
-                    Read article
-                    <FaArrowRight />
-                  </Link>
-                </div>
-              </motion.article>
+                  <div className='p-6'>
+                    <div className='flex items-center gap-2 text-sm theme-text-secondary mb-3'>
+                      <FaCalendarAlt className='text-accent' />
+                      <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Draft date unavailable'}</span>
+                    </div>
+
+                    <h2 className='text-2xl font-semibold theme-text mb-3'>{post.title}</h2>
+                    <p className='theme-text-secondary leading-relaxed mb-4'>{truncateText(post.excerpt)}</p>
+
+                    {Array.isArray(post.tags) && post.tags.length > 0 && (
+                      <div className='flex flex-wrap gap-2 mb-5'>
+                        {post.tags.slice(0, 4).map((tag) => (
+                          <span key={tag} className='px-3 py-1 text-sm rounded-full bg-accent/10 text-accent'>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <Link to={`/blog/${post.slug}`} className='inline-flex items-center gap-2 text-accent font-semibold hover:opacity-80 transition-opacity'>
+                      Read article
+                      <FaArrowRight />
+                    </Link>
+                  </div>
+                </motion.article>
+              </div>
             ))}
           </div>
         )}
