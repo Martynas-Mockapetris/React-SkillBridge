@@ -236,6 +236,11 @@ const SETTINGS_VIEW_MAP = {
     pageDescription: 'Manage public Blog page text content and labels.',
     sectionId: 'blog'
   },
+  listings: {
+    pageTitle: 'Listings Page',
+    pageDescription: 'Listings page settings will be added here.',
+    sectionId: 'listings'
+  },
   about: {
     pageTitle: 'About Page',
     pageDescription: 'Manage About page content and visibility settings.',
@@ -836,40 +841,49 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
             const activeView = SETTINGS_VIEW_MAP[activeSectionId] || SETTINGS_VIEW_MAP['home.hero']
             const sectionId = activeView.sectionId
             const section = SECTION_DEFS[sectionId]
-            if (!section) return null
+            // if (!section) return null
 
             return (
               <div className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5'>
                 <div className='flex flex-wrap items-start justify-between gap-3'>
                   <div>
                     <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-2'>{activeView.pageTitle}</p>
-                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section.title}</h3>
+                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section?.title || activeView.pageTitle}</h3>
                     <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView.pageDescription}</p>
                   </div>
                 </div>
 
-                <div className='mt-4 flex items-center gap-2'>
-                  <input
-                    id={`enabled-${sectionId}`}
-                    type='checkbox'
-                    checked={!!drafts[sectionId]?.enabled}
-                    onChange={(e) => handleEnabledChange(sectionId, e.target.checked)}
-                    className='rounded border-gray-300 text-accent focus:ring-accent'
-                  />
-                  <label htmlFor={`enabled-${sectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
-                    Enabled
-                  </label>
-                </div>
+                {!section ? (
+                  <div className='mt-6 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-6'>
+                    <h4 className='text-base font-semibold text-gray-900 dark:text-white'>Blank Settings Page</h4>
+                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>Listings Page settings can be added here later.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className='mt-4 flex items-center gap-2'>
+                      <input
+                        id={`enabled-${sectionId}`}
+                        type='checkbox'
+                        checked={!!drafts[sectionId]?.enabled}
+                        onChange={(e) => handleEnabledChange(sectionId, e.target.checked)}
+                        className='rounded border-gray-300 text-accent focus:ring-accent'
+                      />
+                      <label htmlFor={`enabled-${sectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
+                        Enabled
+                      </label>
+                    </div>
 
-                {renderSectionFields(sectionId, section)}
+                    {renderSectionFields(sectionId, section)}
 
-                <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
+                    <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
 
-                <div className='mt-4 flex flex-wrap items-center gap-2'>
-                  <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
-                    {savingSection === sectionId ? 'Saving...' : 'Save Section'}
-                  </button>
-                </div>
+                    <div className='mt-4 flex flex-wrap items-center gap-2'>
+                      <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+                        {savingSection === sectionId ? 'Saving...' : 'Save Section'}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )
           })()}
