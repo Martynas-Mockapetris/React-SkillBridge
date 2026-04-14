@@ -13,7 +13,9 @@ const SETTINGS_PAGES = [
     ]
   },
   { id: 'blog', label: 'Blog Page' },
+  { id: 'blog-detail', label: 'Blog Detail Page' },
   { id: 'listings', label: 'Listings Page' },
+  { id: 'project-detail', label: 'Project Detail Page' },
   { id: 'about', label: 'About Page' },
   { id: 'contact', label: 'Contact Info' },
   { id: 'mail', label: 'Mail Settings' },

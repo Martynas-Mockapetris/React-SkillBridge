@@ -236,10 +236,20 @@ const SETTINGS_VIEW_MAP = {
     pageDescription: 'Manage public Blog page text content and labels.',
     sectionId: 'blog'
   },
+  'blog-detail': {
+    pageTitle: 'Blog Detail Page',
+    pageDescription: 'Blog detail page settings will be added here.',
+    sectionId: 'blog-detail'
+  },
   listings: {
     pageTitle: 'Listings Page',
     pageDescription: 'Listings page settings will be added here.',
     sectionId: 'listings'
+  },
+  'project-detail': {
+    pageTitle: 'Project Detail Page',
+    pageDescription: 'Project detail page settings will be added here.',
+    sectionId: 'project-detail'
   },
   about: {
     pageTitle: 'About Page',
