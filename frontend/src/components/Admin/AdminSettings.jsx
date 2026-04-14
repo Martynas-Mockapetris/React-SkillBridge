@@ -841,7 +841,6 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
             const activeView = SETTINGS_VIEW_MAP[activeSectionId] || SETTINGS_VIEW_MAP['home.hero']
             const sectionId = activeView.sectionId
             const section = SECTION_DEFS[sectionId]
-            // if (!section) return null
 
             return (
               <div className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5'>
