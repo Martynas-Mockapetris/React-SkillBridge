@@ -1,5 +1,6 @@
 import express from 'express'
-import { protect, adminOnly } from '../middleware/authMiddleware.js'
+import { protect, requirePermission } from '../middleware/authMiddleware.js'
+import { PERMISSIONS } from '../utils/permissions.js'
 import {
   createAnnouncement,
   getAnnouncementsByUser,
@@ -44,7 +45,7 @@ router.delete('/:id', protect, deleteAnnouncement)
 router.patch('/:id/toggle', protect, toggleAnnouncementStatus)
 
 // Admin moderation routes
-router.patch('/admin/:id/toggle', protect, adminOnly, toggleAnnouncementStatusAsAdmin)
-router.delete('/admin/:id', protect, adminOnly, deleteAnnouncementAsAdmin)
+router.patch('/admin/:id/toggle', protect, requirePermission(PERMISSIONS.ANNOUNCEMENTS_UPDATE_ADMIN), toggleAnnouncementStatusAsAdmin)
+router.delete('/admin/:id', protect, requirePermission(PERMISSIONS.ANNOUNCEMENTS_DELETE_ADMIN), deleteAnnouncementAsAdmin)
 
 export default router
