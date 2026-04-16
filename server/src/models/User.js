@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['client', 'freelancer', 'both', 'admin'],
+    enum: ['client', 'freelancer', 'both', 'moderator', 'blogger', 'config_manager', 'admin'],
     required: true
   },
   isLocked: {
