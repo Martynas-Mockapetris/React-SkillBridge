@@ -15,6 +15,7 @@ import { calculateProfileCompleteness } from '../utils/profileCompleteness'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { hasAdminPanelAccess, getAdminRoleLabel, isFullAdmin } from '../utils/accessRoles'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
@@ -81,8 +82,12 @@ const Profile = () => {
     if (!currentUser) return ''
     if (currentUser.userType === 'client') return 'Client'
     if (currentUser.userType === 'freelancer') return 'Freelancer'
-    if (currentUser.userType === 'admin') return 'Administrator'
-    return 'Client & Freelancer'
+    if (currentUser.userType === 'both') return 'Client & Freelancer'
+
+    const adminRoleLabel = getAdminRoleLabel(currentUser)
+    if (adminRoleLabel) return adminRoleLabel
+
+    return currentUser.userType
   }
 
   const formatLockDuration = (durationDays) => {
@@ -105,7 +110,7 @@ const Profile = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     // Projects tab - not visible to admins
-    ...(currentUser?.userType !== 'admin' ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
+    ...(!hasAdminPanelAccess(currentUser) ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
     { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
@@ -115,7 +120,7 @@ const Profile = () => {
         ]
       : []),
     // Admin tab - visible only to admins; click redirects immediately
-    ...(currentUser?.userType === 'admin' ? [{ id: 'admin', label: 'Admin', icon: <FaShieldAlt /> }] : []),
+    ...(hasAdminPanelAccess(currentUser) ? [{ id: 'admin', label: 'Admin', icon: <FaShieldAlt /> }] : []),
     { id: 'settings', label: 'Settings', icon: <FaCog /> },
     { id: 'security', label: 'Security', icon: <FaLock /> }
   ]
@@ -191,7 +196,7 @@ const Profile = () => {
               {currentUser?.firstName} {currentUser?.lastName}
             </h1>
             <p className='theme-text-secondary'>{getRoleLabel()}</p>
-            {currentUser?.userType !== 'admin' && (
+            {!hasAdminPanelAccess(currentUser) && (
               <div className='flex items-center gap-2'>
                 {ratingStats?.totalRatings > 0 ? (
                   <>
@@ -241,7 +246,7 @@ const Profile = () => {
                 user={currentUser}
                 profileCompleteness={profileCompleteness}
                 onOpenSettings={handleOpenSettings}
-                onOpenProjects={currentUser?.userType !== 'admin' ? handleOpenProjects : undefined}
+                onOpenProjects={!hasAdminPanelAccess(currentUser) ? handleOpenProjects : undefined}
                 onOpenMessages={handleOpenMessages}
                 onOpenFreelance={currentUser?.userType === 'freelancer' || currentUser?.userType === 'both' ? handleOpenFreelance : undefined}
               />

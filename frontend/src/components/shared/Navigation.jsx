@@ -4,12 +4,13 @@ import { HiMenu, HiX } from 'react-icons/hi'
 import PageBackground from '../shared/PageBackground'
 import ThemeToggle from './ThemeToggle'
 import { useAuth } from '../../context/AuthContext'
+import { hasAdminPanelAccess } from '../../utils/accessRoles'
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { currentUser, logout } = useAuth()
 
-  const isAdmin = currentUser && currentUser.userType === 'admin'
+    const isAdmin = currentUser && hasAdminPanelAccess(currentUser)
 
   const desktopLinkStyles = `relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px]
     after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full theme-text`
@@ -55,7 +56,7 @@ const Navigation = () => {
           )}
 
           {/* Only show Admin link if user is admin */}
-          {isAdmin && (
+          {canAccessAdmin && (
             <Link to='/admin' className={desktopLinkStyles}>
               Admin
             </Link>
@@ -108,7 +109,7 @@ const Navigation = () => {
             )}
 
             {/* Only show Admin link if user is admin */}
-            {isAdmin && (
+            {canAccessAdmin && (
               <Link to='/admin' className={mobileLinkStyles}>
                 Admin
               </Link>
