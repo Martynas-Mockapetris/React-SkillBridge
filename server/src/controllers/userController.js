@@ -674,6 +674,8 @@ export const getAdminUsers = async (req, res) => {
   }
 }
 
+const PRIVILEGED_USER_TYPES = ['admin', 'moderator', 'blogger', 'config_manager']
+
 // @desc    Toggle user lock status (admin)
 // @route   PATCH /api/users/admin/:userId/lock
 // @access  Admin
@@ -687,8 +689,8 @@ export const toggleUserLock = async (req, res) => {
 
     await user.ensureUnlockedIfExpired()
 
-    if (user.userType === 'admin') {
-      return res.status(403).json({ message: 'Cannot lock/unlock admin users' })
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot lock or unlock privileged users' })
     }
 
     // Unlock flow
@@ -753,8 +755,12 @@ export const updateAdminUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    if (user.userType === 'admin' && updates.userType && updates.userType !== 'admin') {
-      return res.status(403).json({ message: 'Cannot downgrade admin accounts' })
+    const isPrivilegedUser = PRIVILEGED_USER_TYPES.includes(user.userType)
+    const isChangingUserType = updates.userType !== undefined
+    const isChangingToDifferentRole = isChangingUserType && updates.userType !== user.userType
+
+    if (isPrivilegedUser && isChangingToDifferentRole) {
+      return res.status(403).json({ message: 'Cannot change the role of privileged users' })
     }
 
     Object.assign(user, updates)
@@ -779,9 +785,8 @@ export const deleteAdminUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    // Don't allow deleting admins
-    if (user.userType === 'admin') {
-      return res.status(403).json({ message: 'Cannot delete admin users' })
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot delete privileged users' })
     }
 
     // Delete user's projects too
