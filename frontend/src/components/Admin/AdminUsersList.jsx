@@ -158,7 +158,7 @@ const AdminUsersList = () => {
     }
   }
 
-  const roleTypes = ['client', 'freelancer', 'both', 'admin']
+  const roleTypes = ['client', 'freelancer', 'both', 'moderator', 'blogger', 'config_manager', 'admin']
   const statusTypes = [
     { value: 'active', label: 'Active' },
     { value: 'inactive', label: 'Inactive' },
