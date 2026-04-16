@@ -10,7 +10,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { currentUser, logout } = useAuth()
 
-    const isAdmin = currentUser && hasAdminPanelAccess(currentUser)
+      const canAccessAdmin = currentUser && hasAdminPanelAccess(currentUser)
 
   const desktopLinkStyles = `relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px]
     after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full theme-text`
