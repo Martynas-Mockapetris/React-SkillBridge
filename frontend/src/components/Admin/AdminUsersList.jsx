@@ -6,6 +6,8 @@ import AdminLockUserModal from '../../modal/AdminLockUserModal'
 import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
 import AdminMailUserModal from '../../modal/AdminMailUserModal'
 import PaginationControls from '../shared/PaginationControls'
+import { useAuth } from '../../context/AuthContext'
+import { ADMIN_PERMISSIONS, hasAdminPermission } from '../../utils/accessRoles'
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([])
@@ -29,6 +31,10 @@ const AdminUsersList = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [isMailModalOpen, setIsMailModalOpen] = useState(false)
   const [mailRecipient, setMailRecipient] = useState(null)
+  const { currentUser } = useAuth()
+  const canUpdateUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_UPDATE)
+  const canLockUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_LOCK)
+  const canDeleteUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_DELETE)
 
   const fetchUsers = async () => {
     try {
@@ -167,7 +173,7 @@ const AdminUsersList = () => {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedUsers(users.map((user) => user.id))
+      setSelectedUsers(users.map((user) => user._id))
     } else {
       setSelectedUsers([])
     }
@@ -185,17 +191,23 @@ const AdminUsersList = () => {
   // Bulk actions toolbar
   const BulkActions = () => {
     if (selectedUsers.length === 0) return null
+    if (!canLockUsers && !canDeleteUsers) return null
 
     return (
       <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
         <span className='text-sm text-gray-700 dark:text-gray-300'>{selectedUsers.length} users selected</span>
         <div className='flex gap-2'>
-          <button className='px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200'>
-            <FaLock className='inline-block mr-1' /> Suspend Selected
-          </button>
-          <button className='px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200'>
-            <FaTrash className='inline-block mr-1' /> Delete Selected
-          </button>
+          {canLockUsers && (
+            <button className='px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200'>
+              <FaLock className='inline-block mr-1' /> Suspend Selected
+            </button>
+          )}
+
+          {canDeleteUsers && (
+            <button className='px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200'>
+              <FaTrash className='inline-block mr-1' /> Delete Selected
+            </button>
+          )}
         </div>
       </div>
     )
@@ -224,9 +236,19 @@ const AdminUsersList = () => {
   // Export to CSV
   const exportToCSV = () => {
     const headers = ['Name', 'Email', 'Role', 'Status', 'Subscription', 'Join Date']
-    const data = getSortedUsers().map((user) => [user.name, user.email, user.role, user.status, user.subscription.type, user.joinDate])
 
-    const csvContent = [headers.join(','), ...data.map((row) => row.join(','))].join('\n')
+    const escapeCSV = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`
+
+    const data = users.map((user) => [
+      `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+      user.email || '',
+      user.userType || '',
+      getUserStatus(user),
+      user.subscription?.type || 'N/A',
+      user.createdAt ? new Date(user.createdAt).toLocaleDateString() : ''
+    ])
+
+    const csvContent = [headers.map(escapeCSV).join(','), ...data.map((row) => row.map(escapeCSV).join(','))].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
@@ -238,6 +260,7 @@ const AdminUsersList = () => {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -340,7 +363,7 @@ const AdminUsersList = () => {
             <thead>
               <tr className='bg-gray-50 dark:bg-gray-700'>
                 <th className='px-6 py-3 w-4 text-center'>
-                  <input type='checkbox' onChange={handleSelectAll} checked={selectedUsers.length === users.length} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                  <input type='checkbox' onChange={handleSelectAll} checked={users.length > 0 && selectedUsers.length === users.length} className='rounded border-gray-300 text-accent focus:ring-accent' />
                 </th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Name</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Email</th>
@@ -390,27 +413,36 @@ const AdminUsersList = () => {
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3 flex'>
-                      <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200' onClick={() => openEditModal(user)} title='Edit user'>
-                        <FaUserCog className='w-4 h-4' />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (user.isLocked) {
-                            handleLockUser(user)
-                          } else {
-                            openLockModal(user)
-                          }
-                        }}
-                        title={user.isLocked ? 'Unlock user' : 'Lock user'}
-                        className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
-                        <FaLock className='w-4 h-4' />
-                      </button>
+                      {canUpdateUsers && (
+                        <button className='text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200' onClick={() => openEditModal(user)} title='Edit user'>
+                          <FaUserCog className='w-4 h-4' />
+                        </button>
+                      )}
+
+                      {canLockUsers && (
+                        <button
+                          onClick={() => {
+                            if (user.isLocked) {
+                              handleLockUser(user)
+                            } else {
+                              openLockModal(user)
+                            }
+                          }}
+                          title={user.isLocked ? 'Unlock user' : 'Lock user'}
+                          className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
+                          <FaLock className='w-4 h-4' />
+                        </button>
+                      )}
+
                       <button onClick={() => openMailModal(user)} title='Send admin mail' className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>
                         <FaEnvelope className='w-4 h-4' />
                       </button>
-                      <button onClick={() => handleDeleteUser(user)} title='Delete user' className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
-                        <FaTrash className='w-4 h-4' />
-                      </button>
+
+                      {canDeleteUsers && (
+                        <button onClick={() => handleDeleteUser(user)} title='Delete user' className='text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'>
+                          <FaTrash className='w-4 h-4' />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

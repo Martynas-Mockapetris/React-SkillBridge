@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AdminHeader from '../components/Admin/AdminHeader'
 import AdminSidebar from '../components/Admin/AdminSidebar'
@@ -8,6 +8,8 @@ import AdminProjectsList from '../components/Admin/AdminProjectsList'
 import AdminAnnouncementsList from '../components/Admin/AdminAnnouncementsList'
 import AdminSettings from '../components/Admin/AdminSettings'
 import AdminBlogPostsList from '../components/Admin/AdminBlogPostsList'
+import { useAuth } from '../context/AuthContext'
+import { canAccessAdminSection, getAdminSections, getDefaultAdminSection } from '../utils/accessRoles'
 
 const formatLabel = (value) => {
   if (!value) return ''
@@ -33,8 +35,22 @@ const getSettingsBreadcrumbItems = (activeSettingsSection) => {
 }
 
 const Admin = () => {
+  const { currentUser } = useAuth()
   const [activeSection, setActiveSection] = useState('dashboard')
   const [activeSettingsSection, setActiveSettingsSection] = useState('home.hero')
+
+  const availableSections = useMemo(() => getAdminSections(currentUser), [currentUser])
+  const defaultSection = useMemo(() => getDefaultAdminSection(currentUser), [currentUser])
+
+  useEffect(() => {
+    if (!defaultSection) {
+      return
+    }
+
+    if (!canAccessAdminSection(currentUser, activeSection)) {
+      setActiveSection(defaultSection)
+    }
+  }, [currentUser, activeSection, defaultSection])
 
   const breadcrumbItems = useMemo(() => {
     if (activeSection === 'settings') {
@@ -44,12 +60,16 @@ const Admin = () => {
     return [{ label: 'Admin', to: '/admin' }, { label: formatLabel(activeSection) }]
   }, [activeSection, activeSettingsSection])
 
+  if (!availableSections.length) {
+    return null
+  }
+
   return (
     <div className='flex h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
       <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} activeSettingsSection={activeSettingsSection} setActiveSettingsSection={setActiveSettingsSection} />
 
       <div className='flex-1 flex flex-col overflow-hidden'>
-        <AdminHeader />
+        <AdminHeader activeSection={activeSection} />
         <main className='flex-1 overflow-x-hidden overflow-y-auto'>
           <div className='container mx-auto px-6 py-8'>
             <nav aria-label='Breadcrumb' className='mb-4'>
@@ -73,12 +93,12 @@ const Admin = () => {
               </ol>
             </nav>
 
-            {activeSection === 'dashboard' && <AdminStats />}
-            {activeSection === 'users' && <AdminUsersList />}
-            {activeSection === 'projects' && <AdminProjectsList />}
-            {activeSection === 'announcements' && <AdminAnnouncementsList />}
-            {activeSection === 'blog' && <AdminBlogPostsList />}
-            {activeSection === 'settings' && <AdminSettings activeSectionId={activeSettingsSection} />}
+            {activeSection === 'dashboard' && canAccessAdminSection(currentUser, 'dashboard') && <AdminStats />}
+            {activeSection === 'users' && canAccessAdminSection(currentUser, 'users') && <AdminUsersList />}
+            {activeSection === 'projects' && canAccessAdminSection(currentUser, 'projects') && <AdminProjectsList />}
+            {activeSection === 'announcements' && canAccessAdminSection(currentUser, 'announcements') && <AdminAnnouncementsList />}
+            {activeSection === 'blog' && canAccessAdminSection(currentUser, 'blog') && <AdminBlogPostsList />}
+            {activeSection === 'settings' && canAccessAdminSection(currentUser, 'settings') && <AdminSettings activeSectionId={activeSettingsSection} />}
           </div>
         </main>
       </div>

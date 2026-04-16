@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { FaChartBar, FaUsers, FaProjectDiagram, FaBullhorn, FaNewspaper, FaCog, FaBars, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import { useAuth } from '../../context/AuthContext'
+import { canAccessAdminSection } from '../../utils/accessRoles'
 
 const SETTINGS_PAGES = [
   {
@@ -26,6 +28,7 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(true)
   const [isHomePageOpen, setIsHomePageOpen] = useState(true)
+  const { currentUser } = useAuth()
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <FaChartBar /> },
@@ -34,7 +37,7 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
     { id: 'announcements', label: 'Announcements', icon: <FaBullhorn /> },
     { id: 'blog', label: 'Blog', icon: <FaNewspaper /> },
     { id: 'settings', label: 'Settings', icon: <FaCog /> }
-  ]
+  ].filter((item) => canAccessAdminSection(currentUser, item.id))
 
   const handleMainNavClick = (itemId) => {
     setActiveSection(itemId)

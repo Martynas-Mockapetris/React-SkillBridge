@@ -9,6 +9,8 @@ import AdminLockProjectModal from '../../modal/AdminLockProjectModal'
 import PaginationControls from '../shared/PaginationControls'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
+import { useAuth } from '../../context/AuthContext'
+import { ADMIN_PERMISSIONS, hasAdminPermission, isFullAdmin } from '../../utils/accessRoles'
 
 const ProgressBar = ({ progress }) => (
   <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2'>
@@ -100,6 +102,13 @@ const AdminProjectsList = () => {
   const statusOptions = ['All', ...filterOptions.statuses]
   const categoryOptions = ['All', ...filterOptions.categories]
   const priorityOptions = ['All', ...filterOptions.priorities]
+
+  // Auth
+  const { currentUser } = useAuth()
+  const canUpdateProjects = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.PROJECTS_UPDATE_ADMIN)
+  const canLockProjects = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.PROJECTS_LOCK_ADMIN)
+  const canDeleteProjects = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.PROJECTS_DELETE_ADMIN)
+  const canCreateProjects = isFullAdmin(currentUser)
 
   const fetchProjects = async () => {
     try {
@@ -425,13 +434,15 @@ const AdminProjectsList = () => {
             {totalFilteredCount !== overallTotalCount && ` (${overallTotalCount} total)`}
           </div>
         </div>
-        <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
-          <FaPlus className='w-4 h-4' />
-          New Project
-        </button>
+        {canCreateProjects && (
+          <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
+            <FaPlus className='w-4 h-4' />
+            New Project
+          </button>
+        )}
       </div>
 
-      <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />
+      {canCreateProjects && <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />}
 
       {/* Search and Filter Bar */}
       <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm'>
@@ -563,33 +574,42 @@ const AdminProjectsList = () => {
                 <button onClick={() => openDetailModal(project)} title='Quick details' className='text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'>
                   <FaEye className='w-4 h-4' />
                 </button>
-                <button
-                  onClick={() => openEditModal(project)}
-                  disabled={isAdminCancelled}
-                  title={isAdminCancelled ? 'Project was canceled by admin. Editing is disabled.' : 'Edit project'}
-                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
-                  <FaEdit className='w-4 h-4' />
-                </button>
-                <button
-                  onClick={() => handleToggleProjectLock(project)}
-                  disabled={isAdminCancelled || lockLoadingProjectId === project.id}
-                  title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : isProjectLocked ? 'Unlock project' : 'Lock / Pause project'}
-                  className={`${
-                    isAdminCancelled || lockLoadingProjectId === project.id
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : isProjectLocked
-                        ? 'text-red-800 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400'
-                        : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'
-                  }`}>
-                  <FaLock className='w-4 h-4' />
-                </button>
-                <button
-                  onClick={() => openDeleteModal(project)}
-                  disabled={isAdminCancelled}
-                  title={isAdminCancelled ? 'Project already canceled by admin.' : 'Cancel project as admin'}
-                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'}`}>
-                  <FaTrash className='w-4 h-4' />
-                </button>
+
+                {canUpdateProjects && (
+                  <button
+                    onClick={() => openEditModal(project)}
+                    disabled={isAdminCancelled}
+                    title={isAdminCancelled ? 'Project was canceled by admin. Editing is disabled.' : 'Edit project'}
+                    className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
+                    <FaEdit className='w-4 h-4' />
+                  </button>
+                )}
+
+                {canLockProjects && (
+                  <button
+                    onClick={() => handleToggleProjectLock(project)}
+                    disabled={isAdminCancelled || lockLoadingProjectId === project.id}
+                    title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : isProjectLocked ? 'Unlock project' : 'Lock / Pause project'}
+                    className={`${
+                      isAdminCancelled || lockLoadingProjectId === project.id
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : isProjectLocked
+                          ? 'text-red-800 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400'
+                          : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'
+                    }`}>
+                    <FaLock className='w-4 h-4' />
+                  </button>
+                )}
+
+                {canDeleteProjects && (
+                  <button
+                    onClick={() => openDeleteModal(project)}
+                    disabled={isAdminCancelled}
+                    title={isAdminCancelled ? 'Project already canceled by admin.' : 'Cancel project as admin'}
+                    className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'}`}>
+                    <FaTrash className='w-4 h-4' />
+                  </button>
+                )}
               </div>
               {project.isLocked && (
                 <div className='mt-4 rounded-md border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 p-3 text-xs text-red-700 dark:text-red-300'>
