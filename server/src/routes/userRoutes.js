@@ -12,6 +12,7 @@ import {
   addFreelancerToFavorites,
   removeFreelancerFromFavorites,
   getAdminDashboardStats,
+  getAdminAuditLogs,
   getAdminUserDetail,
   getAdminUserProjects,
   getAdminUserAnnouncements,
@@ -40,16 +41,10 @@ router.delete('/profile', protect, deleteUserAccount)
 router.get('/stats', protect, getUserStats)
 
 // Admin dashboard stats route
-router.get(
-  '/admin/stats',
-  protect,
-  requireAllPermissions([
-    PERMISSIONS.USERS_READ,
-    PERMISSIONS.PROJECTS_READ_ADMIN,
-    PERMISSIONS.ANNOUNCEMENTS_READ_ADMIN
-  ]),
-  getAdminDashboardStats
-)
+router.get('/admin/stats', protect, requireAllPermissions([PERMISSIONS.USERS_READ, PERMISSIONS.PROJECTS_READ_ADMIN, PERMISSIONS.ANNOUNCEMENTS_READ_ADMIN]), getAdminDashboardStats)
+
+// Admin audit logs route
+router.get('/admin/audit-logs', protect, requireAllPermissions([PERMISSIONS.USERS_READ, PERMISSIONS.PROJECTS_READ_ADMIN, PERMISSIONS.ANNOUNCEMENTS_READ_ADMIN]), getAdminAuditLogs)
 
 // Admin user management routes
 router.get('/admin/users/:userId/projects', protect, requirePermission(PERMISSIONS.PROJECTS_READ_ADMIN), getAdminUserProjects)

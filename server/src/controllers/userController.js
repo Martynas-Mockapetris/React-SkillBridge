@@ -1,6 +1,7 @@
 import User from '../models/User.js'
 import Project from '../models/Project.js'
 import Announcement from '../models/Announcement.js'
+import AdminActionLog from '../models/AdminActionLog.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 
 // @desc    Get current user profile
@@ -447,6 +448,59 @@ export const getAdminDashboardStats = async (req, res) => {
     })
   } catch (error) {
     console.error('Error fetching admin dashboard stats:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Get paginated admin audit logs
+// @route   GET /api/users/admin/audit-logs
+// @access  Admin
+export const getAdminAuditLogs = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, action = '', targetType = '', search = '' } = req.query
+
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 20, 1), 100)
+
+    const query = {}
+
+    if (action) {
+      query.action = action
+    }
+
+    if (targetType) {
+      query.targetType = targetType
+    }
+
+    if (search) {
+      const regex = new RegExp(search, 'i')
+      query.$or = [{ summary: regex }, { targetLabel: regex }, { actorRole: regex }]
+    }
+
+    const [logs, total, actions, targetTypes] = await Promise.all([
+      AdminActionLog.find(query)
+        .populate('actor', 'firstName lastName email profilePicture userType')
+        .sort({ createdAt: -1 })
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      AdminActionLog.countDocuments(query),
+      AdminActionLog.distinct('action'),
+      AdminActionLog.distinct('targetType')
+    ])
+
+    res.json({
+      logs,
+      total,
+      page: pageNumber,
+      pages: Math.max(Math.ceil(total / pageSize), 1),
+      limit: pageSize,
+      filterOptions: {
+        actions: actions.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        targetTypes: targetTypes.filter(Boolean).sort((a, b) => a.localeCompare(b))
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin audit logs:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
