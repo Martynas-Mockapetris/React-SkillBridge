@@ -17,7 +17,7 @@ const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
 
   const handleViewDetailedProfile = () => {
     onClose()
-    navigate(`/freelancer/${user._id}`)
+    navigate(`/admin/users/${user._id}`)
   }
 
   const lockInfo = user.isLocked

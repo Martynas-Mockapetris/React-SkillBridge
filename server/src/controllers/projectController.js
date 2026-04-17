@@ -1,6 +1,72 @@
 import Project from '../models/Project.js'
+import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
+
+const ADMIN_AUDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'isLocked', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']
+const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status']
+const ALLOWED_PROJECT_PRIORITIES = ['low', 'medium', 'high']
+const ALLOWED_PROJECT_STATUSES = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
+
+const ALLOWED_ADMIN_STATUS_TRANSITIONS = {
+  draft: ['active', 'inactive', 'archived', 'paused', 'cancelled'],
+  active: ['assigned', 'negotiating', 'in_progress', 'under_review', 'inactive', 'archived', 'paused', 'cancelled'],
+  assigned: ['negotiating', 'in_progress', 'active', 'paused', 'cancelled'],
+  negotiating: ['assigned', 'in_progress', 'active', 'paused', 'cancelled'],
+  in_progress: ['under_review', 'active', 'paused', 'cancelled'],
+  under_review: ['in_progress', 'completed', 'active', 'paused', 'cancelled'],
+  completed: ['archived'],
+  cancelled: ['active', 'archived'],
+  inactive: ['active', 'archived'],
+  archived: [],
+  paused: ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
+}
+
+const validateAdminProjectUpdatePayload = (payload) => {
+  const providedFields = Object.keys(payload || {})
+  const invalidFields = providedFields.filter((field) => !ADMIN_EDITABLE_PROJECT_FIELDS.includes(field))
+
+  if (invalidFields.length > 0) {
+    return { valid: false, message: `Unsupported fields: ${invalidFields.join(', ')}` }
+  }
+
+  if (payload.priority !== undefined && !ALLOWED_PROJECT_PRIORITIES.includes(payload.priority)) {
+    return { valid: false, message: 'Invalid priority value' }
+  }
+
+  if (payload.status !== undefined && !ALLOWED_PROJECT_STATUSES.includes(payload.status)) {
+    return { valid: false, message: 'Invalid status value' }
+  }
+
+  if (payload.deadline !== undefined) {
+    const parsedDeadline = new Date(payload.deadline)
+    if (Number.isNaN(parsedDeadline.getTime())) {
+      return { valid: false, message: 'Invalid deadline value' }
+    }
+  }
+
+  if (payload.budget !== undefined && payload.budget !== '' && payload.budget !== null) {
+    const parsedBudget = Number(payload.budget)
+    if (Number.isNaN(parsedBudget) || parsedBudget < 0) {
+      return { valid: false, message: 'Budget must be a valid non-negative number' }
+    }
+  }
+
+  if (payload.skills !== undefined) {
+    const normalizedSkills = Array.isArray(payload.skills)
+      ? payload.skills.map((s) => String(s).trim()).filter(Boolean)
+      : String(payload.skills)
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+
+    if (normalizedSkills.length === 0) {
+      return { valid: false, message: 'At least one skill is required' }
+    }
+  }
+
+  return { valid: true }
+}
 
 // @desc    Create a new project
 // @route   POST /api/projects
@@ -179,6 +245,14 @@ const getAdminAllProjects = async (req, res) => {
 
     const sortConfig = sortMap[sortField] || { createdAt: -1 }
 
+    // Keep counts and list consistent by unlocking all expired project locks first.
+    const expiredLockedProjects = await Project.find({
+      isLocked: true,
+      lockExpiresAt: { $lt: new Date() }
+    })
+
+    await Promise.all(expiredLockedProjects.map((project) => project.ensureUnlockedIfExpired()))
+
     const [projects, filteredTotal, overallTotal, statuses, categories, priorities, summaryRaw] = await Promise.all([
       Project.find(query)
         .populate('user', 'firstName lastName email profilePicture')
@@ -251,9 +325,28 @@ const deleteProjectAsAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    // Keep project record, only mark as cancelled by admin
+    const targetLabel = project.title || 'Untitled project'
+    const beforeSnapshot = {
+      status: project.status
+    }
+
     project.status = 'cancelled_by_admin'
     await project.save()
+
+    await logAdminAction({
+      req,
+      action: 'project.cancelled',
+      targetType: 'project',
+      targetId: project._id,
+      targetLabel,
+      summary: `Cancelled project ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['status']),
+      metadata: {
+        previousStatus: beforeSnapshot.status,
+        newStatus: project.status,
+        reason: 'cancelled_by_admin'
+      }
+    })
 
     res.json({ message: 'Project cancelled by admin', status: project.status })
   } catch (error) {
@@ -270,7 +363,13 @@ const deleteProjectAsAdmin = async (req, res) => {
 // @access  Admin
 const updateProjectAsAdmin = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, priority, deadline, status } = req.body
+    const payload = req.body || {}
+    const { title, description, category, skills, budget, priority, deadline, status } = payload
+
+    const validation = validateAdminProjectUpdatePayload(payload)
+    if (!validation.valid) {
+      return res.status(400).json({ message: validation.message })
+    }
 
     const project = await Project.findById(req.params.id)
 
@@ -278,36 +377,73 @@ const updateProjectAsAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    // Admin should not edit projects that are already locked by moderation lifecycle.
+    await project.ensureUnlockedIfExpired()
+
     if (isImmutableProjectStatus(project.status)) {
       return res.status(403).json({ message: 'Project is locked and cannot be edited' })
     }
 
-    // Only apply provided fields.
-    if (title !== undefined) project.title = title
-    if (description !== undefined) project.description = description
-    if (category !== undefined) project.category = category
+    if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
+      const currentStatus = project.status
+      const allowedNextStatuses = ALLOWED_ADMIN_STATUS_TRANSITIONS[currentStatus] || []
+      if (status !== currentStatus && !allowedNextStatuses.includes(status)) {
+        return res.status(400).json({
+          message: `Status transition not allowed: ${currentStatus} -> ${status}`
+        })
+      }
+    }
 
-    // Accept both CSV string and string[] to keep API flexible for admin UI.
+    const beforeSnapshot = ADMIN_AUDITABLE_PROJECT_FIELDS.reduce((snapshot, field) => {
+      snapshot[field] = project[field]
+      return snapshot
+    }, {})
+
+    if (title !== undefined) project.title = String(title).trim()
+    if (description !== undefined) project.description = String(description).trim()
+    if (category !== undefined) project.category = String(category).trim()
+
     if (skills !== undefined) {
       project.skills = Array.isArray(skills)
-        ? skills
+        ? skills.map((s) => String(s).trim()).filter(Boolean)
         : String(skills)
             .split(',')
             .map((s) => s.trim())
             .filter(Boolean)
     }
 
-    if (budget !== undefined) project.budget = Number(budget)
+    if (budget !== undefined) {
+      if (budget === '' || budget === null) {
+        project.budget = undefined
+      } else {
+        project.budget = Number(budget)
+      }
+    }
+
     if (priority !== undefined) project.priority = priority
     if (deadline !== undefined) project.deadline = deadline
 
-    // Prevent admin update endpoint from setting moderation terminal statuses directly.
     if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
       project.status = status
     }
 
     const updatedProject = await project.save()
+    const changedFields = ADMIN_AUDITABLE_PROJECT_FIELDS.filter((field) => JSON.stringify(beforeSnapshot[field] ?? null) !== JSON.stringify(updatedProject.toObject()[field] ?? null))
+
+    await logAdminAction({
+      req,
+      action: 'project.updated',
+      targetType: 'project',
+      targetId: updatedProject._id,
+      targetLabel: updatedProject.title || 'Untitled project',
+      summary: `Updated project ${updatedProject.title || 'Untitled project'}`,
+      changes: buildFieldChanges(beforeSnapshot, updatedProject.toObject(), changedFields),
+      metadata: {
+        updatedFields: changedFields,
+        previousStatus: beforeSnapshot.status,
+        newStatus: updatedProject.status
+      }
+    })
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error updating project as admin:', error)
@@ -323,7 +459,7 @@ const updateProjectAsAdmin = async (req, res) => {
 // @access  Private
 const getUserProjects = async (req, res) => {
   try {
-    const projects = await Project.find({
+    const query = {
       $or: [
         {
           user: req.user._id,
@@ -334,22 +470,152 @@ const getUserProjects = async (req, res) => {
           status: { $nin: ['draft', 'deleted_by_owner'] }
         }
       ]
-    })
+    }
+
+    const projects = await Project.find(query)
       .populate('user', 'firstName lastName email profilePicture')
       .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
       .populate('assignee', 'firstName lastName email profilePicture')
       .sort({ createdAt: -1 })
-    res.json(projects)
+
+    await Promise.all(projects.map((project) => project.ensureUnlockedIfExpired()))
+
+    const refreshedProjects = await Project.find(query)
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+      .sort({ createdAt: -1 })
+
+    res.json(refreshedProjects)
   } catch (error) {
     console.error('Error fetching user projects:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
 
-// @desc    Toggle project lock status as admin (pause/unpause)
+// @desc    Toggle project lock status as admin (pause/unpause) with reason + duration
 // @route   PATCH /api/projects/admin/:id/lock
 // @access  Admin
 const toggleProjectLockAsAdmin = async (req, res) => {
+  try {
+    const { reason = '', durationDays = 14 } = req.body || {}
+
+    const project = await Project.findById(req.params.id)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
+    if (['completed', 'archived', 'cancelled'].includes(project.status)) {
+      return res.status(400).json({ message: 'Finalized project status cannot be lock-toggled' })
+    }
+
+    const targetLabel = project.title || 'Untitled project'
+    const beforeSnapshot = {
+      isLocked: project.isLocked,
+      status: project.status,
+      lockReason: project.lockReason,
+      lockDurationDays: project.lockDurationDays,
+      lockedAt: project.lockedAt,
+      lockExpiresAt: project.lockExpiresAt
+    }
+
+    if (project.isLocked) {
+      project.isLocked = false
+      project.lockReason = ''
+      project.lockDurationDays = null
+      project.lockedAt = null
+      project.lockExpiresAt = null
+
+      if (project.status === 'paused') {
+        project.status = 'active'
+      }
+
+      await project.save()
+
+      await logAdminAction({
+        req,
+        action: 'project.unlocked',
+        targetType: 'project',
+        targetId: project._id,
+        targetLabel,
+        summary: `Unlocked project ${targetLabel}`,
+        changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['isLocked', 'status', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']),
+        metadata: {
+          previousStatus: beforeSnapshot.status,
+          newStatus: project.status
+        }
+      })
+
+      return res.json({
+        message: 'Project unlocked successfully',
+        isLocked: false,
+        status: project.status
+      })
+    }
+
+    if (!reason.trim()) {
+      return res.status(400).json({ message: 'Lock reason is required' })
+    }
+
+    const days = Number(durationDays) || 0
+    if (days < 0) {
+      return res.status(400).json({ message: 'Lock duration must be 0 or greater' })
+    }
+
+    const now = new Date()
+    const expiresAt = days > 0 ? new Date(now.getTime() + days * 24 * 60 * 60 * 1000) : null
+
+    project.isLocked = true
+    project.lockReason = reason.trim()
+    project.lockDurationDays = days > 0 ? days : null
+    project.lockedAt = now
+    project.lockExpiresAt = expiresAt
+    project.status = 'paused'
+
+    await project.save()
+
+    await logAdminAction({
+      req,
+      action: 'project.locked',
+      targetType: 'project',
+      targetId: project._id,
+      targetLabel,
+      summary: `Locked project ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['isLocked', 'status', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']),
+      metadata: {
+        previousStatus: beforeSnapshot.status,
+        newStatus: project.status,
+        reason: project.lockReason,
+        durationDays: project.lockDurationDays
+      }
+    })
+
+    res.json({
+      message: 'Project locked successfully',
+      isLocked: true,
+      status: project.status,
+      lockReason: project.lockReason,
+      lockDurationDays: project.lockDurationDays,
+      lockExpiresAt: project.lockExpiresAt
+    })
+  } catch (error) {
+    console.error('Error toggling project lock as admin:', error)
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove assignee from project as admin (owner remains unchanged)
+// @route   DELETE /api/projects/admin/:id/assignee
+// @access  Admin
+const removeAssigneeAsAdmin = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
 
@@ -357,26 +623,29 @@ const toggleProjectLockAsAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    // Moderation-terminal statuses should remain immutable.
     if (isImmutableProjectStatus(project.status)) {
       return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
-    // These statuses are considered final and should not be lock-toggled.
-    if (['completed', 'archived', 'cancelled'].includes(project.status)) {
-      return res.status(400).json({ message: 'Finalized project status cannot be lock-toggled' })
+    if (!project.assignee) {
+      return res.status(400).json({ message: 'Project has no assigned user' })
     }
 
-    // Simple lock model: paused = locked, active = unlocked.
-    project.status = project.status === 'paused' ? 'active' : 'paused'
-    await project.save()
+    // Remove assignee only (owner is never touched)
+    project.assignee = null
 
+    // Reopen workflow statuses when assignee is removed
+    if (['assigned', 'in_progress', 'negotiating', 'under_review'].includes(project.status)) {
+      project.status = 'active'
+    }
+
+    const updatedProject = await project.save()
     res.json({
-      message: project.status === 'paused' ? 'Project locked (paused)' : 'Project unlocked (active)',
-      status: project.status
+      message: 'Assignee removed successfully',
+      project: updatedProject
     })
   } catch (error) {
-    console.error('Error toggling project lock as admin:', error)
+    console.error('Error removing assignee as admin:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -395,6 +664,8 @@ const getProjectById = async (req, res) => {
       console.log(`[GET PROJECT] Project ${req.params.id} not found in DB`)
       return res.status(404).json({ message: 'Project not found' })
     }
+
+    await project.ensureUnlockedIfExpired()
 
     console.log(`[GET PROJECT] Found project ${req.params.id}`)
     console.log(`[GET PROJECT] Project status: ${project.status}`)
@@ -451,6 +722,8 @@ const getProjectByIdOwner = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
+    await project.ensureUnlockedIfExpired()
+
     if (project.status === 'deleted_by_owner') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -483,6 +756,8 @@ const updateProject = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
     }
+
+    await project.ensureUnlockedIfExpired()
 
     // Check if the project belongs to the user
     if (project.user.toString() !== req.user._id.toString()) {
@@ -1082,6 +1357,7 @@ export {
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
   toggleProjectLockAsAdmin,
+  removeAssigneeAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,

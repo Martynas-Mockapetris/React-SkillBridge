@@ -1,18 +1,18 @@
 # SkillBridge
 
-A modern freelancer marketplace connecting talented professionals with clients. Built with MERN stack (MongoDB, Express, React, Node.js).
+A modern freelancer marketplace connecting talented professionals with clients. Built with a MERN-based stack using MongoDB, Express, React, and Node.js.
 
 ## Overview
 
-SkillBridge serves as a platform where freelancers can showcase their skills and clients can find the perfect talent for their projects. The platform emphasizes clean design, user experience, and secure communications.
+SkillBridge serves as a platform where freelancers can showcase their skills, clients can post and manage work, and admins can monitor the health of the platform. The current application includes public discovery pages, protected profile workflows, project lifecycle management, messaging, announcements, ratings, and a growing blog system.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm/yarn
-- MongoDB Atlas account
+- Node.js
+- npm
+- MongoDB connection string
 
 ### Frontend Installation
 
@@ -39,6 +39,7 @@ npm install
 # Create .env file in server root
 PORT=5000
 MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
 
 # Start development server
 npm start
@@ -49,69 +50,76 @@ npm start
 ### Colors
 
 ```css
-- Primary: #222831 (Dark charcoal) - Main brand color
-- Secondary: #393E46 (Medium grey) - Supporting elements
-- Accent: #00ADB5 (Teal) - Call-to-action elements
-- Light: #EEEEEE (Light grey) - Background and contrast
+- Primary: #222831 (Dark charcoal) - Main brand and dark-mode base
+- Secondary: #393E46 (Medium grey) - Supporting surfaces and UI balance
+- Accent: #00ADB5 (Teal) - Call-to-action elements and highlights
+- Light: #EEEEEE (Light grey) - Contrast and light theme surfaces
 ```
 
 ### Typography
 
 ```css
-- Headings: Poppins (400, 500, 600, 700)
-- Body: Inter (400, 500, 600)
+- Headings: Poppins
+- Body: Inter
 ```
 
 ## Features
 
 ### For Freelancers
 
-- Professional profile creation
-- Skill showcase
-- Portfolio management
-- Real-time client communication
-- Contract management
+- Professional profile creation with extended profile fields
+- Public visibility through freelancer listings and detail pages
+- Project interest, assignment, and workflow participation
+- Messaging and communication flows
+- Ratings and review visibility
+- Profile overview with completeness tracking, quick actions, and activity feed
 
 ### For Clients
 
-- Advanced freelancer search
-- Filtered talent browsing
-- Secure messaging system
-- Project posting
-- Contract handling
+- Advanced freelancer discovery and filtered browsing
+- Project posting and project lifecycle management
+- Assignment and interested-user workflows
+- Secure messaging and collaboration flows
+- Review and acceptance flows for submitted work
+- Public blog browsing for platform content
 
 ### For Admins
 
-- User management
-- Content moderation
-- Analytics dashboard
-- System monitoring
+- User management and detailed admin user views
+- Project moderation and admin project actions
+- Announcement management
+- KPI, alerts, and dashboard monitoring
+- System settings management
+- Blog management UI and editorial workflow shell
 
 ## Tech Stack
 
 ### Frontend
 
-- React (Vite)
+- React 19 with Vite
 - Tailwind CSS
 - Material UI
 - React Router DOM
 - Axios
-- Framer Motion for animations
+- Framer Motion
 - React Icons
-- Custom design patterns
+- React Toastify
+- Sass
+- Modal-driven UI patterns
 
 ### Backend
 
 - Node.js
 - Express
 - MongoDB
+- Mongoose
 - JWT Authentication
-- bcrypt
+- bcryptjs
+- Multer
 
 ### Development Tools
 
 - ESLint
-- Prettier
 - PostCSS
 - Autoprefixer
 - Nodemon
@@ -123,64 +131,82 @@ npm start
 ```
 frontend/
 ├── public/
-│   └── logo.svg
 ├── src/
+│   ├── assets/
 │   ├── components/
+│   │   ├── Admin/
 │   │   ├── Home/
 │   │   ├── Listings/
 │   │   ├── Profile/
-│   │   ├── Admin/
+│   │   ├── ProjectDetail/
 │   │   └── shared/
+│   ├── context/
+│   ├── hooks/
+│   ├── modal/
 │   ├── pages/
-│   ├── assets/
+│   ├── services/
+│   ├── styles/
 │   ├── utils/
-│   └── styles/
+│   ├── App.jsx
+│   └── main.jsx
+├── package.json
+└── tailwind.config.js
 ```
 
 ### Backend
 
 ```
 server/
+├── app.js
+├── package.json
 ├── src/
-│   ├── models/
-│   ├── controllers/
-│   ├── routes/
-│   ├── middleware/
 │   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── scripts/
 │   └── utils/
-└── app.js
 ```
 
 ## Development Progress [Frontend level]
-- ✅ Homepage Hero Section
-- ✅ Homepage Features Overview
-- ✅ Homepage How It Works (Dual Journey)
-- ✅ Homepage Testimonials
-- ✅ Homepage Pricing
-- ✅ Homepage Contact Form
-- ✅ Listings Search Bar
-- ✅ Listings User Filter Categories
-- ✅ Profile Overview
-- ✅ Profile Projects
-- 🚧 Profile Settings [Mainly done, but some adjustments needed]
-- ✅ Profile Security
-- 🚧 Admin Panel Next
-  - ✅ Admin Dashboard Overview
-  - ✅ Admin User Section
-  - 🚧 Admin Project Section
-  - 🚧 Admin Settings
-- ✅ Login Page
-- ✅ Signup Page
+
+- ✅ Homepage sections and navigation
+- ✅ Listings search and browsing flows
+- ✅ Freelancer detail page
+- ✅ Login page
+- ✅ Signup page
+- ✅ Protected profile area
+- ✅ Profile overview with completeness flow
+- ✅ Profile projects section
+- ✅ Profile settings section
+- ✅ Profile security section
+- ✅ Admin dashboard overview with KPI and alerts support
+- ✅ Admin user section and admin user detail view
+- ✅ Admin project management workflows
+- ✅ Admin announcements management
+- ✅ Admin settings section
+- ✅ Admin breadcrumbs and navigation improvements
+- ✅ Public blog list page
+- ✅ Public blog detail page
+- ✅ Admin blog management list
+- 🚧 Admin blog create and update flow is still in UI-first refinement before full backend hookup
 
 ## Development Progress [Backend level]
-- ✅ Login form
-- ✅ Signup form
-- ✅ Route protection
-- ✅ Extended profile creation [Injecting more data to user collection]
-- 🚧 Projects posting feature [Backend + Frontend modal window etc.]
-- 🚧 Projects sorting in frontend
-- 🚧 Detailed project window
-- 🚧 Client/User connection through project
+
+- ✅ Login and signup endpoints
+- ✅ JWT route protection
+- ✅ Extended user profile model and update flows
+- ✅ Project routes with multiple lifecycle states
+- ✅ Messaging routes and controller
+- ✅ Announcement routes and controller
+- ✅ Ratings routes and controller
+- ✅ System config routes and controller
+- ✅ Blog model, routes, and controller
+- ✅ Seed script for empty databases
+- ✅ Additive seed script for appending users and projects
+- ✅ Project auto-unlock scheduler
+- 🚧 Some new frontend flows, especially the admin blog editor, still need final backend create and update hookup
 
 ## Contributing
 

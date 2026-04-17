@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes, FaSyncAlt } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 import LoadingSpinner from '../shared/LoadingSpinner'
+import { calculateProfileCompleteness } from '../../utils/profileCompleteness'
 
 // Initial form state with empty values
 const initialFormState = {
@@ -28,6 +29,9 @@ const initialFormState = {
 
 const ProfileSettings = () => {
   const { currentUser, updateUserProfile, getUserProfile } = useAuth()
+  const profileCompleteness = calculateProfileCompleteness(currentUser)
+  const missingRequired = profileCompleteness?.missingRequired ?? []
+  const missingOptional = profileCompleteness?.missingOptional ?? []
   const userRole = currentUser?.userType || 'freelancer'
   // Show freelancer fields for freelancer, both roles, and admin
   const showFreelancerSection = userRole === 'freelancer' || userRole === 'both' || userRole === 'admin'
@@ -248,6 +252,30 @@ const ProfileSettings = () => {
           <motion.h2 className='text-2xl font-bold theme-text' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             Profile Settings
           </motion.h2>
+
+          <motion.div
+            className='mb-6 p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}>
+            <div className='flex items-center justify-between gap-4 flex-wrap'>
+              <div>
+                <p className='text-sm theme-text-secondary'>Profile completion</p>
+                <p className='text-xl font-bold theme-text'>{profileCompleteness?.percentage ?? 0}%</p>
+              </div>
+              <div className='text-sm theme-text-secondary'>
+                <p>Missing required: {missingRequired.length}</p>
+                <p>Missing optional: {missingOptional.length}</p>
+              </div>
+            </div>
+
+            {missingRequired.length > 0 && (
+              <div className='mt-3'>
+                <p className='text-xs uppercase tracking-wide text-red-500 mb-1'>Required fields to complete</p>
+                <p className='text-sm theme-text-secondary'>{missingRequired.map((item) => item.label).join(', ')}</p>
+              </div>
+            )}
+          </motion.div>
 
           <form onSubmit={handleSubmit}>
             <motion.div className='grid lg:grid-cols-2 gap-6 mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>

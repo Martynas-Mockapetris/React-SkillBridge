@@ -2,7 +2,12 @@ import { FaHandshake, FaShieldAlt, FaRocket, FaChartLine, FaClock, FaGlobe } fro
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const FeaturesSection = () => {
+const FeaturesSection = ({ content = {}, systemValues = {} }) => {
+  const platformName = systemValues.platformName || 'SkillBridge'
+  const featuresTitleLead = content.featuresTitleLead || 'Why Choose'
+  const featuresTitleAccent = content.featuresTitleAccent || platformName
+  const featuresSubtitle = content.featuresSubtitle || `Discover the advantages that make ${platformName} the preferred platform for connecting talent with opportunities`
+
   const features = [
     {
       icon: <FaHandshake size={24} />,
@@ -52,10 +57,10 @@ const FeaturesSection = () => {
         {/* Section header */}
         <motion.div className='text-center mb-16' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h2 className='text-4xl font-heading font-bold mb-4'>
-            <span className='theme-text'>Why Choose</span>
-            <span className='text-accent'> SkillBridge</span>
+            <span className='theme-text'>{featuresTitleLead}</span>
+            <span className='text-accent'> {featuresTitleAccent}</span>
           </h2>
-          <p className='theme-text-secondary max-w-2xl mx-auto'>Discover the advantages that make SkillBridge the preferred platform for connecting talent with opportunities</p>
+          <p className='theme-text-secondary max-w-2xl mx-auto'>{featuresSubtitle}</p>
         </motion.div>
 
         {/* Features grid */}

@@ -4,12 +4,13 @@ import { HiMenu, HiX } from 'react-icons/hi'
 import PageBackground from '../shared/PageBackground'
 import ThemeToggle from './ThemeToggle'
 import { useAuth } from '../../context/AuthContext'
+import { hasAdminPanelAccess } from '../../utils/accessRoles'
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { currentUser, logout } = useAuth()
 
-  const isAdmin = currentUser && currentUser.userType === 'admin'
+      const canAccessAdmin = currentUser && hasAdminPanelAccess(currentUser)
 
   const desktopLinkStyles = `relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px]
     after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full theme-text`
@@ -35,8 +36,16 @@ const Navigation = () => {
 
         {/* Desktop Menu */}
         <div className='hidden lg:flex items-center space-x-6'>
+          <Link to='/' className={desktopLinkStyles}>
+            Home
+          </Link>
+
           <Link to='/listings' className={desktopLinkStyles}>
             Listings
+          </Link>
+
+          <Link to='/blog' className={desktopLinkStyles}>
+            Blog
           </Link>
 
           {/* Only show Profile link if user is logged in */}
@@ -47,7 +56,7 @@ const Navigation = () => {
           )}
 
           {/* Only show Admin link if user is admin */}
-          {isAdmin && (
+          {canAccessAdmin && (
             <Link to='/admin' className={desktopLinkStyles}>
               Admin
             </Link>
@@ -80,8 +89,16 @@ const Navigation = () => {
           <PageBackground variant='home' />
 
           <div className='flex flex-col items-center justify-center h-screen space-y-8 relative z-20'>
+            <Link to='/' className={mobileLinkStyles}>
+              Home
+            </Link>
+
             <Link to='/listings' className={mobileLinkStyles}>
               Listings
+            </Link>
+
+            <Link to='/blog' className={mobileLinkStyles}>
+              Blog
             </Link>
 
             {/* Only show Profile link if user is logged in */}
@@ -92,7 +109,7 @@ const Navigation = () => {
             )}
 
             {/* Only show Admin link if user is admin */}
-            {isAdmin && (
+            {canAccessAdmin && (
               <Link to='/admin' className={mobileLinkStyles}>
                 Admin
               </Link>

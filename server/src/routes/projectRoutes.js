@@ -12,6 +12,7 @@ import {
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
   toggleProjectLockAsAdmin,
+  removeAssigneeAsAdmin,
   assignUserToProject,
   reassignProject,
   proposeRate,
@@ -23,7 +24,8 @@ import {
   submitProject,
   reviewProject
 } from '../controllers/projectController.js'
-import { protect, optionalProtect, adminOnly } from '../middleware/authMiddleware.js'
+import { protect, optionalProtect, requirePermission } from '../middleware/authMiddleware.js'
+import { PERMISSIONS } from '../utils/permissions.js'
 import upload from '../middleware/uploadMiddleware.js'
 
 const router = express.Router()
@@ -40,10 +42,13 @@ router.put('/:id/publish', protect, publishProject)
 router.get('/', protect, getUserProjects)
 router.get('/all', getAllProjects)
 router.get('/interested', protect, getInterestedProjects)
-router.get('/admin/all', protect, adminOnly, getAdminAllProjects)
-router.delete('/admin/:id', protect, adminOnly, deleteProjectAsAdmin)
-router.put('/admin/:id', protect, adminOnly, updateProjectAsAdmin)
-router.patch('/admin/:id/lock', protect, adminOnly, toggleProjectLockAsAdmin)
+
+router.get('/admin/all', protect, requirePermission(PERMISSIONS.PROJECTS_READ_ADMIN), getAdminAllProjects)
+router.delete('/admin/:id', protect, requirePermission(PERMISSIONS.PROJECTS_DELETE_ADMIN), deleteProjectAsAdmin)
+router.put('/admin/:id', protect, requirePermission(PERMISSIONS.PROJECTS_UPDATE_ADMIN), updateProjectAsAdmin)
+router.patch('/admin/:id/lock', protect, requirePermission(PERMISSIONS.PROJECTS_LOCK_ADMIN), toggleProjectLockAsAdmin)
+router.delete('/admin/:id/assignee', protect, requirePermission(PERMISSIONS.PROJECTS_UPDATE_ADMIN), removeAssigneeAsAdmin)
+
 router.get('/:id', optionalProtect, getProjectById) // Used by both owners and participants
 router.get('/:id/owner', protect, getProjectByIdOwner)
 router.put('/:id', protect, upload.array('attachments', 5), updateProject)

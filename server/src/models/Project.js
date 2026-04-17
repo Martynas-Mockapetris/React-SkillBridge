@@ -46,6 +46,26 @@ const projectSchema = mongoose.Schema(
       enum: ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner', 'inactive', 'archived', 'paused'],
       default: 'draft'
     },
+    isLocked: {
+      type: Boolean,
+      default: false
+    },
+    lockReason: {
+      type: String,
+      default: ''
+    },
+    lockDurationDays: {
+      type: Number,
+      default: null
+    },
+    lockedAt: {
+      type: Date,
+      default: null
+    },
+    lockExpiresAt: {
+      type: Date,
+      default: null
+    },
     attachments: [
       {
         name: String,
@@ -143,6 +163,24 @@ const projectSchema = mongoose.Schema(
     timestamps: true
   }
 )
+
+projectSchema.methods.ensureUnlockedIfExpired = async function () {
+  if (this.isLocked && this.lockExpiresAt && this.lockExpiresAt < new Date()) {
+    this.isLocked = false
+    this.lockReason = ''
+    this.lockDurationDays = null
+    this.lockedAt = null
+    this.lockExpiresAt = null
+
+    if (this.status === 'paused') {
+      this.status = 'active'
+    }
+
+    await this.save()
+  }
+
+  return this
+}
 
 const Project = mongoose.model('Project', projectSchema)
 

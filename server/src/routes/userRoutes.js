@@ -12,12 +12,17 @@ import {
   addFreelancerToFavorites,
   removeFreelancerFromFavorites,
   getAdminDashboardStats,
+  getAdminAuditLogs,
+  getAdminUserDetail,
+  getAdminUserProjects,
+  getAdminUserAnnouncements,
   getAdminUsers,
   toggleUserLock,
   updateAdminUser,
   deleteAdminUser
 } from '../controllers/userController.js'
-import { protect, adminOnly } from '../middleware/authMiddleware.js'
+import { protect, requireAllPermissions, requirePermission } from '../middleware/authMiddleware.js'
+import { PERMISSIONS } from '../utils/permissions.js'
 
 const router = express.Router()
 
@@ -36,12 +41,19 @@ router.delete('/profile', protect, deleteUserAccount)
 router.get('/stats', protect, getUserStats)
 
 // Admin dashboard stats route
-router.get('/admin/stats', protect, adminOnly, getAdminDashboardStats)
+router.get('/admin/stats', protect, requireAllPermissions([PERMISSIONS.USERS_READ, PERMISSIONS.PROJECTS_READ_ADMIN, PERMISSIONS.ANNOUNCEMENTS_READ_ADMIN]), getAdminDashboardStats)
+
+// Admin audit logs route
+router.get('/admin/audit-logs', protect, requireAllPermissions([PERMISSIONS.USERS_READ, PERMISSIONS.PROJECTS_READ_ADMIN, PERMISSIONS.ANNOUNCEMENTS_READ_ADMIN]), getAdminAuditLogs)
 
 // Admin user management routes
-router.get('/admin/users', protect, adminOnly, getAdminUsers)
-router.patch('/admin/:userId/lock', protect, adminOnly, toggleUserLock)
-router.put('/admin/:userId', protect, adminOnly, updateAdminUser)
+router.get('/admin/users/:userId/projects', protect, requirePermission(PERMISSIONS.PROJECTS_READ_ADMIN), getAdminUserProjects)
+router.get('/admin/users/:userId/announcements', protect, requirePermission(PERMISSIONS.ANNOUNCEMENTS_READ_ADMIN), getAdminUserAnnouncements)
+router.get('/admin/users/:userId', protect, requirePermission(PERMISSIONS.USERS_READ), getAdminUserDetail)
+router.get('/admin/users', protect, requirePermission(PERMISSIONS.USERS_READ), getAdminUsers)
+router.patch('/admin/:userId/lock', protect, requirePermission(PERMISSIONS.USERS_LOCK), toggleUserLock)
+router.put('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_UPDATE), updateAdminUser)
+router.delete('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_DELETE), deleteAdminUser)
 
 // Favorites routes - specific routes first!
 router.get('/favorites', protect, getFavoriteProjects)

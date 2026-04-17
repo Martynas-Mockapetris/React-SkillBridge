@@ -122,8 +122,7 @@ export const deleteAnnouncement = async (req, res) => {
   }
 }
 
-// Toggle announcement active status (for pause/unpause in Task 10)
-// Toggle announcement active status (for pause/unpause in Task 10)
+// Toggle announcement active status
 export const toggleAnnouncementStatus = async (req, res) => {
   try {
     const { id } = req.params
@@ -146,5 +145,47 @@ export const toggleAnnouncementStatus = async (req, res) => {
   } catch (error) {
     console.error('Error toggling announcement status:', error)
     res.status(500).json({ message: 'Failed to toggle announcement status', error: error.message })
+  }
+}
+
+// Admin: Toggle announcement status (pause/resume)
+export const toggleAnnouncementStatusAsAdmin = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const announcement = await Announcement.findById(id)
+    if (!announcement) {
+      return res.status(404).json({ message: 'Announcement not found' })
+    }
+
+    announcement.isActive = !announcement.isActive
+    await announcement.save()
+
+    res.json({
+      message: `Announcement ${announcement.isActive ? 'resumed' : 'paused'} by admin`,
+      announcement
+    })
+  } catch (error) {
+    console.error('Error toggling announcement status as admin:', error)
+    res.status(500).json({ message: 'Failed to toggle announcement status', error: error.message })
+  }
+}
+
+// Admin: Delete announcement
+export const deleteAnnouncementAsAdmin = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const announcement = await Announcement.findById(id)
+    if (!announcement) {
+      return res.status(404).json({ message: 'Announcement not found' })
+    }
+
+    await Announcement.findByIdAndDelete(id)
+
+    res.json({ message: 'Announcement deleted by admin' })
+  } catch (error) {
+    console.error('Error deleting announcement as admin:', error)
+    res.status(500).json({ message: 'Failed to delete announcement', error: error.message })
   }
 }

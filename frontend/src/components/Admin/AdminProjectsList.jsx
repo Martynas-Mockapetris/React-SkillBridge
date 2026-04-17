@@ -5,9 +5,12 @@ import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
 import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
+import AdminLockProjectModal from '../../modal/AdminLockProjectModal'
 import PaginationControls from '../shared/PaginationControls'
-import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin } from '../../services/projectService'
+import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
+import { useAuth } from '../../context/AuthContext'
+import { ADMIN_PERMISSIONS, hasAdminPermission, isFullAdmin } from '../../utils/accessRoles'
 
 const ProgressBar = ({ progress }) => (
   <div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2'>
@@ -43,6 +46,8 @@ const AdminProjectsList = () => {
   const [pageSize, setPageSize] = useState(30)
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
   const [lockLoadingProjectId, setLockLoadingProjectId] = useState(null)
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const [projectToLock, setProjectToLock] = useState(null)
 
   // Data
   const [projectsData, setProjectsData] = useState([])
@@ -78,9 +83,16 @@ const AdminProjectsList = () => {
     title: '',
     description: '',
     category: '',
+    skills: '',
+    budget: '',
     priority: 'low',
     deadline: '',
     status: 'active'
+  })
+  const [removeAssigneeLoading, setRemoveAssigneeLoading] = useState(false)
+  const [editingProjectMeta, setEditingProjectMeta] = useState({
+    assignee: null,
+    owner: null
   })
 
   // Detail modal state
@@ -90,6 +102,13 @@ const AdminProjectsList = () => {
   const statusOptions = ['All', ...filterOptions.statuses]
   const categoryOptions = ['All', ...filterOptions.categories]
   const priorityOptions = ['All', ...filterOptions.priorities]
+
+  // Auth
+  const { currentUser } = useAuth()
+  const canUpdateProjects = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.PROJECTS_UPDATE_ADMIN)
+  const canLockProjects = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.PROJECTS_LOCK_ADMIN)
+  const canDeleteProjects = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.PROJECTS_DELETE_ADMIN)
+  const canCreateProjects = isFullAdmin(currentUser)
 
   const fetchProjects = async () => {
     try {
@@ -133,6 +152,11 @@ const AdminProjectsList = () => {
         rateNegotiation: project.rateNegotiation || null,
         user: project.user || null,
         assignee: project.assignee || null,
+        isLocked: Boolean(project.isLocked),
+        lockReason: project.lockReason || '',
+        lockDurationDays: project.lockDurationDays ?? null,
+        lockExpiresAt: project.lockExpiresAt || null,
+        lockedAt: project.lockedAt || null,
         team: [`${project.user?.firstName || ''} ${project.user?.lastName || ''}`.trim() || 'Owner', project.assignee ? `${project.assignee.firstName || ''} ${project.assignee.lastName || ''}`.trim() : null].filter(
           Boolean
         )
@@ -163,11 +187,17 @@ const AdminProjectsList = () => {
   }
 
   const openEditModal = (project) => {
+    setEditingProjectMeta({
+      assignee: project.assignee || null,
+      owner: project.user || null
+    })
     setEditingProjectId(project.id)
     setEditForm({
       title: project.name || '',
       description: project.description || '',
       category: project.category || '',
+      skills: Array.isArray(project.skills) ? project.skills.join(', ') : '',
+      budget: project.budget ?? '',
       priority: project.priority || 'low',
       deadline: project.deadline || '',
       status: project.status || 'active'
@@ -178,6 +208,11 @@ const AdminProjectsList = () => {
   const closeEditModal = () => {
     setEditingProjectId(null)
     setIsEditModalOpen(false)
+    setRemoveAssigneeLoading(false)
+    setEditingProjectMeta({
+      assignee: null,
+      owner: null
+    })
   }
 
   const openDetailModal = (project) => {
@@ -190,19 +225,66 @@ const AdminProjectsList = () => {
     setIsDetailModalOpen(false)
   }
 
+  const openLockModal = (project) => {
+    setProjectToLock(project)
+    setIsLockModalOpen(true)
+  }
+
+  const closeLockModal = () => {
+    setProjectToLock(null)
+    setIsLockModalOpen(false)
+  }
+
   const handleEditProject = async () => {
     if (!editingProjectId) return
 
+    const title = (editForm.title || '').trim()
+    const description = (editForm.description || '').trim()
+    const category = (editForm.category || '').trim()
+    const skills = String(editForm.skills || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+
+    if (!title) {
+      toast.warning('Project title is required')
+      return
+    }
+
+    if (!description) {
+      toast.warning('Project description is required')
+      return
+    }
+
+    if (!category) {
+      toast.warning('Project category is required')
+      return
+    }
+
+    if (!editForm.deadline) {
+      toast.warning('Project deadline is required')
+      return
+    }
+
+    if (editForm.budget !== '' && Number(editForm.budget) < 0) {
+      toast.error('Budget cannot be negative')
+      return
+    }
+
     try {
       setEditLoading(true)
+
       await updateProjectAsAdmin(editingProjectId, {
-        title: editForm.title,
-        description: editForm.description,
-        category: editForm.category,
+        title,
+        description,
+        category,
+        skills,
+        budget: editForm.budget === '' ? undefined : Number(editForm.budget),
         priority: editForm.priority,
         deadline: editForm.deadline,
         status: editForm.status
       })
+
       await fetchProjects()
       closeEditModal()
       toast.success('Project updated successfully')
@@ -232,13 +314,69 @@ const AdminProjectsList = () => {
   const handleToggleProjectLock = async (project) => {
     try {
       setLockLoadingProjectId(project.id)
-      const response = await toggleProjectLockAsAdmin(project.id)
-      await fetchProjects()
-      toast.success(response?.message || 'Project lock status updated')
+
+      if (project.isLocked) {
+        const response = await toggleProjectLockAsAdmin(project.id)
+        await fetchProjects()
+        toast.success(response?.message || 'Project unlocked successfully')
+        return
+      }
+
+      openLockModal(project)
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to change project lock status')
     } finally {
       setLockLoadingProjectId(null)
+    }
+  }
+
+  const handleConfirmLockProject = async ({ reason, durationDays }) => {
+    if (!projectToLock) return
+
+    try {
+      setLockLoadingProjectId(projectToLock.id)
+      const response = await toggleProjectLockAsAdmin(projectToLock.id, { reason, durationDays })
+      await fetchProjects()
+      closeLockModal()
+      toast.success(response?.message || 'Project locked successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to lock project')
+    } finally {
+      setLockLoadingProjectId(null)
+    }
+  }
+
+  const handleRemoveAssigneeFromEditModal = async () => {
+    if (!editingProjectId) {
+      toast.error('No project selected')
+      return
+    }
+
+    if (!editingProjectMeta?.assignee) {
+      toast.info('This project has no assignee to remove')
+      return
+    }
+
+    const fullName = `${editingProjectMeta.assignee.firstName || ''} ${editingProjectMeta.assignee.lastName || ''}`.trim()
+    const confirmed = window.confirm(`Remove assignee "${fullName || 'Unknown user'}" from this project?`)
+    if (!confirmed) return
+
+    try {
+      setRemoveAssigneeLoading(true)
+      const response = await removeAssigneeAsAdmin(editingProjectId)
+      await fetchProjects()
+
+      setEditingProjectMeta((prev) => ({ ...prev, assignee: null }))
+
+      if (['assigned', 'in_progress', 'negotiating', 'under_review'].includes(editForm.status)) {
+        setEditForm((prev) => ({ ...prev, status: 'active' }))
+      }
+
+      toast.success(response?.message || 'Assignee removed successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to remove assignee')
+    } finally {
+      setRemoveAssigneeLoading(false)
     }
   }
 
@@ -296,13 +434,15 @@ const AdminProjectsList = () => {
             {totalFilteredCount !== overallTotalCount && ` (${overallTotalCount} total)`}
           </div>
         </div>
-        <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
-          <FaPlus className='w-4 h-4' />
-          New Project
-        </button>
+        {canCreateProjects && (
+          <button onClick={() => setIsNewProjectModalOpen(true)} className='flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90'>
+            <FaPlus className='w-4 h-4' />
+            New Project
+          </button>
+        )}
       </div>
 
-      <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />
+      {canCreateProjects && <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />}
 
       {/* Search and Filter Bar */}
       <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm'>
@@ -408,7 +548,7 @@ const AdminProjectsList = () => {
         {/* Project Card */}
         {projectsData.map((project) => {
           const isAdminCancelled = project.status === 'cancelled_by_admin'
-          const isProjectLocked = project.status === 'paused'
+          const isProjectLocked = Boolean(project.isLocked)
 
           return (
             <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-4 h-full flex flex-col'>
@@ -430,39 +570,57 @@ const AdminProjectsList = () => {
                   <TeamAvatars team={project.team} />
                 </div>
               </div>
-
               <div className='mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3'>
                 <button onClick={() => openDetailModal(project)} title='Quick details' className='text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'>
                   <FaEye className='w-4 h-4' />
                 </button>
-                <button
-                  onClick={() => openEditModal(project)}
-                  disabled={isAdminCancelled}
-                  title={isAdminCancelled ? 'Project was canceled by admin. Editing is disabled.' : 'Edit project'}
-                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
-                  <FaEdit className='w-4 h-4' />
-                </button>
-                <button
-                  onClick={() => handleToggleProjectLock(project)}
-                  disabled={isAdminCancelled || lockLoadingProjectId === project.id}
-                  title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : isProjectLocked ? 'Unlock project' : 'Lock / Pause project'}
-                  className={`${
-                    isAdminCancelled || lockLoadingProjectId === project.id
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : isProjectLocked
-                        ? 'text-red-800 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400'
-                        : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'
-                  }`}>
-                  <FaLock className='w-4 h-4' />
-                </button>
-                <button
-                  onClick={() => openDeleteModal(project)}
-                  disabled={isAdminCancelled}
-                  title={isAdminCancelled ? 'Project already canceled by admin.' : 'Cancel project as admin'}
-                  className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'}`}>
-                  <FaTrash className='w-4 h-4' />
-                </button>
+
+                {canUpdateProjects && (
+                  <button
+                    onClick={() => openEditModal(project)}
+                    disabled={isAdminCancelled}
+                    title={isAdminCancelled ? 'Project was canceled by admin. Editing is disabled.' : 'Edit project'}
+                    className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'}`}>
+                    <FaEdit className='w-4 h-4' />
+                  </button>
+                )}
+
+                {canLockProjects && (
+                  <button
+                    onClick={() => handleToggleProjectLock(project)}
+                    disabled={isAdminCancelled || lockLoadingProjectId === project.id}
+                    title={isAdminCancelled ? 'Project was canceled by admin. Status changes are disabled.' : isProjectLocked ? 'Unlock project' : 'Lock / Pause project'}
+                    className={`${
+                      isAdminCancelled || lockLoadingProjectId === project.id
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : isProjectLocked
+                          ? 'text-red-800 hover:text-red-900 dark:text-red-500 dark:hover:text-red-400'
+                          : 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'
+                    }`}>
+                    <FaLock className='w-4 h-4' />
+                  </button>
+                )}
+
+                {canDeleteProjects && (
+                  <button
+                    onClick={() => openDeleteModal(project)}
+                    disabled={isAdminCancelled}
+                    title={isAdminCancelled ? 'Project already canceled by admin.' : 'Cancel project as admin'}
+                    className={`${isAdminCancelled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200'}`}>
+                    <FaTrash className='w-4 h-4' />
+                  </button>
+                )}
               </div>
+              {project.isLocked && (
+                <div className='mt-4 rounded-md border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 p-3 text-xs text-red-700 dark:text-red-300'>
+                  <div>
+                    <span className='font-semibold'>Lock reason:</span> {project.lockReason || 'Not specified'}
+                  </div>
+                  <div>
+                    <span className='font-semibold'>Unlocks:</span> {project.lockExpiresAt ? new Date(project.lockExpiresAt).toLocaleString() : 'No end date'}
+                  </div>
+                </div>
+              )}
             </div>
           )
         })}
@@ -472,8 +630,21 @@ const AdminProjectsList = () => {
         <PaginationControls currentPage={currentPage} totalPages={totalPages} onPrev={() => setCurrentPage((prev) => Math.max(1, prev - 1))} onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))} />
       )}
       <AdminProjectDetailModal isOpen={isDetailModalOpen} onClose={closeDetailModal} project={projectForDetails} />
-      <AdminProjectEditModal isOpen={isEditModalOpen} onClose={closeEditModal} onSave={handleEditProject} loading={editLoading} form={editForm} setForm={setEditForm} />
+      <AdminProjectEditModal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        onSave={handleEditProject}
+        loading={editLoading}
+        form={editForm}
+        setForm={setEditForm}
+        assigneeName={editingProjectMeta?.assignee ? `${editingProjectMeta.assignee.firstName || ''} ${editingProjectMeta.assignee.lastName || ''}`.trim() : ''}
+        ownerName={editingProjectMeta?.owner ? `${editingProjectMeta.owner.firstName || ''} ${editingProjectMeta.owner.lastName || ''}`.trim() : ''}
+        canRemoveAssignee={Boolean(editingProjectMeta?.assignee)}
+        onRemoveAssignee={handleRemoveAssigneeFromEditModal}
+        removeAssigneeLoading={removeAssigneeLoading}
+      />
       <AdminProjectCancelModal isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDeleteProject} projectName={projectToDelete?.name} loading={deleteLoading} />
+      <AdminLockProjectModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLockProject} project={projectToLock} loading={lockLoadingProjectId === projectToLock?.id} />
     </div>
   )
 }

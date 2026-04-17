@@ -36,6 +36,74 @@ export const getAdminDashboardStats = async () => {
   }
 }
 
+export const getAdminAuditLogs = async (params = {}) => {
+  try {
+    const { page = 1, limit = 20, action = '', targetType = '', search = '' } = params
+
+    const queryParams = new URLSearchParams({
+      page,
+      limit,
+      action,
+      targetType,
+      search
+    })
+
+    const response = await authAxios.get(`/api/users/admin/audit-logs?${queryParams}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin audit logs:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Get admin-safe user detail
+export const getAdminUserDetail = async (userId) => {
+  try {
+    const response = await authAxios.get(`/api/users/admin/users/${userId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin user detail:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Get admin view of user's projects
+export const getAdminUserProjects = async (userId, params = {}) => {
+  try {
+    const queryParams = new URLSearchParams({
+      page: params.page || 1,
+      limit: params.limit || 10,
+      status: params.status || 'all',
+      scope: params.scope || 'all',
+      sort: params.sort || 'createdAt:desc'
+    })
+
+    const response = await authAxios.get(`/api/users/admin/users/${userId}/projects?${queryParams}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin user projects:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Get admin view of user's announcements
+export const getAdminUserAnnouncements = async (userId, params = {}) => {
+  try {
+    const queryParams = new URLSearchParams({
+      page: params.page || 1,
+      limit: params.limit || 10,
+      status: params.status || 'all',
+      sort: params.sort || 'createdAt:desc'
+    })
+
+    const response = await authAxios.get(`/api/users/admin/users/${userId}/announcements?${queryParams}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin user announcements:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Fetch all users for admin panel
 export const getAdminUsers = async (params = {}) => {
   try {

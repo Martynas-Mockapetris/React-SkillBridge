@@ -5,6 +5,9 @@ const roleOptions = [
   { value: 'client', label: 'Client' },
   { value: 'freelancer', label: 'Freelancer' },
   { value: 'both', label: 'Client & Freelancer' },
+  { value: 'moderator', label: 'Moderator' },
+  { value: 'blogger', label: 'Blogger' },
+  { value: 'config_manager', label: 'Config Manager' },
   { value: 'admin', label: 'Admin' }
 ]
 

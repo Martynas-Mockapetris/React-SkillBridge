@@ -1,6 +1,8 @@
 import User from '../models/User.js'
 import Project from '../models/Project.js'
 import Announcement from '../models/Announcement.js'
+import AdminActionLog from '../models/AdminActionLog.js'
+import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -333,6 +335,91 @@ export const getAdminDashboardStats = async (req, res) => {
       .reduce((sum, project) => sum + (project.budget || 0), 0)
 
     const revenueTrend = percentChange(revenueLast30, revenuePrev30)
+
+    const totalNonAdminUsers = await User.countDocuments({ userType: { $ne: 'admin' } })
+    const activeUsersLast30 = await User.countDocuments({
+      userType: { $ne: 'admin' },
+      isLocked: false,
+      lastLogin: { $gte: thirtyDaysAgo }
+    })
+    const activeUserRate = totalNonAdminUsers === 0 ? 0 : Math.round((activeUsersLast30 / totalNonAdminUsers) * 100)
+
+    const newProjectsLast30 = await Project.countDocuments({ createdAt: { $gte: thirtyDaysAgo } })
+    const newProjectsPrev30 = await Project.countDocuments({
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+    })
+    const newProjectsTrend = percentChange(newProjectsLast30, newProjectsPrev30)
+
+    const avgCompletedProjectValue = completedProjects === 0 ? 0 : Math.round(revenue / completedProjects)
+    const completionRate = activeProjects + completedProjects === 0 ? 0 : Math.round((completedProjects / (activeProjects + completedProjects)) * 100)
+
+    // ====================
+    // ALERT SIGNALS
+    // ====================
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+
+    const lockedUsers = await User.countDocuments({ isLocked: true })
+
+    const inactiveUsers = await User.countDocuments({
+      isLocked: false,
+      userType: { $ne: 'admin' },
+      lastLogin: { $ne: null, $lt: twoWeeksAgo }
+    })
+
+    const stalledProjects = await Project.countDocuments({
+      status: { $in: activeStatuses },
+      updatedAt: { $lt: twoWeeksAgo }
+    })
+
+    const alerts = []
+
+    if (lockedUsers >= 5) {
+      alerts.push({
+        id: 'locked-users',
+        severity: lockedUsers >= 15 ? 'critical' : 'warning',
+        title: 'High number of locked users',
+        message: `${lockedUsers} users are currently locked.`,
+        metric: lockedUsers
+      })
+    }
+
+    if (inactiveUsers >= 20) {
+      alerts.push({
+        id: 'inactive-users',
+        severity: inactiveUsers >= 50 ? 'critical' : 'warning',
+        title: 'User inactivity spike',
+        message: `${inactiveUsers} users inactive for 14+ days.`,
+        metric: inactiveUsers
+      })
+    }
+
+    if (stalledProjects >= 5) {
+      alerts.push({
+        id: 'stalled-projects',
+        severity: stalledProjects >= 15 ? 'critical' : 'warning',
+        title: 'Stalled active projects',
+        message: `${stalledProjects} active projects not updated in 14+ days.`,
+        metric: stalledProjects
+      })
+    }
+
+    if (revenueTrend < -20) {
+      alerts.push({
+        id: 'revenue-drop',
+        severity: 'warning',
+        title: 'Revenue trend dropped',
+        message: `Revenue trend is down ${Math.abs(revenueTrend)}% compared to previous 30 days.`,
+        metric: revenueTrend
+      })
+    }
+
+    const alertSummary = {
+      total: alerts.length,
+      critical: alerts.filter((a) => a.severity === 'critical').length,
+      warning: alerts.filter((a) => a.severity === 'warning').length,
+      info: alerts.filter((a) => a.severity === 'info').length
+    }
+
     res.json({
       totalUsers,
       activeProjects,
@@ -343,10 +430,238 @@ export const getAdminDashboardStats = async (req, res) => {
         activeProjects: activeProjectsTrend,
         completedProjects: completedTrend,
         revenue: revenueTrend
+      },
+      kpis: {
+        activeUserRate,
+        avgCompletedProjectValue,
+        completionRate,
+        newProjectsLast30,
+        newProjectsTrend
+      },
+      alertSummary,
+      alerts,
+      healthSignals: {
+        lockedUsers,
+        inactiveUsers,
+        stalledProjects
       }
     })
   } catch (error) {
     console.error('Error fetching admin dashboard stats:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Get paginated admin audit logs
+// @route   GET /api/users/admin/audit-logs
+// @access  Admin
+export const getAdminAuditLogs = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, action = '', targetType = '', search = '' } = req.query
+
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 20, 1), 100)
+
+    const query = {}
+
+    if (action) {
+      query.action = action
+    }
+
+    if (targetType) {
+      query.targetType = targetType
+    }
+
+    if (search) {
+      const regex = new RegExp(search, 'i')
+      query.$or = [{ summary: regex }, { targetLabel: regex }, { actorRole: regex }]
+    }
+
+    const [logs, total, actions, targetTypes] = await Promise.all([
+      AdminActionLog.find(query)
+        .populate('actor', 'firstName lastName email profilePicture userType')
+        .sort({ createdAt: -1 })
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      AdminActionLog.countDocuments(query),
+      AdminActionLog.distinct('action'),
+      AdminActionLog.distinct('targetType')
+    ])
+
+    res.json({
+      logs,
+      total,
+      page: pageNumber,
+      pages: Math.max(Math.ceil(total / pageSize), 1),
+      limit: pageSize,
+      filterOptions: {
+        actions: actions.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        targetTypes: targetTypes.filter(Boolean).sort((a, b) => a.localeCompare(b))
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin audit logs:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Get admin-safe user detail (admin)
+// @route   GET /api/users/admin/users/:userId
+// @access  Admin
+export const getAdminUserDetail = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId).select('-password -favorites -favoriteFreelancers')
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    await user.ensureUnlockedIfExpired()
+
+    const [createdProjects, assignedProjects, completedProjects, totalAnnouncements, activeAnnouncements] = await Promise.all([
+      Project.countDocuments({ user: userId }),
+      Project.countDocuments({ assignee: userId }),
+      Project.countDocuments({
+        $or: [{ user: userId }, { assignee: userId }],
+        status: 'completed'
+      }),
+      Announcement.countDocuments({ userId }),
+      Announcement.countDocuments({ userId, isActive: true })
+    ])
+
+    res.json({
+      user,
+      metrics: {
+        createdProjects,
+        assignedProjects,
+        completedProjects,
+        totalAnnouncements,
+        activeAnnouncements
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching admin user detail:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Get paginated projects for a specific user (admin)
+// @route   GET /api/users/admin/users/:userId/projects
+// @access  Admin
+export const getAdminUserProjects = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { page = 1, limit = 10, status = '', scope = 'all', sort = 'createdAt:desc' } = req.query
+
+    const userExists = await User.exists({ _id: userId })
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 100)
+
+    const query = {}
+    if (scope === 'created') {
+      query.user = userId
+    } else if (scope === 'assigned') {
+      query.assignee = userId
+    } else {
+      query.$or = [{ user: userId }, { assignee: userId }]
+    }
+
+    if (status && status !== 'all') {
+      query.status = status
+    }
+
+    const [sortField, sortDirection] = String(sort).split(':')
+    const direction = sortDirection === 'asc' ? 1 : -1
+    const sortMap = {
+      createdAt: { createdAt: direction },
+      deadline: { deadline: direction },
+      budget: { budget: direction },
+      status: { status: direction }
+    }
+    const sortConfig = sortMap[sortField] || { createdAt: -1 }
+
+    // Unlock expired locks before counting/fetching to keep pagination consistent
+    const expiredLockedProjects = await Project.find({
+      ...query,
+      isLocked: true,
+      lockExpiresAt: { $lt: new Date() }
+    })
+    await Promise.all(expiredLockedProjects.map((project) => project.ensureUnlockedIfExpired()))
+
+    const [projects, total] = await Promise.all([
+      Project.find(query)
+        .populate('user', 'firstName lastName email profilePicture')
+        .populate('assignee', 'firstName lastName email profilePicture')
+        .sort(sortConfig)
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      Project.countDocuments(query)
+    ])
+
+    res.json({
+      projects,
+      total,
+      page: pageNumber,
+      pages: Math.max(Math.ceil(total / pageSize), 1),
+      limit: pageSize
+    })
+  } catch (error) {
+    console.error('Error fetching admin user projects:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Get paginated announcements for a specific user (admin)
+// @route   GET /api/users/admin/users/:userId/announcements
+// @access  Admin
+export const getAdminUserAnnouncements = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { page = 1, limit = 10, status = 'all', sort = 'createdAt:desc' } = req.query
+
+    const userExists = await User.exists({ _id: userId })
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const pageNumber = Math.max(Number(page) || 1, 1)
+    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 100)
+
+    const query = { userId }
+    if (status === 'active') query.isActive = true
+    if (status === 'inactive') query.isActive = false
+
+    const [sortField, sortDirection] = String(sort).split(':')
+    const direction = sortDirection === 'asc' ? 1 : -1
+    const sortMap = {
+      createdAt: { createdAt: direction },
+      title: { title: direction },
+      hourlyRate: { hourlyRate: direction }
+    }
+    const sortConfig = sortMap[sortField] || { createdAt: -1 }
+
+    const [announcements, total] = await Promise.all([
+      Announcement.find(query)
+        .sort(sortConfig)
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize),
+      Announcement.countDocuments(query)
+    ])
+
+    res.json({
+      announcements,
+      total,
+      page: pageNumber,
+      pages: Math.max(Math.ceil(total / pageSize), 1),
+      limit: pageSize
+    })
+  } catch (error) {
+    console.error('Error fetching admin user announcements:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
@@ -414,6 +729,9 @@ export const getAdminUsers = async (req, res) => {
   }
 }
 
+const PRIVILEGED_USER_TYPES = ['admin', 'moderator', 'blogger', 'config_manager']
+const ADMIN_USER_EDITABLE_FIELDS = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
+
 // @desc    Toggle user lock status (admin)
 // @route   PATCH /api/users/admin/:userId/lock
 // @access  Admin
@@ -427,11 +745,19 @@ export const toggleUserLock = async (req, res) => {
 
     await user.ensureUnlockedIfExpired()
 
-    if (user.userType === 'admin') {
-      return res.status(403).json({ message: 'Cannot lock/unlock admin users' })
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot lock or unlock privileged users' })
     }
 
-    // Unlock flow
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+    const beforeSnapshot = {
+      isLocked: user.isLocked,
+      lockReason: user.lockReason,
+      lockExpiresAt: user.lockExpiresAt,
+      lockDurationDays: user.lockDurationDays,
+      lockedAt: user.lockedAt
+    }
+
     if (user.isLocked) {
       user.isLocked = false
       user.lockReason = ''
@@ -439,10 +765,23 @@ export const toggleUserLock = async (req, res) => {
       user.lockDurationDays = null
       user.lockedAt = null
       await user.save()
+
+      await logAdminAction({
+        req,
+        action: 'user.unlocked',
+        targetType: 'user',
+        targetId: user._id,
+        targetLabel,
+        summary: `Unlocked user ${targetLabel}`,
+        changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['isLocked', 'lockReason', 'lockExpiresAt', 'lockDurationDays', 'lockedAt']),
+        metadata: {
+          targetEmail: user.email
+        }
+      })
+
       return res.json({ message: 'User unlocked successfully', isLocked: false })
     }
 
-    // Lock flow
     if (!reason.trim()) {
       return res.status(400).json({ message: 'Lock reason is required' })
     }
@@ -456,6 +795,21 @@ export const toggleUserLock = async (req, res) => {
     user.lockDurationDays = days > 0 ? days : null
     user.lockedAt = new Date()
     await user.save()
+
+    await logAdminAction({
+      req,
+      action: 'user.locked',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Locked user ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['isLocked', 'lockReason', 'lockExpiresAt', 'lockDurationDays', 'lockedAt']),
+      metadata: {
+        targetEmail: user.email,
+        reason: user.lockReason,
+        durationDays: user.lockDurationDays
+      }
+    })
 
     res.json({
       message: 'User locked successfully',
@@ -475,10 +829,9 @@ export const toggleUserLock = async (req, res) => {
 export const updateAdminUser = async (req, res) => {
   try {
     const { userId } = req.params
-    const allowedFields = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
 
     const updates = {}
-    allowedFields.forEach((field) => {
+    ADMIN_USER_EDITABLE_FIELDS.forEach((field) => {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field]
       }
@@ -493,12 +846,38 @@ export const updateAdminUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    if (user.userType === 'admin' && updates.userType && updates.userType !== 'admin') {
-      return res.status(403).json({ message: 'Cannot downgrade admin accounts' })
+    const isPrivilegedUser = PRIVILEGED_USER_TYPES.includes(user.userType)
+    const isChangingUserType = updates.userType !== undefined
+    const isChangingToDifferentRole = isChangingUserType && updates.userType !== user.userType
+
+    if (isPrivilegedUser && isChangingToDifferentRole) {
+      return res.status(403).json({ message: 'Cannot change the role of privileged users' })
     }
+
+    const beforeSnapshot = ADMIN_USER_EDITABLE_FIELDS.reduce((snapshot, field) => {
+      snapshot[field] = user[field]
+      return snapshot
+    }, {})
 
     Object.assign(user, updates)
     const updatedUser = await user.save()
+
+    const targetLabel = `${updatedUser.firstName || ''} ${updatedUser.lastName || ''}`.trim() || updatedUser.email || 'User'
+    const changedFields = Object.keys(updates)
+
+    await logAdminAction({
+      req,
+      action: 'user.updated',
+      targetType: 'user',
+      targetId: updatedUser._id,
+      targetLabel,
+      summary: `Updated user ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, updatedUser.toObject(), changedFields),
+      metadata: {
+        targetEmail: updatedUser.email,
+        updatedFields: changedFields
+      }
+    })
 
     res.json({ message: 'User updated successfully', user: updatedUser })
   } catch (error) {
@@ -519,17 +898,30 @@ export const deleteAdminUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    // Don't allow deleting admins
-    if (user.userType === 'admin') {
-      return res.status(403).json({ message: 'Cannot delete admin users' })
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot delete privileged users' })
     }
 
-    // Delete user's projects too
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
     await Project.deleteMany({
       $or: [{ user: userId }, { assignee: userId }]
     })
 
     await user.deleteOne()
+
+    await logAdminAction({
+      req,
+      action: 'user.deleted',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Deleted user ${targetLabel}`,
+      metadata: {
+        targetEmail: user.email,
+        deletedProjectAssociations: true
+      }
+    })
 
     res.json({ message: 'User deleted successfully' })
   } catch (error) {

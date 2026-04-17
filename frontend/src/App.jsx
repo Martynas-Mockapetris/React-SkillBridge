@@ -19,6 +19,9 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import ProjectDetail from './pages/ProjectDetail'
 import UserDetail from './pages/UserDetail'
+import AdminUserDetail from './pages/AdminUserDetail'
+import Blog from './pages/Blog'
+import BlogPostDetail from './pages/BlogPostDetail'
 
 function App() {
   return (
@@ -30,11 +33,12 @@ function App() {
           {/* Public routes - accessible to everyone */}
           <Route path='/' element={<Home />} />
           <Route path='/listings' element={<Listings />} />
+          <Route path='/blog' element={<Blog />} />
+          <Route path='/blog/:slug' element={<BlogPostDetail />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route path='/project/:id' element={<ProjectDetail />} />
           <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
-          
           {/* Protected routes - require authentication */}
           <Route
             path='/profile'
@@ -51,6 +55,14 @@ function App() {
             element={
               <AdminRoute>
                 <Admin />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/admin/users/:id'
+            element={
+              <AdminRoute>
+                <AdminUserDetail />
               </AdminRoute>
             }
           />
