@@ -1,8 +1,9 @@
 import Project from '../models/Project.js'
+import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
-const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status']
+const ADMIN_AUDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'isLocked', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']
 
 const ALLOWED_PROJECT_PRIORITIES = ['low', 'medium', 'high']
 const ALLOWED_PROJECT_STATUSES = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
@@ -324,9 +325,28 @@ const deleteProjectAsAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    // Keep project record, only mark as cancelled by admin
+    const targetLabel = project.title || 'Untitled project'
+    const beforeSnapshot = {
+      status: project.status
+    }
+
     project.status = 'cancelled_by_admin'
     await project.save()
+
+    await logAdminAction({
+      req,
+      action: 'project.cancelled',
+      targetType: 'project',
+      targetId: project._id,
+      targetLabel,
+      summary: `Cancelled project ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['status']),
+      metadata: {
+        previousStatus: beforeSnapshot.status,
+        newStatus: project.status,
+        reason: 'cancelled_by_admin'
+      }
+    })
 
     res.json({ message: 'Project cancelled by admin', status: project.status })
   } catch (error) {
@@ -373,6 +393,11 @@ const updateProjectAsAdmin = async (req, res) => {
       }
     }
 
+    const beforeSnapshot = ADMIN_AUDITABLE_PROJECT_FIELDS.reduce((snapshot, field) => {
+      snapshot[field] = project[field]
+      return snapshot
+    }, {})
+
     if (title !== undefined) project.title = String(title).trim()
     if (description !== undefined) project.description = String(description).trim()
     if (category !== undefined) project.category = String(category).trim()
@@ -402,6 +427,23 @@ const updateProjectAsAdmin = async (req, res) => {
     }
 
     const updatedProject = await project.save()
+    const changedFields = ADMIN_AUDITABLE_PROJECT_FIELDS.filter((field) => JSON.stringify(beforeSnapshot[field] ?? null) !== JSON.stringify(updatedProject.toObject()[field] ?? null))
+
+    await logAdminAction({
+      req,
+      action: 'project.updated',
+      targetType: 'project',
+      targetId: updatedProject._id,
+      targetLabel: updatedProject.title || 'Untitled project',
+      summary: `Updated project ${updatedProject.title || 'Untitled project'}`,
+      changes: buildFieldChanges(beforeSnapshot, updatedProject.toObject(), changedFields),
+      metadata: {
+        updatedFields: changedFields,
+        previousStatus: beforeSnapshot.status,
+        newStatus: updatedProject.status
+      }
+    })
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error updating project as admin:', error)
@@ -464,17 +506,24 @@ const toggleProjectLockAsAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    // Moderation-terminal statuses should remain immutable.
     if (isImmutableProjectStatus(project.status)) {
       return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
-    // These statuses are considered final and should not be lock-toggled.
     if (['completed', 'archived', 'cancelled'].includes(project.status)) {
       return res.status(400).json({ message: 'Finalized project status cannot be lock-toggled' })
     }
 
-    // Unlock flow
+    const targetLabel = project.title || 'Untitled project'
+    const beforeSnapshot = {
+      isLocked: project.isLocked,
+      status: project.status,
+      lockReason: project.lockReason,
+      lockDurationDays: project.lockDurationDays,
+      lockedAt: project.lockedAt,
+      lockExpiresAt: project.lockExpiresAt
+    }
+
     if (project.isLocked) {
       project.isLocked = false
       project.lockReason = ''
@@ -482,12 +531,25 @@ const toggleProjectLockAsAdmin = async (req, res) => {
       project.lockedAt = null
       project.lockExpiresAt = null
 
-      // Keep existing status behavior parity: unlock to active
       if (project.status === 'paused') {
         project.status = 'active'
       }
 
       await project.save()
+
+      await logAdminAction({
+        req,
+        action: 'project.unlocked',
+        targetType: 'project',
+        targetId: project._id,
+        targetLabel,
+        summary: `Unlocked project ${targetLabel}`,
+        changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['isLocked', 'status', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']),
+        metadata: {
+          previousStatus: beforeSnapshot.status,
+          newStatus: project.status
+        }
+      })
 
       return res.json({
         message: 'Project unlocked successfully',
@@ -496,7 +558,6 @@ const toggleProjectLockAsAdmin = async (req, res) => {
       })
     }
 
-    // Lock flow
     if (!reason.trim()) {
       return res.status(400).json({ message: 'Lock reason is required' })
     }
@@ -517,6 +578,22 @@ const toggleProjectLockAsAdmin = async (req, res) => {
     project.status = 'paused'
 
     await project.save()
+
+    await logAdminAction({
+      req,
+      action: 'project.locked',
+      targetType: 'project',
+      targetId: project._id,
+      targetLabel,
+      summary: `Locked project ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['isLocked', 'status', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']),
+      metadata: {
+        previousStatus: beforeSnapshot.status,
+        newStatus: project.status,
+        reason: project.lockReason,
+        durationDays: project.lockDurationDays
+      }
+    })
 
     res.json({
       message: 'Project locked successfully',
