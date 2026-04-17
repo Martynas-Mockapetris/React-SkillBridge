@@ -36,6 +36,26 @@ export const getAdminDashboardStats = async () => {
   }
 }
 
+export const getAdminAuditLogs = async (params = {}) => {
+  try {
+    const { page = 1, limit = 20, action = '', targetType = '', search = '' } = params
+
+    const queryParams = new URLSearchParams({
+      page,
+      limit,
+      action,
+      targetType,
+      search
+    })
+
+    const response = await authAxios.get(`/api/users/admin/audit-logs?${queryParams}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch admin audit logs:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Get admin-safe user detail
 export const getAdminUserDetail = async (userId) => {
   try {

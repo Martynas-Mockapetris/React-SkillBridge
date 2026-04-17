@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getAdminDashboardStats } from '../../services/userService'
 import AdminAlertsPanel from './AdminAlertsPanel'
+import AdminAuditLogPanel from './AdminAuditLogPanel'
 import StatCard from './StatCard'
 import { FaUsers, FaProjectDiagram, FaCheckCircle, FaMoneyBillWave, FaUserCheck, FaDollarSign, FaBullseye, FaLayerGroup, FaChartLine } from 'react-icons/fa'
 
@@ -165,6 +166,7 @@ const AdminStats = () => {
       </div>
 
       <AdminAlertsPanel isLoading={isLoading} alertSummary={stats.alertSummary} alerts={stats.alerts} healthSignals={stats.healthSignals} />
+      <AdminAuditLogPanel />
     </div>
   )
 }
