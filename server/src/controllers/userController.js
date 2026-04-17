@@ -1,6 +1,7 @@
 import User from '../models/User.js'
 import Project from '../models/Project.js'
 import Announcement from '../models/Announcement.js'
+import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -675,6 +676,7 @@ export const getAdminUsers = async (req, res) => {
 }
 
 const PRIVILEGED_USER_TYPES = ['admin', 'moderator', 'blogger', 'config_manager']
+const ADMIN_USER_EDITABLE_FIELDS = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
 
 // @desc    Toggle user lock status (admin)
 // @route   PATCH /api/users/admin/:userId/lock
@@ -693,7 +695,15 @@ export const toggleUserLock = async (req, res) => {
       return res.status(403).json({ message: 'Cannot lock or unlock privileged users' })
     }
 
-    // Unlock flow
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+    const beforeSnapshot = {
+      isLocked: user.isLocked,
+      lockReason: user.lockReason,
+      lockExpiresAt: user.lockExpiresAt,
+      lockDurationDays: user.lockDurationDays,
+      lockedAt: user.lockedAt
+    }
+
     if (user.isLocked) {
       user.isLocked = false
       user.lockReason = ''
@@ -701,10 +711,23 @@ export const toggleUserLock = async (req, res) => {
       user.lockDurationDays = null
       user.lockedAt = null
       await user.save()
+
+      await logAdminAction({
+        req,
+        action: 'user.unlocked',
+        targetType: 'user',
+        targetId: user._id,
+        targetLabel,
+        summary: `Unlocked user ${targetLabel}`,
+        changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['isLocked', 'lockReason', 'lockExpiresAt', 'lockDurationDays', 'lockedAt']),
+        metadata: {
+          targetEmail: user.email
+        }
+      })
+
       return res.json({ message: 'User unlocked successfully', isLocked: false })
     }
 
-    // Lock flow
     if (!reason.trim()) {
       return res.status(400).json({ message: 'Lock reason is required' })
     }
@@ -718,6 +741,21 @@ export const toggleUserLock = async (req, res) => {
     user.lockDurationDays = days > 0 ? days : null
     user.lockedAt = new Date()
     await user.save()
+
+    await logAdminAction({
+      req,
+      action: 'user.locked',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Locked user ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['isLocked', 'lockReason', 'lockExpiresAt', 'lockDurationDays', 'lockedAt']),
+      metadata: {
+        targetEmail: user.email,
+        reason: user.lockReason,
+        durationDays: user.lockDurationDays
+      }
+    })
 
     res.json({
       message: 'User locked successfully',
@@ -737,10 +775,9 @@ export const toggleUserLock = async (req, res) => {
 export const updateAdminUser = async (req, res) => {
   try {
     const { userId } = req.params
-    const allowedFields = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
 
     const updates = {}
-    allowedFields.forEach((field) => {
+    ADMIN_USER_EDITABLE_FIELDS.forEach((field) => {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field]
       }
@@ -763,8 +800,30 @@ export const updateAdminUser = async (req, res) => {
       return res.status(403).json({ message: 'Cannot change the role of privileged users' })
     }
 
+    const beforeSnapshot = ADMIN_USER_EDITABLE_FIELDS.reduce((snapshot, field) => {
+      snapshot[field] = user[field]
+      return snapshot
+    }, {})
+
     Object.assign(user, updates)
     const updatedUser = await user.save()
+
+    const targetLabel = `${updatedUser.firstName || ''} ${updatedUser.lastName || ''}`.trim() || updatedUser.email || 'User'
+    const changedFields = Object.keys(updates)
+
+    await logAdminAction({
+      req,
+      action: 'user.updated',
+      targetType: 'user',
+      targetId: updatedUser._id,
+      targetLabel,
+      summary: `Updated user ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, updatedUser.toObject(), changedFields),
+      metadata: {
+        targetEmail: updatedUser.email,
+        updatedFields: changedFields
+      }
+    })
 
     res.json({ message: 'User updated successfully', user: updatedUser })
   } catch (error) {
@@ -789,12 +848,26 @@ export const deleteAdminUser = async (req, res) => {
       return res.status(403).json({ message: 'Cannot delete privileged users' })
     }
 
-    // Delete user's projects too
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
     await Project.deleteMany({
       $or: [{ user: userId }, { assignee: userId }]
     })
 
     await user.deleteOne()
+
+    await logAdminAction({
+      req,
+      action: 'user.deleted',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Deleted user ${targetLabel}`,
+      metadata: {
+        targetEmail: user.email,
+        deletedProjectAssociations: true
+      }
+    })
 
     res.json({ message: 'User deleted successfully' })
   } catch (error) {
