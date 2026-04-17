@@ -75,18 +75,16 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
 
   return (
     <>
-      <button className='lg:hidden fixed top-[93px] left-4 z-50 p-2 rounded-lg bg-accent text-white' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+      <button className='lg:hidden fixed top-[84px] left-4 z-50 p-2 rounded-lg bg-accent text-white shadow-lg' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
         {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
       </button>
 
-      <motion.div
-        className={`fixed lg:static lg:block z-40 h-screen bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent dark:from-light/5 dark:via-light/[0.02] backdrop-blur-sm shadow-lg
-          ${isMobileMenuOpen ? 'block' : 'hidden lg:block'} w-[240px] lg:w-64 top-[50px]`}
-        initial={{ x: window.innerWidth <= 1024 ? -300 : 0 }}
-        animate={{ x: isMobileMenuOpen || window.innerWidth > 1024 ? 0 : -300 }}
-        transition={{ duration: 0.3 }}>
-        <div className='flex h-full flex-col'>
-          <nav className='space-y-1 pt-28 lg:pt-4 p-4'>
+      <div
+        className={`fixed left-0 top-[68px] z-40 h-[calc(100vh-68px)] w-[240px] overflow-y-auto bg-gradient-to-br from-light/5 via-light/[0.02] to-transparent shadow-lg backdrop-blur-sm transition-transform duration-300 ease-out dark:from-light/5 dark:via-light/[0.02]
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:sticky lg:top-[68px] lg:block lg:h-[calc(100vh-68px)] lg:w-64 lg:flex-shrink-0 lg:translate-x-0`}
+        aria-hidden={!isMobileMenuOpen && typeof window !== 'undefined' && window.innerWidth < 1024}>
+        <div className='flex min-h-full flex-col'>
+          <nav className='space-y-1 p-4 pt-6'>
             {navigationItems.map((item) => {
               const isActive = activeSection === item.id
               const isSettingsItem = item.id === 'settings'
@@ -174,7 +172,7 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
             })}
           </nav>
         </div>
-      </motion.div>
+      </div>
 
       {isMobileMenuOpen && <div className='fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden' onClick={() => setIsMobileMenuOpen(false)} />}
     </>

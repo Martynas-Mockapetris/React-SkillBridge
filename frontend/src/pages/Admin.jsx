@@ -65,12 +65,12 @@ const Admin = () => {
   }
 
   return (
-    <div className='flex h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
+    <div className='flex min-h-[calc(100vh-68px)] bg-gray-100 dark:bg-gray-900 pt-[68px]'>
       <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} activeSettingsSection={activeSettingsSection} setActiveSettingsSection={setActiveSettingsSection} />
 
-      <div className='flex-1 flex flex-col overflow-hidden'>
+      <div className='flex-1 min-w-0 flex flex-col'>
         <AdminHeader activeSection={activeSection} />
-        <main className='flex-1 overflow-x-hidden overflow-y-auto'>
+        <main className='flex-1 overflow-x-hidden'>
           <div className='container mx-auto px-6 py-8'>
             <nav aria-label='Breadcrumb' className='mb-4'>
               <ol className='flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
