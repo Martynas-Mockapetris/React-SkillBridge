@@ -1,4 +1,5 @@
 import BlogPost from '../models/BlogPost.js'
+import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 
 const createSlug = (value = '') =>
   value
@@ -24,6 +25,8 @@ const ensureUniqueSlug = async (baseSlug, excludeId = null) => {
     counter += 1
   }
 }
+
+const AUDITABLE_BLOG_FIELDS = ['title', 'slug', 'excerpt', 'content', 'coverImage', 'tags', 'authorName', 'showAuthor', 'isPublished', 'publishedAt']
 
 // @desc    Get all published blog posts
 // @route   GET /api/blog
@@ -111,6 +114,20 @@ export const createBlogPost = async (req, res) => {
 
     await post.populate('author', 'firstName lastName profilePicture')
 
+    await logAdminAction({
+      req,
+      action: 'blog.created',
+      targetType: 'blog_post',
+      targetId: post._id,
+      targetLabel: post.title || 'Untitled blog post',
+      summary: `Created blog post ${post.title || 'Untitled blog post'}`,
+      changes: buildFieldChanges({}, post.toObject(), AUDITABLE_BLOG_FIELDS),
+      metadata: {
+        isPublished: post.isPublished,
+        slug: post.slug
+      }
+    })
+
     res.status(201).json(post)
   } catch (error) {
     console.error('Error creating blog post:', error)
@@ -130,6 +147,11 @@ export const updateBlogPost = async (req, res) => {
     if (!post) {
       return res.status(404).json({ message: 'Blog post not found' })
     }
+
+    const beforeSnapshot = AUDITABLE_BLOG_FIELDS.reduce((snapshot, field) => {
+      snapshot[field] = post[field]
+      return snapshot
+    }, {})
 
     if (title && title !== post.title) {
       const baseSlug = createSlug(title)
@@ -160,6 +182,23 @@ export const updateBlogPost = async (req, res) => {
     await post.save()
     await post.populate('author', 'firstName lastName profilePicture')
 
+    const changedFields = AUDITABLE_BLOG_FIELDS.filter((field) => JSON.stringify(beforeSnapshot[field] ?? null) !== JSON.stringify(post.toObject()[field] ?? null))
+
+    await logAdminAction({
+      req,
+      action: 'blog.updated',
+      targetType: 'blog_post',
+      targetId: post._id,
+      targetLabel: post.title || 'Untitled blog post',
+      summary: `Updated blog post ${post.title || 'Untitled blog post'}`,
+      changes: buildFieldChanges(beforeSnapshot, post.toObject(), changedFields),
+      metadata: {
+        updatedFields: changedFields,
+        isPublished: post.isPublished,
+        slug: post.slug
+      }
+    })
+
     res.json(post)
   } catch (error) {
     console.error('Error updating blog post:', error)
@@ -179,11 +218,29 @@ export const toggleBlogPostPublish = async (req, res) => {
       return res.status(404).json({ message: 'Blog post not found' })
     }
 
+    const beforeSnapshot = {
+      isPublished: post.isPublished,
+      publishedAt: post.publishedAt
+    }
+
     post.isPublished = !post.isPublished
     post.publishedAt = post.isPublished ? new Date() : null
 
     await post.save()
     await post.populate('author', 'firstName lastName profilePicture')
+
+    await logAdminAction({
+      req,
+      action: post.isPublished ? 'blog.published' : 'blog.unpublished',
+      targetType: 'blog_post',
+      targetId: post._id,
+      targetLabel: post.title || 'Untitled blog post',
+      summary: `${post.isPublished ? 'Published' : 'Unpublished'} blog post ${post.title || 'Untitled blog post'}`,
+      changes: buildFieldChanges(beforeSnapshot, post.toObject(), ['isPublished', 'publishedAt']),
+      metadata: {
+        slug: post.slug
+      }
+    })
 
     res.json({
       message: `Blog post ${post.isPublished ? 'published' : 'unpublished'}`,
@@ -207,7 +264,23 @@ export const deleteBlogPost = async (req, res) => {
       return res.status(404).json({ message: 'Blog post not found' })
     }
 
+    const targetLabel = post.title || 'Untitled blog post'
+    const metadata = {
+      slug: post.slug,
+      wasPublished: post.isPublished
+    }
+
     await BlogPost.findByIdAndDelete(id)
+
+    await logAdminAction({
+      req,
+      action: 'blog.deleted',
+      targetType: 'blog_post',
+      targetId: post._id,
+      targetLabel,
+      summary: `Deleted blog post ${targetLabel}`,
+      metadata
+    })
 
     res.json({ message: 'Blog post deleted successfully' })
   } catch (error) {
