@@ -4,7 +4,7 @@ import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
 const ADMIN_AUDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'isLocked', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']
-
+const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status']
 const ALLOWED_PROJECT_PRIORITIES = ['low', 'medium', 'high']
 const ALLOWED_PROJECT_STATUSES = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
 
