@@ -17,6 +17,7 @@ import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
 import ProjectDetail from './pages/ProjectDetail'
 import UserDetail from './pages/UserDetail'
 import AdminUserDetail from './pages/AdminUserDetail'
@@ -37,8 +38,10 @@ function App() {
           <Route path='/blog/:slug' element={<BlogPostDetail />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/project/:id' element={<ProjectDetail />} />
           <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
+
           {/* Protected routes - require authentication */}
           <Route
             path='/profile'
