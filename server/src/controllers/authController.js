@@ -5,6 +5,8 @@ import { sendMail } from '../utils/mailService.js'
 
 const EMAIL_VERIFICATION_TTL_MINUTES = 60 * 24
 const EMAIL_VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000
+const PASSWORD_RESET_TTL_MINUTES = 60
+const PASSWORD_RESET_REQUEST_COOLDOWN_MS = 60 * 1000
 
 const getAppBaseUrl = () => {
   return process.env.APP_URL || process.env.CLIENT_URL || 'http://localhost:5173'
@@ -13,6 +15,11 @@ const getAppBaseUrl = () => {
 const buildEmailVerificationUrl = (rawToken) => {
   const baseUrl = getAppBaseUrl().replace(/\/$/, '')
   return `${baseUrl}/verify-email?token=${encodeURIComponent(rawToken)}`
+}
+
+const buildPasswordResetUrl = (rawToken) => {
+  const baseUrl = getAppBaseUrl().replace(/\/$/, '')
+  return `${baseUrl}/reset-password?token=${encodeURIComponent(rawToken)}`
 }
 
 const buildAuthUserResponse = (user, includeToken = false) => ({
@@ -55,6 +62,44 @@ const sendVerificationEmail = async (user) => {
     <p>Please verify your email address for your SkillBridge account.</p>
     <p><a href="${verificationUrl}">Verify email</a></p>
     <p>This link expires in ${EMAIL_VERIFICATION_TTL_MINUTES / 60} hours.</p>
+  `
+
+  return sendMail({
+    to: user.email,
+    subject,
+    text,
+    html
+  })
+}
+
+const sendPasswordResetEmail = async (user) => {
+  const { rawToken, tokenHash, expiresAt } = createSecureToken({
+    ttlMinutes: PASSWORD_RESET_TTL_MINUTES
+  })
+
+  user.passwordResetTokenHash = tokenHash
+  user.passwordResetTokenExpiresAt = expiresAt
+  user.passwordResetRequestedAt = new Date()
+  await user.save()
+
+  const resetUrl = buildPasswordResetUrl(rawToken)
+  const subject = 'Reset your SkillBridge password'
+  const text = [
+    `Hi ${user.firstName || 'there'},`,
+    '',
+    'We received a request to reset your SkillBridge password.',
+    `Reset link: ${resetUrl}`,
+    '',
+    `This link expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.`,
+    'If you did not request this, you can ignore this email.'
+  ].join('\n')
+
+  const html = `
+    <p>Hi ${user.firstName || 'there'},</p>
+    <p>We received a request to reset your SkillBridge password.</p>
+    <p><a href="${resetUrl}">Reset password</a></p>
+    <p>This link expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.</p>
+    <p>If you did not request this, you can ignore this email.</p>
   `
 
   return sendMail({
@@ -206,6 +251,82 @@ export const confirmEmailVerification = async (req, res) => {
     res.json({
       message: 'Email verified successfully.',
       user: buildAuthUserResponse(user)
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Request password reset link
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' })
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase()
+    const user = await User.findOne({ email: normalizedEmail })
+
+    const genericResponse = {
+      message: 'If an account with that email exists, a password reset link has been sent.'
+    }
+
+    if (!user) {
+      return res.json(genericResponse)
+    }
+
+    const lastRequestedAt = user.passwordResetRequestedAt ? new Date(user.passwordResetRequestedAt).getTime() : 0
+    const now = Date.now()
+
+    if (lastRequestedAt && now - lastRequestedAt < PASSWORD_RESET_REQUEST_COOLDOWN_MS) {
+      return res.json(genericResponse)
+    }
+
+    await sendPasswordResetEmail(user)
+
+    return res.json(genericResponse)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Reset password using token
+// @route   POST /api/auth/reset-password
+// @access  Public
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body
+
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and new password are required.' })
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long.' })
+    }
+
+    const tokenHash = hashToken(token)
+
+    const user = await User.findOne({ passwordResetTokenHash: tokenHash }).select('+passwordResetTokenHash +passwordResetTokenExpiresAt')
+
+    if (!user || !user.passwordResetTokenExpiresAt || isTokenExpired(user.passwordResetTokenExpiresAt)) {
+      return res.status(400).json({ message: 'Reset link is invalid or has expired.' })
+    }
+
+    user.password = password
+    user.passwordResetTokenHash = null
+    user.passwordResetTokenExpiresAt = null
+    user.passwordResetRequestedAt = null
+    user.forcePasswordReset = false
+    user.forcePasswordResetSetAt = null
+    await user.save()
+
+    res.json({
+      message: 'Password has been reset successfully.'
     })
   } catch (error) {
     res.status(500).json({ message: error.message })
