@@ -1,5 +1,19 @@
 import User from '../models/User.js'
 import { generateToken } from '../utils/jwtUtils.js'
+import { createSecureToken, hashToken, isTokenExpired } from '../utils/authTokenUtils.js'
+import { sendMail } from '../utils/mailService.js'
+
+const EMAIL_VERIFICATION_TTL_MINUTES = 60 * 24
+const EMAIL_VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000
+
+const getAppBaseUrl = () => {
+  return process.env.APP_URL || process.env.CLIENT_URL || 'http://localhost:5173'
+}
+
+const buildEmailVerificationUrl = (rawToken) => {
+  const baseUrl = getAppBaseUrl().replace(/\/$/, '')
+  return `${baseUrl}/verify-email?token=${encodeURIComponent(rawToken)}`
+}
 
 const buildAuthUserResponse = (user, includeToken = false) => ({
   _id: user._id,
@@ -14,6 +28,42 @@ const buildAuthUserResponse = (user, includeToken = false) => ({
   forcePasswordReset: user.forcePasswordReset,
   ...(includeToken ? { token: generateToken(user._id) } : {})
 })
+
+const sendVerificationEmail = async (user) => {
+  const { rawToken, tokenHash, expiresAt } = createSecureToken({
+    ttlMinutes: EMAIL_VERIFICATION_TTL_MINUTES
+  })
+
+  user.emailVerificationTokenHash = tokenHash
+  user.emailVerificationTokenExpiresAt = expiresAt
+  user.emailVerificationLastSentAt = new Date()
+  await user.save()
+
+  const verificationUrl = buildEmailVerificationUrl(rawToken)
+  const subject = 'Verify your SkillBridge email'
+  const text = [
+    `Hi ${user.firstName || 'there'},`,
+    '',
+    'Please verify your email address for your SkillBridge account.',
+    `Verification link: ${verificationUrl}`,
+    '',
+    `This link expires in ${EMAIL_VERIFICATION_TTL_MINUTES / 60} hours.`
+  ].join('\n')
+
+  const html = `
+    <p>Hi ${user.firstName || 'there'},</p>
+    <p>Please verify your email address for your SkillBridge account.</p>
+    <p><a href="${verificationUrl}">Verify email</a></p>
+    <p>This link expires in ${EMAIL_VERIFICATION_TTL_MINUTES / 60} hours.</p>
+  `
+
+  return sendMail({
+    to: user.email,
+    subject,
+    text,
+    html
+  })
+}
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -38,6 +88,7 @@ export const registerUser = async (req, res) => {
     })
 
     if (user) {
+      await sendVerificationEmail(user)
       res.status(201).json(buildAuthUserResponse(user, true))
     }
   } catch (error) {
@@ -82,6 +133,80 @@ export const getUserProfile = async (req, res) => {
     } else {
       res.status(404).json({ message: 'User not found' })
     }
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Send or resend email verification link
+// @route   POST /api/auth/verify-email/request
+// @access  Private
+export const requestEmailVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.isEmailVerified) {
+      return res.json({
+        message: 'Email is already verified.',
+        isEmailVerified: true
+      })
+    }
+
+    const lastSentAt = user.emailVerificationLastSentAt ? new Date(user.emailVerificationLastSentAt).getTime() : 0
+    const now = Date.now()
+
+    if (lastSentAt && now - lastSentAt < EMAIL_VERIFICATION_RESEND_COOLDOWN_MS) {
+      const retryAfterSeconds = Math.ceil((EMAIL_VERIFICATION_RESEND_COOLDOWN_MS - (now - lastSentAt)) / 1000)
+
+      return res.status(429).json({
+        message: `Please wait ${retryAfterSeconds} seconds before requesting another verification email.`
+      })
+    }
+
+    const mailResult = await sendVerificationEmail(user)
+
+    res.json({
+      message: mailResult.delivered ? 'Verification email sent.' : 'Verification link generated, but email delivery is not configured.',
+      delivery: mailResult
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Confirm email verification token
+// @route   POST /api/auth/verify-email/confirm
+// @access  Public
+export const confirmEmailVerification = async (req, res) => {
+  try {
+    const { token } = req.body
+
+    if (!token) {
+      return res.status(400).json({ message: 'Verification token is required.' })
+    }
+
+    const tokenHash = hashToken(token)
+
+    const user = await User.findOne({ emailVerificationTokenHash: tokenHash }).select('+emailVerificationTokenHash +emailVerificationTokenExpiresAt')
+
+    if (!user || !user.emailVerificationTokenExpiresAt || isTokenExpired(user.emailVerificationTokenExpiresAt)) {
+      return res.status(400).json({ message: 'Verification link is invalid or has expired.' })
+    }
+
+    user.isEmailVerified = true
+    user.emailVerifiedAt = new Date()
+    user.emailVerificationTokenHash = null
+    user.emailVerificationTokenExpiresAt = null
+    await user.save()
+
+    res.json({
+      message: 'Email verified successfully.',
+      user: buildAuthUserResponse(user)
+    })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
