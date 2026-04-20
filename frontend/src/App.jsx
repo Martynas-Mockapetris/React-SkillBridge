@@ -19,6 +19,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import VerifyEmail from './pages/VerifyEmail'
 import ProjectDetail from './pages/ProjectDetail'
 import UserDetail from './pages/UserDetail'
 import AdminUserDetail from './pages/AdminUserDetail'
@@ -41,6 +42,7 @@ function App() {
           <Route path='/register' element={<Register />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path='/verify-email' element={<VerifyEmail />} />
           <Route path='/project/:id' element={<ProjectDetail />} />
           <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
 
