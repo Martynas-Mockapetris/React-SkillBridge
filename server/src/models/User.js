@@ -54,10 +54,55 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerifiedAt: {
+    type: Date,
+    default: null
+  },
+  emailVerificationTokenHash: {
+    type: String,
+    default: null,
+    select: false
+  },
+  emailVerificationTokenExpiresAt: {
+    type: Date,
+    default: null,
+    select: false
+  },
+  emailVerificationLastSentAt: {
+    type: Date,
+    default: null
+  },
+  passwordResetTokenHash: {
+    type: String,
+    default: null,
+    select: false
+  },
+  passwordResetTokenExpiresAt: {
+    type: Date,
+    default: null,
+    select: false
+  },
+  passwordResetRequestedAt: {
+    type: Date,
+    default: null
+  },
+  forcePasswordReset: {
+    type: Boolean,
+    default: false
+  },
+  forcePasswordResetSetAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
   },
+
   // New profile fields
   phone: {
     type: String,
@@ -143,6 +188,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+
   // Rating system for freelancers
   ratings: {
     type: [

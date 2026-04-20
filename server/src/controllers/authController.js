@@ -1,6 +1,20 @@
 import User from '../models/User.js'
 import { generateToken } from '../utils/jwtUtils.js'
 
+const buildAuthUserResponse = (user, includeToken = false) => ({
+  _id: user._id,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  email: user.email,
+  userType: user.userType,
+  isLocked: user.isLocked,
+  lastLogin: user.lastLogin,
+  isEmailVerified: user.isEmailVerified,
+  emailVerifiedAt: user.emailVerifiedAt,
+  forcePasswordReset: user.forcePasswordReset,
+  ...(includeToken ? { token: generateToken(user._id) } : {})
+})
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -24,14 +38,7 @@ export const registerUser = async (req, res) => {
     })
 
     if (user) {
-      res.status(201).json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userType: user.userType,
-        token: generateToken(user._id)
-      })
+      res.status(201).json(buildAuthUserResponse(user, true))
     }
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -53,16 +60,7 @@ export const loginUser = async (req, res) => {
       user.lastLogin = new Date()
       await user.save()
 
-      res.json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userType: user.userType,
-        isLocked: user.isLocked,
-        lastLogin: user.lastLogin,
-        token: generateToken(user._id)
-      })
+      res.json(buildAuthUserResponse(user, true))
     } else {
       res.status(401).json({ message: 'Invalid email or password' })
     }
@@ -80,13 +78,7 @@ export const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id)
 
     if (user) {
-      res.json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userType: user.userType
-      })
+      res.json(buildAuthUserResponse(user))
     } else {
       res.status(404).json({ message: 'User not found' })
     }
