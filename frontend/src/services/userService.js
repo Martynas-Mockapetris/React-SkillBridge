@@ -148,6 +148,16 @@ export const updateAdminUser = async (userId, payload) => {
   }
 }
 
+export const requestAdminPasswordReset = async (userId) => {
+  try {
+    const response = await authAxios.post(`/api/users/admin/${userId}/password-reset`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to request admin password reset:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Delete user (admin)
 export const deleteAdminUser = async (userId) => {
   try {

@@ -3,6 +3,7 @@ import Project from '../models/Project.js'
 import Announcement from '../models/Announcement.js'
 import AdminActionLog from '../models/AdminActionLog.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
+import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -882,6 +883,50 @@ export const updateAdminUser = async (req, res) => {
     res.json({ message: 'User updated successfully', user: updatedUser })
   } catch (error) {
     console.error('Error updating user:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Trigger password reset email for a user (admin)
+// @route   POST /api/users/admin/:userId/password-reset
+// @access  Admin
+export const requestAdminPasswordReset = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot trigger password reset for privileged users' })
+    }
+
+    const mailResult = await sendPasswordResetEmail(user, { forcePasswordReset: true })
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.password_reset_requested',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Requested password reset for ${targetLabel}`,
+      metadata: {
+        targetEmail: user.email,
+        forcePasswordReset: true,
+        delivered: mailResult.delivered,
+        deliveryReason: mailResult.reason || null
+      }
+    })
+
+    res.json({
+      message: mailResult.delivered ? 'Password reset email sent.' : 'Password reset link generated, but email delivery is not configured.',
+      delivery: mailResult
+    })
+  } catch (error) {
+    console.error('Error requesting admin password reset:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }

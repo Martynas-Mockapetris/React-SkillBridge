@@ -2,10 +2,10 @@ import User from '../models/User.js'
 import { generateToken } from '../utils/jwtUtils.js'
 import { createSecureToken, hashToken, isTokenExpired } from '../utils/authTokenUtils.js'
 import { sendMail } from '../utils/mailService.js'
+import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 
 const EMAIL_VERIFICATION_TTL_MINUTES = 60 * 24
 const EMAIL_VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000
-const PASSWORD_RESET_TTL_MINUTES = 60
 const PASSWORD_RESET_REQUEST_COOLDOWN_MS = 60 * 1000
 
 const getAppBaseUrl = () => {
@@ -15,11 +15,6 @@ const getAppBaseUrl = () => {
 const buildEmailVerificationUrl = (rawToken) => {
   const baseUrl = getAppBaseUrl().replace(/\/$/, '')
   return `${baseUrl}/verify-email?token=${encodeURIComponent(rawToken)}`
-}
-
-const buildPasswordResetUrl = (rawToken) => {
-  const baseUrl = getAppBaseUrl().replace(/\/$/, '')
-  return `${baseUrl}/reset-password?token=${encodeURIComponent(rawToken)}`
 }
 
 const buildAuthUserResponse = (user, includeToken = false) => ({
@@ -62,44 +57,6 @@ const sendVerificationEmail = async (user) => {
     <p>Please verify your email address for your SkillBridge account.</p>
     <p><a href="${verificationUrl}">Verify email</a></p>
     <p>This link expires in ${EMAIL_VERIFICATION_TTL_MINUTES / 60} hours.</p>
-  `
-
-  return sendMail({
-    to: user.email,
-    subject,
-    text,
-    html
-  })
-}
-
-const sendPasswordResetEmail = async (user) => {
-  const { rawToken, tokenHash, expiresAt } = createSecureToken({
-    ttlMinutes: PASSWORD_RESET_TTL_MINUTES
-  })
-
-  user.passwordResetTokenHash = tokenHash
-  user.passwordResetTokenExpiresAt = expiresAt
-  user.passwordResetRequestedAt = new Date()
-  await user.save()
-
-  const resetUrl = buildPasswordResetUrl(rawToken)
-  const subject = 'Reset your SkillBridge password'
-  const text = [
-    `Hi ${user.firstName || 'there'},`,
-    '',
-    'We received a request to reset your SkillBridge password.',
-    `Reset link: ${resetUrl}`,
-    '',
-    `This link expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.`,
-    'If you did not request this, you can ignore this email.'
-  ].join('\n')
-
-  const html = `
-    <p>Hi ${user.firstName || 'there'},</p>
-    <p>We received a request to reset your SkillBridge password.</p>
-    <p><a href="${resetUrl}">Reset password</a></p>
-    <p>This link expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.</p>
-    <p>If you did not request this, you can ignore this email.</p>
   `
 
   return sendMail({

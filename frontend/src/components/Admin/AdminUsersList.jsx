@@ -1,6 +1,6 @@
-import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport } from 'react-icons/fa'
+import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport, FaKey } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
-import { getAdminUsers, toggleUserLock, updateAdminUser, deleteAdminUser } from '../../services/userService'
+import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
 import AdminLockUserModal from '../../modal/AdminLockUserModal'
 import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
@@ -35,6 +35,7 @@ const AdminUsersList = () => {
   const canUpdateUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_UPDATE)
   const canLockUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_LOCK)
   const canDeleteUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_DELETE)
+  const canResetUsers = canUpdateUsers
 
   const fetchUsers = async () => {
     try {
@@ -78,6 +79,8 @@ const AdminUsersList = () => {
     if (status === 'Inactive') return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
     return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
   }
+
+  const isPrivilegedUser = (user) => ['admin', 'moderator', 'blogger', 'config_manager'].includes(user.userType)
 
   useEffect(() => {
     setCurrentPage(1)
@@ -161,6 +164,20 @@ const AdminUsersList = () => {
       fetchUsers()
     } catch (error) {
       alert(`Failed to delete user: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
+  const handlePasswordReset = async (user) => {
+    const confirmed = window.confirm(`Send a password reset email to ${user.firstName} ${user.lastName}?`)
+
+    if (!confirmed) return
+
+    try {
+      const response = await requestAdminPasswordReset(user._id)
+      alert(response.message || 'Password reset email sent.')
+      await fetchUsers()
+    } catch (error) {
+      alert(`Failed to request password reset: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -431,6 +448,12 @@ const AdminUsersList = () => {
                           title={user.isLocked ? 'Unlock user' : 'Lock user'}
                           className='text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200'>
                           <FaLock className='w-4 h-4' />
+                        </button>
+                      )}
+
+                      {canResetUsers && !isPrivilegedUser(user) && (
+                        <button onClick={() => handlePasswordReset(user)} title='Send password reset email' className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
+                          <FaKey className='w-4 h-4' />
                         </button>
                       )}
 
