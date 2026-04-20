@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
@@ -13,6 +14,7 @@ import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getUserMessages } from '../services/messageService'
 import { calculateProfileCompleteness } from '../utils/profileCompleteness'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
+import { requestEmailVerification as requestEmailVerificationService } from '../services/authService'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { hasAdminPanelAccess, getAdminRoleLabel, isFullAdmin } from '../utils/accessRoles'
@@ -21,12 +23,13 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
   const [messages, setMessages] = useState([])
   const [messagesLoading, setMessagesLoading] = useState(false)
-  const { currentUser } = useAuth()
+  const { currentUser, getUserProfile } = useAuth()
   const [ratings, setRatings] = useState(null)
   const [ratingStats, setRatingStats] = useState(null)
   const [ratingsLoading, setRatingsLoading] = useState(false)
   const navigate = useNavigate()
   const profileCompleteness = calculateProfileCompleteness(currentUser)
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -155,6 +158,25 @@ const Profile = () => {
     setActiveTab('freelance')
   }
 
+  const handleResendVerification = async () => {
+    try {
+      setIsResendingVerification(true)
+      const response = await requestEmailVerificationService()
+      toast.success(response.message || 'Verification email sent.')
+
+      try {
+        await getUserProfile()
+      } catch (profileError) {
+        console.warn('Failed to refresh profile after resending verification email:', profileError)
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to resend verification email.'
+      toast.error(message)
+    } finally {
+      setIsResendingVerification(false)
+    }
+  }
+
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
@@ -182,6 +204,45 @@ const Profile = () => {
                     <dd>{currentUser.lockExpiresAt ? `${new Date(currentUser.lockExpiresAt).toLocaleString()} · ${getLockCountdown(currentUser.lockExpiresAt)}` : 'Manual admin review required'}</dd>
                   </div>
                 </dl>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        {/* Email Verification Banner */}
+        {currentUser?.isEmailVerified ? (
+          <motion.div className='mb-6 p-5 rounded-lg border border-green-200 bg-green-50 dark:border-green-800/60 dark:bg-green-900/20'>
+            <div className='flex items-start gap-3'>
+              <FaCheckCircle className='text-green-600 dark:text-green-300 mt-1' />
+              <div className='flex-1'>
+                <p className='font-semibold text-green-700 dark:text-green-200 mb-1'>Email Verified</p>
+                <p className='text-sm text-green-600 dark:text-green-300'>Your account email has been verified{currentUser.emailVerifiedAt ? ` on ${new Date(currentUser.emailVerifiedAt).toLocaleString()}` : ''}.</p>
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div className='mb-6 p-5 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-900/20'>
+            <div className='flex items-start gap-3'>
+              <FaExclamationTriangle className='text-amber-600 dark:text-amber-300 mt-1' />
+              <div className='flex-1'>
+                <p className='font-semibold text-amber-700 dark:text-amber-200 mb-1'>Email Not Verified</p>
+                <p className='text-sm text-amber-700 dark:text-amber-300 mb-4'>Verify your email address to complete account verification and make account recovery more reliable.</p>
+
+                <div className='flex flex-wrap gap-3'>
+                  <button
+                    type='button'
+                    onClick={handleResendVerification}
+                    disabled={isResendingVerification}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isResendingVerification ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'}`}>
+                    {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
+                  </button>
+
+                  <button
+                    type='button'
+                    onClick={() => navigate('/verify-email')}
+                    className='px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors'>
+                    Open Verification Page
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -219,7 +280,6 @@ const Profile = () => {
             )}
           </div>
         </motion.div>
-
         {/* Navigation Tabs */}
         <motion.div className='flex flex-wrap gap-2 border-b dark:border-light/10 border-primary/10 mb-8' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
           {tabs.map((tab, index) => (
@@ -237,7 +297,6 @@ const Profile = () => {
             </motion.button>
           ))}
         </motion.div>
-
         {/* Content Area */}
         <AnimatePresence mode='wait'>
           <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
