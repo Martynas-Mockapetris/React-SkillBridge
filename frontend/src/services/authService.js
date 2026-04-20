@@ -30,6 +30,12 @@ export const forgotPassword = async (email) => {
   return response.data
 }
 
+// Reset password
+export const resetPassword = async ({ token, password }) => {
+  const response = await axios.post(`${API_URL}/reset-password`, { token, password })
+  return response.data
+}
+
 // Logout user
 export const logout = () => {
   localStorage.removeItem('user')
