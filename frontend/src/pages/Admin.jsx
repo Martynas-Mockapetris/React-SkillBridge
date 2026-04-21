@@ -93,7 +93,7 @@ const Admin = () => {
               </ol>
             </nav>
 
-            {activeSection === 'dashboard' && canAccessAdminSection(currentUser, 'dashboard') && <AdminStats />}
+            {activeSection === 'dashboard' && canAccessAdminSection(currentUser, 'dashboard') && <AdminStats onOpenSection={setActiveSection} />}
             {activeSection === 'users' && canAccessAdminSection(currentUser, 'users') && <AdminUsersList />}
             {activeSection === 'projects' && canAccessAdminSection(currentUser, 'projects') && <AdminProjectsList />}
             {activeSection === 'announcements' && canAccessAdminSection(currentUser, 'announcements') && <AdminAnnouncementsList />}
