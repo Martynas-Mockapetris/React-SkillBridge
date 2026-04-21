@@ -440,7 +440,7 @@ const AdminUsersList = () => {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan='9' className='px-6 py-4 text-center text-gray-500'>
+                  <td colSpan='9' className='px-6 py-4 text-center text-red-500'>
                     {error}
                   </td>
                 </tr>

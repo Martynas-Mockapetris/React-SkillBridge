@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FaExclamationTriangle, FaShieldAlt, FaUserLock, FaUserClock, FaProjectDiagram } from 'react-icons/fa'
+import { FaExclamationTriangle, FaShieldAlt, FaUserLock, FaUserClock, FaProjectDiagram, FaCheckCircle, FaKey } from 'react-icons/fa'
 
 const severityStyles = {
   critical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
@@ -28,7 +28,13 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
 
   const summary = alertSummary || { total: 0, critical: 0, warning: 0, info: 0 }
   const list = Array.isArray(alerts) ? alerts : []
-  const signals = healthSignals || { lockedUsers: 0, inactiveUsers: 0, stalledProjects: 0 }
+  const signals = healthSignals || {
+    lockedUsers: 0,
+    inactiveUsers: 0,
+    unverifiedUsers: 0,
+    passwordResetRequiredUsers: 0,
+    stalledProjects: 0
+  }
 
   return (
     <motion.section className='mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6' initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
@@ -73,6 +79,8 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
         <div className='space-y-3'>
           <HealthCard label='Locked Users' value={signals.lockedUsers || 0} icon={<FaUserLock />} />
           <HealthCard label='Inactive Users (14+ d)' value={signals.inactiveUsers || 0} icon={<FaUserClock />} />
+          <HealthCard label='Unverified Users' value={signals.unverifiedUsers || 0} icon={<FaCheckCircle />} />
+          <HealthCard label='Password Reset Required' value={signals.passwordResetRequiredUsers || 0} icon={<FaKey />} />
           <HealthCard label='Stalled Projects (14+ d)' value={signals.stalledProjects || 0} icon={<FaProjectDiagram />} />
         </div>
       </div>

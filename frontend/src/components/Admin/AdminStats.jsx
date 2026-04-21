@@ -26,6 +26,8 @@ const defaultStats = {
   healthSignals: {
     lockedUsers: 0,
     inactiveUsers: 0,
+    unverifiedUsers: 0,
+    passwordResetRequiredUsers: 0,
     stalledProjects: 0
   },
   kpis: {

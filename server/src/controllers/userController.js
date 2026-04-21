@@ -367,6 +367,15 @@ export const getAdminDashboardStats = async (req, res) => {
       lastLogin: { $ne: null, $lt: twoWeeksAgo }
     })
 
+    const unverifiedUsers = await User.countDocuments({
+      userType: { $ne: 'admin' },
+      isEmailVerified: false
+    })
+
+    const passwordResetRequiredUsers = await User.countDocuments({
+      forcePasswordReset: true
+    })
+
     const stalledProjects = await Project.countDocuments({
       status: { $in: activeStatuses },
       updatedAt: { $lt: twoWeeksAgo }
@@ -401,6 +410,26 @@ export const getAdminDashboardStats = async (req, res) => {
         title: 'Stalled active projects',
         message: `${stalledProjects} active projects not updated in 14+ days.`,
         metric: stalledProjects
+      })
+    }
+
+    if (unverifiedUsers >= 10) {
+      alerts.push({
+        id: 'unverified-users',
+        severity: unverifiedUsers >= 25 ? 'critical' : 'warning',
+        title: 'High number of unverified users',
+        message: `${unverifiedUsers} non-admin users still have not verified their email.`,
+        metric: unverifiedUsers
+      })
+    }
+
+    if (passwordResetRequiredUsers >= 5) {
+      alerts.push({
+        id: 'password-reset-required-users',
+        severity: passwordResetRequiredUsers >= 15 ? 'critical' : 'warning',
+        title: 'Users still need password reset',
+        message: `${passwordResetRequiredUsers} users are marked as requiring a password reset.`,
+        metric: passwordResetRequiredUsers
       })
     }
 
@@ -444,6 +473,8 @@ export const getAdminDashboardStats = async (req, res) => {
       healthSignals: {
         lockedUsers,
         inactiveUsers,
+        unverifiedUsers,
+        passwordResetRequiredUsers,
         stalledProjects
       }
     })
