@@ -1,4 +1,4 @@
-import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport, FaKey } from 'react-icons/fa'
+import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport, FaKey, FaCheckCircle, FaClock } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
@@ -79,6 +79,28 @@ const AdminUsersList = () => {
     if (status === 'Inactive') return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
     return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
   }
+
+  const getVerificationMeta = (user) => {
+    if (user?.isEmailVerified) {
+      return {
+        label: 'Verified',
+        icon: <FaCheckCircle className='w-4 h-4 text-green-600 dark:text-green-400' />,
+        sortValue: 1
+      }
+    }
+
+    return {
+      label: 'Pending',
+      icon: <FaClock className='w-4 h-4 text-amber-500 dark:text-amber-400' />,
+      sortValue: 0
+    }
+  }
+
+  const toggleVerificationSort = () => {
+    setSortConfig((prev) => (prev === 'isEmailVerified:desc' ? 'isEmailVerified:asc' : 'isEmailVerified:desc'))
+  }
+
+  const verificationSortLabel = sortConfig === 'isEmailVerified:desc' ? 'Verified first' : sortConfig === 'isEmailVerified:asc' ? 'Pending first' : 'Sort by verification'
 
   const isPrivilegedUser = (user) => ['admin', 'moderator', 'blogger', 'config_manager'].includes(user.userType)
 
@@ -252,11 +274,12 @@ const AdminUsersList = () => {
 
   // Export to CSV
   const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Role', 'Status', 'Subscription', 'Join Date']
+    const headers = ['Verification', 'Name', 'Email', 'Role', 'Status', 'Subscription', 'Join Date']
 
     const escapeCSV = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`
 
     const data = users.map((user) => [
+      user.isEmailVerified ? 'Verified' : 'Pending',
       `${user.firstName || ''} ${user.lastName || ''}`.trim(),
       user.email || '',
       user.userType || '',
@@ -346,6 +369,18 @@ const AdminUsersList = () => {
             ))}
           </select>
 
+          <select
+            value={sortConfig}
+            onChange={(e) => setSortConfig(e.target.value)}
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value='createdAt:desc'>Newest First</option>
+            <option value='createdAt:asc'>Oldest First</option>
+            <option value='lastLogin:desc'>Recent Login First</option>
+            <option value='lastLogin:asc'>Oldest Login First</option>
+            <option value='isEmailVerified:desc'>Verified First</option>
+            <option value='isEmailVerified:asc'>Pending First</option>
+          </select>
+
           <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300'>
             <span>Show</span>
             <select
@@ -382,6 +417,11 @@ const AdminUsersList = () => {
                 <th className='px-6 py-3 w-4 text-center'>
                   <input type='checkbox' onChange={handleSelectAll} checked={users.length > 0 && selectedUsers.length === users.length} className='rounded border-gray-300 text-accent focus:ring-accent' />
                 </th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>
+                  <button type='button' onClick={toggleVerificationSort} className='inline-flex items-center gap-2 hover:text-accent transition-colors' title={verificationSortLabel}>
+                    <span>Verification</span>
+                  </button>
+                </th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Name</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Email</th>
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider'>Role</th>
@@ -394,19 +434,19 @@ const AdminUsersList = () => {
             <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
               {loading ? (
                 <tr>
-                  <td colSpan='8' className='px-6 py-4 text-center text-gray-500'>
+                  <td colSpan='9' className='px-6 py-4 text-center text-gray-500'>
                     Loading users...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan='8' className='px-6 py-4 text-center text-red-500'>
+                  <td colSpan='9' className='px-6 py-4 text-center text-gray-500'>
                     {error}
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan='8' className='px-6 py-4 text-center text-gray-500'>
+                  <td colSpan='9' className='px-6 py-4 text-center text-gray-500'>
                     No users found
                   </td>
                 </tr>
@@ -415,6 +455,17 @@ const AdminUsersList = () => {
                   <tr key={user._id}>
                     <td className='px-6 py-4 w-4 text-center'>
                       <input type='checkbox' checked={selectedUsers.includes(user._id)} onChange={() => handleSelectUser(user._id)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>
+                      {(() => {
+                        const verification = getVerificationMeta(user)
+                        return (
+                          <div className='flex items-center gap-2' title={verification.label}>
+                            {verification.icon}
+                            <span className='hidden sm:inline'>{verification.label}</span>
+                          </div>
+                        )
+                      })()}
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 cursor-pointer' onClick={() => openDetailsModal(user)}>
                       {user.firstName} {user.lastName}

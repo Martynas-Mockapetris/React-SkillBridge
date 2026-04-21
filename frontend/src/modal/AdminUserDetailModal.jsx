@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { FaCheckCircle, FaClock, FaKey } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
 const fieldClass = 'text-sm text-gray-600 dark:text-gray-300'
@@ -10,6 +11,24 @@ const InfoRow = ({ label, value }) => (
     <p className={fieldClass}>{value || '—'}</p>
   </div>
 )
+
+const VerificationBadge = ({ isVerified }) => {
+  if (isVerified) {
+    return (
+      <div className='inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+        <FaCheckCircle className='w-4 h-4' />
+        <span>Verified</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className='inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'>
+      <FaClock className='w-4 h-4' />
+      <span>Pending</span>
+    </div>
+  )
+}
 
 const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
   const navigate = useNavigate()
@@ -28,6 +47,13 @@ const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
       ]
     : [{ label: 'Status', value: 'Active' }]
 
+  const verificationInfo = [
+    { label: 'Verification Status', value: user.isEmailVerified ? 'Verified' : 'Pending' },
+    { label: 'Verified At', value: user.emailVerifiedAt ? new Date(user.emailVerifiedAt).toLocaleString() : 'Not verified yet' },
+    { label: 'Forced Password Reset', value: user.forcePasswordReset ? 'Required' : 'No' },
+    { label: 'Forced Reset Set At', value: user.forcePasswordResetSetAt ? new Date(user.forcePasswordResetSetAt).toLocaleString() : '—' }
+  ]
+
   return (
     <AnimatePresence>
       <motion.div className='fixed inset-0 bg-black/70 backdrop-blur z-50 flex items-center justify-center px-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -42,7 +68,17 @@ const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
               <h2 className='text-2xl font-semibold text-gray-900 dark:text-white'>
                 {user.firstName} {user.lastName}
               </h2>
+              <div className='mt-2 flex items-center gap-3'>
+                <VerificationBadge isVerified={user.isEmailVerified} />
+                {user.forcePasswordReset && (
+                  <div className='inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
+                    <FaKey className='w-4 h-4' />
+                    <span>Password Reset Required</span>
+                  </div>
+                )}
+              </div>
             </div>
+
             <button onClick={onClose} className='text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl leading-none'>
               &times;
             </button>
@@ -68,6 +104,13 @@ const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
               <InfoRow label='Hourly Rate' value={user.hourlyRate ? `$${user.hourlyRate}` : null} />
               <InfoRow label='Experience' value={user.experienceLevel} />
               <InfoRow label='Skills' value={user.skills} />
+            </div>
+
+            <div className='space-y-4'>
+              <h3 className='text-sm font-semibold text-gray-900 dark:text-white'>Verification & Recovery</h3>
+              {verificationInfo.map((item) => (
+                <InfoRow key={item.label} label={item.label} value={item.value} />
+              ))}
             </div>
 
             <div className='space-y-4'>
