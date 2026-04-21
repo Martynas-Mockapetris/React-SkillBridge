@@ -26,17 +26,38 @@ const HealthCard = ({ label, value, icon, actionLabel, onAction }) => (
 const getAlertAction = (alertId, onOpenSection) => {
   if (!onOpenSection) return null
 
-  if (['locked-users', 'inactive-users', 'unverified-users', 'password-reset-required-users'].includes(alertId)) {
+  if (alertId === 'locked-users') {
     return {
-      label: 'Review users',
-      onClick: () => onOpenSection('users')
+      label: 'Review locked users',
+      onClick: () => onOpenSection('users', { status: 'locked' })
+    }
+  }
+
+  if (alertId === 'inactive-users') {
+    return {
+      label: 'Review inactive users',
+      onClick: () => onOpenSection('users', { status: 'inactive' })
+    }
+  }
+
+  if (alertId === 'unverified-users') {
+    return {
+      label: 'Review unverified users',
+      onClick: () => onOpenSection('users', { verification: 'unverified' })
+    }
+  }
+
+  if (alertId === 'password-reset-required-users') {
+    return {
+      label: 'Review reset-required users',
+      onClick: () => onOpenSection('users', { passwordResetRequired: 'true' })
     }
   }
 
   if (alertId === 'stalled-projects') {
     return {
-      label: 'Review projects',
-      onClick: () => onOpenSection('projects')
+      label: 'Review stalled projects',
+      onClick: () => onOpenSection('projects', { stalled: 'true' })
     }
   }
 
@@ -122,11 +143,29 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals, onOp
         </div>
 
         <div className='space-y-3'>
-          <HealthCard label='Locked Users' value={signals.lockedUsers || 0} icon={<FaUserLock />} actionLabel='Open users' onAction={() => onOpenSection?.('users')} />
-          <HealthCard label='Inactive Users (14+ d)' value={signals.inactiveUsers || 0} icon={<FaUserClock />} actionLabel='Open users' onAction={() => onOpenSection?.('users')} />
-          <HealthCard label='Unverified Users' value={signals.unverifiedUsers || 0} icon={<FaCheckCircle />} actionLabel='Open users' onAction={() => onOpenSection?.('users')} />
-          <HealthCard label='Password Reset Required' value={signals.passwordResetRequiredUsers || 0} icon={<FaKey />} actionLabel='Open users' onAction={() => onOpenSection?.('users')} />
-          <HealthCard label='Stalled Projects (14+ d)' value={signals.stalledProjects || 0} icon={<FaProjectDiagram />} actionLabel='Open projects' onAction={() => onOpenSection?.('projects')} />
+          <HealthCard label='Locked Users' value={signals.lockedUsers || 0} icon={<FaUserLock />} actionLabel='Open locked users' onAction={() => onOpenSection?.('users', { status: 'locked' })} />
+          <HealthCard label='Inactive Users (14+ d)' value={signals.inactiveUsers || 0} icon={<FaUserClock />} actionLabel='Open inactive users' onAction={() => onOpenSection?.('users', { status: 'inactive' })} />
+          <HealthCard
+            label='Unverified Users'
+            value={signals.unverifiedUsers || 0}
+            icon={<FaCheckCircle />}
+            actionLabel='Open unverified users'
+            onAction={() => onOpenSection?.('users', { verification: 'unverified' })}
+          />
+          <HealthCard
+            label='Password Reset Required'
+            value={signals.passwordResetRequiredUsers || 0}
+            icon={<FaKey />}
+            actionLabel='Open reset-required users'
+            onAction={() => onOpenSection?.('users', { passwordResetRequired: 'true' })}
+          />
+          <HealthCard
+            label='Stalled Projects (14+ d)'
+            value={signals.stalledProjects || 0}
+            icon={<FaProjectDiagram />}
+            actionLabel='Open stalled projects'
+            onAction={() => onOpenSection?.('projects', { stalled: 'true' })}
+          />
         </div>
       </div>
     </motion.section>

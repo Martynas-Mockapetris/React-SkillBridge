@@ -1,5 +1,5 @@
 import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport, FaKey, FaCheckCircle, FaClock } from 'react-icons/fa'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
 import AdminLockUserModal from '../../modal/AdminLockUserModal'
@@ -9,7 +9,7 @@ import PaginationControls from '../shared/PaginationControls'
 import { useAuth } from '../../context/AuthContext'
 import { ADMIN_PERMISSIONS, hasAdminPermission } from '../../utils/accessRoles'
 
-const AdminUsersList = () => {
+const AdminUsersList = ({ navigationRequest }) => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -36,8 +36,13 @@ const AdminUsersList = () => {
   const canLockUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_LOCK)
   const canDeleteUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_DELETE)
   const canResetUsers = canUpdateUsers
+  const [selectedVerification, setSelectedVerification] = useState('')
+  const [selectedPasswordResetRequired, setSelectedPasswordResetRequired] = useState('')
+  const latestUsersFetchRef = useRef(0)
 
   const fetchUsers = async () => {
+    const fetchId = ++latestUsersFetchRef.current
+
     try {
       setLoading(true)
       setError(null)
@@ -46,19 +51,27 @@ const AdminUsersList = () => {
         search: searchQuery,
         role: selectedRole,
         status: selectedStatus,
+        verification: selectedVerification,
+        passwordResetRequired: selectedPasswordResetRequired,
         page: currentPage,
         limit: pageSize,
         sort: sortConfig
       })
 
+      if (fetchId !== latestUsersFetchRef.current) return
+
       setUsers(data.users)
       setTotal(data.total)
       setTotalPages(Math.max(1, data.pages || 1))
     } catch (err) {
+      if (fetchId !== latestUsersFetchRef.current) return
+
       console.error('Error fetching users:', err)
       setError('Failed to load users')
     } finally {
-      setLoading(false)
+      if (fetchId === latestUsersFetchRef.current) {
+        setLoading(false)
+      }
     }
   }
 
@@ -106,7 +119,21 @@ const AdminUsersList = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedRole, selectedStatus, sortConfig, pageSize])
+  }, [searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, sortConfig, pageSize])
+
+  useEffect(() => {
+    if (!navigationRequest || navigationRequest.section !== 'users') return
+
+    const filters = navigationRequest.filters || {}
+
+    setSearchQuery(filters.search || '')
+    setSelectedRole(filters.role || '')
+    setSelectedStatus(filters.status || '')
+    setSelectedVerification(filters.verification || '')
+    setSelectedPasswordResetRequired(filters.passwordResetRequired || '')
+    setSortConfig(filters.sort || 'createdAt:desc')
+    setCurrentPage(1)
+  }, [navigationRequest])
 
   useEffect(() => {
     if (totalPages >= 1 && currentPage > totalPages) {
@@ -116,7 +143,7 @@ const AdminUsersList = () => {
 
   useEffect(() => {
     fetchUsers()
-  }, [currentPage, searchQuery, selectedRole, selectedStatus, sortConfig, pageSize])
+  }, [currentPage, searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, sortConfig, pageSize])
 
   const openLockModal = (user) => {
     setLockingUser(user)
@@ -370,6 +397,24 @@ const AdminUsersList = () => {
           </select>
 
           <select
+            value={selectedVerification}
+            onChange={(e) => setSelectedVerification(e.target.value)}
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value=''>All Verification</option>
+            <option value='verified'>Verified</option>
+            <option value='unverified'>Unverified</option>
+          </select>
+
+          <select
+            value={selectedPasswordResetRequired}
+            onChange={(e) => setSelectedPasswordResetRequired(e.target.value)}
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value=''>All Recovery States</option>
+            <option value='true'>Password Reset Required</option>
+            <option value='false'>No Forced Reset</option>
+          </select>
+
+          <select
             value={sortConfig}
             onChange={(e) => setSortConfig(e.target.value)}
             className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
@@ -400,6 +445,8 @@ const AdminUsersList = () => {
               setSearchQuery('')
               setSelectedRole('')
               setSelectedStatus('')
+              setSelectedVerification('')
+              setSelectedPasswordResetRequired('')
               setSortConfig('createdAt:desc')
             }}
             className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>

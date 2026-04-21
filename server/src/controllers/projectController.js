@@ -211,12 +211,13 @@ const getAllProjects = async (req, res) => {
 // @access  Admin
 const getAdminAllProjects = async (req, res) => {
   try {
-    const { search = '', status = '', category = '', priority = '', startDate = '', endDate = '', page = 1, limit = 30, sort = 'createdAt:desc' } = req.query
+    const { search = '', status = '', category = '', priority = '', startDate = '', endDate = '', stalled = '', page = 1, limit = 30, sort = 'createdAt:desc' } = req.query
 
     const pageNumber = Math.max(Number(page) || 1, 1)
     const pageSize = Math.min(Math.max(Number(limit) || 30, 1), 200)
 
     const query = {}
+    const activeStatuses = ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
 
     if (status) query.status = status
     if (category) query.category = category
@@ -226,6 +227,14 @@ const getAdminAllProjects = async (req, res) => {
       query.deadline = {}
       if (startDate) query.deadline.$gte = new Date(startDate)
       if (endDate) query.deadline.$lte = new Date(endDate)
+    }
+
+    if (stalled === 'true') {
+      if (!status) {
+        query.status = { $in: activeStatuses }
+      }
+
+      query.updatedAt = { $lt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) }
     }
 
     if (search) {

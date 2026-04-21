@@ -38,9 +38,24 @@ const Admin = () => {
   const { currentUser } = useAuth()
   const [activeSection, setActiveSection] = useState('dashboard')
   const [activeSettingsSection, setActiveSettingsSection] = useState('home.hero')
+  const [adminSectionRequest, setAdminSectionRequest] = useState(null)
 
   const availableSections = useMemo(() => getAdminSections(currentUser), [currentUser])
   const defaultSection = useMemo(() => getDefaultAdminSection(currentUser), [currentUser])
+
+  const handleSetActiveSection = (section) => {
+    setActiveSection(section)
+    setAdminSectionRequest(null)
+  }
+
+  const handleOpenSection = (section, filters = {}) => {
+    setActiveSection(section)
+    setAdminSectionRequest({
+      section,
+      filters,
+      requestId: Date.now()
+    })
+  }
 
   useEffect(() => {
     if (!defaultSection) {
@@ -49,6 +64,7 @@ const Admin = () => {
 
     if (!canAccessAdminSection(currentUser, activeSection)) {
       setActiveSection(defaultSection)
+      setAdminSectionRequest(null)
     }
   }, [currentUser, activeSection, defaultSection])
 
@@ -66,7 +82,7 @@ const Admin = () => {
 
   return (
     <div className='flex min-h-[calc(100vh-68px)] bg-gray-100 dark:bg-gray-900 pt-[68px]'>
-      <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} activeSettingsSection={activeSettingsSection} setActiveSettingsSection={setActiveSettingsSection} />
+      <AdminSidebar activeSection={activeSection} setActiveSection={handleSetActiveSection} activeSettingsSection={activeSettingsSection} setActiveSettingsSection={setActiveSettingsSection} />
 
       <div className='flex-1 min-w-0 flex flex-col'>
         <AdminHeader activeSection={activeSection} />
@@ -93,9 +109,9 @@ const Admin = () => {
               </ol>
             </nav>
 
-            {activeSection === 'dashboard' && canAccessAdminSection(currentUser, 'dashboard') && <AdminStats onOpenSection={setActiveSection} />}
-            {activeSection === 'users' && canAccessAdminSection(currentUser, 'users') && <AdminUsersList />}
-            {activeSection === 'projects' && canAccessAdminSection(currentUser, 'projects') && <AdminProjectsList />}
+            {activeSection === 'dashboard' && canAccessAdminSection(currentUser, 'dashboard') && <AdminStats onOpenSection={handleOpenSection} />}
+            {activeSection === 'users' && canAccessAdminSection(currentUser, 'users') && <AdminUsersList navigationRequest={adminSectionRequest} />}
+            {activeSection === 'projects' && canAccessAdminSection(currentUser, 'projects') && <AdminProjectsList navigationRequest={adminSectionRequest} />}
             {activeSection === 'announcements' && canAccessAdminSection(currentUser, 'announcements') && <AdminAnnouncementsList />}
             {activeSection === 'blog' && canAccessAdminSection(currentUser, 'blog') && <AdminBlogPostsList />}
             {activeSection === 'settings' && canAccessAdminSection(currentUser, 'settings') && <AdminSettings activeSectionId={activeSettingsSection} />}

@@ -703,7 +703,7 @@ export const getAdminUserAnnouncements = async (req, res) => {
 // @access  Admin
 export const getAdminUsers = async (req, res) => {
   try {
-    const { search = '', role = '', status = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
+    const { search = '', role = '', status = '', verification = '', passwordResetRequired = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
 
     const query = {}
 
@@ -715,6 +715,23 @@ export const getAdminUsers = async (req, res) => {
     // Filter by userType
     if (role) {
       query.userType = role
+    }
+
+    // Filter by email verification status
+    if (verification === 'verified') {
+      query.isEmailVerified = true
+    }
+
+    if (verification === 'unverified') {
+      query.isEmailVerified = false
+    }
+
+    if (passwordResetRequired === 'true') {
+      query.forcePasswordReset = true
+    }
+
+    if (passwordResetRequired === 'false') {
+      query.forcePasswordReset = false
     }
 
     // Filter by status (Active / Inactive / Locked)

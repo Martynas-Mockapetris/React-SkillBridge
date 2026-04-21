@@ -1,5 +1,5 @@
 import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye } from 'react-icons/fa'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
@@ -31,7 +31,7 @@ const TeamAvatars = ({ team }) => (
   </div>
 )
 
-const AdminProjectsList = () => {
+const AdminProjectsList = ({ navigationRequest }) => {
   // State
   const [selectedStatus, setSelectedStatus] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
@@ -41,6 +41,8 @@ const AdminProjectsList = () => {
     start: '',
     end: ''
   })
+  const [stalledOnly, setStalledOnly] = useState(false)
+  const latestProjectsFetchRef = useRef(0)
   const [sortBy, setSortBy] = useState('createdAt:desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(30)
@@ -111,6 +113,8 @@ const AdminProjectsList = () => {
   const canCreateProjects = isFullAdmin(currentUser)
 
   const fetchProjects = async () => {
+    const fetchId = ++latestProjectsFetchRef.current
+
     try {
       setLoading(true)
       setError(null)
@@ -122,14 +126,16 @@ const AdminProjectsList = () => {
         priority: selectedPriority === 'All' ? '' : selectedPriority,
         startDate: dateRange.start,
         endDate: dateRange.end,
+        stalled: stalledOnly ? 'true' : '',
         page: currentPage,
         limit: pageSize,
         sort: sortBy
       })
 
+      if (fetchId !== latestProjectsFetchRef.current) return
+
       const data = response.projects || []
 
-      // Map backend project shape to current card UI shape
       const mapped = data.map((project) => ({
         id: project._id,
         name: project.title || 'Untitled project',
@@ -169,10 +175,14 @@ const AdminProjectsList = () => {
       setSummaryCounts(response.summaryCounts || { total: 0, active: 0, in_progress: 0, under_review: 0, completed: 0, cancelled: 0 })
       setFilterOptions(response.filterOptions || { statuses: [], categories: [], priorities: [] })
     } catch (err) {
+      if (fetchId !== latestProjectsFetchRef.current) return
+
       console.error('Error fetching admin projects:', err)
       setError('Failed to load projects')
     } finally {
-      setLoading(false)
+      if (fetchId === latestProjectsFetchRef.current) {
+        setLoading(false)
+      }
     }
   }
 
@@ -385,6 +395,7 @@ const AdminProjectsList = () => {
     setSelectedCategory('All')
     setPriority('All')
     setDateRange({ start: '', end: '' })
+    setStalledOnly(false)
     setSearchQuery('')
     setSortBy('createdAt:desc')
     setCurrentPage(1)
@@ -404,7 +415,22 @@ const AdminProjectsList = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery, sortBy, pageSize])
+  }, [selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, stalledOnly, searchQuery, sortBy, pageSize])
+
+  useEffect(() => {
+    if (!navigationRequest || navigationRequest.section !== 'projects') return
+
+    const filters = navigationRequest.filters || {}
+
+    setSearchQuery(filters.search || '')
+    setSelectedStatus(filters.status || 'All')
+    setSelectedCategory(filters.category || 'All')
+    setPriority(filters.priority || 'All')
+    setDateRange({ start: '', end: '' })
+    setStalledOnly(filters.stalled === 'true')
+    setSortBy(filters.sort || 'createdAt:desc')
+    setCurrentPage(1)
+  }, [navigationRequest])
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -414,7 +440,7 @@ const AdminProjectsList = () => {
 
   useEffect(() => {
     fetchProjects()
-  }, [currentPage, pageSize, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery, sortBy])
+  }, [currentPage, pageSize, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, stalledOnly, searchQuery, sortBy])
 
   return (
     <div>
@@ -503,6 +529,10 @@ const AdminProjectsList = () => {
               onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
               className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
             />
+            <label className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-700'>
+              <input type='checkbox' checked={stalledOnly} onChange={(e) => setStalledOnly(e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+              <span className='text-sm text-gray-700 dark:text-gray-200'>Stalled only</span>
+            </label>
           </div>
           <button onClick={clearFilters} className='flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'>
             <FaFilter className='w-4 h-4' />
