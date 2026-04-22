@@ -7,6 +7,28 @@ const severityStyles = {
   info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
 }
 
+const QueueSummaryCard = ({ label, value, tone = 'neutral', onClick }) => {
+  const toneClass =
+    tone === 'critical'
+      ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300'
+      : tone === 'warning'
+        ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300'
+        : 'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-200'
+
+  return (
+    <button type='button' onClick={onClick} className={`rounded-lg border p-4 text-left transition-colors hover:border-accent/40 hover:bg-accent/5 ${toneClass}`}>
+      <p className='text-xs font-semibold uppercase tracking-wide opacity-80'>{label}</p>
+      <div className='mt-2 flex items-center justify-between gap-3'>
+        <span className='text-2xl font-bold'>{value}</span>
+        <span className='inline-flex items-center gap-2 text-xs font-medium text-accent'>
+          <span>Open</span>
+          <FaArrowRight className='w-3 h-3' />
+        </span>
+      </div>
+    </button>
+  )
+}
+
 const HealthCard = ({ label, value, icon, actionLabel, onAction }) => (
   <div className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4'>
     <div className='flex items-center justify-between'>
@@ -64,6 +86,44 @@ const getAlertAction = (alertId, onOpenSection) => {
   return null
 }
 
+const getQueueSummaryCards = (signals, onOpenSection) => [
+  {
+    key: 'locked-users',
+    label: 'Locked Users',
+    value: signals.lockedUsers || 0,
+    tone: (signals.lockedUsers || 0) >= 15 ? 'critical' : (signals.lockedUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { status: 'locked' })
+  },
+  {
+    key: 'inactive-users',
+    label: 'Inactive Users',
+    value: signals.inactiveUsers || 0,
+    tone: (signals.inactiveUsers || 0) >= 50 ? 'critical' : (signals.inactiveUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { status: 'inactive' })
+  },
+  {
+    key: 'unverified-users',
+    label: 'Unverified Users',
+    value: signals.unverifiedUsers || 0,
+    tone: (signals.unverifiedUsers || 0) >= 25 ? 'critical' : (signals.unverifiedUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { verification: 'unverified' })
+  },
+  {
+    key: 'password-reset-required-users',
+    label: 'Reset Required',
+    value: signals.passwordResetRequiredUsers || 0,
+    tone: (signals.passwordResetRequiredUsers || 0) >= 15 ? 'critical' : (signals.passwordResetRequiredUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { passwordResetRequired: 'true' })
+  },
+  {
+    key: 'stalled-projects',
+    label: 'Stalled Projects',
+    value: signals.stalledProjects || 0,
+    tone: (signals.stalledProjects || 0) >= 15 ? 'critical' : (signals.stalledProjects || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('projects', { stalled: 'true' })
+  }
+]
+
 const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals, onOpenSection }) => {
   if (isLoading) {
     return (
@@ -82,6 +142,7 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals, onOp
     passwordResetRequiredUsers: 0,
     stalledProjects: 0
   }
+  const queueSummaryCards = getQueueSummaryCards(signals, onOpenSection)
 
   return (
     <motion.section className='mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6' initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
@@ -99,6 +160,12 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals, onOp
             <span className='px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'>Critical: {summary.critical}</span>
             <span className='px-2 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'>Warning: {summary.warning}</span>
           </div>
+        </div>
+
+        <div className='mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'>
+          {queueSummaryCards.map((card) => (
+            <QueueSummaryCard key={card.key} label={card.label} value={card.value} tone={card.tone} onClick={card.onClick} />
+          ))}
         </div>
 
         {!list.length ? (
