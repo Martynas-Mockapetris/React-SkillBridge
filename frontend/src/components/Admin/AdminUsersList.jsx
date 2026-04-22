@@ -39,6 +39,7 @@ const AdminUsersList = ({ navigationRequest }) => {
   const [selectedVerification, setSelectedVerification] = useState('')
   const [selectedPasswordResetRequired, setSelectedPasswordResetRequired] = useState('')
   const latestUsersFetchRef = useRef(0)
+  const [activePresetLabel, setActivePresetLabel] = useState('')
 
   const fetchUsers = async () => {
     const fetchId = ++latestUsersFetchRef.current
@@ -117,6 +118,25 @@ const AdminUsersList = ({ navigationRequest }) => {
 
   const isPrivilegedUser = (user) => ['admin', 'moderator', 'blogger', 'config_manager'].includes(user.userType)
 
+  const buildUsersPresetLabel = (filters = {}) => {
+    if (filters.status === 'locked') return 'Queue preset: Locked users'
+    if (filters.status === 'inactive') return 'Queue preset: Inactive users'
+    if (filters.verification === 'unverified') return 'Queue preset: Unverified users'
+    if (filters.passwordResetRequired === 'true') return 'Queue preset: Password reset required'
+    return ''
+  }
+
+  const clearAllFilters = () => {
+    setSearchQuery('')
+    setSelectedRole('')
+    setSelectedStatus('')
+    setSelectedVerification('')
+    setSelectedPasswordResetRequired('')
+    setSortConfig('createdAt:desc')
+    setCurrentPage(1)
+    setActivePresetLabel('')
+  }
+
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, sortConfig, pageSize])
@@ -133,6 +153,7 @@ const AdminUsersList = ({ navigationRequest }) => {
     setSelectedPasswordResetRequired(filters.passwordResetRequired || '')
     setSortConfig(filters.sort || 'createdAt:desc')
     setCurrentPage(1)
+    setActivePresetLabel(buildUsersPresetLabel(filters))
   }, [navigationRequest])
 
   useEffect(() => {
@@ -355,6 +376,19 @@ const AdminUsersList = ({ navigationRequest }) => {
         </button>
       </div>
 
+      {activePresetLabel && (
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-gray-800 dark:text-gray-100'>
+          <div className='flex items-center gap-2'>
+            <span className='inline-flex rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-white'>Active Queue Preset</span>
+            <span>{activePresetLabel}</span>
+          </div>
+
+          <button type='button' onClick={clearAllFilters} className='rounded-lg border border-accent/30 bg-white px-3 py-2 text-sm font-medium text-accent hover:bg-accent/5 dark:bg-gray-800 dark:hover:bg-accent/10'>
+            Clear preset
+          </button>
+        </div>
+      )}
+
       <div className='mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-4'>
         {/* Search Row */}
         <div className='w-full'>
@@ -442,12 +476,7 @@ const AdminUsersList = ({ navigationRequest }) => {
 
           <button
             onClick={() => {
-              setSearchQuery('')
-              setSelectedRole('')
-              setSelectedStatus('')
-              setSelectedVerification('')
-              setSelectedPasswordResetRequired('')
-              setSortConfig('createdAt:desc')
+              clearAllFilters()
             }}
             className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
             Reset

@@ -43,6 +43,8 @@ const AdminProjectsList = ({ navigationRequest }) => {
   })
   const [stalledOnly, setStalledOnly] = useState(false)
   const latestProjectsFetchRef = useRef(0)
+  const [activePresetLabel, setActivePresetLabel] = useState('')
+
   const [sortBy, setSortBy] = useState('createdAt:desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(30)
@@ -391,14 +393,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
   }
 
   const clearFilters = () => {
-    setSelectedStatus('All')
-    setSelectedCategory('All')
-    setPriority('All')
-    setDateRange({ start: '', end: '' })
-    setStalledOnly(false)
-    setSearchQuery('')
-    setSortBy('createdAt:desc')
-    setCurrentPage(1)
+    clearAllFilters()
   }
 
   const showingFrom = totalFilteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1
@@ -412,6 +407,23 @@ const AdminProjectsList = ({ navigationRequest }) => {
     { key: 'completed', label: 'Completed', className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
     { key: 'cancelled', label: 'Cancelled', className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' }
   ]
+
+  const buildProjectsPresetLabel = (filters = {}) => {
+    if (filters.stalled === 'true') return 'Queue preset: Stalled projects'
+    return ''
+  }
+
+  const clearAllFilters = () => {
+    setSelectedStatus('All')
+    setSelectedCategory('All')
+    setPriority('All')
+    setDateRange({ start: '', end: '' })
+    setStalledOnly(false)
+    setSearchQuery('')
+    setSortBy('createdAt:desc')
+    setCurrentPage(1)
+    setActivePresetLabel('')
+  }
 
   useEffect(() => {
     setCurrentPage(1)
@@ -430,6 +442,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
     setStalledOnly(filters.stalled === 'true')
     setSortBy(filters.sort || 'createdAt:desc')
     setCurrentPage(1)
+    setActivePresetLabel(buildProjectsPresetLabel(filters))
   }, [navigationRequest])
 
   useEffect(() => {
@@ -467,6 +480,19 @@ const AdminProjectsList = ({ navigationRequest }) => {
           </button>
         )}
       </div>
+
+      {activePresetLabel && (
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-gray-800 dark:text-gray-100'>
+          <div className='flex items-center gap-2'>
+            <span className='inline-flex rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-white'>Active Queue Preset</span>
+            <span>{activePresetLabel}</span>
+          </div>
+
+          <button type='button' onClick={clearAllFilters} className='rounded-lg border border-accent/30 bg-white px-3 py-2 text-sm font-medium text-accent hover:bg-accent/5 dark:bg-gray-800 dark:hover:bg-accent/10'>
+            Clear preset
+          </button>
+        </div>
+      )}
 
       {canCreateProjects && <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />}
 
