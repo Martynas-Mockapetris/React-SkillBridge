@@ -251,6 +251,37 @@ const AdminUsersList = ({ navigationRequest }) => {
     }
   }
 
+  const handleBulkPasswordReset = async () => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
+
+    if (eligibleUsers.length === 0) {
+      alert('No eligible users selected for password reset.')
+      return
+    }
+
+    const confirmed = window.confirm(`Send password reset emails to ${eligibleUsers.length} selected users?`)
+    if (!confirmed) return
+
+    try {
+      const results = await Promise.allSettled(eligibleUsers.map((user) => requestAdminPasswordReset(user._id)))
+
+      const successCount = results.filter((result) => result.status === 'fulfilled').length
+      const failedCount = results.length - successCount
+
+      await fetchUsers()
+      setSelectedUsers([])
+
+      if (failedCount === 0) {
+        alert(`Password reset emails sent to ${successCount} users.`)
+      } else {
+        alert(`Password reset emails sent to ${successCount} users. ${failedCount} requests failed.`)
+      }
+    } catch (error) {
+      alert(`Failed to process bulk password reset: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
   const roleTypes = ['client', 'freelancer', 'both', 'moderator', 'blogger', 'config_manager', 'admin']
   const statusTypes = [
     { value: 'active', label: 'Active' },
@@ -278,15 +309,30 @@ const AdminUsersList = ({ navigationRequest }) => {
   // Bulk actions toolbar
   const BulkActions = () => {
     if (selectedUsers.length === 0) return null
-    if (!canLockUsers && !canDeleteUsers) return null
+    if (!canLockUsers && !canDeleteUsers && !canResetUsers) return null
+
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleResetUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
 
     return (
       <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
-        <span className='text-sm text-gray-700 dark:text-gray-300'>{selectedUsers.length} users selected</span>
+        <span className='text-sm text-gray-700 dark:text-gray-300'>
+          {selectedUsers.length} users selected
+          {canResetUsers && ` • ${eligibleResetUsers.length} eligible for reset`}
+        </span>
         <div className='flex gap-2'>
           {canLockUsers && (
             <button className='px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200'>
               <FaLock className='inline-block mr-1' /> Suspend Selected
+            </button>
+          )}
+
+          {canResetUsers && (
+            <button
+              onClick={handleBulkPasswordReset}
+              disabled={eligibleResetUsers.length === 0}
+              className={`px-3 py-1 text-sm rounded-md ${eligibleResetUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}>
+              <FaKey className='inline-block mr-1' /> Reset Passwords ({eligibleResetUsers.length})
             </button>
           )}
 
