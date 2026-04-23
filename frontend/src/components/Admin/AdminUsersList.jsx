@@ -27,6 +27,8 @@ const AdminUsersList = ({ navigationRequest }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
   const [lockingUser, setLockingUser] = useState(null)
+  const [bulkLockTarget, setBulkLockTarget] = useState(null)
+  const [isBulkLockModalOpen, setIsBulkLockModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [isMailModalOpen, setIsMailModalOpen] = useState(false)
@@ -176,6 +178,28 @@ const AdminUsersList = ({ navigationRequest }) => {
     setIsLockModalOpen(false)
   }
 
+  const openBulkLockModal = () => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => !user.isLocked && !isPrivilegedUser(user))
+
+    if (eligibleUsers.length === 0) {
+      alert('No eligible users selected for bulk lock.')
+      return
+    }
+
+    setBulkLockTarget({
+      _id: 'bulk-lock',
+      firstName: `${eligibleUsers.length}`,
+      lastName: eligibleUsers.length === 1 ? 'selected user' : 'selected users'
+    })
+    setIsBulkLockModalOpen(true)
+  }
+
+  const closeBulkLockModal = () => {
+    setBulkLockTarget(null)
+    setIsBulkLockModalOpen(false)
+  }
+
   const openDetailsModal = (user) => {
     setSelectedUser(user)
     setIsDetailsModalOpen(true)
@@ -205,6 +229,37 @@ const AdminUsersList = ({ navigationRequest }) => {
       alert(error.response?.data?.message || 'Failed to lock user')
     } finally {
       closeLockModal()
+    }
+  }
+
+  const handleConfirmBulkLock = async ({ reason, durationDays }) => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => !user.isLocked && !isPrivilegedUser(user))
+
+    if (eligibleUsers.length === 0) {
+      closeBulkLockModal()
+      alert('No eligible users selected for bulk lock.')
+      return
+    }
+
+    try {
+      const results = await Promise.allSettled(eligibleUsers.map((user) => toggleUserLock(user._id, { reason, durationDays })))
+
+      const successCount = results.filter((result) => result.status === 'fulfilled').length
+      const failedCount = results.length - successCount
+
+      await fetchUsers()
+      setSelectedUsers([])
+      closeBulkLockModal()
+
+      if (failedCount === 0) {
+        alert(`${successCount} users locked successfully.`)
+      } else {
+        alert(`${successCount} users locked successfully. ${failedCount} requests failed.`)
+      }
+    } catch (error) {
+      closeBulkLockModal()
+      alert(`Failed to process bulk lock: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -313,17 +368,22 @@ const AdminUsersList = ({ navigationRequest }) => {
 
     const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
     const eligibleResetUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
+    const eligibleLockUsers = selectedUserRecords.filter((user) => !user.isLocked && !isPrivilegedUser(user))
 
     return (
       <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
         <span className='text-sm text-gray-700 dark:text-gray-300'>
           {selectedUsers.length} users selected
+          {canLockUsers && ` • ${eligibleLockUsers.length} eligible for lock`}
           {canResetUsers && ` • ${eligibleResetUsers.length} eligible for reset`}
         </span>
         <div className='flex gap-2'>
           {canLockUsers && (
-            <button className='px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200'>
-              <FaLock className='inline-block mr-1' /> Suspend Selected
+            <button
+              onClick={openBulkLockModal}
+              disabled={eligibleLockUsers.length === 0}
+              className={`px-3 py-1 text-sm rounded-md ${eligibleLockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'}`}>
+              <FaLock className='inline-block mr-1' /> Suspend Selected ({eligibleLockUsers.length})
             </button>
           )}
 
@@ -650,6 +710,7 @@ const AdminUsersList = ({ navigationRequest }) => {
       </div>
       <AdminUserEditModal isOpen={isEditModalOpen} onClose={closeEditModal} user={editingUser} onSave={handleSaveUser} />
       <AdminLockUserModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLock} user={lockingUser} />
+      <AdminLockUserModal isOpen={isBulkLockModalOpen} onClose={closeBulkLockModal} onConfirm={handleConfirmBulkLock} user={bulkLockTarget} />
       <AdminUserDetailsModal isOpen={isDetailsModalOpen} onClose={closeDetailsModal} user={selectedUser} />
       <AdminMailUserModal isOpen={isMailModalOpen} onClose={closeMailModal} recipient={mailRecipient} onSent={fetchUsers} />
     </div>
