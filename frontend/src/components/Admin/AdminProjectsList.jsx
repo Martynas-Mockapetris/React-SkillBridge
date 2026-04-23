@@ -443,7 +443,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
     setSortBy(filters.sort || 'createdAt:desc')
     setCurrentPage(1)
     setActivePresetLabel(buildProjectsPresetLabel(filters))
-  }, [navigationRequest])
+  }, [navigationRequest?.requestId, navigationRequest?.section])
 
   useEffect(() => {
     if (currentPage > totalPages) {

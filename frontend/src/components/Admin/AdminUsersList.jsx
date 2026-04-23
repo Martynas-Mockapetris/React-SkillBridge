@@ -154,7 +154,7 @@ const AdminUsersList = ({ navigationRequest }) => {
     setSortConfig(filters.sort || 'createdAt:desc')
     setCurrentPage(1)
     setActivePresetLabel(buildUsersPresetLabel(filters))
-  }, [navigationRequest])
+  }, [navigationRequest?.requestId, navigationRequest?.section])
 
   useEffect(() => {
     if (totalPages >= 1 && currentPage > totalPages) {

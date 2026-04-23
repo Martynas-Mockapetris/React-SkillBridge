@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import AdminHeader from '../components/Admin/AdminHeader'
 import AdminSidebar from '../components/Admin/AdminSidebar'
 import AdminStats from '../components/Admin/AdminStats'
@@ -39,13 +39,43 @@ const Admin = () => {
   const [activeSection, setActiveSection] = useState('dashboard')
   const [activeSettingsSection, setActiveSettingsSection] = useState('home.hero')
   const [adminSectionRequest, setAdminSectionRequest] = useState(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const availableSections = useMemo(() => getAdminSections(currentUser), [currentUser])
   const defaultSection = useMemo(() => getDefaultAdminSection(currentUser), [currentUser])
 
+  const buildRequestFromSearchParams = () => {
+    const section = searchParams.get('section') || 'dashboard'
+
+    const filters = {
+      status: searchParams.get('status') || '',
+      verification: searchParams.get('verification') || '',
+      passwordResetRequired: searchParams.get('passwordResetRequired') || '',
+      stalled: searchParams.get('stalled') || '',
+      sort: searchParams.get('sort') || ''
+    }
+
+    return { section, filters }
+  }
+
+  const updateAdminSearchParams = (section, filters = {}) => {
+    const nextParams = new URLSearchParams()
+
+    nextParams.set('section', section)
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        nextParams.set(key, value)
+      }
+    })
+
+    setSearchParams(nextParams)
+  }
+
   const handleSetActiveSection = (section) => {
     setActiveSection(section)
     setAdminSectionRequest(null)
+    updateAdminSearchParams(section)
   }
 
   const handleOpenSection = (section, filters = {}) => {
@@ -55,6 +85,7 @@ const Admin = () => {
       filters,
       requestId: Date.now()
     })
+    updateAdminSearchParams(section, filters)
   }
 
   useEffect(() => {
@@ -65,6 +96,7 @@ const Admin = () => {
     if (!canAccessAdminSection(currentUser, activeSection)) {
       setActiveSection(defaultSection)
       setAdminSectionRequest(null)
+      updateAdminSearchParams(defaultSection)
     }
   }, [currentUser, activeSection, defaultSection])
 
@@ -79,6 +111,26 @@ const Admin = () => {
   if (!availableSections.length) {
     return null
   }
+
+  useEffect(() => {
+    const { section, filters } = buildRequestFromSearchParams()
+
+    if (!canAccessAdminSection(currentUser, section)) {
+      return
+    }
+
+    setActiveSection(section)
+
+    if (section === 'users' || section === 'projects') {
+      setAdminSectionRequest({
+        section,
+        filters,
+        requestId: Date.now()
+      })
+    } else {
+      setAdminSectionRequest(null)
+    }
+  }, [searchParams, currentUser])
 
   return (
     <div className='flex min-h-[calc(100vh-68px)] bg-gray-100 dark:bg-gray-900 pt-[68px]'>
