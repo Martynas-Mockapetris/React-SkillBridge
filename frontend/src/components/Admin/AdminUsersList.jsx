@@ -368,6 +368,37 @@ const AdminUsersList = ({ navigationRequest }) => {
     }
   }
 
+  const handleBulkDelete = async () => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
+
+    if (eligibleUsers.length === 0) {
+      alert('No eligible users selected for bulk delete.')
+      return
+    }
+
+    const confirmed = window.confirm(`Delete ${eligibleUsers.length} selected users?\n\nThis will also remove their related project associations. This cannot be undone.`)
+    if (!confirmed) return
+
+    try {
+      const results = await Promise.allSettled(eligibleUsers.map((user) => deleteAdminUser(user._id)))
+
+      const successCount = results.filter((result) => result.status === 'fulfilled').length
+      const failedCount = results.length - successCount
+
+      await fetchUsers()
+      setSelectedUsers([])
+
+      if (failedCount === 0) {
+        alert(`${successCount} users deleted successfully.`)
+      } else {
+        alert(`${successCount} users deleted successfully. ${failedCount} requests failed.`)
+      }
+    } catch (error) {
+      alert(`Failed to process bulk delete: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
   const roleTypes = ['client', 'freelancer', 'both', 'moderator', 'blogger', 'config_manager', 'admin']
   const statusTypes = [
     { value: 'active', label: 'Active' },
@@ -401,6 +432,7 @@ const AdminUsersList = ({ navigationRequest }) => {
     const eligibleResetUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
     const eligibleLockUsers = selectedUserRecords.filter((user) => !user.isLocked && !isPrivilegedUser(user))
     const eligibleUnlockUsers = selectedUserRecords.filter((user) => user.isLocked && !isPrivilegedUser(user))
+    const eligibleDeleteUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
 
     return (
       <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
@@ -409,6 +441,7 @@ const AdminUsersList = ({ navigationRequest }) => {
           {canLockUsers && ` • ${eligibleLockUsers.length} eligible for lock`}
           {canLockUsers && ` • ${eligibleUnlockUsers.length} eligible for unlock`}
           {canResetUsers && ` • ${eligibleResetUsers.length} eligible for reset`}
+          {canDeleteUsers && ` • ${eligibleDeleteUsers.length} eligible for delete`}
         </span>
         <div className='flex gap-2'>
           {canLockUsers && (
@@ -439,8 +472,11 @@ const AdminUsersList = ({ navigationRequest }) => {
           )}
 
           {canDeleteUsers && (
-            <button className='px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200'>
-              <FaTrash className='inline-block mr-1' /> Delete Selected
+            <button
+              onClick={handleBulkDelete}
+              disabled={eligibleDeleteUsers.length === 0}
+              className={`px-3 py-1 text-sm rounded-md ${eligibleDeleteUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}>
+              <FaTrash className='inline-block mr-1' /> Delete Selected ({eligibleDeleteUsers.length})
             </button>
           )}
         </div>
