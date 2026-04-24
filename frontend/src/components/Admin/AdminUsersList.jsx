@@ -263,6 +263,37 @@ const AdminUsersList = ({ navigationRequest }) => {
     }
   }
 
+  const handleBulkUnlock = async () => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => user.isLocked && !isPrivilegedUser(user))
+
+    if (eligibleUsers.length === 0) {
+      alert('No eligible users selected for bulk unlock.')
+      return
+    }
+
+    const confirmed = window.confirm(`Unlock ${eligibleUsers.length} selected users?`)
+    if (!confirmed) return
+
+    try {
+      const results = await Promise.allSettled(eligibleUsers.map((user) => toggleUserLock(user._id)))
+
+      const successCount = results.filter((result) => result.status === 'fulfilled').length
+      const failedCount = results.length - successCount
+
+      await fetchUsers()
+      setSelectedUsers([])
+
+      if (failedCount === 0) {
+        alert(`${successCount} users unlocked successfully.`)
+      } else {
+        alert(`${successCount} users unlocked successfully. ${failedCount} requests failed.`)
+      }
+    } catch (error) {
+      alert(`Failed to process bulk unlock: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
   const handleLockUser = async (user) => {
     if (!user.isLocked) {
       openLockModal(user)
@@ -369,12 +400,14 @@ const AdminUsersList = ({ navigationRequest }) => {
     const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
     const eligibleResetUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
     const eligibleLockUsers = selectedUserRecords.filter((user) => !user.isLocked && !isPrivilegedUser(user))
+    const eligibleUnlockUsers = selectedUserRecords.filter((user) => user.isLocked && !isPrivilegedUser(user))
 
     return (
       <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
         <span className='text-sm text-gray-700 dark:text-gray-300'>
           {selectedUsers.length} users selected
           {canLockUsers && ` • ${eligibleLockUsers.length} eligible for lock`}
+          {canLockUsers && ` • ${eligibleUnlockUsers.length} eligible for unlock`}
           {canResetUsers && ` • ${eligibleResetUsers.length} eligible for reset`}
         </span>
         <div className='flex gap-2'>
@@ -384,6 +417,15 @@ const AdminUsersList = ({ navigationRequest }) => {
               disabled={eligibleLockUsers.length === 0}
               className={`px-3 py-1 text-sm rounded-md ${eligibleLockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'}`}>
               <FaLock className='inline-block mr-1' /> Suspend Selected ({eligibleLockUsers.length})
+            </button>
+          )}
+
+          {canLockUsers && (
+            <button
+              onClick={handleBulkUnlock}
+              disabled={eligibleUnlockUsers.length === 0}
+              className={`px-3 py-1 text-sm rounded-md ${eligibleUnlockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
+              <FaLock className='inline-block mr-1' /> Unlock Selected ({eligibleUnlockUsers.length})
             </button>
           )}
 
