@@ -4,6 +4,7 @@ import Announcement from '../models/Announcement.js'
 import AdminActionLog from '../models/AdminActionLog.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
+import { sendVerificationEmail } from '../utils/emailVerificationService.js'
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -975,6 +976,49 @@ export const requestAdminPasswordReset = async (req, res) => {
     })
   } catch (error) {
     console.error('Error requesting admin password reset:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Trigger verification email for a user (admin)
+// @route   POST /api/users/admin/:userId/verify-email
+// @access  Admin
+export const requestAdminEmailVerification = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'User email is already verified.' })
+    }
+
+    const mailResult = await sendVerificationEmail(user)
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.email_verification_requested',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Requested email verification for ${targetLabel}`,
+      metadata: {
+        targetEmail: user.email,
+        delivered: mailResult.delivered,
+        deliveryReason: mailResult.reason || null
+      }
+    })
+
+    res.json({
+      message: mailResult.delivered ? 'Verification email sent.' : 'Verification link generated, but email delivery is not configured.',
+      delivery: mailResult
+    })
+  } catch (error) {
+    console.error('Error requesting admin email verification:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }

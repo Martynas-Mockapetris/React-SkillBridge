@@ -20,6 +20,7 @@ import {
   toggleUserLock,
   updateAdminUser,
   requestAdminPasswordReset,
+  requestAdminEmailVerification,
   deleteAdminUser
 } from '../controllers/userController.js'
 import { protect, requireAllPermissions, requirePermission } from '../middleware/authMiddleware.js'
@@ -55,6 +56,7 @@ router.get('/admin/users', protect, requirePermission(PERMISSIONS.USERS_READ), g
 router.patch('/admin/:userId/lock', protect, requirePermission(PERMISSIONS.USERS_LOCK), toggleUserLock)
 router.put('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_UPDATE), updateAdminUser)
 router.post('/admin/:userId/password-reset', protect, requirePermission(PERMISSIONS.USERS_UPDATE), requestAdminPasswordReset)
+router.post('/admin/:userId/verify-email', protect, requirePermission(PERMISSIONS.USERS_UPDATE), requestAdminEmailVerification)
 router.delete('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_DELETE), deleteAdminUser)
 
 // Favorites routes - specific routes first!
