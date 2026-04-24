@@ -120,6 +120,27 @@ const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
               ))}
             </div>
 
+            <div className='md:col-span-2 space-y-4'>
+              <h3 className='text-sm font-semibold text-gray-900 dark:text-white'>Internal Admin Context</h3>
+
+              <div>
+                <p className={labelClass}>Admin Tags</p>
+                <div className='mt-2 flex flex-wrap gap-2'>
+                  {Array.isArray(user.adminTags) && user.adminTags.length > 0 ? (
+                    user.adminTags.map((tag) => (
+                      <span key={tag} className='inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'>
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <p className={fieldClass}>No internal tags</p>
+                  )}
+                </div>
+              </div>
+
+              <InfoRow label='Admin Notes' value={user.adminNotes || 'No internal notes recorded.'} />
+            </div>
+
             <div className='md:col-span-2 space-y-3'>
               <h3 className='text-sm font-semibold text-gray-900 dark:text-white'>Bio</h3>
               <p className='text-sm text-gray-600 dark:text-gray-300'>{user.bio || 'No bio provided.'}</p>

@@ -555,6 +555,25 @@ const AdminUserDetail = () => {
                   <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Hourly Rate</p>
                   <p className='text-gray-900 dark:text-white font-medium'>{formatMoney(user?.hourlyRate)}</p>
                 </div>
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4 md:col-span-2'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Internal Tags</p>
+                  <div className='mt-2 flex flex-wrap gap-2'>
+                    {Array.isArray(user?.adminTags) && user.adminTags.length > 0 ? (
+                      user.adminTags.map((tag) => (
+                        <span key={tag} className='inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'>
+                          {tag}
+                        </span>
+                      ))
+                    ) : (
+                      <p className='text-gray-900 dark:text-white font-medium'>No internal tags</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4 md:col-span-2'>
+                  <p className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>Internal Admin Notes</p>
+                  <p className='mt-2 text-gray-900 dark:text-white font-medium whitespace-pre-wrap'>{user?.adminNotes || 'No internal notes recorded.'}</p>
+                </div>
               </div>
             )}
 

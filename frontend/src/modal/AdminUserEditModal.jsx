@@ -20,7 +20,11 @@ const AdminUserEditModal = ({ isOpen, onClose, user, onSave }) => {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    setFormData(user || {})
+    setFormData({
+      ...(user || {}),
+      adminNotes: user?.adminNotes || '',
+      adminTags: Array.isArray(user?.adminTags) ? user.adminTags.join(', ') : user?.adminTags || ''
+    })
   }, [user])
 
   if (!isOpen || !user) return null
@@ -105,6 +109,24 @@ const AdminUserEditModal = ({ isOpen, onClose, user, onSave }) => {
             <div>
               <label className={labelClasses}>Bio</label>
               <textarea name='bio' rows='3' value={formData.bio || ''} onChange={handleChange} className={`${inputClasses} resize-none`} />
+            </div>
+
+            <div>
+              <label className={labelClasses}>Internal Admin Notes</label>
+              <textarea
+                name='adminNotes'
+                rows='4'
+                value={formData.adminNotes || ''}
+                onChange={handleChange}
+                className={`${inputClasses} resize-none`}
+                placeholder='Visible only to admins. Add moderation context, follow-up notes, or handling guidance.'
+              />
+            </div>
+
+            <div>
+              <label className={labelClasses}>Internal Tags</label>
+              <input name='adminTags' value={formData.adminTags || ''} onChange={handleChange} className={inputClasses} placeholder='vip, risky, needs follow-up' />
+              <p className='mt-2 text-xs text-gray-500 dark:text-gray-400'>Use comma-separated tags. These tags are visible only in the admin panel.</p>
             </div>
 
             <div className='flex justify-end gap-3 border-t border-gray-100 dark:border-gray-800 pt-5'>
