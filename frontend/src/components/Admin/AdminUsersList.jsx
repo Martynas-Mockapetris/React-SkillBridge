@@ -125,6 +125,8 @@ const AdminUsersList = ({ navigationRequest }) => {
 
   const isPrivilegedUser = (user) => ['admin', 'moderator', 'blogger', 'config_manager'].includes(user.userType)
 
+  const hasAdminNotes = (user) => Boolean(user?.adminNotes && String(user.adminNotes).trim())
+
   const buildUsersPresetLabel = (filters = {}) => {
     if (filters.status === 'locked') return 'Queue preset: Locked users'
     if (filters.status === 'inactive') return 'Queue preset: Inactive users'
@@ -808,10 +810,36 @@ const AdminUsersList = ({ navigationRequest }) => {
                         )
                       })()}
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 cursor-pointer' onClick={() => openDetailsModal(user)}>
-                      {user.firstName} {user.lastName}
+                    <td className='px-6 py-4 text-sm text-gray-900 dark:text-gray-100 cursor-pointer' onClick={() => openDetailsModal(user)}>
+                      <div className='space-y-2'>
+                        <div className='font-medium'>
+                          {user.firstName} {user.lastName}
+                        </div>
+
+                        {Array.isArray(user.adminTags) && user.adminTags.length > 0 && (
+                          <div className='flex flex-wrap gap-2'>
+                            {user.adminTags.slice(0, 2).map((tag) => (
+                              <span key={`${user._id}-${tag}`} className='inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'>
+                                {tag}
+                              </span>
+                            ))}
+
+                            {user.adminTags.length > 2 && (
+                              <span className='inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300'>+{user.adminTags.length - 2} more</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.email}</td>
+                    <td className='px-6 py-4 text-sm text-gray-500 dark:text-gray-400'>
+                      <div className='space-y-2'>
+                        <div className='break-all'>{user.email}</div>
+
+                        {hasAdminNotes(user) && (
+                          <span className='inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'>Has internal note</span>
+                        )}
+                      </div>
+                    </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{user.userType.charAt(0).toUpperCase() + user.userType.slice(1)}</td>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       {(() => {
