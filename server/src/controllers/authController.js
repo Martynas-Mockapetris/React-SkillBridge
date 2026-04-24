@@ -7,6 +7,20 @@ import { sendVerificationEmail } from '../utils/emailVerificationService.js'
 const EMAIL_VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000
 const PASSWORD_RESET_REQUEST_COOLDOWN_MS = 60 * 1000
 
+const buildAuthUserResponse = (user, includeToken = false) => ({
+  _id: user._id,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  email: user.email,
+  userType: user.userType,
+  isLocked: user.isLocked,
+  lastLogin: user.lastLogin,
+  isEmailVerified: user.isEmailVerified,
+  emailVerifiedAt: user.emailVerifiedAt,
+  forcePasswordReset: user.forcePasswordReset,
+  ...(includeToken ? { token: generateToken(user._id) } : {})
+})
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
