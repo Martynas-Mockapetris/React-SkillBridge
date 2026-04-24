@@ -213,7 +213,11 @@ const initialDrafts = {
   about: { enabled: true, values: {} },
   contact: { enabled: true, values: {} },
   mail: { enabled: true, values: {} },
-  system: { enabled: true, values: {} }
+  system: { enabled: true, values: {} },
+  siteBuilder: { enabled: true, values: {} },
+  sharedBlocks: { enabled: true, values: {} },
+  designSystem: { enabled: true, values: {} },
+  navigation: { enabled: true, values: {} }
 }
 
 const SETTINGS_VIEW_LOOKUP = SETTINGS_VIEW_REGISTRY.reduce((acc, view) => {
@@ -241,7 +245,11 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       about: config.about || {},
       contact: config.contact || {},
       mail: config.mail || {},
-      system: config.system || {}
+      system: config.system || {},
+      siteBuilder: config.siteBuilder || {},
+      sharedBlocks: config.sharedBlocks || {},
+      designSystem: config.designSystem || {},
+      navigation: config.navigation || {}
     }
   }, [config])
 
@@ -260,7 +268,11 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           about: { enabled: data?.about?.enabled ?? true, values: data?.about?.values || {} },
           contact: { enabled: data?.contact?.enabled ?? true, values: data?.contact?.values || {} },
           mail: { enabled: data?.mail?.enabled ?? true, values: data?.mail?.values || {} },
-          system: { enabled: data?.system?.enabled ?? true, values: data?.system?.values || {} }
+          system: { enabled: data?.system?.enabled ?? true, values: data?.system?.values || {} },
+          siteBuilder: { enabled: data?.siteBuilder?.enabled ?? true, values: data?.siteBuilder?.values || {} },
+          sharedBlocks: { enabled: data?.sharedBlocks?.enabled ?? true, values: data?.sharedBlocks?.values || {} },
+          designSystem: { enabled: data?.designSystem?.enabled ?? true, values: data?.designSystem?.values || {} },
+          navigation: { enabled: data?.navigation?.enabled ?? true, values: data?.navigation?.values || {} }
         })
       } catch (error) {
         toast.error(error?.response?.data?.message || 'Failed to load settings')
@@ -293,6 +305,45 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         }
       }
     }))
+  }
+
+  const getHomeHeroBuilderValues = () => {
+    return drafts?.siteBuilder?.values?.homeHero || {}
+  }
+
+  const handleHomeHeroBuilderChange = (key, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          homeHero: {
+            ...(prev.siteBuilder.values?.homeHero || {}),
+            [key]: value
+          }
+        }
+      }
+    }))
+  }
+
+  const handleSaveSiteBuilderSection = async () => {
+    try {
+      setSavingSection('siteBuilder')
+
+      const payload = {
+        enabled: drafts.siteBuilder.enabled,
+        values: drafts.siteBuilder.values
+      }
+
+      const response = await updateSystemConfigSection('siteBuilder', payload)
+      setConfig(response.config)
+      toast.success('siteBuilder settings saved')
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Failed to save siteBuilder settings')
+    } finally {
+      setSavingSection('')
+    }
   }
 
   const handleSaveSection = async (sectionId) => {
@@ -746,6 +797,99 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     )
   }
 
+  const renderHomeHeroBuilderPanel = () => {
+    const heroBuilder = getHomeHeroBuilderValues()
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h4 className='text-lg font-bold text-gray-900 dark:text-white'>Hero Layout Builder</h4>
+          <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure the Home hero presentation layer without changing the public page behavior yet.</p>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Layout Preset</label>
+            <select
+              value={heroBuilder.layoutPreset || 'centered'}
+              onChange={(e) => handleHomeHeroBuilderChange('layoutPreset', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='centered'>Centered</option>
+              <option value='split'>Split</option>
+              <option value='editorial'>Editorial</option>
+              <option value='minimal'>Minimal</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+            <select
+              value={heroBuilder.contentAlign || 'center'}
+              onChange={(e) => handleHomeHeroBuilderChange('contentAlign', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='left'>Left</option>
+              <option value='center'>Center</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>CTA Layout</label>
+            <select
+              value={heroBuilder.ctaLayout || 'stacked-mobile'}
+              onChange={(e) => handleHomeHeroBuilderChange('ctaLayout', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='stacked-mobile'>Stacked Mobile / Row Desktop</option>
+              <option value='inline'>Inline</option>
+              <option value='split'>Split Emphasis</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Hero Height</label>
+            <select
+              value={heroBuilder.heroHeight || 'screen'}
+              onChange={(e) => handleHomeHeroBuilderChange('heroHeight', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='screen'>Full Screen</option>
+              <option value='large'>Large</option>
+              <option value='medium'>Medium</option>
+            </select>
+          </div>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
+            <input
+              type='checkbox'
+              checked={heroBuilder.showScrollIndicator ?? true}
+              onChange={(e) => handleHomeHeroBuilderChange('showScrollIndicator', e.target.checked)}
+              className='rounded border-gray-300 text-accent focus:ring-accent'
+            />
+            Show scroll indicator
+          </label>
+
+          <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
+            <input
+              type='checkbox'
+              checked={heroBuilder.showBackgroundPattern ?? true}
+              onChange={(e) => handleHomeHeroBuilderChange('showBackgroundPattern', e.target.checked)}
+              className='rounded border-gray-300 text-accent focus:ring-accent'
+            />
+            Show background pattern
+          </label>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2 pt-2'>
+          <button type='button' onClick={handleSaveSiteBuilderSection} disabled={savingSection === 'siteBuilder'} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+            {savingSection === 'siteBuilder' ? 'Saving...' : 'Save Hero Layout'}
+          </button>
+
+          <span className='text-xs text-gray-500 dark:text-gray-400'>Saves into siteBuilder config only. Public Home rendering will consume this in the next task.</span>
+        </div>
+      </div>
+    )
+  }
+
   const renderSectionFields = (sectionId, section) => {
     if (sectionId === 'home') {
       return (
@@ -833,6 +977,8 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                         Enabled
                       </label>
                     </div>
+
+                    {activeSectionId === 'home.hero' && renderHomeHeroBuilderPanel()}
 
                     {renderSectionFields(sectionId, section)}
 
