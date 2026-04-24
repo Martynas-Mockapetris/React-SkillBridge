@@ -89,3 +89,94 @@ export const SETTINGS_VIEW_MAP = {
     sectionId: 'system'
   }
 }
+
+export const SETTINGS_VIEW_REGISTRY = [
+  {
+    id: 'home.hero',
+    groupId: 'site-builder',
+    pageTitle: 'Site Builder',
+    pageDescription: 'Manage the main Home hero content and entry layout settings.',
+    sectionId: 'home',
+    isImplemented: true
+  },
+  {
+    id: 'blog',
+    groupId: 'site-builder',
+    pageTitle: 'Site Builder',
+    pageDescription: 'Manage public Blog page content and layout-facing labels.',
+    sectionId: 'blog',
+    isImplemented: true
+  },
+  {
+    id: 'blog-detail',
+    groupId: 'site-builder',
+    pageTitle: 'Site Builder',
+    pageDescription: 'Blog detail page settings will be added here next.',
+    sectionId: 'blog-detail',
+    isImplemented: false
+  },
+  {
+    id: 'listings',
+    groupId: 'site-builder',
+    pageTitle: 'Site Builder',
+    pageDescription: 'Listings page settings will be added here next.',
+    sectionId: 'listings',
+    isImplemented: false
+  },
+  {
+    id: 'project-detail',
+    groupId: 'site-builder',
+    pageTitle: 'Site Builder',
+    pageDescription: 'Project detail page settings will be added here next.',
+    sectionId: 'project-detail',
+    isImplemented: false
+  },
+  {
+    id: 'about',
+    groupId: 'site-builder',
+    pageTitle: 'Site Builder',
+    pageDescription: 'Manage About page content and visibility settings.',
+    sectionId: 'about',
+    isImplemented: true
+  },
+  {
+    id: 'contact',
+    groupId: 'site-builder',
+    pageTitle: 'Site Builder',
+    pageDescription: 'Manage platform contact content and support details.',
+    sectionId: 'contact',
+    isImplemented: true
+  },
+  {
+    id: 'home.pricing',
+    groupId: 'shared-blocks',
+    pageTitle: 'Shared Blocks',
+    pageDescription: 'Manage reusable pricing block content and plan structure.',
+    sectionId: 'pricing',
+    isImplemented: true
+  },
+  {
+    id: 'home.testimonials',
+    groupId: 'shared-blocks',
+    pageTitle: 'Shared Blocks',
+    pageDescription: 'Manage reusable testimonials content and card structure.',
+    sectionId: 'testimonials',
+    isImplemented: true
+  },
+  {
+    id: 'mail',
+    groupId: 'platform-settings',
+    pageTitle: 'Platform Settings',
+    pageDescription: 'Configure mail-related platform settings.',
+    sectionId: 'mail',
+    isImplemented: true
+  },
+  {
+    id: 'system',
+    groupId: 'platform-settings',
+    pageTitle: 'Platform Settings',
+    pageDescription: 'General platform settings and admin defaults.',
+    sectionId: 'system',
+    isImplemented: true
+  }
+]

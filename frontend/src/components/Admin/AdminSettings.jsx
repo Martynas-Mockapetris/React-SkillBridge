@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_MAP } from './settingsNavigation'
+import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
 
@@ -214,6 +214,15 @@ const initialDrafts = {
   contact: { enabled: true, values: {} },
   mail: { enabled: true, values: {} },
   system: { enabled: true, values: {} }
+}
+
+const SETTINGS_VIEW_LOOKUP = SETTINGS_VIEW_REGISTRY.reduce((acc, view) => {
+  acc[view.id] = view
+  return acc
+}, {})
+
+const getSettingsView = (activeSectionId) => {
+  return SETTINGS_VIEW_LOOKUP[activeSectionId] || SETTINGS_VIEW_LOOKUP[DEFAULT_SETTINGS_SECTION]
 }
 
 const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
@@ -791,7 +800,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       ) : (
         <div>
           {(() => {
-            const activeView = SETTINGS_VIEW_MAP[activeSectionId] || SETTINGS_VIEW_MAP[DEFAULT_SETTINGS_SECTION]
+            const activeView = getSettingsView(activeSectionId)
             const sectionId = activeView.sectionId
             const section = SECTION_DEFS[sectionId]
 
@@ -800,15 +809,15 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                 <div className='flex flex-wrap items-start justify-between gap-3'>
                   <div>
                     <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-2'>{activeView.pageTitle}</p>
-                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section?.title || activeView.pageTitle}</h3>
+                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section?.title || activeView?.pageTitle}</h3>
                     <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView.pageDescription}</p>
                   </div>
                 </div>
 
-                {!section ? (
+                {!section || !activeView?.isImplemented ? (
                   <div className='mt-6 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-6'>
-                    <h4 className='text-base font-semibold text-gray-900 dark:text-white'>Blank Settings Page</h4>
-                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>Listings Page settings can be added here later.</p>
+                    <h4 className='text-base font-semibold text-gray-900 dark:text-white'>Builder Page Placeholder</h4>
+                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView?.pageDescription || 'This settings page will be implemented in a later step.'}</p>
                   </div>
                 ) : (
                   <>
