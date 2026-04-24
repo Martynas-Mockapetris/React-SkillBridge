@@ -3,31 +3,11 @@ import { FaChartBar, FaUsers, FaProjectDiagram, FaBullhorn, FaNewspaper, FaCog, 
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { canAccessAdminSection } from '../../utils/accessRoles'
-
-const SETTINGS_PAGES = [
-  {
-    id: 'home',
-    label: 'Home Page',
-    children: [
-      { id: 'home.hero', label: 'Hero Sections' },
-      { id: 'home.pricing', label: 'Pricing' },
-      { id: 'home.testimonials', label: 'Testimonials' }
-    ]
-  },
-  { id: 'blog', label: 'Blog Page' },
-  { id: 'blog-detail', label: 'Blog Detail Page' },
-  { id: 'listings', label: 'Listings Page' },
-  { id: 'project-detail', label: 'Project Detail Page' },
-  { id: 'about', label: 'About Page' },
-  { id: 'contact', label: 'Contact Info' },
-  { id: 'mail', label: 'Mail Settings' },
-  { id: 'system', label: 'System Settings' }
-]
+import { DEFAULT_SETTINGS_SECTION, SETTINGS_GROUPS } from './settingsNavigation'
 
 const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, setActiveSettingsSection }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(true)
-  const [isHomePageOpen, setIsHomePageOpen] = useState(true)
   const { currentUser } = useAuth()
 
   const navigationItems = [
@@ -45,33 +25,18 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
     if (itemId === 'settings') {
       setIsSettingsOpen(true)
       if (!activeSettingsSection) {
-        setActiveSettingsSection('home.hero')
+        setActiveSettingsSection(DEFAULT_SETTINGS_SECTION)
       }
     }
 
     setIsMobileMenuOpen(false)
   }
 
-  const handleSettingsPageClick = (page) => {
+  const handleSettingsItemClick = (itemId) => {
     setActiveSection('settings')
-
-    if (page.id === 'home') {
-      setIsHomePageOpen(true)
-      setActiveSettingsSection(page.children?.[0]?.id || 'home.hero')
-    } else {
-      setActiveSettingsSection(page.id)
-    }
-
+    setActiveSettingsSection(itemId)
     setIsMobileMenuOpen(false)
   }
-
-  const handleSettingsChildClick = (childId) => {
-    setActiveSection('settings')
-    setActiveSettingsSection(childId)
-    setIsMobileMenuOpen(false)
-  }
-
-  const isHomePageActive = activeSection === 'settings' && activeSettingsSection?.startsWith('home.')
 
   return (
     <>
@@ -116,55 +81,30 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
                   </motion.button>
 
                   {isSettingsItem && isSettingsOpen && (
-                    <div className='mt-1 ml-7 space-y-1'>
-                      {SETTINGS_PAGES.map((page) => {
-                        const hasChildren = Array.isArray(page.children) && page.children.length > 0
-                        const isPageActive = activeSection === 'settings' && (page.id === 'home' ? isHomePageActive : activeSettingsSection === page.id)
+                    <div className='mt-2 ml-7 space-y-4'>
+                      {SETTINGS_GROUPS.map((group) => (
+                        <div key={group.id} className='space-y-1'>
+                          <p className='px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500'>{group.label}</p>
 
-                        return (
-                          <div key={page.id}>
-                            <button
-                              type='button'
-                              onClick={() => handleSettingsPageClick(page)}
-                              className={`w-full flex items-center justify-between text-left text-sm rounded-md px-3 py-2 transition ${
-                                isPageActive ? 'bg-accent/15 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
-                              }`}>
-                              <span>{page.label}</span>
+                          <div className='space-y-1'>
+                            {group.items.map((settingsItem) => {
+                              const isSettingsActive = activeSection === 'settings' && activeSettingsSection === settingsItem.id
 
-                              {hasChildren && (
-                                <span
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setIsHomePageOpen((prev) => !prev)
-                                  }}
-                                  className='p-1 rounded hover:bg-black/10 dark:hover:bg-white/10'>
-                                  {isHomePageOpen ? <FaChevronDown size={10} /> : <FaChevronRight size={10} />}
-                                </span>
-                              )}
-                            </button>
-
-                            {hasChildren && isHomePageOpen && (
-                              <div className='mt-1 ml-4 space-y-1'>
-                                {page.children.map((child) => {
-                                  const isChildActive = activeSection === 'settings' && activeSettingsSection === child.id
-
-                                  return (
-                                    <button
-                                      key={child.id}
-                                      type='button'
-                                      onClick={() => handleSettingsChildClick(child.id)}
-                                      className={`w-full text-left text-sm rounded-md px-3 py-2 transition ${
-                                        isChildActive ? 'bg-accent/15 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
-                                      }`}>
-                                      {child.label}
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            )}
+                              return (
+                                <button
+                                  key={settingsItem.id}
+                                  type='button'
+                                  onClick={() => handleSettingsItemClick(settingsItem.id)}
+                                  className={`w-full text-left text-sm rounded-md px-3 py-2 transition ${
+                                    isSettingsActive ? 'bg-accent/15 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
+                                  }`}>
+                                  {settingsItem.label}
+                                </button>
+                              )
+                            })}
                           </div>
-                        )
-                      })}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

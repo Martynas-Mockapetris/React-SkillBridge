@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_MAP } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
 
@@ -215,65 +216,7 @@ const initialDrafts = {
   system: { enabled: true, values: {} }
 }
 
-const SETTINGS_VIEW_MAP = {
-  'home.hero': {
-    pageTitle: 'Home Page',
-    pageDescription: 'Manage all Home page content pages and sections.',
-    sectionId: 'home'
-  },
-  'home.pricing': {
-    pageTitle: 'Home Page',
-    pageDescription: 'Manage all Home page content pages and sections.',
-    sectionId: 'pricing'
-  },
-  'home.testimonials': {
-    pageTitle: 'Home Page',
-    pageDescription: 'Manage all Home page content pages and sections.',
-    sectionId: 'testimonials'
-  },
-  blog: {
-    pageTitle: 'Blog Page',
-    pageDescription: 'Manage public Blog page text content and labels.',
-    sectionId: 'blog'
-  },
-  'blog-detail': {
-    pageTitle: 'Blog Detail Page',
-    pageDescription: 'Blog detail page settings will be added here.',
-    sectionId: 'blog-detail'
-  },
-  listings: {
-    pageTitle: 'Listings Page',
-    pageDescription: 'Listings page settings will be added here.',
-    sectionId: 'listings'
-  },
-  'project-detail': {
-    pageTitle: 'Project Detail Page',
-    pageDescription: 'Project detail page settings will be added here.',
-    sectionId: 'project-detail'
-  },
-  about: {
-    pageTitle: 'About Page',
-    pageDescription: 'Manage About page content and visibility settings.',
-    sectionId: 'about'
-  },
-  contact: {
-    pageTitle: 'Contact Info',
-    pageDescription: 'Manage platform contact channels and support details.',
-    sectionId: 'contact'
-  },
-  mail: {
-    pageTitle: 'Mail Settings',
-    pageDescription: 'Configure mail defaults shown to users.',
-    sectionId: 'mail'
-  },
-  system: {
-    pageTitle: 'System Settings',
-    pageDescription: 'General platform settings and admin defaults.',
-    sectionId: 'system'
-  }
-}
-
-const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
+const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   const [loading, setLoading] = useState(true)
   const [config, setConfig] = useState(null)
   const [savingSection, setSavingSection] = useState('')
@@ -848,7 +791,7 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
       ) : (
         <div>
           {(() => {
-            const activeView = SETTINGS_VIEW_MAP[activeSectionId] || SETTINGS_VIEW_MAP['home.hero']
+            const activeView = SETTINGS_VIEW_MAP[activeSectionId] || SETTINGS_VIEW_MAP[DEFAULT_SETTINGS_SECTION]
             const sectionId = activeView.sectionId
             const section = SECTION_DEFS[sectionId]
 

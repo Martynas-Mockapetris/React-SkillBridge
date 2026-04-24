@@ -10,6 +10,7 @@ import AdminSettings from '../components/Admin/AdminSettings'
 import AdminBlogPostsList from '../components/Admin/AdminBlogPostsList'
 import { useAuth } from '../context/AuthContext'
 import { canAccessAdminSection, getAdminSections, getDefaultAdminSection } from '../utils/accessRoles'
+import { DEFAULT_SETTINGS_SECTION } from '../components/Admin/settingsNavigation'
 
 const formatLabel = (value) => {
   if (!value) return ''
@@ -37,7 +38,7 @@ const getSettingsBreadcrumbItems = (activeSettingsSection) => {
 const Admin = () => {
   const { currentUser } = useAuth()
   const [activeSection, setActiveSection] = useState('dashboard')
-  const [activeSettingsSection, setActiveSettingsSection] = useState('home.hero')
+  const [activeSettingsSection, setActiveSettingsSection] = useState(DEFAULT_SETTINGS_SECTION)
   const [adminSectionRequest, setAdminSectionRequest] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
