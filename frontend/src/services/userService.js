@@ -107,7 +107,7 @@ export const getAdminUserAnnouncements = async (userId, params = {}) => {
 // Fetch all users for admin panel
 export const getAdminUsers = async (params = {}) => {
   try {
-    const { search = '', role = '', status = '', verification = '', passwordResetRequired = '', page = 1, limit = 10, sort = 'createdAt:desc' } = params
+    const { search = '', role = '', status = '', verification = '', passwordResetRequired = '', adminTag = '', notesState = '', page = 1, limit = 10, sort = 'createdAt:desc' } = params
 
     const queryParams = new URLSearchParams({
       search,
@@ -115,6 +115,8 @@ export const getAdminUsers = async (params = {}) => {
       status,
       verification,
       passwordResetRequired,
+      adminTag,
+      notesState,
       page,
       limit,
       sort

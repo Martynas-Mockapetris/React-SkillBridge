@@ -43,6 +43,8 @@ const AdminUsersList = ({ navigationRequest }) => {
   const [selectedPasswordResetRequired, setSelectedPasswordResetRequired] = useState('')
   const latestUsersFetchRef = useRef(0)
   const [activePresetLabel, setActivePresetLabel] = useState('')
+  const [selectedAdminTag, setSelectedAdminTag] = useState('')
+  const [selectedNotesState, setSelectedNotesState] = useState('')
 
   const fetchUsers = async () => {
     const fetchId = ++latestUsersFetchRef.current
@@ -57,6 +59,8 @@ const AdminUsersList = ({ navigationRequest }) => {
         status: selectedStatus,
         verification: selectedVerification,
         passwordResetRequired: selectedPasswordResetRequired,
+        adminTag: selectedAdminTag,
+        notesState: selectedNotesState,
         page: currentPage,
         limit: pageSize,
         sort: sortConfig
@@ -135,6 +139,8 @@ const AdminUsersList = ({ navigationRequest }) => {
     setSelectedStatus('')
     setSelectedVerification('')
     setSelectedPasswordResetRequired('')
+    setSelectedAdminTag('')
+    setSelectedNotesState('')
     setSortConfig('createdAt:desc')
     setCurrentPage(1)
     setActivePresetLabel('')
@@ -142,7 +148,7 @@ const AdminUsersList = ({ navigationRequest }) => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, sortConfig, pageSize])
+  }, [searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, selectedAdminTag, selectedNotesState, sortConfig, pageSize])
 
   useEffect(() => {
     if (!navigationRequest || navigationRequest.section !== 'users') return
@@ -154,6 +160,8 @@ const AdminUsersList = ({ navigationRequest }) => {
     setSelectedStatus(filters.status || '')
     setSelectedVerification(filters.verification || '')
     setSelectedPasswordResetRequired(filters.passwordResetRequired || '')
+    setSelectedAdminTag(filters.adminTag || '')
+    setSelectedNotesState(filters.notesState || '')
     setSortConfig(filters.sort || 'createdAt:desc')
     setCurrentPage(1)
     setActivePresetLabel(buildUsersPresetLabel(filters))
@@ -167,7 +175,7 @@ const AdminUsersList = ({ navigationRequest }) => {
 
   useEffect(() => {
     fetchUsers()
-  }, [currentPage, searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, sortConfig, pageSize])
+  }, [currentPage, searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, selectedAdminTag, selectedNotesState, sortConfig, pageSize])
 
   const openLockModal = (user) => {
     setLockingUser(user)
@@ -686,6 +694,23 @@ const AdminUsersList = ({ navigationRequest }) => {
             <option value=''>All Recovery States</option>
             <option value='true'>Password Reset Required</option>
             <option value='false'>No Forced Reset</option>
+          </select>
+
+          <input
+            type='text'
+            value={selectedAdminTag}
+            onChange={(e) => setSelectedAdminTag(e.target.value)}
+            placeholder='Filter by admin tag...'
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+          />
+
+          <select
+            value={selectedNotesState}
+            onChange={(e) => setSelectedNotesState(e.target.value)}
+            className='flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value=''>All Note States</option>
+            <option value='with_notes'>With Internal Notes</option>
+            <option value='without_notes'>Without Internal Notes</option>
           </select>
 
           <select

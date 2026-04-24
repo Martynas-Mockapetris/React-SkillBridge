@@ -704,9 +704,12 @@ export const getAdminUserAnnouncements = async (req, res) => {
 // @access  Admin
 export const getAdminUsers = async (req, res) => {
   try {
-    const { search = '', role = '', status = '', verification = '', passwordResetRequired = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
+    const { search = '', role = '', status = '', verification = '', passwordResetRequired = '', adminTag = '', notesState = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
 
     const query = {}
+    const escapedAdminTag = String(adminTag || '')
+      .trim()
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
     // Search by name or email
     if (search) {
@@ -733,6 +736,18 @@ export const getAdminUsers = async (req, res) => {
 
     if (passwordResetRequired === 'false') {
       query.forcePasswordReset = false
+    }
+
+    if (escapedAdminTag) {
+      query.adminTags = { $regex: escapedAdminTag, $options: 'i' }
+    }
+
+    if (notesState === 'with_notes') {
+      query.$and = [...(query.$and || []), { adminNotes: { $exists: true, $ne: '' } }]
+    }
+
+    if (notesState === 'without_notes') {
+      query.$and = [...(query.$and || []), { $or: [{ adminNotes: { $exists: false } }, { adminNotes: '' }] }]
     }
 
     // Filter by status (Active / Inactive / Locked)
