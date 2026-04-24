@@ -1,5 +1,21 @@
 import SystemConfig from '../models/SystemConfig.js'
 
+const CONFIG_SECTIONS = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
+
+const normalizeSection = (section) => ({
+  enabled: section?.enabled ?? true,
+  updatedBy: section?.updatedBy ?? null,
+  updatedAt: section?.updatedAt ?? null,
+  values: section?.values || {}
+})
+
+const normalizeConfig = (config) => {
+  return CONFIG_SECTIONS.reduce((acc, sectionKey) => {
+    acc[sectionKey] = normalizeSection(config?.[sectionKey])
+    return acc
+  }, {})
+}
+
 const ensureConfig = async () => {
   let config = await SystemConfig.findOne()
   if (!config) {
@@ -14,7 +30,7 @@ const ensureConfig = async () => {
 export const getSystemConfig = async (req, res) => {
   try {
     const config = await ensureConfig()
-    res.json(config)
+    res.json(normalizeConfig(config))
   } catch (error) {
     console.error('Error fetching system config:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
@@ -29,12 +45,12 @@ export const getPublicSystemConfig = async (req, res) => {
     const config = await ensureConfig()
 
     const publicSections = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
-    const payload = publicSections.reduce((acc, section) => {
-      const sectionData = config[section]
+    const normalizedConfig = normalizeConfig(config)
 
+    const payload = publicSections.reduce((acc, section) => {
       acc[section] = {
-        enabled: sectionData?.enabled ?? true,
-        values: sectionData?.values || {}
+        enabled: normalizedConfig[section].enabled,
+        values: normalizedConfig[section].values
       }
 
       return acc
@@ -53,7 +69,7 @@ export const getPublicSystemConfig = async (req, res) => {
 export const updateSystemConfigSection = async (req, res) => {
   try {
     const { section } = req.params
-    const allowedSections = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
+    const allowedSections = CONFIG_SECTIONS
 
     if (!allowedSections.includes(section)) {
       return res.status(400).json({ message: 'Invalid config section' })
@@ -70,7 +86,7 @@ export const updateSystemConfigSection = async (req, res) => {
     }
 
     await config.save()
-    res.json({ message: `${section} settings updated`, config })
+    res.json({ message: `${section} settings updated`, config: normalizeConfig(config) })
   } catch (error) {
     console.error('Error updating system config section:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
