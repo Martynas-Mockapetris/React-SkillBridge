@@ -160,6 +160,16 @@ export const requestAdminPasswordReset = async (userId) => {
   }
 }
 
+export const requestAdminEmailVerification = async (userId) => {
+  try {
+    const response = await authAxios.post(`/api/users/admin/${userId}/verify-email`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to request admin email verification:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Delete user (admin)
 export const deleteAdminUser = async (userId) => {
   try {

@@ -1,6 +1,6 @@
 import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport, FaKey, FaCheckCircle, FaClock } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
-import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, deleteAdminUser } from '../../services/userService'
+import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, requestAdminEmailVerification, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
 import AdminLockUserModal from '../../modal/AdminLockUserModal'
 import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
@@ -38,6 +38,7 @@ const AdminUsersList = ({ navigationRequest }) => {
   const canLockUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_LOCK)
   const canDeleteUsers = hasAdminPermission(currentUser, ADMIN_PERMISSIONS.USERS_DELETE)
   const canResetUsers = canUpdateUsers
+  const canVerifyUsers = canUpdateUsers
   const [selectedVerification, setSelectedVerification] = useState('')
   const [selectedPasswordResetRequired, setSelectedPasswordResetRequired] = useState('')
   const latestUsersFetchRef = useRef(0)
@@ -337,6 +338,19 @@ const AdminUsersList = ({ navigationRequest }) => {
     }
   }
 
+  const handleVerificationResend = async (user) => {
+    const confirmed = window.confirm(`Send a verification email to ${user.firstName} ${user.lastName}?`)
+    if (!confirmed) return
+
+    try {
+      const response = await requestAdminEmailVerification(user._id)
+      alert(response.message || 'Verification email sent.')
+      await fetchUsers()
+    } catch (error) {
+      alert(`Failed to request verification email: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
   const handleBulkPasswordReset = async () => {
     const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
     const eligibleUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
@@ -365,6 +379,37 @@ const AdminUsersList = ({ navigationRequest }) => {
       }
     } catch (error) {
       alert(`Failed to process bulk password reset: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
+  const handleBulkVerificationResend = async () => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => !user.isEmailVerified)
+
+    if (eligibleUsers.length === 0) {
+      alert('No eligible users selected for verification resend.')
+      return
+    }
+
+    const confirmed = window.confirm(`Send verification emails to ${eligibleUsers.length} selected users?`)
+    if (!confirmed) return
+
+    try {
+      const results = await Promise.allSettled(eligibleUsers.map((user) => requestAdminEmailVerification(user._id)))
+
+      const successCount = results.filter((result) => result.status === 'fulfilled').length
+      const failedCount = results.length - successCount
+
+      await fetchUsers()
+      setSelectedUsers([])
+
+      if (failedCount === 0) {
+        alert(`Verification emails requested for ${successCount} users.`)
+      } else {
+        alert(`Verification emails requested for ${successCount} users. ${failedCount} requests failed.`)
+      }
+    } catch (error) {
+      alert(`Failed to process bulk verification resend: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -426,9 +471,10 @@ const AdminUsersList = ({ navigationRequest }) => {
   // Bulk actions toolbar
   const BulkActions = () => {
     if (selectedUsers.length === 0) return null
-    if (!canLockUsers && !canDeleteUsers && !canResetUsers) return null
+    if (!canLockUsers && !canDeleteUsers && !canResetUsers && !canVerifyUsers) return null
 
     const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleVerificationUsers = selectedUserRecords.filter((user) => !user.isEmailVerified)
     const eligibleResetUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
     const eligibleLockUsers = selectedUserRecords.filter((user) => !user.isLocked && !isPrivilegedUser(user))
     const eligibleUnlockUsers = selectedUserRecords.filter((user) => user.isLocked && !isPrivilegedUser(user))
@@ -438,6 +484,7 @@ const AdminUsersList = ({ navigationRequest }) => {
       <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
         <span className='text-sm text-gray-700 dark:text-gray-300'>
           {selectedUsers.length} users selected
+          {canVerifyUsers && ` • ${eligibleVerificationUsers.length} eligible for verification`}
           {canLockUsers && ` • ${eligibleLockUsers.length} eligible for lock`}
           {canLockUsers && ` • ${eligibleUnlockUsers.length} eligible for unlock`}
           {canResetUsers && ` • ${eligibleResetUsers.length} eligible for reset`}
@@ -459,6 +506,15 @@ const AdminUsersList = ({ navigationRequest }) => {
               disabled={eligibleUnlockUsers.length === 0}
               className={`px-3 py-1 text-sm rounded-md ${eligibleUnlockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
               <FaLock className='inline-block mr-1' /> Unlock Selected ({eligibleUnlockUsers.length})
+            </button>
+          )}
+
+          {canVerifyUsers && (
+            <button
+              onClick={handleBulkVerificationResend}
+              disabled={eligibleVerificationUsers.length === 0}
+              className={`px-3 py-1 text-sm rounded-md ${eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}>
+              <FaEnvelope className='inline-block mr-1' /> Resend Verification ({eligibleVerificationUsers.length})
             </button>
           )}
 
@@ -765,6 +821,12 @@ const AdminUsersList = ({ navigationRequest }) => {
                       {canResetUsers && !isPrivilegedUser(user) && (
                         <button onClick={() => handlePasswordReset(user)} title='Send password reset email' className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
                           <FaKey className='w-4 h-4' />
+                        </button>
+                      )}
+
+                      {canVerifyUsers && !user.isEmailVerified && (
+                        <button onClick={() => handleVerificationResend(user)} title='Send verification email' className='text-amber-600 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200'>
+                          <FaEnvelope className='w-4 h-4' />
                         </button>
                       )}
 
