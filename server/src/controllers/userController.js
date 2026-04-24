@@ -780,7 +780,22 @@ export const getAdminUsers = async (req, res) => {
 }
 
 const PRIVILEGED_USER_TYPES = ['admin', 'moderator', 'blogger', 'config_manager']
-const ADMIN_USER_EDITABLE_FIELDS = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
+const ADMIN_USER_EDITABLE_FIELDS = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel', 'adminNotes', 'adminTags']
+
+const normalizeAdminTags = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((tag) => String(tag).trim()).filter(Boolean)
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
 
 // @desc    Toggle user lock status (admin)
 // @route   PATCH /api/users/admin/:userId/lock
@@ -882,9 +897,21 @@ export const updateAdminUser = async (req, res) => {
 
     const updates = {}
     ADMIN_USER_EDITABLE_FIELDS.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field]
+      if (req.body[field] === undefined) {
+        return
       }
+
+      if (field === 'adminTags') {
+        updates[field] = normalizeAdminTags(req.body[field])
+        return
+      }
+
+      if (field === 'adminNotes') {
+        updates[field] = String(req.body[field] || '').trim()
+        return
+      }
+
+      updates[field] = req.body[field]
     })
 
     if (Object.keys(updates).length === 0) {

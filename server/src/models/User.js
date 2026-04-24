@@ -86,10 +86,6 @@ const UserSchema = new mongoose.Schema({
     default: null,
     select: false
   },
-  passwordResetRequestedAt: {
-    type: Date,
-    default: null
-  },
   forcePasswordReset: {
     type: Boolean,
     default: false
@@ -97,6 +93,15 @@ const UserSchema = new mongoose.Schema({
   forcePasswordResetSetAt: {
     type: Date,
     default: null
+  },
+  adminNotes: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  adminTags: {
+    type: [String],
+    default: []
   },
   createdAt: {
     type: Date,
