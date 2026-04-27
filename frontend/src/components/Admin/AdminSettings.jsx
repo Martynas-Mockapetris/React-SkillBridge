@@ -876,6 +876,49 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
   const renderHomeHeroBuilderPanel = () => {
     const heroBuilder = getHomeHeroBuilderValues()
+    const sectionVisibility = getHomeSectionVisibilityValues()
+    const sectionOrder = getHomeSectionOrderValues()
+
+    const layoutPresetLabels = {
+      centered: 'Centered',
+      split: 'Split',
+      editorial: 'Editorial',
+      minimal: 'Minimal'
+    }
+
+    const contentAlignLabels = {
+      left: 'Left',
+      center: 'Center'
+    }
+
+    const ctaLayoutLabels = {
+      'stacked-mobile': 'Stacked Mobile / Row Desktop',
+      inline: 'Inline',
+      split: 'Split Emphasis'
+    }
+
+    const pageHeightLabels = {
+      screen: 'Full Screen',
+      large: 'Large',
+      medium: 'Medium'
+    }
+
+    const orderedSections = sectionOrder
+      .map((sectionKey) => {
+        const item = HOME_SECTION_ORDER_ITEMS.find((entry) => entry.key === sectionKey)
+        if (!item) return null
+
+        const isVisible = sectionVisibility[item.visibilityKey] ?? true
+
+        return {
+          ...item,
+          isVisible
+        }
+      })
+      .filter(Boolean)
+
+    const visibleSectionsCount = orderedSections.filter((item) => item.isVisible).length
+    const hiddenSectionsCount = orderedSections.length - visibleSectionsCount
 
     return (
       <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
@@ -958,34 +1001,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
           <div>
-            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Visibility</h5>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control which major Home sections are rendered on the public page.</p>
-          </div>
-
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-            {[
-              { key: 'showHero', label: 'Show Hero Section', defaultValue: true },
-              { key: 'showFeatures', label: 'Show Features Section', defaultValue: true },
-              { key: 'showHowItWorks', label: 'Show How It Works Section', defaultValue: true },
-              { key: 'showTestimonials', label: 'Show Testimonials Section', defaultValue: true },
-              { key: 'showPricing', label: 'Show Pricing Section', defaultValue: true },
-              { key: 'showContact', label: 'Show Contact Section', defaultValue: true }
-            ].map((item) => {
-              const sectionVisibility = getHomeSectionVisibilityValues()
-              const checked = sectionVisibility[item.key] ?? item.defaultValue
-
-              return (
-                <label key={item.key} className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
-                  <input type='checkbox' checked={checked} onChange={(e) => handleHomeSectionVisibilityChange(item.key, e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
-                  {item.label}
-                </label>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
-          <div>
             <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Order</h5>
             <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the top-to-bottom order of sections on the public Home page.</p>
           </div>
@@ -1026,6 +1041,62 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               )
             })}
           </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h6 className='text-sm font-semibold text-gray-900 dark:text-white'>Current Render Order</h6>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>This is the order the Home page will use after saving, with visibility applied per section.</p>
+            </div>
+            <span className='text-xs text-gray-500 dark:text-gray-400'>Total: {orderedSections.length}</span>
+          </div>
+
+          <div className='space-y-2'>
+            {orderedSections.map((item, index) => (
+              <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 px-3 py-2'>
+                <div className='flex items-center gap-3 min-w-0'>
+                  <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-semibold text-accent'>{index + 1}</span>
+
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{item.isVisible ? 'Will render on page' : 'Hidden and skipped in public render'}</p>
+                  </div>
+                </div>
+
+                <span
+                  className={`px-2 py-1 rounded-full text-[11px] font-semibold ${
+                    item.isVisible ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                  }`}>
+                  {item.isVisible ? 'Visible' : 'Hidden'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'></div>
+        <div>
+          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
+          <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Review the current Home page builder configuration before saving it to the public site.</p>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
+          {[
+            { label: 'Layout Preset', value: layoutPresetLabels[heroBuilder.layoutPreset || 'centered'] || 'Centered' },
+            { label: 'Content Alignment', value: contentAlignLabels[heroBuilder.contentAlign || 'center'] || 'Center' },
+            { label: 'CTA Layout', value: ctaLayoutLabels[heroBuilder.ctaLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
+            { label: 'Page Height', value: pageHeightLabels[heroBuilder.heroHeight || 'screen'] || 'Full Screen' },
+            { label: 'Scroll Indicator', value: (heroBuilder.showScrollIndicator ?? true) ? 'Shown' : 'Hidden' },
+            { label: 'Background Pattern', value: (heroBuilder.showBackgroundPattern ?? true) ? 'Shown' : 'Hidden' },
+            { label: 'Visible Sections', value: String(visibleSectionsCount) },
+            { label: 'Hidden Sections', value: String(hiddenSectionsCount) }
+          ].map((item) => (
+            <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+              <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+            </div>
+          ))}
         </div>
 
         <div className='flex flex-wrap items-center gap-2 pt-2'>
