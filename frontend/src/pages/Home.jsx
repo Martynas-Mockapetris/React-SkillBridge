@@ -31,6 +31,11 @@ const Home = () => {
     return publicConfig.home.values || {}
   }, [publicConfig])
 
+  const heroLayoutValues = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.homeHero || {}
+  }, [publicConfig])
+
   const contactValues = useMemo(() => {
     if (!publicConfig?.contact?.enabled) return {}
     return publicConfig.contact.values || {}
@@ -55,7 +60,7 @@ const Home = () => {
 
   return (
     <main className={`transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
-      <HeroSection content={homeValues} />
+      <HeroSection content={homeValues} layoutValues={heroLayoutValues} />
       <FeaturesSection content={homeValues} systemValues={systemValues} />
       <HowItWorksSection content={homeValues} />
       <TestimonialsSection content={testimonialsValues} />
