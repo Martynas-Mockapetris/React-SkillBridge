@@ -60,7 +60,7 @@ const Home = () => {
 
   return (
     <main className={`transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
-      <HeroSection content={homeValues} layoutValues={heroLayoutValues} />
+      <HeroSection content={homeValues} layout={heroLayoutValues} />
       <FeaturesSection content={homeValues} systemValues={systemValues} />
       <HowItWorksSection content={homeValues} />
       <TestimonialsSection content={testimonialsValues} />
