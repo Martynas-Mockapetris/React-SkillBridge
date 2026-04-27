@@ -8,6 +8,9 @@ import { DEFAULT_SETTINGS_SECTION, SETTINGS_GROUPS } from './settingsNavigation'
 const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, setActiveSettingsSection }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(true)
+  const [expandedSettingsParents, setExpandedSettingsParents] = useState({
+    'site-builder-home-page': true
+  })
   const { currentUser } = useAuth()
 
   const navigationItems = [
@@ -36,6 +39,13 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
     setActiveSection('settings')
     setActiveSettingsSection(itemId)
     setIsMobileMenuOpen(false)
+  }
+
+  const toggleSettingsParent = (key) => {
+    setExpandedSettingsParents((prev) => ({
+      ...prev,
+      [key]: !prev[key]
+    }))
   }
 
   return (
@@ -87,12 +97,52 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
                           <p className='px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500'>{group.label}</p>
 
                           <div className='space-y-1'>
-                            {group.items.map((settingsItem) => {
+                            {group.items.map((settingsItem, index) => {
+                              if (settingsItem.children?.length) {
+                                const parentKey = `${group.id}-${settingsItem.label.toLowerCase().replace(/\s+/g, '-')}`
+                                const isExpanded = expandedSettingsParents[parentKey] ?? false
+                                const hasActiveChild = settingsItem.children.some((child) => activeSection === 'settings' && activeSettingsSection === child.id)
+
+                                return (
+                                  <div key={parentKey} className='space-y-1'>
+                                    <button
+                                      type='button'
+                                      onClick={() => toggleSettingsParent(parentKey)}
+                                      className={`w-full flex items-center justify-between text-left text-sm rounded-md px-3 py-2 transition ${
+                                        hasActiveChild ? 'bg-accent/10 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
+                                      }`}>
+                                      <span>{settingsItem.label}</span>
+                                      <span>{isExpanded ? <FaChevronDown size={11} /> : <FaChevronRight size={11} />}</span>
+                                    </button>
+
+                                    {isExpanded && (
+                                      <div className='ml-3 space-y-1 border-l border-gray-200 dark:border-gray-700 pl-3'>
+                                        {settingsItem.children.map((child) => {
+                                          const isSettingsActive = activeSection === 'settings' && activeSettingsSection === child.id
+
+                                          return (
+                                            <button
+                                              key={child.id}
+                                              type='button'
+                                              onClick={() => handleSettingsItemClick(child.id)}
+                                              className={`w-full text-left text-sm rounded-md px-3 py-2 transition ${
+                                                isSettingsActive ? 'bg-accent/15 text-accent font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-light/5 dark:hover:bg-light/10'
+                                              }`}>
+                                              {child.label}
+                                            </button>
+                                          )
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              }
+
                               const isSettingsActive = activeSection === 'settings' && activeSettingsSection === settingsItem.id
 
                               return (
                                 <button
-                                  key={settingsItem.id}
+                                  key={settingsItem.id || `${group.id}-${index}`}
                                   type='button'
                                   onClick={() => handleSettingsItemClick(settingsItem.id)}
                                   className={`w-full text-left text-sm rounded-md px-3 py-2 transition ${

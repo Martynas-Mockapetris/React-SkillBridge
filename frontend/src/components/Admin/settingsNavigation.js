@@ -1,25 +1,25 @@
-export const DEFAULT_SETTINGS_SECTION = 'home.hero'
+export const DEFAULT_SETTINGS_SECTION = 'home.layout'
 
 export const SETTINGS_GROUPS = [
   {
     id: 'site-builder',
     label: 'Site Builder',
     items: [
-      { id: 'home.hero', label: 'Home Page' },
+      {
+        label: 'Home Page',
+        children: [
+          { id: 'home.layout', label: 'Layout Settings' },
+          { id: 'home.content', label: 'Main Content Block' },
+          { id: 'home.testimonials', label: 'Testimonials Block' },
+          { id: 'home.pricing', label: 'Pricing Block' }
+        ]
+      },
       { id: 'blog', label: 'Blog Page' },
       { id: 'blog-detail', label: 'Blog Detail Page' },
       { id: 'listings', label: 'Listings Page' },
       { id: 'project-detail', label: 'Project Detail Page' },
       { id: 'about', label: 'About Page' },
       { id: 'contact', label: 'Contact Page' }
-    ]
-  },
-  {
-    id: 'shared-blocks',
-    label: 'Shared Blocks',
-    items: [
-      { id: 'home.pricing', label: 'Pricing Block' },
-      { id: 'home.testimonials', label: 'Testimonials Block' }
     ]
   },
   {
@@ -33,20 +33,33 @@ export const SETTINGS_GROUPS = [
 ]
 
 export const SETTINGS_VIEW_MAP = {
-  'home.hero': {
-    pageTitle: 'Site Builder',
-    pageDescription: 'Manage Home page content, layout settings, and section visibility.',
-    sectionId: 'home'
+  'home.layout': {
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage Home page layout, visibility, and presentation settings.',
+    sectionId: 'home',
+    sectionTitle: 'Layout Settings',
+    sectionDescription: 'Configure layout presets, page height, section visibility, and other presentation controls.'
+  },
+  'home.content': {
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage Home page copy and labels for the main sections.',
+    sectionId: 'home',
+    sectionTitle: 'Main Content Block',
+    sectionDescription: 'Edit hero, features, how-it-works, and contact copy used on the Home page.'
   },
   'home.pricing': {
-    pageTitle: 'Shared Blocks',
-    pageDescription: 'Manage reusable pricing block content and plan structure.',
-    sectionId: 'pricing'
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage pricing block content and plan structure used on the Home page.',
+    sectionId: 'pricing',
+    sectionTitle: 'Pricing Block',
+    sectionDescription: 'Edit pricing section headings and plan content.'
   },
   'home.testimonials': {
-    pageTitle: 'Shared Blocks',
-    pageDescription: 'Manage reusable testimonials content and card structure.',
-    sectionId: 'testimonials'
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage testimonials block content shown on the Home page.',
+    sectionId: 'testimonials',
+    sectionTitle: 'Testimonials Block',
+    sectionDescription: 'Edit testimonial headings, cards, and supporting content.'
   },
   blog: {
     pageTitle: 'Site Builder',
@@ -92,11 +105,43 @@ export const SETTINGS_VIEW_MAP = {
 
 export const SETTINGS_VIEW_REGISTRY = [
   {
-    id: 'home.hero',
+    id: 'home.layout',
     groupId: 'site-builder',
-    pageTitle: 'Site Builder',
-    pageDescription: 'Manage Home page content, layout settings, and section visibility.',
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage Home page layout, visibility, and presentation settings.',
     sectionId: 'home',
+    sectionTitle: 'Layout Settings',
+    sectionDescription: 'Configure layout presets, page height, section visibility, and other presentation controls.',
+    isImplemented: true
+  },
+  {
+    id: 'home.content',
+    groupId: 'site-builder',
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage Home page copy and labels for the main sections.',
+    sectionId: 'home',
+    sectionTitle: 'Main Content Block',
+    sectionDescription: 'Edit hero, features, how-it-works, and contact copy used on the Home page.',
+    isImplemented: true
+  },
+  {
+    id: 'home.pricing',
+    groupId: 'site-builder',
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage pricing block content and plan structure used on the Home page.',
+    sectionId: 'pricing',
+    sectionTitle: 'Pricing Block',
+    sectionDescription: 'Edit pricing section headings and plan content.',
+    isImplemented: true
+  },
+  {
+    id: 'home.testimonials',
+    groupId: 'site-builder',
+    pageTitle: 'Home Page',
+    pageDescription: 'Manage testimonials block content shown on the Home page.',
+    sectionId: 'testimonials',
+    sectionTitle: 'Testimonials Block',
+    sectionDescription: 'Edit testimonial headings, cards, and supporting content.',
     isImplemented: true
   },
   {
@@ -145,22 +190,6 @@ export const SETTINGS_VIEW_REGISTRY = [
     pageTitle: 'Site Builder',
     pageDescription: 'Manage platform contact content and support details.',
     sectionId: 'contact',
-    isImplemented: true
-  },
-  {
-    id: 'home.pricing',
-    groupId: 'shared-blocks',
-    pageTitle: 'Shared Blocks',
-    pageDescription: 'Manage reusable pricing block content and plan structure.',
-    sectionId: 'pricing',
-    isImplemented: true
-  },
-  {
-    id: 'home.testimonials',
-    groupId: 'shared-blocks',
-    pageTitle: 'Shared Blocks',
-    pageDescription: 'Manage reusable testimonials content and card structure.',
-    sectionId: 'testimonials',
     isImplemented: true
   },
   {

@@ -5,8 +5,8 @@ import { getSystemConfig, updateSystemConfigSection } from '../../services/confi
 
 const SECTION_DEFS = {
   home: {
-    title: 'Hero Sections',
-    description: 'Manage hero and core Home page section content.',
+    title: 'Home Page Content',
+    description: 'Manage core Home page content and section copy.',
     fields: [
       { key: 'heroTitleLead', label: 'Hero Title (Lead)', type: 'text', placeholder: 'Find Your Next' },
       { key: 'heroTitleAccent', label: 'Hero Title (Accent)', type: 'text', placeholder: 'Opportunity' },
@@ -999,8 +999,8 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                 <div className='flex flex-wrap items-start justify-between gap-3'>
                   <div>
                     <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-2'>{activeView.pageTitle}</p>
-                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section?.title || activeView?.pageTitle}</h3>
-                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView.pageDescription}</p>
+                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{activeView?.sectionTitle || section?.title || activeView?.pageTitle}</h3>
+                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView?.sectionDescription || activeView?.pageDescription}</p>
                   </div>
                 </div>
 
@@ -1024,17 +1024,19 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                       </label>
                     </div>
 
-                    {activeSectionId === 'home.hero' && renderHomeHeroBuilderPanel()}
+                    {activeSectionId === 'home.layout' && renderHomeHeroBuilderPanel()}
 
-                    {renderSectionFields(sectionId, section)}
+                    {activeSectionId !== 'home.layout' && renderSectionFields(sectionId, section)}
 
                     <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
 
-                    <div className='mt-4 flex flex-wrap items-center gap-2'>
-                      <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
-                        {savingSection === sectionId ? 'Saving...' : 'Save Section'}
-                      </button>
-                    </div>
+                    {activeSectionId !== 'home.layout' && (
+                      <div className='mt-4 flex flex-wrap items-center gap-2'>
+                        <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+                          {savingSection === sectionId ? 'Saving...' : 'Save Section'}
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
