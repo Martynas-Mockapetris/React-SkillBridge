@@ -327,6 +327,26 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     }))
   }
 
+  const getHomeSectionVisibilityValues = () => {
+    return drafts?.siteBuilder?.values?.homeSections || {}
+  }
+
+  const handleHomeSectionVisibilityChange = (key, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          homeSections: {
+            ...(prev.siteBuilder.values?.homeSections || {}),
+            [key]: value
+          }
+        }
+      }
+    }))
+  }
+
   const handleSaveSiteBuilderSection = async () => {
     try {
       setSavingSection('siteBuilder')
@@ -879,12 +899,38 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </label>
         </div>
 
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Visibility</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control which major Home sections are rendered on the public page.</p>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+            {[
+              { key: 'showHero', label: 'Show Hero Section', defaultValue: true },
+              { key: 'showFeatures', label: 'Show Features Section', defaultValue: true },
+              { key: 'showHowItWorks', label: 'Show How It Works Section', defaultValue: true },
+              { key: 'showTestimonials', label: 'Show Testimonials Section', defaultValue: true },
+              { key: 'showPricing', label: 'Show Pricing Section', defaultValue: true },
+              { key: 'showContact', label: 'Show Contact Section', defaultValue: true }
+            ].map((item) => {
+              const sectionVisibility = getHomeSectionVisibilityValues()
+              const checked = sectionVisibility[item.key] ?? item.defaultValue
+
+              return (
+                <label key={item.key} className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
+                  <input type='checkbox' checked={checked} onChange={(e) => handleHomeSectionVisibilityChange(item.key, e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                  {item.label}
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
         <div className='flex flex-wrap items-center gap-2 pt-2'>
           <button type='button' onClick={handleSaveSiteBuilderSection} disabled={savingSection === 'siteBuilder'} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
-            {savingSection === 'siteBuilder' ? 'Saving...' : 'Save Hero Layout'}
+            {savingSection === 'siteBuilder' ? 'Saving...' : 'Save'}
           </button>
-
-          <span className='text-xs text-gray-500 dark:text-gray-400'>Saves into siteBuilder config only. Public Home rendering will consume this in the next task.</span>
         </div>
       </div>
     )

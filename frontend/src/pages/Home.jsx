@@ -36,6 +36,11 @@ const Home = () => {
     return publicConfig.siteBuilder.values?.homeHero || {}
   }, [publicConfig])
 
+  const homeSectionVisibility = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.homeSections || {}
+  }, [publicConfig])
+
   const contactValues = useMemo(() => {
     if (!publicConfig?.contact?.enabled) return {}
     return publicConfig.contact.values || {}
@@ -58,14 +63,21 @@ const Home = () => {
     return { ...legacyHomeValues, ...testimonialsSectionValues }
   }, [publicConfig])
 
+  const showHero = homeSectionVisibility.showHero ?? true
+  const showFeatures = homeSectionVisibility.showFeatures ?? true
+  const showHowItWorks = homeSectionVisibility.showHowItWorks ?? true
+  const showTestimonials = homeSectionVisibility.showTestimonials ?? true
+  const showPricing = homeSectionVisibility.showPricing ?? true
+  const showContact = homeSectionVisibility.showContact ?? true
+
   return (
     <main className={`transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
-      <HeroSection content={homeValues} layout={heroLayoutValues} />
-      <FeaturesSection content={homeValues} systemValues={systemValues} />
-      <HowItWorksSection content={homeValues} />
-      <TestimonialsSection content={testimonialsValues} />
-      <PricingSection content={pricingValues} />
-      <ContactSection content={homeValues} contactValues={contactValues} />
+      {showHero && <HeroSection content={homeValues} layout={heroLayoutValues} />}
+      {showFeatures && <FeaturesSection content={homeValues} systemValues={systemValues} />}
+      {showHowItWorks && <HowItWorksSection content={homeValues} />}
+      {showTestimonials && <TestimonialsSection content={testimonialsValues} />}
+      {showPricing && <PricingSection content={pricingValues} />}
+      {showContact && <ContactSection content={homeValues} contactValues={contactValues} />}
     </main>
   )
 }
