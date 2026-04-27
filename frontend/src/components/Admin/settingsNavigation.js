@@ -5,7 +5,7 @@ export const SETTINGS_GROUPS = [
     id: 'site-builder',
     label: 'Site Builder',
     items: [
-      { id: 'home.hero', label: 'Home Hero' },
+      { id: 'home.hero', label: 'Home Page' },
       { id: 'blog', label: 'Blog Page' },
       { id: 'blog-detail', label: 'Blog Detail Page' },
       { id: 'listings', label: 'Listings Page' },
@@ -35,7 +35,7 @@ export const SETTINGS_GROUPS = [
 export const SETTINGS_VIEW_MAP = {
   'home.hero': {
     pageTitle: 'Site Builder',
-    pageDescription: 'Manage the main Home hero content and entry layout settings.',
+    pageDescription: 'Manage Home page content, layout settings, and section visibility.',
     sectionId: 'home'
   },
   'home.pricing': {
@@ -95,7 +95,7 @@ export const SETTINGS_VIEW_REGISTRY = [
     id: 'home.hero',
     groupId: 'site-builder',
     pageTitle: 'Site Builder',
-    pageDescription: 'Manage the main Home hero content and entry layout settings.',
+    pageDescription: 'Manage Home page content, layout settings, and section visibility.',
     sectionId: 'home',
     isImplemented: true
   },

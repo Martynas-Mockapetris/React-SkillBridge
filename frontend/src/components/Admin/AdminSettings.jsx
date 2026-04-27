@@ -823,8 +823,8 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     return (
       <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
         <div>
-          <h4 className='text-lg font-bold text-gray-900 dark:text-white'>Hero Layout Builder</h4>
-          <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure the Home hero presentation layer without changing the public page behavior yet.</p>
+          <h4 className='text-lg font-bold text-gray-900 dark:text-white'>Home Page Builder</h4>
+          <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure Home page layout, presentation, and section visibility from one place.</p>
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -865,7 +865,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </div>
 
           <div>
-            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Hero Height</label>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Page Height</label>
             <select
               value={heroBuilder.heroHeight || 'screen'}
               onChange={(e) => handleHomeHeroBuilderChange('heroHeight', e.target.value)}
