@@ -1075,28 +1075,29 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </div>
         </div>
 
-        <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'></div>
-        <div>
-          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
-          <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Review the current Home page builder configuration before saving it to the public site.</p>
-        </div>
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Review the current Home page builder configuration before saving it to the public site.</p>
+          </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
-          {[
-            { label: 'Layout Preset', value: layoutPresetLabels[heroBuilder.layoutPreset || 'centered'] || 'Centered' },
-            { label: 'Content Alignment', value: contentAlignLabels[heroBuilder.contentAlign || 'center'] || 'Center' },
-            { label: 'CTA Layout', value: ctaLayoutLabels[heroBuilder.ctaLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
-            { label: 'Page Height', value: pageHeightLabels[heroBuilder.heroHeight || 'screen'] || 'Full Screen' },
-            { label: 'Scroll Indicator', value: (heroBuilder.showScrollIndicator ?? true) ? 'Shown' : 'Hidden' },
-            { label: 'Background Pattern', value: (heroBuilder.showBackgroundPattern ?? true) ? 'Shown' : 'Hidden' },
-            { label: 'Visible Sections', value: String(visibleSectionsCount) },
-            { label: 'Hidden Sections', value: String(hiddenSectionsCount) }
-          ].map((item) => (
-            <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
-              <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
-              <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
-            </div>
-          ))}
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
+            {[
+              { label: 'Layout Preset', value: layoutPresetLabels[heroBuilder.layoutPreset || 'centered'] || 'Centered' },
+              { label: 'Content Alignment', value: contentAlignLabels[heroBuilder.contentAlign || 'center'] || 'Center' },
+              { label: 'CTA Layout', value: ctaLayoutLabels[heroBuilder.ctaLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
+              { label: 'Page Height', value: pageHeightLabels[heroBuilder.heroHeight || 'screen'] || 'Full Screen' },
+              { label: 'Scroll Indicator', value: (heroBuilder.showScrollIndicator ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'Background Pattern', value: (heroBuilder.showBackgroundPattern ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'Visible Sections', value: String(visibleSectionsCount) },
+              { label: 'Hidden Sections', value: String(hiddenSectionsCount) }
+            ].map((item) => (
+              <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+                <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className='flex flex-wrap items-center gap-2 pt-2'>
