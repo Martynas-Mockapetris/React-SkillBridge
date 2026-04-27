@@ -120,6 +120,15 @@ const HOME_FIELD_GROUPS = [
   }
 ]
 
+const HOME_SECTION_ORDER_ITEMS = [
+  { key: 'hero', label: 'Hero Section', visibilityKey: 'showHero' },
+  { key: 'features', label: 'Features Section', visibilityKey: 'showFeatures' },
+  { key: 'howItWorks', label: 'How It Works Section', visibilityKey: 'showHowItWorks' },
+  { key: 'testimonials', label: 'Testimonials Section', visibilityKey: 'showTestimonials' },
+  { key: 'pricing', label: 'Pricing Section', visibilityKey: 'showPricing' },
+  { key: 'contact', label: 'Contact Section', visibilityKey: 'showContact' }
+]
+
 const DEFAULT_PRICING_PLANS = [
   {
     title: 'Basic',
@@ -345,6 +354,54 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         }
       }
     }))
+  }
+
+  const getHomeSectionOrderValues = () => {
+    const defaultOrder = HOME_SECTION_ORDER_ITEMS.map((item) => item.key)
+    const savedOrder = drafts?.siteBuilder?.values?.homeSectionOrder
+
+    if (!Array.isArray(savedOrder) || !savedOrder.length) {
+      return defaultOrder
+    }
+
+    const allowedKeys = new Set(defaultOrder)
+    const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
+    const missingKeys = defaultOrder.filter((key) => !sanitizedOrder.includes(key))
+
+    return [...sanitizedOrder, ...missingKeys]
+  }
+
+  const moveHomeSectionOrderItem = (key, direction) => {
+    setDrafts((prev) => {
+      const defaultOrder = HOME_SECTION_ORDER_ITEMS.map((item) => item.key)
+      const savedOrder = prev?.siteBuilder?.values?.homeSectionOrder
+      const currentOrder = Array.isArray(savedOrder) && savedOrder.length ? [...savedOrder] : [...defaultOrder]
+      const currentIndex = currentOrder.indexOf(key)
+
+      if (currentIndex === -1) {
+        return prev
+      }
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+      if (targetIndex < 0 || targetIndex >= currentOrder.length) {
+        return prev
+      }
+
+      const nextOrder = [...currentOrder]
+      const [movedItem] = nextOrder.splice(currentIndex, 1)
+      nextOrder.splice(targetIndex, 0, movedItem)
+
+      return {
+        ...prev,
+        siteBuilder: {
+          ...prev.siteBuilder,
+          values: {
+            ...prev.siteBuilder.values,
+            homeSectionOrder: nextOrder
+          }
+        }
+      }
+    })
   }
 
   const handleSaveSiteBuilderSection = async () => {
@@ -927,6 +984,50 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </div>
         </div>
 
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Order</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the top-to-bottom order of sections on the public Home page.</p>
+          </div>
+
+          <div className='space-y-2'>
+            {getHomeSectionOrderValues().map((sectionKey, index, order) => {
+              const item = HOME_SECTION_ORDER_ITEMS.find((entry) => entry.key === sectionKey)
+              const sectionVisibility = getHomeSectionVisibilityValues()
+              const isVisible = sectionVisibility[item?.visibilityKey] ?? true
+
+              if (!item) return null
+
+              return (
+                <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Visible on page' : 'Hidden by visibility settings'}</p>
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => moveHomeSectionOrderItem(item.key, 'up')}
+                      disabled={index === 0}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Up
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={() => moveHomeSectionOrderItem(item.key, 'down')}
+                      disabled={index === order.length - 1}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Down
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
         <div className='flex flex-wrap items-center gap-2 pt-2'>
           <button type='button' onClick={handleSaveSiteBuilderSection} disabled={savingSection === 'siteBuilder'} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
             {savingSection === 'siteBuilder' ? 'Saving...' : 'Save'}
@@ -1013,13 +1114,13 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                   <>
                     <div className='mt-4 flex items-center gap-2'>
                       <input
-                        id={`enabled-${sectionId}`}
+                        id={`enabled-${activeSectionId}`}
                         type='checkbox'
-                        checked={!!drafts[sectionId]?.enabled}
-                        onChange={(e) => handleEnabledChange(sectionId, e.target.checked)}
+                        checked={activeSectionId === 'home.layout' ? !!drafts.siteBuilder?.enabled : !!drafts[sectionId]?.enabled}
+                        onChange={(e) => handleEnabledChange(activeSectionId === 'home.layout' ? 'siteBuilder' : sectionId, e.target.checked)}
                         className='rounded border-gray-300 text-accent focus:ring-accent'
                       />
-                      <label htmlFor={`enabled-${sectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
+                      <label htmlFor={`enabled-${activeSectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
                         Enabled
                       </label>
                     </div>
@@ -1028,7 +1129,12 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
                     {activeSectionId !== 'home.layout' && renderSectionFields(sectionId, section)}
 
-                    <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
+                    <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>
+                      Last updated:{' '}
+                      {(activeSectionId === 'home.layout' ? sectionMap.siteBuilder?.updatedAt : sectionMap[sectionId]?.updatedAt)
+                        ? new Date(activeSectionId === 'home.layout' ? sectionMap.siteBuilder.updatedAt : sectionMap[sectionId].updatedAt).toLocaleString()
+                        : 'N/A'}
+                    </div>
 
                     {activeSectionId !== 'home.layout' && (
                       <div className='mt-4 flex flex-wrap items-center gap-2'>

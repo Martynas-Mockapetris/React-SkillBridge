@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import ContactSection from '../components/Home/ContactSection'
 import FeaturesSection from '../components/Home/FeatureSection'
@@ -7,6 +7,8 @@ import HowItWorksSection from '../components/Home/HowItWorksSection'
 import PricingSection from '../components/Home/PricingSection'
 import TestimonialsSection from '../components/Home/TestimonialsSection'
 import { getPublicSystemConfig } from '../services/configService'
+
+const DEFAULT_HOME_SECTION_ORDER = ['hero', 'features', 'howItWorks', 'testimonials', 'pricing', 'contact']
 
 const Home = () => {
   const { isDarkMode } = useTheme()
@@ -41,6 +43,21 @@ const Home = () => {
     return publicConfig.siteBuilder.values?.homeSections || {}
   }, [publicConfig])
 
+  const homeSectionOrder = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return DEFAULT_HOME_SECTION_ORDER
+
+    const savedOrder = publicConfig.siteBuilder.values?.homeSectionOrder
+    if (!Array.isArray(savedOrder) || !savedOrder.length) {
+      return DEFAULT_HOME_SECTION_ORDER
+    }
+
+    const allowedKeys = new Set(DEFAULT_HOME_SECTION_ORDER)
+    const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
+    const missingKeys = DEFAULT_HOME_SECTION_ORDER.filter((key) => !sanitizedOrder.includes(key))
+
+    return [...sanitizedOrder, ...missingKeys]
+  }, [publicConfig])
+
   const contactValues = useMemo(() => {
     if (!publicConfig?.contact?.enabled) return {}
     return publicConfig.contact.values || {}
@@ -72,12 +89,29 @@ const Home = () => {
 
   return (
     <main className={`transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
-      {showHero && <HeroSection content={homeValues} layout={heroLayoutValues} />}
-      {showFeatures && <FeaturesSection content={homeValues} systemValues={systemValues} />}
-      {showHowItWorks && <HowItWorksSection content={homeValues} />}
-      {showTestimonials && <TestimonialsSection content={testimonialsValues} />}
-      {showPricing && <PricingSection content={pricingValues} />}
-      {showContact && <ContactSection content={homeValues} contactValues={contactValues} />}
+      {homeSectionOrder
+        .map((sectionKey) => {
+          switch (sectionKey) {
+            case 'hero':
+              return showHero ? { key: 'hero', element: <HeroSection content={homeValues} layout={heroLayoutValues} /> } : null
+            case 'features':
+              return showFeatures ? { key: 'features', element: <FeaturesSection content={homeValues} systemValues={systemValues} /> } : null
+            case 'howItWorks':
+              return showHowItWorks ? { key: 'howItWorks', element: <HowItWorksSection content={homeValues} /> } : null
+            case 'testimonials':
+              return showTestimonials ? { key: 'testimonials', element: <TestimonialsSection content={testimonialsValues} /> } : null
+            case 'pricing':
+              return showPricing ? { key: 'pricing', element: <PricingSection content={pricingValues} /> } : null
+            case 'contact':
+              return showContact ? { key: 'contact', element: <ContactSection content={homeValues} contactValues={contactValues} /> } : null
+            default:
+              return null
+          }
+        })
+        .filter(Boolean)
+        .map((section) => (
+          <Fragment key={section.key}>{section.element}</Fragment>
+        ))}
     </main>
   )
 }
