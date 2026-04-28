@@ -1,7 +1,18 @@
 import { useNavigate } from 'react-router-dom'
 import PageBackground from '../shared/PageBackground'
 
-const HeroSection = ({ content = {}, layout = {} }) => {
+const getSectionSpacingClass = (spacing = {}) => {
+  const top = spacing.top || 'normal'
+  const bottom = spacing.bottom || 'normal'
+
+  const topClass = top === 'none' ? 'pt-0' : top === 'tight' ? 'pt-10' : top === 'relaxed' ? 'pt-24' : top === 'loose' ? 'pt-32' : 'pt-20'
+
+  const bottomClass = bottom === 'none' ? 'pb-0' : bottom === 'tight' ? 'pb-10' : bottom === 'relaxed' ? 'pb-24' : bottom === 'loose' ? 'pb-32' : 'pb-20'
+
+  return `${topClass} ${bottomClass}`
+}
+
+const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {} }) => {
   const navigate = useNavigate()
 
   const heroTitleLead = content.heroTitleLead || 'Find Your Next'
@@ -16,6 +27,7 @@ const HeroSection = ({ content = {}, layout = {} }) => {
   const heroHeight = layout.heroHeight || 'screen'
   const showScrollIndicator = layout.showScrollIndicator ?? true
   const showBackgroundPattern = layout.showBackgroundPattern ?? true
+  const sectionSpacingClass = getSectionSpacingClass(sectionSpacing)
 
   const sectionHeightClass = heroHeight === 'medium' ? 'min-h-[70vh]' : heroHeight === 'large' ? 'min-h-[85vh]' : 'h-screen'
 
@@ -44,7 +56,7 @@ const HeroSection = ({ content = {}, layout = {} }) => {
   }
 
   return (
-    <section className={`relative ${sectionHeightClass} flex items-center justify-center overflow-hidden theme-bg`}>
+    <section className={`relative ${sectionHeightClass} ${sectionSpacingClass} flex items-center justify-center overflow-hidden theme-bg`}>
       {showBackgroundPattern && <PageBackground variant='home' />}
 
       {/* Turinio konteineris*/}

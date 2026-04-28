@@ -2,7 +2,18 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const ContactSection = ({ content = {}, contactValues = {} }) => {
+const getSectionSpacingClass = (spacing = {}) => {
+  const top = spacing.top || 'normal'
+  const bottom = spacing.bottom || 'normal'
+
+  const topClass = top === 'none' ? 'pt-0' : top === 'tight' ? 'pt-10' : top === 'relaxed' ? 'pt-24' : top === 'loose' ? 'pt-32' : 'pt-20'
+
+  const bottomClass = bottom === 'none' ? 'pb-0' : bottom === 'tight' ? 'pb-10' : bottom === 'relaxed' ? 'pb-24' : bottom === 'loose' ? 'pb-32' : 'pb-20'
+
+  return `${topClass} ${bottomClass}`
+}
+
+const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
   const contactTitleLead = content.contactTitleLead || 'Get In'
   const contactTitleAccent = content.contactTitleAccent || 'Touch'
   const contactSubtitle = content.contactSubtitle || "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon."
@@ -12,6 +23,7 @@ const ContactSection = ({ content = {}, contactValues = {} }) => {
   const phone = contactValues.phone || ''
   const address = contactValues.address || ''
   const workingHours = contactValues.workingHours || ''
+  const sectionSpacingClass = getSectionSpacingClass(layout)
 
   const infoItems = [
     supportEmail ? { label: 'Support', value: supportEmail } : null,
@@ -88,7 +100,7 @@ const ContactSection = ({ content = {}, contactValues = {} }) => {
 `
 
   return (
-    <section className='w-full py-20 theme-bg relative z-[1]'>
+    <section className={`w-full ${sectionSpacingClass} theme-bg relative z-[1]`}>
       {/* Molecular patterns */}
       <div className='absolute inset-0 overflow-hidden'>
         <div className='absolute left-60 bottom-20 opacity-20'>

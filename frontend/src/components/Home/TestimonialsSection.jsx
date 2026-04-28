@@ -3,12 +3,24 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const TestimonialsSection = ({ content = {} }) => {
+const getSectionSpacingClass = (spacing = {}) => {
+  const top = spacing.top || 'normal'
+  const bottom = spacing.bottom || 'normal'
+
+  const topClass = top === 'none' ? 'pt-0' : top === 'tight' ? 'pt-10' : top === 'relaxed' ? 'pt-24' : top === 'loose' ? 'pt-32' : 'pt-20'
+
+  const bottomClass = bottom === 'none' ? 'pb-0' : bottom === 'tight' ? 'pb-10' : bottom === 'relaxed' ? 'pb-24' : bottom === 'loose' ? 'pb-32' : 'pb-20'
+
+  return `${topClass} ${bottomClass}`
+}
+
+const TestimonialsSection = ({ content = {}, layout = {} }) => {
   const [expandedId, setExpandedId] = useState(null)
 
   const testimonialsTitleLead = content.testimonialsTitleLead || 'What Our'
   const testimonialsTitleAccent = content.testimonialsTitleAccent || 'Clients Say'
   const testimonialsSubtitle = content.testimonialsSubtitle || 'Discover how our platform has transformed businesses and careers through real success stories'
+  const sectionSpacingClass = getSectionSpacingClass(layout)
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id)
@@ -84,7 +96,7 @@ const TestimonialsSection = ({ content = {} }) => {
   }
 
   return (
-    <section className='w-full py-20 theme-bg relative'>
+    <section className={`w-full ${sectionSpacingClass} theme-bg relative`}>
       {/* Molecular Patterns Background */}
       <div className='absolute inset-0 overflow-hidden'>
         <div className='absolute left-20 top-40 opacity-20'>

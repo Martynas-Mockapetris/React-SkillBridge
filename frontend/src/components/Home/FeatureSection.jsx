@@ -2,11 +2,23 @@ import { FaHandshake, FaShieldAlt, FaRocket, FaChartLine, FaClock, FaGlobe } fro
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const FeaturesSection = ({ content = {}, systemValues = {} }) => {
+const getSectionSpacingClass = (spacing = {}) => {
+  const top = spacing.top || 'normal'
+  const bottom = spacing.bottom || 'normal'
+
+  const topClass = top === 'none' ? 'pt-0' : top === 'tight' ? 'pt-10' : top === 'relaxed' ? 'pt-24' : top === 'loose' ? 'pt-32' : 'pt-20'
+
+  const bottomClass = bottom === 'none' ? 'pb-0' : bottom === 'tight' ? 'pb-10' : bottom === 'relaxed' ? 'pb-24' : bottom === 'loose' ? 'pb-32' : 'pb-20'
+
+  return `${topClass} ${bottomClass}`
+}
+
+const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
   const platformName = systemValues.platformName || 'SkillBridge'
   const featuresTitleLead = content.featuresTitleLead || 'Why Choose'
   const featuresTitleAccent = content.featuresTitleAccent || platformName
   const featuresSubtitle = content.featuresSubtitle || `Discover the advantages that make ${platformName} the preferred platform for connecting talent with opportunities`
+  const sectionSpacingClass = getSectionSpacingClass(layout)
 
   const features = [
     {
@@ -42,7 +54,7 @@ const FeaturesSection = ({ content = {}, systemValues = {} }) => {
   ]
 
   return (
-    <section className='w-full py-20 theme-bg relative z-[1]'>
+    <section className={`w-full ${sectionSpacingClass} theme-bg relative z-[1]`}>
       {/* Molecular patterns */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         <div className='absolute -left-20 top-0 opacity-10'>

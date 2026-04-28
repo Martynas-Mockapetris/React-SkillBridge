@@ -9,6 +9,7 @@ import TestimonialsSection from '../components/Home/TestimonialsSection'
 import { getPublicSystemConfig } from '../services/configService'
 
 const DEFAULT_HOME_SECTION_ORDER = ['hero', 'features', 'howItWorks', 'testimonials', 'pricing', 'contact']
+const DEFAULT_HOME_SECTION_SPACING = {}
 
 const Home = () => {
   const { isDarkMode } = useTheme()
@@ -58,6 +59,11 @@ const Home = () => {
     return [...sanitizedOrder, ...missingKeys]
   }, [publicConfig])
 
+  const homeSectionSpacing = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return DEFAULT_HOME_SECTION_SPACING
+    return publicConfig.siteBuilder.values?.homeSectionSpacing || DEFAULT_HOME_SECTION_SPACING
+  }, [publicConfig])
+
   const contactValues = useMemo(() => {
     if (!publicConfig?.contact?.enabled) return {}
     return publicConfig.contact.values || {}
@@ -93,17 +99,17 @@ const Home = () => {
         .map((sectionKey) => {
           switch (sectionKey) {
             case 'hero':
-              return showHero ? { key: 'hero', element: <HeroSection content={homeValues} layout={heroLayoutValues} /> } : null
+              return showHero ? { key: 'hero', element: <HeroSection content={homeValues} layout={heroLayoutValues} sectionSpacing={homeSectionSpacing.hero || {}} /> } : null
             case 'features':
-              return showFeatures ? { key: 'features', element: <FeaturesSection content={homeValues} systemValues={systemValues} /> } : null
+              return showFeatures ? { key: 'features', element: <FeaturesSection content={homeValues} systemValues={systemValues} layout={homeSectionSpacing.features || {}} /> } : null
             case 'howItWorks':
-              return showHowItWorks ? { key: 'howItWorks', element: <HowItWorksSection content={homeValues} /> } : null
+              return showHowItWorks ? { key: 'howItWorks', element: <HowItWorksSection content={homeValues} layout={homeSectionSpacing.howItWorks || {}} /> } : null
             case 'testimonials':
-              return showTestimonials ? { key: 'testimonials', element: <TestimonialsSection content={testimonialsValues} /> } : null
+              return showTestimonials ? { key: 'testimonials', element: <TestimonialsSection content={testimonialsValues} layout={homeSectionSpacing.testimonials || {}} /> } : null
             case 'pricing':
-              return showPricing ? { key: 'pricing', element: <PricingSection content={pricingValues} /> } : null
+              return showPricing ? { key: 'pricing', element: <PricingSection content={pricingValues} layout={homeSectionSpacing.pricing || {}} /> } : null
             case 'contact':
-              return showContact ? { key: 'contact', element: <ContactSection content={homeValues} contactValues={contactValues} /> } : null
+              return showContact ? { key: 'contact', element: <ContactSection content={homeValues} contactValues={contactValues} layout={homeSectionSpacing.contact || {}} /> } : null
             default:
               return null
           }

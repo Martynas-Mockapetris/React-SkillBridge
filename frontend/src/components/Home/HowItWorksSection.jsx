@@ -3,7 +3,18 @@ import { useState } from 'react'
 import { FaUser, FaBriefcase, FaUserCircle, FaSearch, FaHandshake, FaFileAlt, FaUserCheck, FaCheckCircle } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
-const HowItWorksSection = ({ content = {} }) => {
+const getSectionSpacingClass = (spacing = {}) => {
+  const top = spacing.top || 'normal'
+  const bottom = spacing.bottom || 'normal'
+
+  const topClass = top === 'none' ? 'pt-0' : top === 'tight' ? 'pt-10' : top === 'relaxed' ? 'pt-24' : top === 'loose' ? 'pt-32' : 'pt-20'
+
+  const bottomClass = bottom === 'none' ? 'pb-0' : bottom === 'tight' ? 'pb-10' : bottom === 'relaxed' ? 'pb-24' : bottom === 'loose' ? 'pb-32' : 'pb-20'
+
+  return `${topClass} ${bottomClass}`
+}
+
+const HowItWorksSection = ({ content = {}, layout = {} }) => {
   const [activeTab, setActiveTab] = useState('talent')
 
   const howTitleLead = content.howTitleLead || 'How'
@@ -11,6 +22,7 @@ const HowItWorksSection = ({ content = {} }) => {
   const howSubtitle = content.howSubtitle || 'Choose your path and discover how SkillBridge works for you'
   const talentTabLabel = content.talentTabLabel || 'For Talent'
   const clientTabLabel = content.clientTabLabel || 'For Clients'
+  const sectionSpacingClass = getSectionSpacingClass(layout)
 
   const talentSteps = [
     {
@@ -55,7 +67,7 @@ const HowItWorksSection = ({ content = {} }) => {
   ]
 
   return (
-    <section className='w-full py-20 theme-bg relative z-[1]'>
+    <section className={`w-full ${sectionSpacingClass} theme-bg relative z-[1]`}>
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         {/* Didelis */}
         <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10'>

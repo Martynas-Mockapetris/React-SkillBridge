@@ -129,6 +129,15 @@ const HOME_SECTION_ORDER_ITEMS = [
   { key: 'contact', label: 'Contact Section', visibilityKey: 'showContact' }
 ]
 
+const HOME_SECTION_SPACING_ITEMS = [
+  { key: 'hero', label: 'Hero Section' },
+  { key: 'features', label: 'Features Section' },
+  { key: 'howItWorks', label: 'How It Works Section' },
+  { key: 'testimonials', label: 'Testimonials Section' },
+  { key: 'pricing', label: 'Pricing Section' },
+  { key: 'contact', label: 'Contact Section' }
+]
+
 const DEFAULT_PRICING_PLANS = [
   {
     title: 'Basic',
@@ -402,6 +411,31 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         }
       }
     })
+  }
+
+  const getHomeSectionSpacingValues = () => {
+    return drafts?.siteBuilder?.values?.homeSectionSpacing || {}
+  }
+
+  const handleHomeSectionSpacingChange = (sectionKey, edge, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          homeSectionSpacing: {
+            ...(prev.siteBuilder.values?.homeSectionSpacing || {}),
+            [sectionKey]: {
+              top: prev.siteBuilder.values?.homeSectionSpacing?.[sectionKey]?.top || 'normal',
+              bottom: prev.siteBuilder.values?.homeSectionSpacing?.[sectionKey]?.bottom || 'normal',
+              ...(prev.siteBuilder.values?.homeSectionSpacing?.[sectionKey] || {}),
+              [edge]: value
+            }
+          }
+        }
+      }
+    }))
   }
 
   const handleSaveSiteBuilderSection = async () => {
@@ -878,6 +912,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     const heroBuilder = getHomeHeroBuilderValues()
     const sectionVisibility = getHomeSectionVisibilityValues()
     const sectionOrder = getHomeSectionOrderValues()
+    const sectionSpacing = getHomeSectionSpacingValues()
 
     const layoutPresetLabels = {
       centered: 'Centered',
@@ -926,7 +961,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           <h4 className='text-lg font-bold text-gray-900 dark:text-white'>Home Page Builder</h4>
           <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure Home page layout, presentation, and section visibility from one place.</p>
         </div>
-
+        {/* Layout & style settings */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div>
             <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Layout Preset</label>
@@ -976,7 +1011,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             </select>
           </div>
         </div>
-
+        // Toggleable visual elements
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
             <input
@@ -998,7 +1033,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             Show background pattern
           </label>
         </div>
-
+        {/* Section ordering and visibility */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
           <div>
             <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Order</h5>
@@ -1042,7 +1077,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             })}
           </div>
         </div>
-
+        {/* Current render order with visibility status */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4'>
           <div className='flex items-center justify-between gap-3'>
             <div>
@@ -1074,7 +1109,56 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             ))}
           </div>
         </div>
+        {/* Section spacing controls */}
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Spacing</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the vertical spacing for each Home page section.</p>
+          </div>
 
+          <div className='space-y-3'>
+            {HOME_SECTION_SPACING_ITEMS.map((item) => {
+              const spacing = sectionSpacing[item.key] || {}
+
+              return (
+                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                  <p className='text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</p>
+
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                    <div>
+                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Top Spacing</label>
+                      <select
+                        value={spacing.top || 'normal'}
+                        onChange={(e) => handleHomeSectionSpacingChange(item.key, 'top', e.target.value)}
+                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                        <option value='none'>None</option>
+                        <option value='tight'>Tight</option>
+                        <option value='normal'>Normal</option>
+                        <option value='relaxed'>Relaxed</option>
+                        <option value='loose'>Loose</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Bottom Spacing</label>
+                      <select
+                        value={spacing.bottom || 'normal'}
+                        onChange={(e) => handleHomeSectionSpacingChange(item.key, 'bottom', e.target.value)}
+                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                        <option value='none'>None</option>
+                        <option value='tight'>Tight</option>
+                        <option value='normal'>Normal</option>
+                        <option value='relaxed'>Relaxed</option>
+                        <option value='loose'>Loose</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        {/* Builder summary preview */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
           <div>
             <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
@@ -1099,7 +1183,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             ))}
           </div>
         </div>
-
         <div className='flex flex-wrap items-center gap-2 pt-2'>
           <button type='button' onClick={handleSaveSiteBuilderSection} disabled={savingSection === 'siteBuilder'} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
             {savingSection === 'siteBuilder' ? 'Saving...' : 'Save'}
