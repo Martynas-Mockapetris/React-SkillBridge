@@ -10,6 +10,7 @@ import { getPublicSystemConfig } from '../services/configService'
 
 const DEFAULT_HOME_SECTION_ORDER = ['hero', 'features', 'howItWorks', 'testimonials', 'pricing', 'contact']
 const DEFAULT_HOME_SECTION_SPACING = {}
+const DEFAULT_HOME_SECTION_BACKGROUNDS = {}
 
 const Home = () => {
   const { isDarkMode } = useTheme()
@@ -64,6 +65,11 @@ const Home = () => {
     return publicConfig.siteBuilder.values?.homeSectionSpacing || DEFAULT_HOME_SECTION_SPACING
   }, [publicConfig])
 
+  const homeSectionBackgrounds = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return DEFAULT_HOME_SECTION_BACKGROUNDS
+    return publicConfig.siteBuilder.values?.homeSectionBackgrounds || DEFAULT_HOME_SECTION_BACKGROUNDS
+  }, [publicConfig])
+
   const contactValues = useMemo(() => {
     if (!publicConfig?.contact?.enabled) return {}
     return publicConfig.contact.values || {}
@@ -99,17 +105,89 @@ const Home = () => {
         .map((sectionKey) => {
           switch (sectionKey) {
             case 'hero':
-              return showHero ? { key: 'hero', element: <HeroSection content={homeValues} layout={heroLayoutValues} sectionSpacing={homeSectionSpacing.hero || {}} /> } : null
+              return showHero
+                ? {
+                    key: 'hero',
+                    element: <HeroSection content={homeValues} layout={heroLayoutValues} sectionSpacing={homeSectionSpacing.hero || {}} sectionBackground={homeSectionBackgrounds.hero || 'default'} />
+                  }
+                : null
             case 'features':
-              return showFeatures ? { key: 'features', element: <FeaturesSection content={homeValues} systemValues={systemValues} layout={homeSectionSpacing.features || {}} /> } : null
+              return showFeatures
+                ? {
+                    key: 'features',
+                    element: (
+                      <FeaturesSection
+                        content={homeValues}
+                        systemValues={systemValues}
+                        layout={{
+                          spacing: homeSectionSpacing.features || {},
+                          background: homeSectionBackgrounds.features || 'default'
+                        }}
+                      />
+                    )
+                  }
+                : null
             case 'howItWorks':
-              return showHowItWorks ? { key: 'howItWorks', element: <HowItWorksSection content={homeValues} layout={homeSectionSpacing.howItWorks || {}} /> } : null
+              return showHowItWorks
+                ? {
+                    key: 'howItWorks',
+                    element: (
+                      <HowItWorksSection
+                        content={homeValues}
+                        layout={{
+                          spacing: homeSectionSpacing.howItWorks || {},
+                          background: homeSectionBackgrounds.howItWorks || 'default'
+                        }}
+                      />
+                    )
+                  }
+                : null
             case 'testimonials':
-              return showTestimonials ? { key: 'testimonials', element: <TestimonialsSection content={testimonialsValues} layout={homeSectionSpacing.testimonials || {}} /> } : null
+              return showTestimonials
+                ? {
+                    key: 'testimonials',
+                    element: (
+                      <TestimonialsSection
+                        content={testimonialsValues}
+                        layout={{
+                          spacing: homeSectionSpacing.testimonials || {},
+                          background: homeSectionBackgrounds.testimonials || 'default'
+                        }}
+                      />
+                    )
+                  }
+                : null
             case 'pricing':
-              return showPricing ? { key: 'pricing', element: <PricingSection content={pricingValues} layout={homeSectionSpacing.pricing || {}} /> } : null
+              return showPricing
+                ? {
+                    key: 'pricing',
+                    element: (
+                      <PricingSection
+                        content={pricingValues}
+                        layout={{
+                          spacing: homeSectionSpacing.pricing || {},
+                          background: homeSectionBackgrounds.pricing || 'default'
+                        }}
+                      />
+                    )
+                  }
+                : null
             case 'contact':
-              return showContact ? { key: 'contact', element: <ContactSection content={homeValues} contactValues={contactValues} layout={homeSectionSpacing.contact || {}} /> } : null
+              return showContact
+                ? {
+                    key: 'contact',
+                    element: (
+                      <ContactSection
+                        content={homeValues}
+                        contactValues={contactValues}
+                        layout={{
+                          spacing: homeSectionSpacing.contact || {},
+                          background: homeSectionBackgrounds.contact || 'default'
+                        }}
+                      />
+                    )
+                  }
+                : null
             default:
               return null
           }

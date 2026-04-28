@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { FaUser, FaBriefcase, FaUserCircle, FaSearch, FaHandshake, FaFileAlt, FaUserCheck, FaCheckCircle } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { getSectionSpacingClass } from './homeSectionLayout'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const HowItWorksSection = ({ content = {}, layout = {} }) => {
   const [activeTab, setActiveTab] = useState('talent')
@@ -12,7 +12,8 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
   const howSubtitle = content.howSubtitle || 'Choose your path and discover how SkillBridge works for you'
   const talentTabLabel = content.talentTabLabel || 'For Talent'
   const clientTabLabel = content.clientTabLabel || 'For Clients'
-  const sectionSpacingClass = getSectionSpacingClass(layout)
+  const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
+  const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 
   const talentSteps = [
     {
@@ -57,7 +58,7 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
   ]
 
   return (
-    <section className={`w-full ${sectionSpacingClass} theme-bg relative z-[1]`}>
+    <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         {/* Didelis */}
         <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10'>

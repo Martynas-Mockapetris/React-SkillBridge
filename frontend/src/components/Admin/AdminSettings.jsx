@@ -138,6 +138,15 @@ const HOME_SECTION_SPACING_ITEMS = [
   { key: 'contact', label: 'Contact Section' }
 ]
 
+const HOME_SECTION_BACKGROUND_ITEMS = [
+  { key: 'hero', label: 'Hero Section' },
+  { key: 'features', label: 'Features Section' },
+  { key: 'howItWorks', label: 'How It Works Section' },
+  { key: 'testimonials', label: 'Testimonials Section' },
+  { key: 'pricing', label: 'Pricing Section' },
+  { key: 'contact', label: 'Contact Section' }
+]
+
 const DEFAULT_PRICING_PLANS = [
   {
     title: 'Basic',
@@ -432,6 +441,26 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               ...(prev.siteBuilder.values?.homeSectionSpacing?.[sectionKey] || {}),
               [edge]: value
             }
+          }
+        }
+      }
+    }))
+  }
+
+  const getHomeSectionBackgroundValues = () => {
+    return drafts?.siteBuilder?.values?.homeSectionBackgrounds || {}
+  }
+
+  const handleHomeSectionBackgroundChange = (sectionKey, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          homeSectionBackgrounds: {
+            ...(prev.siteBuilder.values?.homeSectionBackgrounds || {}),
+            [sectionKey]: value
           }
         }
       }
@@ -913,6 +942,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     const sectionVisibility = getHomeSectionVisibilityValues()
     const sectionOrder = getHomeSectionOrderValues()
     const sectionSpacing = getHomeSectionSpacingValues()
+    const sectionBackgrounds = getHomeSectionBackgroundValues()
 
     const layoutPresetLabels = {
       centered: 'Centered',
@@ -936,6 +966,14 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       screen: 'Full Screen',
       large: 'Large',
       medium: 'Medium'
+    }
+
+    const backgroundPresetLabels = {
+      default: 'Default Theme',
+      transparent: 'Transparent',
+      soft: 'Soft Tint',
+      panel: 'Panel Surface',
+      accent: 'Accent Tint'
     }
 
     const orderedSections = sectionOrder
@@ -1158,6 +1196,36 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             })}
           </div>
         </div>
+        {/* Section background controls */}
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Backgrounds</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the background treatment for each Home page section.</p>
+          </div>
+
+          <div className='space-y-3'>
+            {HOME_SECTION_BACKGROUND_ITEMS.map((item) => {
+              const backgroundValue = sectionBackgrounds[item.key] || 'default'
+
+              return (
+                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                  <label className='block text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</label>
+
+                  <select
+                    value={backgroundValue}
+                    onChange={(e) => handleHomeSectionBackgroundChange(item.key, e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                    <option value='default'>Default Theme</option>
+                    <option value='transparent'>Transparent</option>
+                    <option value='soft'>Soft Tint</option>
+                    <option value='panel'>Panel Surface</option>
+                    <option value='accent'>Accent Tint</option>
+                  </select>
+                </div>
+              )
+            })}
+          </div>
+        </div>
         {/* Builder summary preview */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
           <div>
@@ -1174,7 +1242,8 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               { label: 'Scroll Indicator', value: (heroBuilder.showScrollIndicator ?? true) ? 'Shown' : 'Hidden' },
               { label: 'Background Pattern', value: (heroBuilder.showBackgroundPattern ?? true) ? 'Shown' : 'Hidden' },
               { label: 'Visible Sections', value: String(visibleSectionsCount) },
-              { label: 'Hidden Sections', value: String(hiddenSectionsCount) }
+              { label: 'Hidden Sections', value: String(hiddenSectionsCount) },
+              { label: 'Hero Background', value: backgroundPresetLabels[sectionBackgrounds.hero || 'default'] || 'Default Theme' }
             ].map((item) => (
               <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
                 <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { getSectionSpacingClass } from './homeSectionLayout'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
   const contactTitleLead = content.contactTitleLead || 'Get In'
@@ -13,7 +13,8 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
   const phone = contactValues.phone || ''
   const address = contactValues.address || ''
   const workingHours = contactValues.workingHours || ''
-  const sectionSpacingClass = getSectionSpacingClass(layout)
+  const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
+  const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 
   const infoItems = [
     supportEmail ? { label: 'Support', value: supportEmail } : null,
@@ -90,7 +91,7 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
 `
 
   return (
-    <section className={`w-full ${sectionSpacingClass} theme-bg relative z-[1]`}>
+    <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
       {/* Molecular patterns */}
       <div className='absolute inset-0 overflow-hidden'>
         <div className='absolute left-60 bottom-20 opacity-20'>

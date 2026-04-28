@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import PageBackground from '../shared/PageBackground'
-import { getSectionSpacingClass } from './homeSectionLayout'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
-const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {} }) => {
+const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {}, sectionBackground = 'default' }) => {
   const navigate = useNavigate()
 
   const heroTitleLead = content.heroTitleLead || 'Find Your Next'
@@ -18,6 +18,7 @@ const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {} }) => {
   const showScrollIndicator = layout.showScrollIndicator ?? true
   const showBackgroundPattern = layout.showBackgroundPattern ?? true
   const sectionSpacingClass = getSectionSpacingClass(sectionSpacing)
+  const sectionBackgroundClass = getSectionBackgroundClass(sectionBackground)
 
   const sectionHeightClass = heroHeight === 'medium' ? 'min-h-[70vh]' : heroHeight === 'large' ? 'min-h-[85vh]' : 'h-screen'
 
@@ -46,7 +47,7 @@ const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {} }) => {
   }
 
   return (
-    <section className={`relative ${sectionHeightClass} ${sectionSpacingClass} flex items-center justify-center overflow-hidden theme-bg`}>
+    <section className={`relative ${sectionHeightClass} ${sectionSpacingClass} ${sectionBackgroundClass} flex items-center justify-center overflow-hidden`}>
       {showBackgroundPattern && <PageBackground variant='home' />}
 
       {/* Turinio konteineris*/}

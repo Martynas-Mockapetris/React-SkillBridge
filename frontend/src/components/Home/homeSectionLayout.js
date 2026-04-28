@@ -8,3 +8,11 @@ export const getSectionSpacingClass = (spacing = {}) => {
 
   return `${topClass} ${bottomClass}`
 }
+
+export const getSectionBackgroundClass = (background = 'default') => {
+  if (background === 'transparent') return 'bg-transparent'
+  if (background === 'soft') return 'bg-primary/[0.03] dark:bg-light/[0.03]'
+  if (background === 'panel') return 'bg-primary/[0.06] dark:bg-light/[0.05]'
+  if (background === 'accent') return 'bg-accent/[0.08] dark:bg-accent/[0.12]'
+  return 'theme-bg'
+}

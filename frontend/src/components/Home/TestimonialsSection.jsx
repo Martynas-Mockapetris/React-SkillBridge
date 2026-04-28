@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { getSectionSpacingClass } from './homeSectionLayout'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const TestimonialsSection = ({ content = {}, layout = {} }) => {
   const [expandedId, setExpandedId] = useState(null)
@@ -10,7 +10,8 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
   const testimonialsTitleLead = content.testimonialsTitleLead || 'What Our'
   const testimonialsTitleAccent = content.testimonialsTitleAccent || 'Clients Say'
   const testimonialsSubtitle = content.testimonialsSubtitle || 'Discover how our platform has transformed businesses and careers through real success stories'
-  const sectionSpacingClass = getSectionSpacingClass(layout)
+  const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
+  const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id)
@@ -86,7 +87,7 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
   }
 
   return (
-    <section className={`w-full ${sectionSpacingClass} theme-bg relative`}>
+    <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative`}>
       {/* Molecular Patterns Background */}
       <div className='absolute inset-0 overflow-hidden'>
         <div className='absolute left-20 top-40 opacity-20'>

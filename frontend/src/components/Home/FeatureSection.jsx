@@ -1,14 +1,15 @@
 import { FaHandshake, FaShieldAlt, FaRocket, FaChartLine, FaClock, FaGlobe } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { getSectionSpacingClass } from './homeSectionLayout'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
   const platformName = systemValues.platformName || 'SkillBridge'
   const featuresTitleLead = content.featuresTitleLead || 'Why Choose'
   const featuresTitleAccent = content.featuresTitleAccent || platformName
   const featuresSubtitle = content.featuresSubtitle || `Discover the advantages that make ${platformName} the preferred platform for connecting talent with opportunities`
-  const sectionSpacingClass = getSectionSpacingClass(layout)
+  const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
+  const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 
   const features = [
     {
@@ -44,7 +45,7 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
   ]
 
   return (
-    <section className={`w-full ${sectionSpacingClass} theme-bg relative z-[1]`}>
+    <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
       {/* Molecular patterns */}
       <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
         <div className='absolute -left-20 top-0 opacity-10'>

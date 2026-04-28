@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { getSectionSpacingClass } from './homeSectionLayout'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const PricingSection = ({ content = {}, layout = {} }) => {
   const pricingTitleLead = content.pricingTitleLead || 'Flexible'
   const pricingTitleAccent = content.pricingTitleAccent || 'Pricing'
   const pricingSubtitle = content.pricingSubtitle || 'Choose the perfect plan that suits your needs and budget'
-  const sectionSpacingClass = getSectionSpacingClass(layout)
+  const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
+  const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 
   const defaultPricingData = [
     {
@@ -55,7 +56,7 @@ const PricingSection = ({ content = {}, layout = {} }) => {
   const pricingData = Array.isArray(content.pricingPlans) && content.pricingPlans.length ? content.pricingPlans : defaultPricingData
 
   return (
-    <section className={`w-full ${sectionSpacingClass} theme-bg relative z-[1]`}>
+    <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
       <div className='absolute inset-0 overflow-hidden'>
         {/* Molecular patterns */}
         <div className='absolute -left-20 top-40 opacity-20'>
