@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
+import { DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS } from '../../constants/homePageData'
+
+const CONFIG_SECTION_KEYS = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
 
 const SECTION_DEFS = {
   home: {
@@ -120,7 +123,7 @@ const HOME_FIELD_GROUPS = [
   }
 ]
 
-const HOME_SECTION_ORDER_ITEMS = [
+const HOME_SECTION_ITEMS = [
   { key: 'hero', label: 'Hero Section', visibilityKey: 'showHero' },
   { key: 'features', label: 'Features Section', visibilityKey: 'showFeatures' },
   { key: 'howItWorks', label: 'How It Works Section', visibilityKey: 'showHowItWorks' },
@@ -129,122 +132,60 @@ const HOME_SECTION_ORDER_ITEMS = [
   { key: 'contact', label: 'Contact Section', visibilityKey: 'showContact' }
 ]
 
-const HOME_SECTION_SPACING_ITEMS = [
-  { key: 'hero', label: 'Hero Section' },
-  { key: 'features', label: 'Features Section' },
-  { key: 'howItWorks', label: 'How It Works Section' },
-  { key: 'testimonials', label: 'Testimonials Section' },
-  { key: 'pricing', label: 'Pricing Section' },
-  { key: 'contact', label: 'Contact Section' }
-]
+const LAYOUT_PRESET_LABELS = {
+  centered: 'Centered',
+  split: 'Split',
+  editorial: 'Editorial',
+  minimal: 'Minimal'
+}
 
-const HOME_SECTION_BACKGROUND_ITEMS = [
-  { key: 'hero', label: 'Hero Section' },
-  { key: 'features', label: 'Features Section' },
-  { key: 'howItWorks', label: 'How It Works Section' },
-  { key: 'testimonials', label: 'Testimonials Section' },
-  { key: 'pricing', label: 'Pricing Section' },
-  { key: 'contact', label: 'Contact Section' }
-]
+const CONTENT_ALIGN_LABELS = {
+  left: 'Left',
+  center: 'Center'
+}
 
-const DEFAULT_PRICING_PLANS = [
-  {
-    title: 'Basic',
-    price: 'Free',
-    period: '',
-    description: 'Perfect for exploring the platform',
-    users: '8.4k',
-    isRecommended: false,
-    badgeText: '',
-    buttonLabel: 'Get Started',
-    features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access']
-  },
-  {
-    title: 'Creator Premium',
-    price: '€19.99',
-    period: 'month',
-    description: 'Perfect for businesses and startups',
-    users: '1.2k',
-    isRecommended: false,
-    badgeText: '',
-    buttonLabel: 'Get Started',
-    features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge']
-  },
-  {
-    title: 'Freelancer Premium',
-    price: '€19.99',
-    period: 'month',
-    description: 'Perfect for professional freelancers',
-    users: '0.8k',
-    isRecommended: false,
-    badgeText: '',
-    buttonLabel: 'Get Started',
-    features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system']
-  },
-  {
-    title: 'Full Package',
-    price: '€29.99',
-    period: 'month',
-    description: 'Perfect for agencies and growing freelancers',
-    users: '0.5k',
-    isRecommended: true,
-    badgeText: 'Recommended',
-    buttonLabel: 'Get Started',
-    features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools']
+const CTA_LAYOUT_LABELS = {
+  'stacked-mobile': 'Stacked Mobile / Row Desktop',
+  inline: 'Inline',
+  split: 'Split Emphasis'
+}
+
+const PAGE_HEIGHT_LABELS = {
+  screen: 'Full Screen',
+  large: 'Large',
+  medium: 'Medium'
+}
+
+const BACKGROUND_PRESET_LABELS = {
+  default: 'Default Theme',
+  transparent: 'Transparent',
+  soft: 'Soft Tint',
+  panel: 'Panel Surface',
+  accent: 'Accent Tint'
+}
+
+const createDraftsFromConfig = (config = {}) =>
+  CONFIG_SECTION_KEYS.reduce((acc, sectionKey) => {
+    acc[sectionKey] = {
+      enabled: config?.[sectionKey]?.enabled ?? true,
+      values: config?.[sectionKey]?.values || {}
+    }
+
+    return acc
+  }, {})
+
+const normalizeHomeSectionOrder = (savedOrder) => {
+  const defaultOrder = HOME_SECTION_ITEMS.map((item) => item.key)
+
+  if (!Array.isArray(savedOrder) || !savedOrder.length) {
+    return defaultOrder
   }
-]
 
-const DEFAULT_TESTIMONIALS = [
-  {
-    name: 'Emma Wilson',
-    role: 'Project Owner',
-    content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
-    rating: 5,
-    avatarSeed: 'emma-wilson'
-  },
-  {
-    name: 'Michael Chen',
-    role: 'Freelance Developer',
-    content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
-    rating: 4,
-    avatarSeed: 'michael-chen'
-  },
-  {
-    name: 'Sarah Johnson',
-    role: 'Project Owner',
-    content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
-    rating: 5,
-    avatarSeed: 'sarah-johnson'
-  },
-  {
-    name: 'David Rodriguez',
-    role: 'Freelance Designer',
-    content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
-    rating: 4.5,
-    avatarSeed: 'david-rodriguez'
-  },
-  {
-    name: 'Lisa Chang',
-    role: 'Project Owner',
-    content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
-    rating: 5,
-    avatarSeed: 'lisa-chang'
-  }
-]
+  const allowedKeys = new Set(defaultOrder)
+  const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
+  const missingKeys = defaultOrder.filter((key) => !sanitizedOrder.includes(key))
 
-const initialDrafts = {
-  home: { enabled: true, values: {} },
-  pricing: { enabled: true, values: {} },
-  testimonials: { enabled: true, values: {} },
-  blog: { enabled: true, values: {} },
-  about: { enabled: true, values: {} },
-  contact: { enabled: true, values: {} },
-  mail: { enabled: true, values: {} },
-  system: { enabled: true, values: {} },
-  siteBuilder: { enabled: true, values: {} },
-  sharedBlocks: { enabled: true, values: {} },
-  designSystem: { enabled: true, values: {} },
-  navigation: { enabled: true, values: {} }
+  return [...sanitizedOrder, ...missingKeys]
 }
 
 const SETTINGS_VIEW_LOOKUP = SETTINGS_VIEW_REGISTRY.reduce((acc, view) => {
@@ -260,24 +201,15 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   const [loading, setLoading] = useState(true)
   const [config, setConfig] = useState(null)
   const [savingSection, setSavingSection] = useState('')
-  const [drafts, setDrafts] = useState(initialDrafts)
+  const [drafts, setDrafts] = useState(() => createDraftsFromConfig())
 
   const sectionMap = useMemo(() => {
     if (!config) return {}
-    return {
-      home: config.home || {},
-      pricing: config.pricing || {},
-      testimonials: config.testimonials || {},
-      blog: config.blog || {},
-      about: config.about || {},
-      contact: config.contact || {},
-      mail: config.mail || {},
-      system: config.system || {},
-      siteBuilder: config.siteBuilder || {},
-      sharedBlocks: config.sharedBlocks || {},
-      designSystem: config.designSystem || {},
-      navigation: config.navigation || {}
-    }
+
+    return CONFIG_SECTION_KEYS.reduce((acc, sectionKey) => {
+      acc[sectionKey] = config[sectionKey] || {}
+      return acc
+    }, {})
   }, [config])
 
   useEffect(() => {
@@ -287,20 +219,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         const data = await getSystemConfig()
         setConfig(data)
 
-        setDrafts({
-          home: { enabled: data?.home?.enabled ?? true, values: data?.home?.values || {} },
-          pricing: { enabled: data?.pricing?.enabled ?? true, values: data?.pricing?.values || {} },
-          testimonials: { enabled: data?.testimonials?.enabled ?? true, values: data?.testimonials?.values || {} },
-          blog: { enabled: data?.blog?.enabled ?? true, values: data?.blog?.values || {} },
-          about: { enabled: data?.about?.enabled ?? true, values: data?.about?.values || {} },
-          contact: { enabled: data?.contact?.enabled ?? true, values: data?.contact?.values || {} },
-          mail: { enabled: data?.mail?.enabled ?? true, values: data?.mail?.values || {} },
-          system: { enabled: data?.system?.enabled ?? true, values: data?.system?.values || {} },
-          siteBuilder: { enabled: data?.siteBuilder?.enabled ?? true, values: data?.siteBuilder?.values || {} },
-          sharedBlocks: { enabled: data?.sharedBlocks?.enabled ?? true, values: data?.sharedBlocks?.values || {} },
-          designSystem: { enabled: data?.designSystem?.enabled ?? true, values: data?.designSystem?.values || {} },
-          navigation: { enabled: data?.navigation?.enabled ?? true, values: data?.navigation?.values || {} }
-        })
+        setDrafts(createDraftsFromConfig(data))
       } catch (error) {
         toast.error(error?.response?.data?.message || 'Failed to load settings')
       } finally {
@@ -334,80 +253,12 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     }))
   }
 
-  const getHomeHeroBuilderValues = () => {
-    return drafts?.siteBuilder?.values?.homeHero || {}
-  }
+  const getSiteBuilderValue = (key, fallback) => drafts?.siteBuilder?.values?.[key] ?? fallback
 
-  const handleHomeHeroBuilderChange = (key, value) => {
-    setDrafts((prev) => ({
-      ...prev,
-      siteBuilder: {
-        ...prev.siteBuilder,
-        values: {
-          ...prev.siteBuilder.values,
-          homeHero: {
-            ...(prev.siteBuilder.values?.homeHero || {}),
-            [key]: value
-          }
-        }
-      }
-    }))
-  }
-
-  const getHomeSectionVisibilityValues = () => {
-    return drafts?.siteBuilder?.values?.homeSections || {}
-  }
-
-  const handleHomeSectionVisibilityChange = (key, value) => {
-    setDrafts((prev) => ({
-      ...prev,
-      siteBuilder: {
-        ...prev.siteBuilder,
-        values: {
-          ...prev.siteBuilder.values,
-          homeSections: {
-            ...(prev.siteBuilder.values?.homeSections || {}),
-            [key]: value
-          }
-        }
-      }
-    }))
-  }
-
-  const getHomeSectionOrderValues = () => {
-    const defaultOrder = HOME_SECTION_ORDER_ITEMS.map((item) => item.key)
-    const savedOrder = drafts?.siteBuilder?.values?.homeSectionOrder
-
-    if (!Array.isArray(savedOrder) || !savedOrder.length) {
-      return defaultOrder
-    }
-
-    const allowedKeys = new Set(defaultOrder)
-    const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
-    const missingKeys = defaultOrder.filter((key) => !sanitizedOrder.includes(key))
-
-    return [...sanitizedOrder, ...missingKeys]
-  }
-
-  const moveHomeSectionOrderItem = (key, direction) => {
+  const updateSiteBuilderValue = (key, nextValueOrUpdater) => {
     setDrafts((prev) => {
-      const defaultOrder = HOME_SECTION_ORDER_ITEMS.map((item) => item.key)
-      const savedOrder = prev?.siteBuilder?.values?.homeSectionOrder
-      const currentOrder = Array.isArray(savedOrder) && savedOrder.length ? [...savedOrder] : [...defaultOrder]
-      const currentIndex = currentOrder.indexOf(key)
-
-      if (currentIndex === -1) {
-        return prev
-      }
-
-      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
-      if (targetIndex < 0 || targetIndex >= currentOrder.length) {
-        return prev
-      }
-
-      const nextOrder = [...currentOrder]
-      const [movedItem] = nextOrder.splice(currentIndex, 1)
-      nextOrder.splice(targetIndex, 0, movedItem)
+      const currentValue = prev?.siteBuilder?.values?.[key]
+      const nextValue = typeof nextValueOrUpdater === 'function' ? nextValueOrUpdater(currentValue) : nextValueOrUpdater
 
       return {
         ...prev,
@@ -415,55 +266,65 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           ...prev.siteBuilder,
           values: {
             ...prev.siteBuilder.values,
-            homeSectionOrder: nextOrder
+            [key]: nextValue
           }
         }
       }
     })
   }
 
-  const getHomeSectionSpacingValues = () => {
-    return drafts?.siteBuilder?.values?.homeSectionSpacing || {}
+  const handleHomeHeroBuilderChange = (key, value) => {
+    updateSiteBuilderValue('homeHero', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const handleHomeSectionVisibilityChange = (key, value) => {
+    updateSiteBuilderValue('homeSections', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const moveHomeSectionOrderItem = (key, direction) => {
+    updateSiteBuilderValue('homeSectionOrder', (savedOrder) => {
+      const currentOrder = [...normalizeHomeSectionOrder(savedOrder)]
+      const currentIndex = currentOrder.indexOf(key)
+
+      if (currentIndex === -1) {
+        return currentOrder
+      }
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+      if (targetIndex < 0 || targetIndex >= currentOrder.length) {
+        return currentOrder
+      }
+
+      const nextOrder = [...currentOrder]
+      const [movedItem] = nextOrder.splice(currentIndex, 1)
+      nextOrder.splice(targetIndex, 0, movedItem)
+
+      return nextOrder
+    })
   }
 
   const handleHomeSectionSpacingChange = (sectionKey, edge, value) => {
-    setDrafts((prev) => ({
-      ...prev,
-      siteBuilder: {
-        ...prev.siteBuilder,
-        values: {
-          ...prev.siteBuilder.values,
-          homeSectionSpacing: {
-            ...(prev.siteBuilder.values?.homeSectionSpacing || {}),
-            [sectionKey]: {
-              top: prev.siteBuilder.values?.homeSectionSpacing?.[sectionKey]?.top || 'normal',
-              bottom: prev.siteBuilder.values?.homeSectionSpacing?.[sectionKey]?.bottom || 'normal',
-              ...(prev.siteBuilder.values?.homeSectionSpacing?.[sectionKey] || {}),
-              [edge]: value
-            }
-          }
-        }
+    updateSiteBuilderValue('homeSectionSpacing', (currentValue = {}) => ({
+      ...currentValue,
+      [sectionKey]: {
+        top: currentValue?.[sectionKey]?.top || 'normal',
+        bottom: currentValue?.[sectionKey]?.bottom || 'normal',
+        ...(currentValue?.[sectionKey] || {}),
+        [edge]: value
       }
     }))
   }
 
-  const getHomeSectionBackgroundValues = () => {
-    return drafts?.siteBuilder?.values?.homeSectionBackgrounds || {}
-  }
-
   const handleHomeSectionBackgroundChange = (sectionKey, value) => {
-    setDrafts((prev) => ({
-      ...prev,
-      siteBuilder: {
-        ...prev.siteBuilder,
-        values: {
-          ...prev.siteBuilder.values,
-          homeSectionBackgrounds: {
-            ...(prev.siteBuilder.values?.homeSectionBackgrounds || {}),
-            [sectionKey]: value
-          }
-        }
-      }
+    updateSiteBuilderValue('homeSectionBackgrounds', (currentValue = {}) => ({
+      ...currentValue,
+      [sectionKey]: value
     }))
   }
 
@@ -938,47 +799,15 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   }
 
   const renderHomeHeroBuilderPanel = () => {
-    const heroBuilder = getHomeHeroBuilderValues()
-    const sectionVisibility = getHomeSectionVisibilityValues()
-    const sectionOrder = getHomeSectionOrderValues()
-    const sectionSpacing = getHomeSectionSpacingValues()
-    const sectionBackgrounds = getHomeSectionBackgroundValues()
-
-    const layoutPresetLabels = {
-      centered: 'Centered',
-      split: 'Split',
-      editorial: 'Editorial',
-      minimal: 'Minimal'
-    }
-
-    const contentAlignLabels = {
-      left: 'Left',
-      center: 'Center'
-    }
-
-    const ctaLayoutLabels = {
-      'stacked-mobile': 'Stacked Mobile / Row Desktop',
-      inline: 'Inline',
-      split: 'Split Emphasis'
-    }
-
-    const pageHeightLabels = {
-      screen: 'Full Screen',
-      large: 'Large',
-      medium: 'Medium'
-    }
-
-    const backgroundPresetLabels = {
-      default: 'Default Theme',
-      transparent: 'Transparent',
-      soft: 'Soft Tint',
-      panel: 'Panel Surface',
-      accent: 'Accent Tint'
-    }
+    const heroBuilder = getSiteBuilderValue('homeHero', {})
+    const sectionVisibility = getSiteBuilderValue('homeSections', {})
+    const sectionOrder = normalizeHomeSectionOrder(getSiteBuilderValue('homeSectionOrder', []))
+    const sectionSpacing = getSiteBuilderValue('homeSectionSpacing', {})
+    const sectionBackgrounds = getSiteBuilderValue('homeSectionBackgrounds', {})
 
     const orderedSections = sectionOrder
       .map((sectionKey) => {
-        const item = HOME_SECTION_ORDER_ITEMS.find((entry) => entry.key === sectionKey)
+        const item = HOME_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
         if (!item) return null
 
         const isVisible = sectionVisibility[item.visibilityKey] ?? true
@@ -1079,9 +908,8 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </div>
 
           <div className='space-y-2'>
-            {getHomeSectionOrderValues().map((sectionKey, index, order) => {
-              const item = HOME_SECTION_ORDER_ITEMS.find((entry) => entry.key === sectionKey)
-              const sectionVisibility = getHomeSectionVisibilityValues()
+            {sectionOrder.map((sectionKey, index, order) => {
+              const item = HOME_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
               const isVisible = sectionVisibility[item?.visibilityKey] ?? true
 
               if (!item) return null
@@ -1155,7 +983,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </div>
 
           <div className='space-y-3'>
-            {HOME_SECTION_SPACING_ITEMS.map((item) => {
+            {HOME_SECTION_ITEMS.map((item) => {
               const spacing = sectionSpacing[item.key] || {}
 
               return (
@@ -1204,7 +1032,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </div>
 
           <div className='space-y-3'>
-            {HOME_SECTION_BACKGROUND_ITEMS.map((item) => {
+            {HOME_SECTION_ITEMS.map((item) => {
               const backgroundValue = sectionBackgrounds[item.key] || 'default'
 
               return (
@@ -1235,15 +1063,15 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
           <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
             {[
-              { label: 'Layout Preset', value: layoutPresetLabels[heroBuilder.layoutPreset || 'centered'] || 'Centered' },
-              { label: 'Content Alignment', value: contentAlignLabels[heroBuilder.contentAlign || 'center'] || 'Center' },
-              { label: 'CTA Layout', value: ctaLayoutLabels[heroBuilder.ctaLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
-              { label: 'Page Height', value: pageHeightLabels[heroBuilder.heroHeight || 'screen'] || 'Full Screen' },
+              { label: 'Layout Preset', value: LAYOUT_PRESET_LABELS[heroBuilder.layoutPreset || 'centered'] || 'Centered' },
+              { label: 'Content Alignment', value: CONTENT_ALIGN_LABELS[heroBuilder.contentAlign || 'center'] || 'Center' },
+              { label: 'CTA Layout', value: CTA_LAYOUT_LABELS[heroBuilder.ctaLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
+              { label: 'Page Height', value: PAGE_HEIGHT_LABELS[heroBuilder.heroHeight || 'screen'] || 'Full Screen' },
               { label: 'Scroll Indicator', value: (heroBuilder.showScrollIndicator ?? true) ? 'Shown' : 'Hidden' },
               { label: 'Background Pattern', value: (heroBuilder.showBackgroundPattern ?? true) ? 'Shown' : 'Hidden' },
               { label: 'Visible Sections', value: String(visibleSectionsCount) },
               { label: 'Hidden Sections', value: String(hiddenSectionsCount) },
-              { label: 'Hero Background', value: backgroundPresetLabels[sectionBackgrounds.hero || 'default'] || 'Default Theme' }
+              { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' }
             ].map((item) => (
               <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
                 <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>

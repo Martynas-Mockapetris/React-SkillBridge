@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import { DEFAULT_TESTIMONIALS } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const TestimonialsSection = ({ content = {}, layout = {} }) => {
@@ -17,52 +18,9 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  const fallbackTestimonials = [
-    {
-      id: 1,
-      name: 'Emma Wilson',
-      rating: 5,
-      role: 'Project Owner',
-      content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
-      avatarSeed: 'emma-wilson'
-    },
-    {
-      id: 2,
-      name: 'Michael Chen',
-      rating: 4,
-      role: 'Freelance Developer',
-      content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
-      avatarSeed: 'michael-chen'
-    },
-    {
-      id: 3,
-      name: 'Sarah Johnson',
-      rating: 5,
-      role: 'Project Owner',
-      content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
-      avatarSeed: 'sarah-johnson'
-    },
-    {
-      id: 4,
-      name: 'David Rodriguez',
-      rating: 4.5,
-      role: 'Freelance Designer',
-      content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
-      avatarSeed: 'david-rodriguez'
-    },
-    {
-      id: 5,
-      name: 'Lisa Chang',
-      rating: 5,
-      role: 'Project Owner',
-      content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
-      avatarSeed: 'lisa-chang'
-    }
-  ]
-
   const testimonialData = useMemo(() => {
     const configured = Array.isArray(content.testimonials) ? content.testimonials : []
-    const source = configured.length ? [...configured, ...fallbackTestimonials.slice(configured.length)] : fallbackTestimonials
+    const source = configured.length ? [...configured, ...DEFAULT_TESTIMONIALS.slice(configured.length)] : DEFAULT_TESTIMONIALS
 
     return source.map((item, index) => ({
       id: index + 1,

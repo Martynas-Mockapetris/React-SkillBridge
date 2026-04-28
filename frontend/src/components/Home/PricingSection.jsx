@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import { DEFAULT_PRICING_PLANS } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const PricingSection = ({ content = {}, layout = {} }) => {
@@ -10,50 +11,7 @@ const PricingSection = ({ content = {}, layout = {} }) => {
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 
-  const defaultPricingData = [
-    {
-      title: 'Basic',
-      price: 'Free',
-      period: '',
-      description: 'Perfect for exploring the platform',
-      features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access'],
-      users: '8.4k',
-      isRecommended: false,
-      badgeText: ''
-    },
-    {
-      title: 'Creator Premium',
-      price: '€19.99',
-      period: 'month',
-      description: 'Perfect for businesses and startups',
-      features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge'],
-      users: '1.2k',
-      isRecommended: false,
-      badgeText: ''
-    },
-    {
-      title: 'Freelancer Premium',
-      price: '€19.99',
-      period: 'month',
-      description: 'Perfect for professional freelancers',
-      features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system'],
-      users: '0.8k',
-      isRecommended: false,
-      badgeText: ''
-    },
-    {
-      title: 'Full Package',
-      price: '€29.99',
-      period: 'month',
-      description: 'Perfect for agencies and growing freelancers',
-      features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools'],
-      users: '0.5k',
-      isRecommended: true,
-      badgeText: 'Recommended'
-    }
-  ]
-
-  const pricingData = Array.isArray(content.pricingPlans) && content.pricingPlans.length ? content.pricingPlans : defaultPricingData
+  const pricingData = Array.isArray(content.pricingPlans) && content.pricingPlans.length ? content.pricingPlans : DEFAULT_PRICING_PLANS
 
   return (
     <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>

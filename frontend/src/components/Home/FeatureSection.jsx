@@ -1,48 +1,25 @@
 import { FaHandshake, FaShieldAlt, FaRocket, FaChartLine, FaClock, FaGlobe } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import { HOME_FEATURES } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
+  const featureIcons = {
+    handshake: <FaHandshake size={24} />,
+    shieldAlt: <FaShieldAlt size={24} />,
+    rocket: <FaRocket size={24} />,
+    chartLine: <FaChartLine size={24} />,
+    clock: <FaClock size={24} />,
+    globe: <FaGlobe size={24} />
+  }
+
   const platformName = systemValues.platformName || 'SkillBridge'
   const featuresTitleLead = content.featuresTitleLead || 'Why Choose'
   const featuresTitleAccent = content.featuresTitleAccent || platformName
   const featuresSubtitle = content.featuresSubtitle || `Discover the advantages that make ${platformName} the preferred platform for connecting talent with opportunities`
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
-
-  const features = [
-    {
-      icon: <FaHandshake size={24} />,
-      title: 'Professional Network',
-      description: 'Connect with industry experts and build meaningful professional relationships'
-    },
-    {
-      icon: <FaRocket size={24} />,
-      title: 'Quality Projects',
-      description: 'Access hand-picked opportunities that match your expertise'
-    },
-    {
-      icon: <FaChartLine size={24} />,
-      title: 'Skill Development',
-      description: 'Grow your expertise through real-world projects and experiences'
-    },
-    {
-      icon: <FaClock size={24} />,
-      title: 'Flexible Work',
-      description: 'Choose projects that fit your schedule and work preferences'
-    },
-    {
-      icon: <FaGlobe size={24} />,
-      title: 'Global Opportunities',
-      description: 'Access projects and talent from around the world'
-    },
-    {
-      icon: <FaShieldAlt size={24} />,
-      title: 'Verified Reviews',
-      description: 'Make informed decisions with authentic feedback and ratings'
-    }
-  ]
 
   return (
     <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
@@ -68,7 +45,7 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
 
         {/* Features grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-          {features.map((feature, index) => (
+          {HOME_FEATURES.map((feature, index) => (
             <motion.div
               key={index}
               className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-6 rounded-lg'
@@ -80,7 +57,7 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
               }}
               transition={{ duration: 0.3, delay: index * 0.05 }}>
-              <div className='text-accent mb-4'>{feature.icon}</div>
+              <div className='text-accent mb-4'>{featureIcons[feature.iconKey]}</div>
               <h3 className='theme-text text-xl font-semibold mb-2'>{feature.title}</h3>
               <p className='theme-text-secondary'>{feature.description}</p>
             </motion.div>
