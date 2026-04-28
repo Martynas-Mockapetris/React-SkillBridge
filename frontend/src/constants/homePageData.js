@@ -120,6 +120,12 @@ export const DEFAULT_PRICING_PLANS = [
   }
 ]
 
+export const DEFAULT_PRICING_LAYOUT = {
+  cardDensity: 'balanced',
+  emphasisStyle: 'subtle',
+  featuredPlanPresentation: 'badge'
+}
+
 export const DEFAULT_TESTIMONIALS = [
   {
     name: 'Emma Wilson',

@@ -6,6 +6,7 @@ import HeroSection from '../components/Home/HeroSection'
 import HowItWorksSection from '../components/Home/HowItWorksSection'
 import PricingSection from '../components/Home/PricingSection'
 import TestimonialsSection from '../components/Home/TestimonialsSection'
+import { DEFAULT_PRICING_LAYOUT } from '../constants/homePageData'
 import { getPublicSystemConfig } from '../services/configService'
 
 const DEFAULT_HOME_SECTION_ORDER = ['hero', 'features', 'howItWorks', 'testimonials', 'pricing', 'contact']
@@ -84,6 +85,14 @@ const Home = () => {
     const pricingSectionValues = publicConfig?.pricing?.enabled ? publicConfig.pricing.values || {} : {}
     const legacyHomeValues = publicConfig?.home?.enabled ? publicConfig.home.values || {} : {}
     return { ...legacyHomeValues, ...pricingSectionValues }
+  }, [publicConfig])
+
+  const pricingLayoutValues = useMemo(() => {
+    const configuredLayout = publicConfig?.pricing?.enabled ? publicConfig.pricing.values?.layout || {} : {}
+    return {
+      ...DEFAULT_PRICING_LAYOUT,
+      ...configuredLayout
+    }
   }, [publicConfig])
 
   const testimonialsValues = useMemo(() => {
@@ -166,7 +175,8 @@ const Home = () => {
                         content={pricingValues}
                         layout={{
                           spacing: homeSectionSpacing.pricing || {},
-                          background: homeSectionBackgrounds.pricing || 'default'
+                          background: homeSectionBackgrounds.pricing || 'default',
+                          ...pricingLayoutValues
                         }}
                       />
                     )

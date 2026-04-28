@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
-import { DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS } from '../../constants/homePageData'
+import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS } from '../../constants/homePageData'
 
 const CONFIG_SECTION_KEYS = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
 
@@ -162,6 +162,24 @@ const BACKGROUND_PRESET_LABELS = {
   soft: 'Soft Tint',
   panel: 'Panel Surface',
   accent: 'Accent Tint'
+}
+
+const PRICING_CARD_DENSITY_LABELS = {
+  compact: 'Compact',
+  balanced: 'Balanced',
+  spacious: 'Spacious'
+}
+
+const PRICING_EMPHASIS_STYLE_LABELS = {
+  subtle: 'Subtle',
+  strong: 'Strong',
+  outline: 'Outline'
+}
+
+const PRICING_FEATURED_PRESENTATION_LABELS = {
+  badge: 'Badge',
+  lifted: 'Lifted Card',
+  spotlight: 'Spotlight'
 }
 
 const createDraftsFromConfig = (config = {}) =>
@@ -369,6 +387,30 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   const getPricingPlans = () => {
     const plans = drafts?.pricing?.values?.pricingPlans
     return Array.isArray(plans) && plans.length ? plans : DEFAULT_PRICING_PLANS
+  }
+
+  const getPricingLayout = () => {
+    return {
+      ...DEFAULT_PRICING_LAYOUT,
+      ...(drafts?.pricing?.values?.layout || {})
+    }
+  }
+
+  const handlePricingLayoutChange = (key, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      pricing: {
+        ...prev.pricing,
+        values: {
+          ...prev.pricing.values,
+          layout: {
+            ...DEFAULT_PRICING_LAYOUT,
+            ...(prev.pricing.values?.layout || {}),
+            [key]: value
+          }
+        }
+      }
+    }))
   }
 
   const updatePricingPlans = (updater) => {
@@ -702,6 +744,70 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                   className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
                 />
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderPricingLayoutEditor = () => {
+    const pricingLayout = getPricingLayout()
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Pricing Layout</h5>
+          <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the density, visual emphasis, and featured-plan treatment used by the public pricing block.</p>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Card Density</label>
+            <select
+              value={pricingLayout.cardDensity}
+              onChange={(e) => handlePricingLayoutChange('cardDensity', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='compact'>Compact</option>
+              <option value='balanced'>Balanced</option>
+              <option value='spacious'>Spacious</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Emphasis Style</label>
+            <select
+              value={pricingLayout.emphasisStyle}
+              onChange={(e) => handlePricingLayoutChange('emphasisStyle', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='subtle'>Subtle</option>
+              <option value='strong'>Strong</option>
+              <option value='outline'>Outline</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Featured Plan Presentation</label>
+            <select
+              value={pricingLayout.featuredPlanPresentation}
+              onChange={(e) => handlePricingLayoutChange('featuredPlanPresentation', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='badge'>Badge</option>
+              <option value='lifted'>Lifted Card</option>
+              <option value='spotlight'>Spotlight</option>
+            </select>
+          </div>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          {[
+            { label: 'Density', value: PRICING_CARD_DENSITY_LABELS[pricingLayout.cardDensity] || 'Balanced' },
+            { label: 'Emphasis', value: PRICING_EMPHASIS_STYLE_LABELS[pricingLayout.emphasisStyle] || 'Subtle' },
+            { label: 'Featured', value: PRICING_FEATURED_PRESENTATION_LABELS[pricingLayout.featuredPlanPresentation] || 'Badge' }
+          ].map((item) => (
+            <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+              <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
             </div>
           ))}
         </div>
@@ -1112,6 +1218,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       return (
         <div className='mt-4 space-y-4'>
           <div className='space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+          {renderPricingLayoutEditor()}
           {renderPricingPlansEditor()}
         </div>
       )
