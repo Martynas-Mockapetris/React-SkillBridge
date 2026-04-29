@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
-import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS } from '../../constants/homePageData'
+import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
 
 const CONFIG_SECTION_KEYS = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
 
@@ -180,6 +180,18 @@ const PRICING_FEATURED_PRESENTATION_LABELS = {
   badge: 'Badge',
   lifted: 'Lifted Card',
   spotlight: 'Spotlight'
+}
+
+const TESTIMONIAL_CARD_STYLE_LABELS = {
+  glass: 'Glass',
+  panel: 'Panel',
+  minimal: 'Minimal'
+}
+
+const TESTIMONIAL_SECTION_EMPHASIS_LABELS = {
+  balanced: 'Balanced',
+  featured: 'Featured',
+  editorial: 'Editorial'
 }
 
 const createDraftsFromConfig = (config = {}) =>
@@ -472,6 +484,30 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     const testimonials = drafts?.testimonials?.values?.testimonials
     if (!Array.isArray(testimonials) || !testimonials.length) return DEFAULT_TESTIMONIALS
     return [...testimonials, ...DEFAULT_TESTIMONIALS.slice(testimonials.length)]
+  }
+
+  const getTestimonialsLayout = () => {
+    return {
+      ...DEFAULT_TESTIMONIALS_LAYOUT,
+      ...(drafts?.testimonials?.values?.layout || {})
+    }
+  }
+
+  const handleTestimonialsLayoutChange = (key, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      testimonials: {
+        ...prev.testimonials,
+        values: {
+          ...prev.testimonials.values,
+          layout: {
+            ...DEFAULT_TESTIMONIALS_LAYOUT,
+            ...(prev.testimonials.values?.layout || {}),
+            [key]: value
+          }
+        }
+      }
+    }))
   }
 
   const updateTestimonials = (updater) => {
@@ -804,6 +840,70 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             { label: 'Density', value: PRICING_CARD_DENSITY_LABELS[pricingLayout.cardDensity] || 'Balanced' },
             { label: 'Emphasis', value: PRICING_EMPHASIS_STYLE_LABELS[pricingLayout.emphasisStyle] || 'Subtle' },
             { label: 'Featured', value: PRICING_FEATURED_PRESENTATION_LABELS[pricingLayout.featuredPlanPresentation] || 'Badge' }
+          ].map((item) => (
+            <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+              <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderTestimonialsLayoutEditor = () => {
+    const testimonialsLayout = getTestimonialsLayout()
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Testimonials Layout</h5>
+          <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control testimonial card treatment, the number of visible cards, and the section emphasis used on the public Home page.</p>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Card Style</label>
+            <select
+              value={testimonialsLayout.cardStyle}
+              onChange={(e) => handleTestimonialsLayoutChange('cardStyle', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='glass'>Glass</option>
+              <option value='panel'>Panel</option>
+              <option value='minimal'>Minimal</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Visible Count</label>
+            <select
+              value={String(testimonialsLayout.visibleCount)}
+              onChange={(e) => handleTestimonialsLayoutChange('visibleCount', Number(e.target.value))}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='3'>3</option>
+              <option value='6'>6</option>
+              <option value='9'>9</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Section Emphasis</label>
+            <select
+              value={testimonialsLayout.sectionEmphasis}
+              onChange={(e) => handleTestimonialsLayoutChange('sectionEmphasis', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='balanced'>Balanced</option>
+              <option value='featured'>Featured</option>
+              <option value='editorial'>Editorial</option>
+            </select>
+          </div>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          {[
+            { label: 'Card Style', value: TESTIMONIAL_CARD_STYLE_LABELS[testimonialsLayout.cardStyle] || 'Glass' },
+            { label: 'Visible Count', value: String(testimonialsLayout.visibleCount || 6) },
+            { label: 'Emphasis', value: TESTIMONIAL_SECTION_EMPHASIS_LABELS[testimonialsLayout.sectionEmphasis] || 'Balanced' }
           ].map((item) => (
             <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
               <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
@@ -1228,6 +1328,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       return (
         <div className='mt-4 space-y-4'>
           <div className='space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+          {renderTestimonialsLayoutEditor()}
           {renderTestimonialsEditor()}
         </div>
       )

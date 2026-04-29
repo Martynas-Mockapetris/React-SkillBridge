@@ -163,3 +163,9 @@ export const DEFAULT_TESTIMONIALS = [
     avatarSeed: 'lisa-chang'
   }
 ]
+
+export const DEFAULT_TESTIMONIALS_LAYOUT = {
+  cardStyle: 'glass',
+  visibleCount: 6,
+  sectionEmphasis: 'balanced'
+}
