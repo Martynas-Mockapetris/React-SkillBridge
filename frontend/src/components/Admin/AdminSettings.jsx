@@ -194,6 +194,32 @@ const TESTIMONIAL_SECTION_EMPHASIS_LABELS = {
   editorial: 'Editorial'
 }
 
+const DEFAULT_HOME_HERO_BUILDER = {
+  layoutPreset: 'centered',
+  contentAlign: 'center',
+  ctaLayout: 'stacked-mobile',
+  heroHeight: 'screen',
+  showScrollIndicator: true,
+  showBackgroundPattern: true
+}
+
+const DEFAULT_HOME_SECTION_VISIBILITY = HOME_SECTION_ITEMS.reduce((acc, item) => {
+  acc[item.visibilityKey] = true
+  return acc
+}, {})
+
+const DEFAULT_HOME_SECTION_ORDER = HOME_SECTION_ITEMS.map((item) => item.key)
+
+const DEFAULT_HOME_SECTION_SPACING = {}
+
+const DEFAULT_HOME_SECTION_BACKGROUNDS = {}
+
+const cloneHomeBuilderValue = (value) => {
+  if (Array.isArray(value)) return [...value]
+  if (value && typeof value === 'object') return { ...value }
+  return value
+}
+
 const createDraftsFromConfig = (config = {}) =>
   CONFIG_SECTION_KEYS.reduce((acc, sectionKey) => {
     acc[sectionKey] = {
@@ -550,6 +576,43 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       if (items.length <= 1) return items
       return items.filter((_, i) => i !== index)
     })
+  }
+
+  const resetHomeHeroBuilder = () => {
+    updateSiteBuilderValue('homeHero', { ...DEFAULT_HOME_HERO_BUILDER })
+  }
+
+  const resetHomeSectionVisibility = () => {
+    updateSiteBuilderValue('homeSections', { ...DEFAULT_HOME_SECTION_VISIBILITY })
+  }
+
+  const resetHomeSectionOrder = () => {
+    updateSiteBuilderValue('homeSectionOrder', [...DEFAULT_HOME_SECTION_ORDER])
+  }
+
+  const resetHomeSectionSpacing = () => {
+    updateSiteBuilderValue('homeSectionSpacing', { ...DEFAULT_HOME_SECTION_SPACING })
+  }
+
+  const resetHomeSectionBackgrounds = () => {
+    updateSiteBuilderValue('homeSectionBackgrounds', { ...DEFAULT_HOME_SECTION_BACKGROUNDS })
+  }
+
+  const resetAllHomeLayoutControls = () => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          homeHero: cloneHomeBuilderValue(DEFAULT_HOME_HERO_BUILDER),
+          homeSections: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_VISIBILITY),
+          homeSectionOrder: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_ORDER),
+          homeSectionSpacing: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_SPACING),
+          homeSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_BACKGROUNDS)
+        }
+      }
+    }))
   }
 
   const renderInputControl = (sectionId, field, customLabel) => (
@@ -1034,6 +1097,30 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           <h4 className='text-lg font-bold text-gray-900 dark:text-white'>Home Page Builder</h4>
           <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure Home page layout, presentation, and section visibility from one place.</p>
         </div>
+
+        <div className='flex flex-wrap items-center gap-2'>
+          <button
+            type='button'
+            onClick={resetAllHomeLayoutControls}
+            className='px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset All Layout Controls
+          </button>
+        </div>
+
+        <div className='flex items-center justify-between gap-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Hero Layout</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the main Home hero presentation and visual toggles.</p>
+          </div>
+
+          <button
+            type='button'
+            onClick={resetHomeHeroBuilder}
+            className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset Hero
+          </button>
+        </div>
+
         {/* Layout & style settings */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div>
@@ -1084,7 +1171,8 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             </select>
           </div>
         </div>
-        // Toggleable visual elements
+
+        {/* Toggleable visual elements */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
             <input
@@ -1106,11 +1194,54 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             Show background pattern
           </label>
         </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Visibility</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Choose which sections should appear on the public Home page.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionVisibility}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Visibility
+            </button>
+          </div>
+
+          <div className='space-y-2'>
+            {HOME_SECTION_ITEMS.map((item) => {
+              const isVisible = sectionVisibility[item.visibilityKey] ?? true
+
+              return (
+                <label key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Currently visible on the Home page' : 'Currently hidden from the Home page'}</p>
+                  </div>
+
+                  <input type='checkbox' checked={isVisible} onChange={(e) => handleHomeSectionVisibilityChange(item.visibilityKey, e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Section ordering and visibility */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
-          <div>
-            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Order</h5>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the top-to-bottom order of sections on the public Home page.</p>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Order</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the top-to-bottom order of sections on the public Home page.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionOrder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Order
+            </button>
           </div>
 
           <div className='space-y-2'>
@@ -1149,6 +1280,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             })}
           </div>
         </div>
+
         {/* Current render order with visibility status */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4'>
           <div className='flex items-center justify-between gap-3'>
@@ -1181,6 +1313,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             ))}
           </div>
         </div>
+
         {/* Section spacing controls */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
           <div>
@@ -1230,11 +1363,21 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             })}
           </div>
         </div>
+
         {/* Section background controls */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
-          <div>
-            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Backgrounds</h5>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the background treatment for each Home page section.</p>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Backgrounds</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the background treatment for each Home page section.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionBackgrounds}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Backgrounds
+            </button>
           </div>
 
           <div className='space-y-3'>
@@ -1260,6 +1403,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             })}
           </div>
         </div>
+
         {/* Builder summary preview */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
           <div>
