@@ -1316,9 +1316,18 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
         {/* Section spacing controls */}
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
-          <div>
-            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Spacing</h5>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the vertical spacing for each Home page section.</p>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Spacing</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the vertical spacing for each Home page section.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionSpacing}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Spacing
+            </button>
           </div>
 
           <div className='space-y-3'>
