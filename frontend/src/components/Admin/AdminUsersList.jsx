@@ -1,6 +1,6 @@
 import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport, FaKey, FaCheckCircle, FaClock } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
-import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, requestAdminEmailVerification, deleteAdminUser } from '../../services/userService'
+import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, requestAdminEmailVerification, reactivateAdminUser, verifyAdminUserDirect, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
 import AdminLockUserModal from '../../modal/AdminLockUserModal'
 import AdminUserDetailsModal from '../../modal/AdminUserDetailModal'
@@ -348,16 +348,29 @@ const AdminUsersList = ({ navigationRequest }) => {
     }
   }
 
-  const handleVerificationResend = async (user) => {
-    const confirmed = window.confirm(`Send a verification email to ${user.firstName} ${user.lastName}?`)
+  const handleReactivateUser = async (user) => {
+    const confirmed = window.confirm(`Reactivate ${user.firstName} ${user.lastName} by refreshing their activity timestamp?`)
     if (!confirmed) return
 
     try {
-      const response = await requestAdminEmailVerification(user._id)
-      alert(response.message || 'Verification email sent.')
+      const response = await reactivateAdminUser(user._id)
+      alert(response.message || 'User reactivated successfully.')
       await fetchUsers()
     } catch (error) {
-      alert(`Failed to request verification email: ${error.response?.data?.message || error.message}`)
+      alert(`Failed to reactivate user: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
+  const handleDirectVerifyUser = async (user) => {
+    const confirmed = window.confirm(`Directly verify ${user.firstName} ${user.lastName} without sending a verification email?`)
+    if (!confirmed) return
+
+    try {
+      const response = await verifyAdminUserDirect(user._id)
+      alert(response.message || 'User email verified successfully.')
+      await fetchUsers()
+    } catch (error) {
+      alert(`Failed to directly verify user: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -877,10 +890,22 @@ const AdminUsersList = ({ navigationRequest }) => {
                         </button>
                       )}
 
-                      {canVerifyUsers && !user.isEmailVerified && (
-                        <button onClick={() => handleVerificationResend(user)} title='Send verification email' className='text-amber-600 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200'>
-                          <FaEnvelope className='w-4 h-4' />
+                      {canUpdateUsers && !isPrivilegedUser(user) && !user.isLocked && getUserStatus(user) === 'Inactive' && (
+                        <button onClick={() => handleReactivateUser(user)} title='Reactivate user activity' className='text-cyan-600 hover:text-cyan-900 dark:text-cyan-400 dark:hover:text-cyan-200'>
+                          <FaClock className='w-4 h-4' />
                         </button>
+                      )}
+
+                      {canVerifyUsers && !user.isEmailVerified && (
+                        <>
+                          <button onClick={() => handleVerificationResend(user)} title='Send verification email' className='text-amber-600 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200'>
+                            <FaEnvelope className='w-4 h-4' />
+                          </button>
+
+                          <button onClick={() => handleDirectVerifyUser(user)} title='Directly verify user email' className='text-emerald-600 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200'>
+                            <FaCheckCircle className='w-4 h-4' />
+                          </button>
+                        </>
                       )}
 
                       <button onClick={() => openMailModal(user)} title='Send admin mail' className='text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200'>

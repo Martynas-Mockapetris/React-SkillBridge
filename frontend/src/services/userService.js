@@ -172,6 +172,26 @@ export const requestAdminEmailVerification = async (userId) => {
   }
 }
 
+export const reactivateAdminUser = async (userId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/admin/${userId}/reactivate`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to reactivate admin user:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const verifyAdminUserDirect = async (userId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/admin/${userId}/verify-email/direct`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to directly verify admin user email:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Delete user (admin)
 export const deleteAdminUser = async (userId) => {
   try {
