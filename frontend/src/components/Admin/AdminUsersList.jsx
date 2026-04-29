@@ -567,8 +567,8 @@ const AdminUsersList = ({ navigationRequest }) => {
     const eligibleDeleteUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
 
     return (
-      <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm flex items-center justify-between'>
-        <span className='text-sm text-gray-700 dark:text-gray-300'>
+      <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm space-y-3'>
+        <div className='text-sm text-gray-700 dark:text-gray-300'>
           {selectedUsers.length} users selected
           {canVerifyUsers && ` • ${eligibleVerificationUsers.length} eligible for verification`}
           {canUpdateUsers && ` • ${eligibleReactivationUsers.length} eligible for reactivation`}
@@ -576,14 +576,16 @@ const AdminUsersList = ({ navigationRequest }) => {
           {canLockUsers && ` • ${eligibleUnlockUsers.length} eligible for unlock`}
           {canResetUsers && ` • ${eligibleResetUsers.length} eligible for reset`}
           {canDeleteUsers && ` • ${eligibleDeleteUsers.length} eligible for delete`}
-        </span>
-        <div className='flex gap-2'>
+        </div>
+
+        <div className='flex flex-wrap gap-2'>
           {canLockUsers && (
             <button
               onClick={openBulkLockModal}
               disabled={eligibleLockUsers.length === 0}
-              className={`px-3 py-1 text-sm rounded-md ${eligibleLockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'}`}>
-              <FaLock className='inline-block mr-1' /> Suspend Selected ({eligibleLockUsers.length})
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${eligibleLockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'}`}>
+              <FaLock className='shrink-0' />
+              <span>Suspend Selected ({eligibleLockUsers.length})</span>
             </button>
           )}
 
@@ -591,8 +593,9 @@ const AdminUsersList = ({ navigationRequest }) => {
             <button
               onClick={handleBulkUnlock}
               disabled={eligibleUnlockUsers.length === 0}
-              className={`px-3 py-1 text-sm rounded-md ${eligibleUnlockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
-              <FaLock className='inline-block mr-1' /> Unlock Selected ({eligibleUnlockUsers.length})
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${eligibleUnlockUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
+              <FaLock className='shrink-0' />
+              <span>Unlock Selected ({eligibleUnlockUsers.length})</span>
             </button>
           )}
 
@@ -601,15 +604,19 @@ const AdminUsersList = ({ navigationRequest }) => {
               <button
                 onClick={handleBulkVerificationResend}
                 disabled={eligibleVerificationUsers.length === 0}
-                className={`px-3 py-1 text-sm rounded-md ${eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}>
-                <FaEnvelope className='inline-block mr-1' /> Resend Verification ({eligibleVerificationUsers.length})
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}>
+                <FaEnvelope className='shrink-0' />
+                <span>Resend Verification ({eligibleVerificationUsers.length})</span>
               </button>
 
               <button
                 onClick={handleBulkDirectVerifyUsers}
                 disabled={eligibleVerificationUsers.length === 0}
-                className={`px-3 py-1 text-sm rounded-md ${eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'}`}>
-                <FaCheckCircle className='inline-block mr-1' /> Verify Selected ({eligibleVerificationUsers.length})
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${
+                  eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                }`}>
+                <FaCheckCircle className='shrink-0' />
+                <span>Verify Selected ({eligibleVerificationUsers.length})</span>
               </button>
             </>
           )}
@@ -618,8 +625,9 @@ const AdminUsersList = ({ navigationRequest }) => {
             <button
               onClick={handleBulkReactivateUsers}
               disabled={eligibleReactivationUsers.length === 0}
-              className={`px-3 py-1 text-sm rounded-md ${eligibleReactivationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200'}`}>
-              <FaClock className='inline-block mr-1' /> Reactivate Selected ({eligibleReactivationUsers.length})
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${eligibleReactivationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200'}`}>
+              <FaClock className='shrink-0' />
+              <span>Reactivate Selected ({eligibleReactivationUsers.length})</span>
             </button>
           )}
 
@@ -627,8 +635,9 @@ const AdminUsersList = ({ navigationRequest }) => {
             <button
               onClick={handleBulkPasswordReset}
               disabled={eligibleResetUsers.length === 0}
-              className={`px-3 py-1 text-sm rounded-md ${eligibleResetUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}>
-              <FaKey className='inline-block mr-1' /> Reset Passwords ({eligibleResetUsers.length})
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${eligibleResetUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}>
+              <FaKey className='shrink-0' />
+              <span>Reset Passwords ({eligibleResetUsers.length})</span>
             </button>
           )}
 
@@ -636,8 +645,9 @@ const AdminUsersList = ({ navigationRequest }) => {
             <button
               onClick={handleBulkDelete}
               disabled={eligibleDeleteUsers.length === 0}
-              className={`px-3 py-1 text-sm rounded-md ${eligibleDeleteUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}>
-              <FaTrash className='inline-block mr-1' /> Delete Selected ({eligibleDeleteUsers.length})
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${eligibleDeleteUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}>
+              <FaTrash className='shrink-0' />
+              <span>Delete Selected ({eligibleDeleteUsers.length})</span>
             </button>
           )}
         </div>
