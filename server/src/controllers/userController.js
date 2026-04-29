@@ -1065,6 +1065,128 @@ export const requestAdminEmailVerification = async (req, res) => {
   }
 }
 
+// @desc    Reactivate user activity by refreshing last login (admin)
+// @route   PATCH /api/users/admin/:userId/reactivate
+// @access  Admin
+export const reactivateAdminUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    await user.ensureUnlockedIfExpired()
+
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot reactivate privileged users' })
+    }
+
+    if (user.isLocked) {
+      return res.status(400).json({ message: 'Locked users must be unlocked before reactivation' })
+    }
+
+    const beforeSnapshot = {
+      lastLogin: user.lastLogin
+    }
+
+    user.lastLogin = new Date()
+    await user.save()
+
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.reactivated',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Reactivated user ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['lastLogin']),
+      metadata: {
+        targetEmail: user.email,
+        reactivatedAt: user.lastLogin
+      }
+    })
+
+    res.json({
+      message: 'User reactivated successfully',
+      user: {
+        _id: user._id,
+        lastLogin: user.lastLogin
+      }
+    })
+  } catch (error) {
+    console.error('Error reactivating user:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Directly verify user email without sending verification mail (admin)
+// @route   PATCH /api/users/admin/:userId/verify-email/direct
+// @access  Admin
+export const verifyAdminUserDirect = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot directly verify privileged users' })
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'User email is already verified.' })
+    }
+
+    const beforeSnapshot = {
+      isEmailVerified: user.isEmailVerified,
+      emailVerifiedAt: user.emailVerifiedAt,
+      emailVerificationTokenHash: user.emailVerificationTokenHash,
+      emailVerificationTokenExpiresAt: user.emailVerificationTokenExpiresAt
+    }
+
+    user.isEmailVerified = true
+    user.emailVerifiedAt = new Date()
+    user.emailVerificationTokenHash = null
+    user.emailVerificationTokenExpiresAt = null
+
+    await user.save()
+
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.email_verified_direct',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Directly verified email for ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['isEmailVerified', 'emailVerifiedAt', 'emailVerificationTokenHash', 'emailVerificationTokenExpiresAt']),
+      metadata: {
+        targetEmail: user.email,
+        verifiedAt: user.emailVerifiedAt
+      }
+    })
+
+    res.json({
+      message: 'User email verified successfully',
+      user: {
+        _id: user._id,
+        isEmailVerified: user.isEmailVerified,
+        emailVerifiedAt: user.emailVerifiedAt
+      }
+    })
+  } catch (error) {
+    console.error('Error directly verifying user email:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
 // @desc    Delete user (admin)
 // @route   DELETE /api/users/admin/:userId
 // @access  Admin
