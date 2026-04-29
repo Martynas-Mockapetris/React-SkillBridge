@@ -374,6 +374,37 @@ const AdminUsersList = ({ navigationRequest }) => {
     }
   }
 
+  const handleBulkReactivateUsers = async () => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user) && !user.isLocked && getUserStatus(user) === 'Inactive')
+
+    if (eligibleUsers.length === 0) {
+      alert('No eligible inactive users selected for reactivation.')
+      return
+    }
+
+    const confirmed = window.confirm(`Reactivate ${eligibleUsers.length} selected users by refreshing their activity timestamp?`)
+    if (!confirmed) return
+
+    try {
+      const results = await Promise.allSettled(eligibleUsers.map((user) => reactivateAdminUser(user._id)))
+
+      const successCount = results.filter((result) => result.status === 'fulfilled').length
+      const failedCount = results.length - successCount
+
+      await fetchUsers()
+      setSelectedUsers([])
+
+      if (failedCount === 0) {
+        alert(`${successCount} users reactivated successfully.`)
+      } else {
+        alert(`${successCount} users reactivated successfully. ${failedCount} requests failed.`)
+      }
+    } catch (error) {
+      alert(`Failed to process bulk reactivation: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
   const handleBulkPasswordReset = async () => {
     const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
     const eligibleUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
@@ -402,6 +433,37 @@ const AdminUsersList = ({ navigationRequest }) => {
       }
     } catch (error) {
       alert(`Failed to process bulk password reset: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
+  const handleBulkDirectVerifyUsers = async () => {
+    const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
+    const eligibleUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user) && !user.isEmailVerified)
+
+    if (eligibleUsers.length === 0) {
+      alert('No eligible unverified users selected for direct verification.')
+      return
+    }
+
+    const confirmed = window.confirm(`Directly verify ${eligibleUsers.length} selected users without sending verification emails?`)
+    if (!confirmed) return
+
+    try {
+      const results = await Promise.allSettled(eligibleUsers.map((user) => verifyAdminUserDirect(user._id)))
+
+      const successCount = results.filter((result) => result.status === 'fulfilled').length
+      const failedCount = results.length - successCount
+
+      await fetchUsers()
+      setSelectedUsers([])
+
+      if (failedCount === 0) {
+        alert(`${successCount} users verified successfully.`)
+      } else {
+        alert(`${successCount} users verified successfully. ${failedCount} requests failed.`)
+      }
+    } catch (error) {
+      alert(`Failed to process bulk direct verification: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -497,7 +559,8 @@ const AdminUsersList = ({ navigationRequest }) => {
     if (!canLockUsers && !canDeleteUsers && !canResetUsers && !canVerifyUsers) return null
 
     const selectedUserRecords = users.filter((user) => selectedUsers.includes(user._id))
-    const eligibleVerificationUsers = selectedUserRecords.filter((user) => !user.isEmailVerified)
+    const eligibleVerificationUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user) && !user.isEmailVerified)
+    const eligibleReactivationUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user) && !user.isLocked && getUserStatus(user) === 'Inactive')
     const eligibleResetUsers = selectedUserRecords.filter((user) => !isPrivilegedUser(user))
     const eligibleLockUsers = selectedUserRecords.filter((user) => !user.isLocked && !isPrivilegedUser(user))
     const eligibleUnlockUsers = selectedUserRecords.filter((user) => user.isLocked && !isPrivilegedUser(user))
@@ -508,6 +571,7 @@ const AdminUsersList = ({ navigationRequest }) => {
         <span className='text-sm text-gray-700 dark:text-gray-300'>
           {selectedUsers.length} users selected
           {canVerifyUsers && ` • ${eligibleVerificationUsers.length} eligible for verification`}
+          {canUpdateUsers && ` • ${eligibleReactivationUsers.length} eligible for reactivation`}
           {canLockUsers && ` • ${eligibleLockUsers.length} eligible for lock`}
           {canLockUsers && ` • ${eligibleUnlockUsers.length} eligible for unlock`}
           {canResetUsers && ` • ${eligibleResetUsers.length} eligible for reset`}
@@ -533,11 +597,29 @@ const AdminUsersList = ({ navigationRequest }) => {
           )}
 
           {canVerifyUsers && (
+            <>
+              <button
+                onClick={handleBulkVerificationResend}
+                disabled={eligibleVerificationUsers.length === 0}
+                className={`px-3 py-1 text-sm rounded-md ${eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}>
+                <FaEnvelope className='inline-block mr-1' /> Resend Verification ({eligibleVerificationUsers.length})
+              </button>
+
+              <button
+                onClick={handleBulkDirectVerifyUsers}
+                disabled={eligibleVerificationUsers.length === 0}
+                className={`px-3 py-1 text-sm rounded-md ${eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'}`}>
+                <FaCheckCircle className='inline-block mr-1' /> Verify Selected ({eligibleVerificationUsers.length})
+              </button>
+            </>
+          )}
+
+          {canUpdateUsers && (
             <button
-              onClick={handleBulkVerificationResend}
-              disabled={eligibleVerificationUsers.length === 0}
-              className={`px-3 py-1 text-sm rounded-md ${eligibleVerificationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}>
-              <FaEnvelope className='inline-block mr-1' /> Resend Verification ({eligibleVerificationUsers.length})
+              onClick={handleBulkReactivateUsers}
+              disabled={eligibleReactivationUsers.length === 0}
+              className={`px-3 py-1 text-sm rounded-md ${eligibleReactivationUsers.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200'}`}>
+              <FaClock className='inline-block mr-1' /> Reactivate Selected ({eligibleReactivationUsers.length})
             </button>
           )}
 
