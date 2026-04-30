@@ -11,6 +11,7 @@ import {
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
+  bulkRenewProjectDeadlinesAsAdmin,
   toggleProjectLockAsAdmin,
   removeAssigneeAsAdmin,
   assignUserToProject,
@@ -46,6 +47,7 @@ router.get('/interested', protect, getInterestedProjects)
 router.get('/admin/all', protect, requirePermission(PERMISSIONS.PROJECTS_READ_ADMIN), getAdminAllProjects)
 router.delete('/admin/:id', protect, requirePermission(PERMISSIONS.PROJECTS_DELETE_ADMIN), deleteProjectAsAdmin)
 router.put('/admin/:id', protect, requirePermission(PERMISSIONS.PROJECTS_UPDATE_ADMIN), updateProjectAsAdmin)
+router.patch('/admin/deadlines/bulk', protect, requirePermission(PERMISSIONS.PROJECTS_UPDATE_ADMIN), bulkRenewProjectDeadlinesAsAdmin)
 router.patch('/admin/:id/lock', protect, requirePermission(PERMISSIONS.PROJECTS_LOCK_ADMIN), toggleProjectLockAsAdmin)
 router.delete('/admin/:id/assignee', protect, requirePermission(PERMISSIONS.PROJECTS_UPDATE_ADMIN), removeAssigneeAsAdmin)
 

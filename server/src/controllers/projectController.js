@@ -463,6 +463,96 @@ const updateProjectAsAdmin = async (req, res) => {
   }
 }
 
+// @desc    Renew deadlines for multiple projects as admin
+// @route   PATCH /api/projects/admin/deadlines/bulk
+// @access  Admin
+const bulkRenewProjectDeadlinesAsAdmin = async (req, res) => {
+  try {
+    const { projectIds = [], deadline } = req.body || {}
+
+    if (!Array.isArray(projectIds) || projectIds.length === 0) {
+      return res.status(400).json({ message: 'At least one project must be selected' })
+    }
+
+    const normalizedIds = [...new Set(projectIds.map((id) => String(id || '').trim()).filter(Boolean))]
+
+    if (normalizedIds.length === 0) {
+      return res.status(400).json({ message: 'At least one valid project ID is required' })
+    }
+
+    const parsedDeadline = new Date(deadline)
+
+    if (!deadline || Number.isNaN(parsedDeadline.getTime())) {
+      return res.status(400).json({ message: 'A valid renewal deadline is required' })
+    }
+
+    if (parsedDeadline <= new Date()) {
+      return res.status(400).json({ message: 'Renewal deadline must be in the future' })
+    }
+
+    const projects = await Project.find({ _id: { $in: normalizedIds } })
+
+    if (projects.length !== normalizedIds.length) {
+      const foundIds = new Set(projects.map((project) => project._id.toString()))
+      const missingIds = normalizedIds.filter((id) => !foundIds.has(id))
+
+      return res.status(404).json({
+        message: `Some projects were not found: ${missingIds.join(', ')}`
+      })
+    }
+
+    await Promise.all(projects.map((project) => project.ensureUnlockedIfExpired()))
+
+    const ineligibleProjects = projects.filter((project) => isImmutableProjectStatus(project.status) || ['completed', 'archived', 'cancelled'].includes(project.status) || project.isLocked)
+
+    if (ineligibleProjects.length > 0) {
+      return res.status(400).json({
+        message: `Some selected projects cannot be renewed: ${ineligibleProjects.map((project) => project.title || project._id.toString()).join(', ')}`
+      })
+    }
+
+    const updatedProjects = []
+
+    for (const project of projects) {
+      const beforeSnapshot = {
+        deadline: project.deadline,
+        status: project.status
+      }
+
+      project.deadline = parsedDeadline
+      await project.save()
+
+      await logAdminAction({
+        req,
+        action: 'project.deadline.renewed',
+        targetType: 'project',
+        targetId: project._id,
+        targetLabel: project.title || 'Untitled project',
+        summary: `Renewed project deadline for ${project.title || 'Untitled project'}`,
+        changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['deadline']),
+        metadata: {
+          previousDeadline: beforeSnapshot.deadline,
+          newDeadline: project.deadline,
+          bulkOperation: normalizedIds.length > 1,
+          selectionSize: normalizedIds.length
+        }
+      })
+
+      updatedProjects.push(project)
+    }
+
+    res.json({
+      message: `${updatedProjects.length} project deadlines renewed successfully`,
+      count: updatedProjects.length,
+      deadline: parsedDeadline,
+      projectIds: updatedProjects.map((project) => project._id)
+    })
+  } catch (error) {
+    console.error('Error renewing project deadlines as admin:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Get all projects for the logged-in user
 // @route   GET /api/projects
 // @access  Private
@@ -1365,6 +1455,7 @@ export {
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
+  bulkRenewProjectDeadlinesAsAdmin,
   toggleProjectLockAsAdmin,
   removeAssigneeAsAdmin,
   assignUserToProject,

@@ -102,6 +102,20 @@ export const updateProjectAsAdmin = async (projectId, projectData) => {
   }
 }
 
+// Renew deadlines for multiple projects as admin
+export const bulkRenewProjectDeadlinesAsAdmin = async (projectIds, deadline) => {
+  try {
+    const response = await authAxios.patch('/api/projects/admin/deadlines/bulk', {
+      projectIds,
+      deadline
+    })
+    return response.data
+  } catch (error) {
+    console.error('Failed to renew project deadlines as admin:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Toggle project lock as admin (pause/unpause)
 export const toggleProjectLockAsAdmin = async (projectId, payload = {}) => {
   try {
