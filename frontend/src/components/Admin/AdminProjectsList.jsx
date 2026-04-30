@@ -46,6 +46,8 @@ const AdminProjectsList = ({ navigationRequest }) => {
   const [activePresetLabel, setActivePresetLabel] = useState('')
   const [selectedProjects, setSelectedProjects] = useState([])
   const [bulkRenewalDate, setBulkRenewalDate] = useState('')
+  const [quickRenewProjectId, setQuickRenewProjectId] = useState(null)
+  const [quickRenewalDate, setQuickRenewalDate] = useState('')
 
   const [sortBy, setSortBy] = useState('createdAt:desc')
   const [currentPage, setCurrentPage] = useState(1)
@@ -451,6 +453,43 @@ const AdminProjectsList = ({ navigationRequest }) => {
     }
   }
 
+  const openQuickRenewProject = (project) => {
+    const today = new Date().toISOString().split('T')[0]
+    const initialDate = project.deadline && project.deadline >= today ? project.deadline : today
+
+    setQuickRenewProjectId(project.id)
+    setQuickRenewalDate(initialDate)
+  }
+
+  const closeQuickRenewProject = () => {
+    setQuickRenewProjectId(null)
+    setQuickRenewalDate('')
+  }
+
+  const handleQuickRenewProject = async (project) => {
+    if (!isProjectEligibleForRenewal(project)) {
+      toast.warning('This project cannot be renewed')
+      return
+    }
+
+    if (!quickRenewalDate) {
+      toast.warning('Please choose a renewal date')
+      return
+    }
+
+    const confirmed = window.confirm(`Renew "${project.name}" to ${quickRenewalDate}?`)
+    if (!confirmed) return
+
+    try {
+      const response = await bulkRenewProjectDeadlinesAsAdmin([project.id], quickRenewalDate)
+      await fetchProjects()
+      closeQuickRenewProject()
+      toast.success(response?.message || 'Project deadline renewed successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to renew project deadline')
+    }
+  }
+
   const BulkProjectActions = () => {
     if (selectedProjects.length === 0 || !canUpdateProjects) return null
 
@@ -792,6 +831,16 @@ const AdminProjectsList = ({ navigationRequest }) => {
                   </button>
                 )}
 
+                {canUpdateProjects && (
+                  <button
+                    onClick={() => openQuickRenewProject(project)}
+                    disabled={!isProjectEligibleForRenewal(project)}
+                    title={!isProjectEligibleForRenewal(project) ? 'Locked or finalized projects cannot be renewed.' : 'Quick renew deadline'}
+                    className={`${!isProjectEligibleForRenewal(project) ? 'text-gray-400 cursor-not-allowed' : 'text-cyan-600 hover:text-cyan-900 dark:text-cyan-400 dark:hover:text-cyan-200'}`}>
+                    <FaCalendarAlt className='w-4 h-4' />
+                  </button>
+                )}
+
                 {canLockProjects && (
                   <button
                     onClick={() => handleToggleProjectLock(project)}
@@ -818,6 +867,44 @@ const AdminProjectsList = ({ navigationRequest }) => {
                   </button>
                 )}
               </div>
+
+              {quickRenewProjectId === project.id && (
+                <div className='mt-4 rounded-md border border-cyan-200 dark:border-cyan-900/40 bg-cyan-50 dark:bg-cyan-900/20 p-3 space-y-3'>
+                  <div className='text-sm font-medium text-cyan-900 dark:text-cyan-200'>Quick Renew Deadline</div>
+
+                  <div className='flex flex-wrap items-end gap-3'>
+                    <label className='flex flex-col gap-1 text-sm text-cyan-900 dark:text-cyan-200'>
+                      <span>New deadline</span>
+                      <input
+                        type='date'
+                        value={quickRenewalDate}
+                        min={new Date().toISOString().split('T')[0]}
+                        onChange={(e) => setQuickRenewalDate(e.target.value)}
+                        className='px-3 py-2 border border-cyan-200 dark:border-cyan-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-white dark:bg-gray-800 dark:text-white'
+                      />
+                    </label>
+
+                    <button
+                      type='button'
+                      onClick={() => handleQuickRenewProject(project)}
+                      disabled={!quickRenewalDate}
+                      className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${
+                        !quickRenewalDate ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200'
+                      }`}>
+                      <FaCalendarAlt className='shrink-0' />
+                      <span>Save Renewal</span>
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={closeQuickRenewProject}
+                      className='inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {project.isLocked && (
                 <div className='mt-4 rounded-md border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 p-3 text-xs text-red-700 dark:text-red-300'>
                   <div>
