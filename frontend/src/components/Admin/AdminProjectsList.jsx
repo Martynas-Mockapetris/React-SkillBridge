@@ -1,4 +1,4 @@
-import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye } from 'react-icons/fa'
+import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye, FaCalendarAlt } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import ProjectModal from '../../modal/ProjectModal'
@@ -7,7 +7,7 @@ import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
 import AdminLockProjectModal from '../../modal/AdminLockProjectModal'
 import PaginationControls from '../shared/PaginationControls'
-import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
+import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, bulkRenewProjectDeadlinesAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 import { useAuth } from '../../context/AuthContext'
 import { ADMIN_PERMISSIONS, hasAdminPermission, isFullAdmin } from '../../utils/accessRoles'
@@ -44,6 +44,8 @@ const AdminProjectsList = ({ navigationRequest }) => {
   const [stalledOnly, setStalledOnly] = useState(false)
   const latestProjectsFetchRef = useRef(0)
   const [activePresetLabel, setActivePresetLabel] = useState('')
+  const [selectedProjects, setSelectedProjects] = useState([])
+  const [bulkRenewalDate, setBulkRenewalDate] = useState('')
 
   const [sortBy, setSortBy] = useState('createdAt:desc')
   const [currentPage, setCurrentPage] = useState(1)
@@ -396,6 +398,114 @@ const AdminProjectsList = ({ navigationRequest }) => {
     clearAllFilters()
   }
 
+  const isProjectEligibleForRenewal = (project) => !project.isLocked && !['completed', 'archived', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner'].includes(project.status)
+
+  const handleSelectAllProjects = (e) => {
+    if (e.target.checked) {
+      setSelectedProjects(projectsData.map((project) => project.id))
+      return
+    }
+
+    setSelectedProjects([])
+  }
+
+  const handleSelectProject = (projectId) => {
+    setSelectedProjects((prev) => {
+      if (prev.includes(projectId)) {
+        return prev.filter((id) => id !== projectId)
+      }
+
+      return [...prev, projectId]
+    })
+  }
+
+  const handleBulkRenewDeadlines = async () => {
+    const selectedProjectRecords = projectsData.filter((project) => selectedProjects.includes(project.id))
+    const eligibleProjects = selectedProjectRecords.filter(isProjectEligibleForRenewal)
+
+    if (!bulkRenewalDate) {
+      toast.warning('Please choose a renewal date first')
+      return
+    }
+
+    if (eligibleProjects.length === 0) {
+      toast.warning('No eligible selected projects can be renewed')
+      return
+    }
+
+    const confirmed = window.confirm(`Renew ${eligibleProjects.length} selected project deadline${eligibleProjects.length === 1 ? '' : 's'} to ${bulkRenewalDate}?`)
+    if (!confirmed) return
+
+    try {
+      const response = await bulkRenewProjectDeadlinesAsAdmin(
+        eligibleProjects.map((project) => project.id),
+        bulkRenewalDate
+      )
+
+      await fetchProjects()
+      setSelectedProjects([])
+      setBulkRenewalDate('')
+      toast.success(response?.message || 'Project deadlines renewed successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to renew selected project deadlines')
+    }
+  }
+
+  const BulkProjectActions = () => {
+    if (selectedProjects.length === 0 || !canUpdateProjects) return null
+
+    const selectedProjectRecords = projectsData.filter((project) => selectedProjects.includes(project.id))
+    const eligibleRenewalProjects = selectedProjectRecords.filter(isProjectEligibleForRenewal)
+    const ineligibleRenewalCount = selectedProjectRecords.length - eligibleRenewalProjects.length
+
+    return (
+      <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm space-y-3'>
+        <div className='text-sm text-gray-700 dark:text-gray-300'>
+          {selectedProjects.length} projects selected
+          {' • '}
+          {eligibleRenewalProjects.length} eligible for renewal
+          {ineligibleRenewalCount > 0 && ` • ${ineligibleRenewalCount} locked or finalized`}
+        </div>
+
+        <div className='flex flex-wrap items-end gap-3'>
+          <label className='flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-300'>
+            <span>Renew selected projects to</span>
+            <input
+              type='date'
+              value={bulkRenewalDate}
+              min={new Date().toISOString().split('T')[0]}
+              onChange={(e) => setBulkRenewalDate(e.target.value)}
+              className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            />
+          </label>
+
+          <button
+            type='button'
+            onClick={handleBulkRenewDeadlines}
+            disabled={eligibleRenewalProjects.length === 0 || !bulkRenewalDate}
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${
+              eligibleRenewalProjects.length === 0 || !bulkRenewalDate ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200'
+            }`}>
+            <FaCalendarAlt className='shrink-0' />
+            <span>Renew Selected ({eligibleRenewalProjects.length})</span>
+          </button>
+
+          <button
+            type='button'
+            onClick={() => {
+              setSelectedProjects([])
+              setBulkRenewalDate('')
+            }}
+            className='inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'>
+            Clear Selection
+          </button>
+        </div>
+
+        <div className='text-xs text-gray-500 dark:text-gray-400'>Single-project renewal is still available through Edit Project.</div>
+      </div>
+    )
+  }
+
   const showingFrom = totalFilteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1
   const showingTo = Math.min(currentPage * pageSize, totalFilteredCount)
 
@@ -452,6 +562,10 @@ const AdminProjectsList = ({ navigationRequest }) => {
   }, [currentPage, totalPages])
 
   useEffect(() => {
+    setSelectedProjects((prev) => prev.filter((projectId) => projectsData.some((project) => project.id === projectId)))
+  }, [projectsData])
+
+  useEffect(() => {
     fetchProjects()
   }, [currentPage, pageSize, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, stalledOnly, searchQuery, sortBy])
 
@@ -493,6 +607,8 @@ const AdminProjectsList = ({ navigationRequest }) => {
           </button>
         </div>
       )}
+
+      <BulkProjectActions />
 
       {canCreateProjects && <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />}
 
@@ -568,33 +684,53 @@ const AdminProjectsList = ({ navigationRequest }) => {
       </div>
 
       {/* Sort + Pagination Controls */}
-      <div className='flex flex-wrap justify-end items-center gap-3 mb-4'>
-        <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300'>
-          <span>Show</span>
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className='px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
-            title='Projects per page'>
-            <option value={30}>30</option>
-            <option value={60}>60</option>
-            <option value={90}>90</option>
-          </select>
+      <div className='flex flex-wrap justify-between items-center gap-3 mb-4'>
+        <div className='flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300'>
+          {canUpdateProjects && (
+            <>
+              <label className='inline-flex items-center gap-2'>
+                <input
+                  type='checkbox'
+                  onChange={handleSelectAllProjects}
+                  checked={projectsData.length > 0 && selectedProjects.length === projectsData.length}
+                  className='rounded border-gray-300 text-accent focus:ring-accent'
+                />
+                <span>Select all on page</span>
+              </label>
+
+              {selectedProjects.length > 0 && <span className='text-gray-500 dark:text-gray-400'>{selectedProjects.length} selected</span>}
+            </>
+          )}
         </div>
 
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-          <option value='createdAt:desc'>Created (Newest first)</option>
-          <option value='createdAt:asc'>Created (Oldest first)</option>
-          <option value='deadline:asc'>Deadline (Oldest first)</option>
-          <option value='deadline:desc'>Deadline (Newest first)</option>
-          <option value='progress:asc'>Progress (Low to High)</option>
-          <option value='progress:desc'>Progress (High to Low)</option>
-          <option value='priority:asc'>Priority (Low to High)</option>
-          <option value='priority:desc'>Priority (High to Low)</option>
-        </select>
+        <div className='flex flex-wrap items-center gap-3'>
+          <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300'>
+            <span>Show</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className='px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+              title='Projects per page'>
+              <option value={30}>30</option>
+              <option value={60}>60</option>
+              <option value={90}>90</option>
+            </select>
+          </div>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value='createdAt:desc'>Created (Newest first)</option>
+            <option value='createdAt:asc'>Created (Oldest first)</option>
+            <option value='deadline:asc'>Deadline (Oldest first)</option>
+            <option value='deadline:desc'>Deadline (Newest first)</option>
+            <option value='progress:asc'>Progress (Low to High)</option>
+            <option value='progress:desc'>Progress (High to Low)</option>
+            <option value='priority:asc'>Priority (Low to High)</option>
+            <option value='priority:desc'>Priority (High to Low)</option>
+          </select>
+        </div>
       </div>
 
       {loading && <div className='mb-4 rounded-lg bg-white dark:bg-gray-800 p-4 text-sm text-gray-500 dark:text-gray-300'>Loading projects...</div>}
@@ -607,10 +743,25 @@ const AdminProjectsList = ({ navigationRequest }) => {
           const isProjectLocked = Boolean(project.isLocked)
 
           return (
-            <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-4 h-full flex flex-col'>
-              <div className='flex justify-between items-start mb-4'>
-                <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
-                <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>{' '}
+            <div
+              key={project.id}
+              className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-4 h-full flex flex-col border-2 ${
+                selectedProjects.includes(project.id) ? 'border-accent/60 ring-1 ring-accent/20' : 'border-transparent'
+              }`}>
+              <div className='flex justify-between items-start gap-3 mb-4'>
+                <div className='flex items-start gap-3'>
+                  {canUpdateProjects && (
+                    <input
+                      type='checkbox'
+                      checked={selectedProjects.includes(project.id)}
+                      onChange={() => handleSelectProject(project.id)}
+                      className='mt-1 rounded border-gray-300 text-accent focus:ring-accent'
+                      title='Select project'
+                    />
+                  )}
+                  <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
+                </div>
+                <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
               </div>
 
               <p className='text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3'>{project.description?.length > 180 ? `${project.description.slice(0, 180)}...` : project.description}</p>
