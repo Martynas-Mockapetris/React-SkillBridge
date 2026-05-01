@@ -25,6 +25,7 @@ import UserDetail from './pages/UserDetail'
 import AdminUserDetail from './pages/AdminUserDetail'
 import Blog from './pages/Blog'
 import BlogPostDetail from './pages/BlogPostDetail'
+import About from './pages/About'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Routes>
           {/* Public routes - accessible to everyone */}
           <Route path='/' element={<Home />} />
+          <Route path='/about' element={<About />} />
           <Route path='/listings' element={<Listings />} />
           <Route path='/blog' element={<Blog />} />
           <Route path='/blog/:slug' element={<BlogPostDetail />} />
