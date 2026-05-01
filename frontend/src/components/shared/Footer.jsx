@@ -1,8 +1,12 @@
 import { FaTwitter, FaLinkedin, FaGithub } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { hasAdminPanelAccess } from '../../utils/accessRoles'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
+  const { currentUser } = useAuth()
+  const canAccessAdmin = currentUser && hasAdminPanelAccess(currentUser)
 
   const linkStyles = 'theme-text-secondary hover:text-accent transition-colors duration-300'
   const headingStyles = 'font-heading font-semibold theme-text'
@@ -16,26 +20,37 @@ const Footer = () => {
             {/* Menu Links */}
             <div className='flex flex-col items-center space-y-4'>
               <h3 className={headingStyles}>Menu</h3>
+              <Link to='/about' className={linkStyles}>
+                About Us
+              </Link>
               <Link to='/listings' className={linkStyles}>
                 Listings
               </Link>
-              <Link to='/profile' className={linkStyles}>
-                Profile
-              </Link>
-              <Link to='/admin' className={linkStyles}>
-                Admin
-              </Link>
+              {currentUser && (
+                <Link to='/profile' className={linkStyles}>
+                  Profile
+                </Link>
+              )}
+              {canAccessAdmin && (
+                <Link to='/admin' className={linkStyles}>
+                  Admin
+                </Link>
+              )}
             </div>
 
             {/* Quick Links */}
             <div className='flex flex-col items-center space-y-4'>
               <h3 className={headingStyles}>Quick Links</h3>
-              <Link to='/login' className={linkStyles}>
-                Login
-              </Link>
-              <Link to='/register' className={linkStyles}>
-                Register
-              </Link>
+              {!currentUser && (
+                <>
+                  <Link to='/login' className={linkStyles}>
+                    Login
+                  </Link>
+                  <Link to='/register' className={linkStyles}>
+                    Register
+                  </Link>
+                </>
+              )}
               <Link to='/contact' className={linkStyles}>
                 Contact
               </Link>
@@ -99,21 +114,32 @@ const Footer = () => {
           <div className='flex flex-col items-center space-y-4'>
             <h3 className={headingStyles}>Menu</h3>
             <div className='flex flex-col items-center space-y-2'>
+              <Link to='/about' className={linkStyles}>
+                About Us
+              </Link>
               <Link to='/listings' className={linkStyles}>
                 Listings
               </Link>
-              <Link to='/profile' className={linkStyles}>
-                Profile
-              </Link>
-              <Link to='/admin' className={linkStyles}>
-                Admin
-              </Link>
-              <Link to='/login' className={linkStyles}>
-                Login
-              </Link>
-              <Link to='/register' className={linkStyles}>
-                Register
-              </Link>
+              {currentUser && (
+                <Link to='/profile' className={linkStyles}>
+                  Profile
+                </Link>
+              )}
+              {canAccessAdmin && (
+                <Link to='/admin' className={linkStyles}>
+                  Admin
+                </Link>
+              )}
+              {!currentUser && (
+                <>
+                  <Link to='/login' className={linkStyles}>
+                    Login
+                  </Link>
+                  <Link to='/register' className={linkStyles}>
+                    Register
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -121,9 +147,6 @@ const Footer = () => {
           <div className='flex flex-col items-center space-y-4'>
             <h3 className={headingStyles}>Quick Links</h3>
             <div className='flex flex-col items-center space-y-2'>
-              <Link to='/about' className={linkStyles}>
-                About Us
-              </Link>
               <Link to='/contact' className={linkStyles}>
                 Contact
               </Link>

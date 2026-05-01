@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { HiMenu, HiX } from 'react-icons/hi'
 import PageBackground from '../shared/PageBackground'
 import ThemeToggle from './ThemeToggle'
@@ -10,7 +10,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { currentUser, logout } = useAuth()
 
-      const canAccessAdmin = currentUser && hasAdminPanelAccess(currentUser)
+  const canAccessAdmin = currentUser && hasAdminPanelAccess(currentUser)
 
   const desktopLinkStyles = `relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px]
     after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full theme-text`
@@ -38,6 +38,10 @@ const Navigation = () => {
         <div className='hidden lg:flex items-center space-x-6'>
           <Link to='/' className={desktopLinkStyles}>
             Home
+          </Link>
+
+          <Link to='/about' className={desktopLinkStyles}>
+            About
           </Link>
 
           <Link to='/listings' className={desktopLinkStyles}>
@@ -91,6 +95,10 @@ const Navigation = () => {
           <div className='flex flex-col items-center justify-center h-screen space-y-8 relative z-20'>
             <Link to='/' className={mobileLinkStyles}>
               Home
+            </Link>
+
+            <Link to='/about' className={mobileLinkStyles}>
+              About
             </Link>
 
             <Link to='/listings' className={mobileLinkStyles}>
