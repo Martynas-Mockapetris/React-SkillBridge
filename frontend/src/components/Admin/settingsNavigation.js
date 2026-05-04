@@ -18,7 +18,13 @@ export const SETTINGS_GROUPS = [
       { id: 'blog-detail', label: 'Blog Detail Page' },
       { id: 'listings', label: 'Listings Page' },
       { id: 'project-detail', label: 'Project Detail Page' },
-      { id: 'about', label: 'About Page' },
+      {
+        label: 'About Page',
+        children: [
+          { id: 'about.layout', label: 'Layout Settings' },
+          { id: 'about.content', label: 'Content Block' }
+        ]
+      },
       { id: 'contact', label: 'Contact Page' }
     ]
   },
@@ -81,10 +87,19 @@ export const SETTINGS_VIEW_MAP = {
     pageDescription: 'Project detail page settings will be added here next.',
     sectionId: 'project-detail'
   },
-  about: {
-    pageTitle: 'Site Builder',
-    pageDescription: 'Manage About page content and visibility settings.',
-    sectionId: 'about'
+  'about.layout': {
+    pageTitle: 'About Page',
+    pageDescription: 'Manage About page layout, section visibility, and presentation settings.',
+    sectionId: 'about',
+    sectionTitle: 'Layout Settings',
+    sectionDescription: 'Control About page hero presentation, block visibility, spacing, and backgrounds.'
+  },
+  'about.content': {
+    pageTitle: 'About Page',
+    pageDescription: 'Manage About page copy and messaging.',
+    sectionId: 'about',
+    sectionTitle: 'Content Block',
+    sectionDescription: 'Edit the public About page headline, subheadline, mission, and vision content.'
   },
   contact: {
     pageTitle: 'Site Builder',
@@ -177,11 +192,23 @@ export const SETTINGS_VIEW_REGISTRY = [
     isImplemented: false
   },
   {
-    id: 'about',
+    id: 'about.layout',
     groupId: 'site-builder',
-    pageTitle: 'Site Builder',
-    pageDescription: 'Manage About page content and visibility settings.',
+    pageTitle: 'About Page',
+    pageDescription: 'Manage About page layout, section visibility, and presentation settings.',
     sectionId: 'about',
+    sectionTitle: 'Layout Settings',
+    sectionDescription: 'Control About page hero presentation, block visibility, spacing, and backgrounds.',
+    isImplemented: true
+  },
+  {
+    id: 'about.content',
+    groupId: 'site-builder',
+    pageTitle: 'About Page',
+    pageDescription: 'Manage About page copy and messaging.',
+    sectionId: 'about',
+    sectionTitle: 'Content Block',
+    sectionDescription: 'Edit the public About page headline, subheadline, mission, and vision content.',
     isImplemented: true
   },
   {

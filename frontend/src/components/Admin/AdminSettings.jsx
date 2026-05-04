@@ -132,6 +132,27 @@ const HOME_SECTION_ITEMS = [
   { key: 'contact', label: 'Contact Section', visibilityKey: 'showContact' }
 ]
 
+const ABOUT_SECTION_ITEMS = [
+  { key: 'hero', label: 'Hero Block', visibilityKey: 'showHero' },
+  { key: 'highlights', label: 'Highlights Block', visibilityKey: 'showHighlights' },
+  { key: 'cta', label: 'CTA Block', visibilityKey: 'showCta' }
+]
+
+const DEFAULT_ABOUT_HERO_BUILDER = {
+  contentAlign: 'left',
+  contentWidth: 'wide',
+  showEyebrow: true
+}
+
+const DEFAULT_ABOUT_SECTION_VISIBILITY = ABOUT_SECTION_ITEMS.reduce((acc, item) => {
+  acc[item.visibilityKey] = true
+  return acc
+}, {})
+
+const DEFAULT_ABOUT_SECTION_SPACING = {}
+
+const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
+
 const LAYOUT_PRESET_LABELS = {
   centered: 'Centered',
   split: 'Split',
@@ -363,6 +384,71 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
       return nextOrder
     })
+  }
+
+  const handleAboutHeroBuilderChange = (key, value) => {
+    updateSiteBuilderValue('aboutHero', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const handleAboutSectionVisibilityChange = (key, value) => {
+    updateSiteBuilderValue('aboutSections', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const handleAboutSectionSpacingChange = (sectionKey, edge, value) => {
+    updateSiteBuilderValue('aboutSectionSpacing', (currentValue = {}) => ({
+      ...currentValue,
+      [sectionKey]: {
+        top: currentValue?.[sectionKey]?.top || 'normal',
+        bottom: currentValue?.[sectionKey]?.bottom || 'normal',
+        ...(currentValue?.[sectionKey] || {}),
+        [edge]: value
+      }
+    }))
+  }
+
+  const handleAboutSectionBackgroundChange = (sectionKey, value) => {
+    updateSiteBuilderValue('aboutSectionBackgrounds', (currentValue = {}) => ({
+      ...currentValue,
+      [sectionKey]: value
+    }))
+  }
+
+  const resetAboutHeroBuilder = () => {
+    updateSiteBuilderValue('aboutHero', { ...DEFAULT_ABOUT_HERO_BUILDER })
+  }
+
+  const resetAboutSectionVisibility = () => {
+    updateSiteBuilderValue('aboutSections', { ...DEFAULT_ABOUT_SECTION_VISIBILITY })
+  }
+
+  const resetAboutSectionSpacing = () => {
+    updateSiteBuilderValue('aboutSectionSpacing', { ...DEFAULT_ABOUT_SECTION_SPACING })
+  }
+
+  const resetAboutSectionBackgrounds = () => {
+    updateSiteBuilderValue('aboutSectionBackgrounds', { ...DEFAULT_ABOUT_SECTION_BACKGROUNDS })
+  }
+
+  const resetAllAboutLayoutControls = () => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          aboutHero: cloneHomeBuilderValue(DEFAULT_ABOUT_HERO_BUILDER),
+          aboutSections: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_VISIBILITY),
+          aboutSectionSpacing: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_SPACING),
+          aboutSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_BACKGROUNDS)
+        }
+      }
+    }))
   }
 
   const handleHomeSectionSpacingChange = (sectionKey, edge, value) => {
@@ -1448,6 +1534,242 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     )
   }
 
+  const renderAboutLayoutPanel = () => {
+    const aboutHeroBuilder = getSiteBuilderValue('aboutHero', {})
+    const sectionVisibility = getSiteBuilderValue('aboutSections', {})
+    const sectionSpacing = getSiteBuilderValue('aboutSectionSpacing', {})
+    const sectionBackgrounds = getSiteBuilderValue('aboutSectionBackgrounds', {})
+
+    const visibleSectionsCount = ABOUT_SECTION_ITEMS.filter((item) => sectionVisibility[item.visibilityKey] ?? true).length
+    const hiddenSectionsCount = ABOUT_SECTION_ITEMS.length - visibleSectionsCount
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h4 className='text-lg font-bold text-gray-900 dark:text-white'>About Page Builder</h4>
+          <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure About page presentation, hero layout, and section-level visibility.</p>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2'>
+          <button
+            type='button'
+            onClick={resetAllAboutLayoutControls}
+            className='px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset All Layout Controls
+          </button>
+        </div>
+
+        <div className='flex items-center justify-between gap-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Hero Layout</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the public About hero alignment and text presentation.</p>
+          </div>
+
+          <button
+            type='button'
+            onClick={resetAboutHeroBuilder}
+            className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset Hero
+          </button>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+            <select
+              value={aboutHeroBuilder.contentAlign || 'left'}
+              onChange={(e) => handleAboutHeroBuilderChange('contentAlign', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='left'>Left</option>
+              <option value='center'>Center</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Width</label>
+            <select
+              value={aboutHeroBuilder.contentWidth || 'wide'}
+              onChange={(e) => handleAboutHeroBuilderChange('contentWidth', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='narrow'>Narrow</option>
+              <option value='wide'>Wide</option>
+              <option value='full'>Full</option>
+            </select>
+          </div>
+
+          <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:pt-6'>
+            <input
+              type='checkbox'
+              checked={aboutHeroBuilder.showEyebrow ?? true}
+              onChange={(e) => handleAboutHeroBuilderChange('showEyebrow', e.target.checked)}
+              className='rounded border-gray-300 text-accent focus:ring-accent'
+            />
+            Show eyebrow
+          </label>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Visibility</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Choose which blocks should appear on the public About page.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutSectionVisibility}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Visibility
+            </button>
+          </div>
+
+          <div className='space-y-2'>
+            {ABOUT_SECTION_ITEMS.map((item) => {
+              const isVisible = sectionVisibility[item.visibilityKey] ?? true
+
+              return (
+                <label key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Currently visible on the About page' : 'Currently hidden from the About page'}</p>
+                  </div>
+
+                  <input type='checkbox' checked={isVisible} onChange={(e) => handleAboutSectionVisibilityChange(item.visibilityKey, e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Spacing</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the vertical spacing for each About page block.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutSectionSpacing}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Spacing
+            </button>
+          </div>
+
+          <div className='space-y-3'>
+            {ABOUT_SECTION_ITEMS.map((item) => {
+              const spacing = sectionSpacing[item.key] || {}
+
+              return (
+                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                  <p className='text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</p>
+
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                    <div>
+                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Top Spacing</label>
+                      <select
+                        value={spacing.top || 'normal'}
+                        onChange={(e) => handleAboutSectionSpacingChange(item.key, 'top', e.target.value)}
+                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                        <option value='none'>None</option>
+                        <option value='tight'>Tight</option>
+                        <option value='normal'>Normal</option>
+                        <option value='relaxed'>Relaxed</option>
+                        <option value='loose'>Loose</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Bottom Spacing</label>
+                      <select
+                        value={spacing.bottom || 'normal'}
+                        onChange={(e) => handleAboutSectionSpacingChange(item.key, 'bottom', e.target.value)}
+                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                        <option value='none'>None</option>
+                        <option value='tight'>Tight</option>
+                        <option value='normal'>Normal</option>
+                        <option value='relaxed'>Relaxed</option>
+                        <option value='loose'>Loose</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Backgrounds</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the background treatment for each About page block.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutSectionBackgrounds}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Backgrounds
+            </button>
+          </div>
+
+          <div className='space-y-3'>
+            {ABOUT_SECTION_ITEMS.map((item) => {
+              const backgroundValue = sectionBackgrounds[item.key] || 'default'
+
+              return (
+                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                  <label className='block text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</label>
+
+                  <select
+                    value={backgroundValue}
+                    onChange={(e) => handleAboutSectionBackgroundChange(item.key, e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                    <option value='default'>Default Theme</option>
+                    <option value='transparent'>Transparent</option>
+                    <option value='soft'>Soft Tint</option>
+                    <option value='panel'>Panel Surface</option>
+                    <option value='accent'>Accent Tint</option>
+                  </select>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Review the current About page builder configuration before saving it to the public site.</p>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
+            {[
+              { label: 'Content Alignment', value: CONTENT_ALIGN_LABELS[aboutHeroBuilder.contentAlign || 'left'] || 'Left' },
+              { label: 'Content Width', value: aboutHeroBuilder.contentWidth || 'wide' },
+              { label: 'Eyebrow', value: (aboutHeroBuilder.showEyebrow ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'Visible Sections', value: String(visibleSectionsCount) },
+              { label: 'Hidden Sections', value: String(hiddenSectionsCount) },
+              { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' }
+            ].map((item) => (
+              <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+                <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2 pt-2'>
+          <button type='button' onClick={handleSaveSiteBuilderSection} disabled={savingSection === 'siteBuilder'} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+            {savingSection === 'siteBuilder' ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   const renderSectionFields = (sectionId, section) => {
     if (sectionId === 'home') {
       return (
@@ -1529,8 +1851,8 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                       <input
                         id={`enabled-${activeSectionId}`}
                         type='checkbox'
-                        checked={activeSectionId === 'home.layout' ? !!drafts.siteBuilder?.enabled : !!drafts[sectionId]?.enabled}
-                        onChange={(e) => handleEnabledChange(activeSectionId === 'home.layout' ? 'siteBuilder' : sectionId, e.target.checked)}
+                        checked={['home.layout', 'about.layout'].includes(activeSectionId) ? !!drafts.siteBuilder?.enabled : !!drafts[sectionId]?.enabled}
+                        onChange={(e) => handleEnabledChange(['home.layout', 'about.layout'].includes(activeSectionId) ? 'siteBuilder' : sectionId, e.target.checked)}
                         className='rounded border-gray-300 text-accent focus:ring-accent'
                       />
                       <label htmlFor={`enabled-${activeSectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
@@ -1539,17 +1861,18 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                     </div>
 
                     {activeSectionId === 'home.layout' && renderHomeHeroBuilderPanel()}
+                    {activeSectionId === 'about.layout' && renderAboutLayoutPanel()}
 
-                    {activeSectionId !== 'home.layout' && renderSectionFields(sectionId, section)}
+                    {!['home.layout', 'about.layout'].includes(activeSectionId) && renderSectionFields(sectionId, section)}
 
                     <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>
                       Last updated:{' '}
-                      {(activeSectionId === 'home.layout' ? sectionMap.siteBuilder?.updatedAt : sectionMap[sectionId]?.updatedAt)
-                        ? new Date(activeSectionId === 'home.layout' ? sectionMap.siteBuilder.updatedAt : sectionMap[sectionId].updatedAt).toLocaleString()
+                      {(['home.layout', 'about.layout'].includes(activeSectionId) ? sectionMap.siteBuilder?.updatedAt : sectionMap[sectionId]?.updatedAt)
+                        ? new Date(['home.layout', 'about.layout'].includes(activeSectionId) ? sectionMap.siteBuilder.updatedAt : sectionMap[sectionId].updatedAt).toLocaleString()
                         : 'N/A'}
                     </div>
 
-                    {activeSectionId !== 'home.layout' && (
+                    {!['home.layout', 'about.layout'].includes(activeSectionId) && (
                       <div className='mt-4 flex flex-wrap items-center gap-2'>
                         <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
                           {savingSection === sectionId ? 'Saving...' : 'Save Section'}

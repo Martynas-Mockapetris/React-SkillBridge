@@ -5,6 +5,7 @@ import AboutHero from '../components/About/AboutHero'
 import AboutHighlights from '../components/About/AboutHighlights'
 import AboutCta from '../components/About/AboutCta'
 import { getPublicSystemConfig } from '../services/configService'
+import { getSectionBackgroundClass, getSectionSpacingClass } from '../components/Home/homeSectionLayout'
 
 const About = () => {
   const [publicConfig, setPublicConfig] = useState(null)
@@ -34,10 +35,33 @@ const About = () => {
     return publicConfig.about.values || {}
   }, [publicConfig])
 
+  const aboutHeroBuilder = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.aboutHero || {}
+  }, [publicConfig])
+
+  const aboutSectionVisibility = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.aboutSections || {}
+  }, [publicConfig])
+
+  const aboutSectionSpacing = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.aboutSectionSpacing || {}
+  }, [publicConfig])
+
+  const aboutSectionBackgrounds = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.aboutSectionBackgrounds || {}
+  }, [publicConfig])
+
   const headline = aboutContent.headline || 'Build your freelance career with confidence'
   const subheadline = aboutContent.subheadline || 'Connect clients and freelancers in one place'
   const mission = aboutContent.mission || 'SkillBridge helps people find the right collaboration faster. We bring serious clients and capable freelancers into one workflow that feels clear, practical, and trustworthy.'
   const vision = aboutContent.vision || 'We want project collaboration to feel simpler: fewer dead ends, better matches, stronger communication, and a platform that scales with both independent talent and growing teams.'
+  const showHero = aboutSectionVisibility.showHero ?? true
+  const showHighlights = aboutSectionVisibility.showHighlights ?? true
+  const showCta = aboutSectionVisibility.showCta ?? true
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
@@ -53,11 +77,25 @@ const About = () => {
         {!loading && error && <div className='rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-5 py-4 text-red-700 dark:text-red-300'>{error}</div>}
 
         {!loading && !error && (
-          <div className='space-y-10'>
-            <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} />
-            <AboutHighlights mission={mission} vision={vision} />
-            <AboutCta />
-          </div>
+          <>
+            {showHero && (
+              <div className={`${getSectionSpacingClass(aboutSectionSpacing.hero || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')}`}>
+                <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
+              </div>
+            )}
+
+            {showHighlights && (
+              <div className={`${getSectionSpacingClass(aboutSectionSpacing.highlights || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')}`}>
+                <AboutHighlights mission={mission} vision={vision} />
+              </div>
+            )}
+
+            {showCta && (
+              <div className={`${getSectionSpacingClass(aboutSectionSpacing.cta || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')}`}>
+                <AboutCta />
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>
