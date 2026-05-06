@@ -116,9 +116,9 @@ const About = () => {
             </section>
           )}
 
-          <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
-            {showCta && (
-              <div className={`${getSectionSpacingClass(aboutSectionSpacing.cta || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')}`}>
+          {showCta && (
+            <section className={`${getSectionSpacingClass(aboutSectionSpacing.cta || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')} relative z-10`}>
+              <div className='container mx-auto px-4'>
                 <AboutCta
                   eyebrow={ctaEyebrow}
                   headline={ctaHeadline}
@@ -130,8 +130,8 @@ const About = () => {
                   layout={aboutCtaBuilder}
                 />
               </div>
-            )}
-          </div>
+            </section>
+          )}
         </>
       )}
     </section>
