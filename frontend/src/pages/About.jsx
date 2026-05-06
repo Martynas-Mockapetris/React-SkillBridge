@@ -84,25 +84,31 @@ const About = () => {
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
       <PageBackground variant='minimal' />
 
-      <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
-        {loading && (
+      {loading && (
+        <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
           <div className='flex items-center justify-center min-h-[320px]'>
             <LoadingSpinner />
           </div>
-        )}
+        </div>
+      )}
 
-        {!loading && error && <div className='rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-5 py-4 text-red-700 dark:text-red-300'>{error}</div>}
+      {!loading && error && (
+        <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
+          <div className='rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-5 py-4 text-red-700 dark:text-red-300'>{error}</div>
+        </div>
+      )}
 
-        {!loading && !error && (
-          <>
-            {showHero && (
-              <section className={`${getSectionSpacingClass(aboutSectionSpacing.hero || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')}`}>
-                <div className='container mx-auto px-4'>
-                  <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
-                </div>
-              </section>
-            )}
+      {!loading && !error && (
+        <>
+          {showHero && (
+            <section className={`${getSectionSpacingClass(aboutSectionSpacing.hero || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')} relative z-10`}>
+              <div className='container mx-auto px-4'>
+                <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
+              </div>
+            </section>
+          )}
 
+          <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
             {showHighlights && (
               <div className={`${getSectionSpacingClass(aboutSectionSpacing.highlights || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')}`}>
                 <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
@@ -123,9 +129,9 @@ const About = () => {
                 />
               </div>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
     </section>
   )
 }
