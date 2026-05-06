@@ -5,7 +5,13 @@ import AboutHero from '../components/About/AboutHero'
 import AboutHighlights from '../components/About/AboutHighlights'
 import AboutCta from '../components/About/AboutCta'
 import { getPublicSystemConfig } from '../services/configService'
-import { getSectionBackgroundClass, getSectionSpacingClass } from '../components/Home/homeSectionLayout'
+import { getSectionBackgroundClass } from '../components/Home/homeSectionLayout'
+
+const DEFAULT_ABOUT_SECTION_SPACING = {
+  hero: { top: 'tight', bottom: 'tight' },
+  highlights: { top: 'tight', bottom: 'tight' },
+  cta: { top: 'tight', bottom: 'none' }
+}
 
 const About = () => {
   const [publicConfig, setPublicConfig] = useState(null)
@@ -79,6 +85,9 @@ const About = () => {
   const showHero = aboutSectionVisibility.showHero ?? true
   const showHighlights = aboutSectionVisibility.showHighlights ?? true
   const showCta = aboutSectionVisibility.showCta ?? true
+  const heroSpacing = aboutSectionSpacing.hero || DEFAULT_ABOUT_SECTION_SPACING.hero
+  const highlightsSpacing = aboutSectionSpacing.highlights || DEFAULT_ABOUT_SECTION_SPACING.highlights
+  const ctaSpacing = aboutSectionSpacing.cta || DEFAULT_ABOUT_SECTION_SPACING.cta
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
@@ -99,9 +108,9 @@ const About = () => {
       )}
 
       {!loading && !error && (
-        <>
+        <div className='relative z-10 flex flex-col gap-4 pb-20'>
           {showHero && (
-            <section className={`${getSectionSpacingClass(aboutSectionSpacing.hero || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')} relative z-10`}>
+            <section className={`${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')} relative z-10`}>
               <div className='container mx-auto px-4'>
                 <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
               </div>
@@ -109,7 +118,7 @@ const About = () => {
           )}
 
           {showHighlights && (
-            <section className={`${getSectionSpacingClass(aboutSectionSpacing.highlights || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')} relative z-10`}>
+            <section className={`${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')} relative z-10`}>
               <div className='container mx-auto px-4'>
                 <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
               </div>
@@ -117,7 +126,7 @@ const About = () => {
           )}
 
           {showCta && (
-            <section className={`${getSectionSpacingClass(aboutSectionSpacing.cta || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')} relative z-10`}>
+            <section className={`${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')} relative z-10`}>
               <div className='container mx-auto px-4'>
                 <AboutCta
                   eyebrow={ctaEyebrow}
@@ -132,7 +141,7 @@ const About = () => {
               </div>
             </section>
           )}
-        </>
+        </div>
       )}
     </section>
   )

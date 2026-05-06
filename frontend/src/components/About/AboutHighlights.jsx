@@ -9,7 +9,7 @@ const AboutHighlights = ({ mission, vision, layout = {} }) => {
 
   const alignClass = contentAlign === 'center' ? 'text-center' : 'text-left'
   const introAlignClass = contentAlign === 'center' ? 'mx-auto text-center' : ''
-  const widthClass = contentWidth === 'narrow' ? 'max-w-4xl mx-auto' : contentWidth === 'full' ? 'max-w-7xl' : 'max-w-6xl mx-auto'
+  const widthClass = contentWidth === 'narrow' ? 'max-w-5xl mx-auto' : 'w-full'
 
   const cards = [
     {
