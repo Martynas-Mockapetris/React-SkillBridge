@@ -45,6 +45,11 @@ const About = () => {
     return publicConfig.siteBuilder.values?.aboutHighlights || {}
   }, [publicConfig])
 
+  const aboutCtaBuilder = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.aboutCta || {}
+  }, [publicConfig])
+
   const aboutSectionVisibility = useMemo(() => {
     if (!publicConfig?.siteBuilder?.enabled) return {}
     return publicConfig.siteBuilder.values?.aboutSections || {}
@@ -64,6 +69,13 @@ const About = () => {
   const subheadline = aboutContent.subheadline || 'Connect clients and freelancers in one place'
   const mission = aboutContent.mission || 'SkillBridge helps people find the right collaboration faster. We bring serious clients and capable freelancers into one workflow that feels clear, practical, and trustworthy.'
   const vision = aboutContent.vision || 'We want project collaboration to feel simpler: fewer dead ends, better matches, stronger communication, and a platform that scales with both independent talent and growing teams.'
+  const ctaEyebrow = aboutContent.ctaEyebrow || 'Next Step'
+  const ctaHeadline = aboutContent.ctaHeadline || 'Explore the platform or create your account'
+  const ctaBody = aboutContent.ctaBody || 'Whether you are hiring, freelancing, or doing both, SkillBridge is built to make project collaboration easier to start and easier to manage.'
+  const ctaPrimaryLabel = aboutContent.ctaPrimaryLabel || 'Explore Listings'
+  const ctaPrimaryHref = aboutContent.ctaPrimaryHref || '/listings'
+  const ctaSecondaryLabel = aboutContent.ctaSecondaryLabel || 'Join SkillBridge'
+  const ctaSecondaryHref = aboutContent.ctaSecondaryHref || '/register'
   const showHero = aboutSectionVisibility.showHero ?? true
   const showHighlights = aboutSectionVisibility.showHighlights ?? true
   const showCta = aboutSectionVisibility.showCta ?? true
@@ -97,7 +109,16 @@ const About = () => {
 
             {showCta && (
               <div className={`${getSectionSpacingClass(aboutSectionSpacing.cta || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')}`}>
-                <AboutCta />
+                <AboutCta
+                  eyebrow={ctaEyebrow}
+                  headline={ctaHeadline}
+                  body={ctaBody}
+                  primaryLabel={ctaPrimaryLabel}
+                  primaryHref={ctaPrimaryHref}
+                  secondaryLabel={ctaSecondaryLabel}
+                  secondaryHref={ctaSecondaryHref}
+                  layout={aboutCtaBuilder}
+                />
               </div>
             )}
           </>

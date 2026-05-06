@@ -68,7 +68,19 @@ const SECTION_DEFS = {
       { key: 'headline', label: 'Headline', type: 'text', placeholder: 'Build your freelance career with confidence' },
       { key: 'subheadline', label: 'Subheadline', type: 'text', placeholder: 'Connect clients and freelancers in one place' },
       { key: 'mission', label: 'Mission', type: 'textarea', placeholder: 'Describe mission...' },
-      { key: 'vision', label: 'Vision', type: 'textarea', placeholder: 'Describe vision...' }
+      { key: 'vision', label: 'Vision', type: 'textarea', placeholder: 'Describe vision...' },
+      { key: 'ctaEyebrow', label: 'CTA Eyebrow', type: 'text', placeholder: 'Next Step' },
+      { key: 'ctaHeadline', label: 'CTA Headline', type: 'text', placeholder: 'Explore the platform or create your account' },
+      {
+        key: 'ctaBody',
+        label: 'CTA Body',
+        type: 'textarea',
+        placeholder: 'Whether you are hiring, freelancing, or doing both, SkillBridge is built to make project collaboration easier to start and easier to manage.'
+      },
+      { key: 'ctaPrimaryLabel', label: 'Primary Button Label', type: 'text', placeholder: 'Explore Listings' },
+      { key: 'ctaPrimaryHref', label: 'Primary Button Link', type: 'text', placeholder: '/listings' },
+      { key: 'ctaSecondaryLabel', label: 'Secondary Button Label', type: 'text', placeholder: 'Join SkillBridge' },
+      { key: 'ctaSecondaryHref', label: 'Secondary Button Link', type: 'text', placeholder: '/register' }
     ]
   },
   contact: {
@@ -155,6 +167,20 @@ const ABOUT_HIGHLIGHTS_LAYOUT_LABELS = {
   stacked: 'Stacked',
   grid: 'Balanced Grid',
   'feature-first': 'Feature First'
+}
+
+const DEFAULT_ABOUT_CTA_BUILDER = {
+  contentAlign: 'left',
+  contentWidth: 'wide',
+  buttonLayout: 'stacked-mobile',
+  emphasisStyle: 'soft',
+  showSecondaryButton: true
+}
+
+const ABOUT_CTA_EMPHASIS_LABELS = {
+  soft: 'Soft Panel',
+  strong: 'Strong Panel',
+  outline: 'Outline Surface'
 }
 
 const DEFAULT_ABOUT_SECTION_VISIBILITY = ABOUT_SECTION_ITEMS.reduce((acc, item) => {
@@ -418,6 +444,18 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     updateSiteBuilderValue('aboutHighlights', { ...DEFAULT_ABOUT_HIGHLIGHTS_BUILDER })
   }
 
+  const handleAboutCtaBuilderChange = (key, value) => {
+    updateSiteBuilderValue('aboutCta', (currentValue = {}) => ({
+      ...DEFAULT_ABOUT_CTA_BUILDER,
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const resetAboutCtaBuilder = () => {
+    updateSiteBuilderValue('aboutCta', { ...DEFAULT_ABOUT_CTA_BUILDER })
+  }
+
   const handleAboutSectionVisibilityChange = (key, value) => {
     updateSiteBuilderValue('aboutSections', (currentValue = {}) => ({
       ...currentValue,
@@ -469,6 +507,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           ...prev.siteBuilder.values,
           aboutHero: cloneHomeBuilderValue(DEFAULT_ABOUT_HERO_BUILDER),
           aboutHighlights: cloneHomeBuilderValue(DEFAULT_ABOUT_HIGHLIGHTS_BUILDER),
+          aboutCta: cloneHomeBuilderValue(DEFAULT_ABOUT_CTA_BUILDER),
           aboutSections: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_VISIBILITY),
           aboutSectionSpacing: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_SPACING),
           aboutSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_BACKGROUNDS)
@@ -1563,6 +1602,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   const renderAboutLayoutPanel = () => {
     const aboutHeroBuilder = getSiteBuilderValue('aboutHero', {})
     const aboutHighlightsBuilder = getSiteBuilderValue('aboutHighlights', {})
+    const aboutCtaBuilder = getSiteBuilderValue('aboutCta', {})
     const sectionVisibility = getSiteBuilderValue('aboutSections', {})
     const sectionSpacing = getSiteBuilderValue('aboutSectionSpacing', {})
     const sectionBackgrounds = getSiteBuilderValue('aboutSectionBackgrounds', {})
@@ -1694,6 +1734,81 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
                 className='rounded border-gray-300 text-accent focus:ring-accent'
               />
               Show highlight icons
+            </label>
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>CTA Layout</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the About CTA presentation, width, and button layout.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutCtaBuilder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset CTA
+            </button>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4'>
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+              <select
+                value={aboutCtaBuilder.contentAlign || 'left'}
+                onChange={(e) => handleAboutCtaBuilderChange('contentAlign', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='left'>Left</option>
+                <option value='center'>Center</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Width</label>
+              <select
+                value={aboutCtaBuilder.contentWidth || 'wide'}
+                onChange={(e) => handleAboutCtaBuilderChange('contentWidth', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='narrow'>Narrow</option>
+                <option value='wide'>Wide</option>
+                <option value='full'>Full</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Button Layout</label>
+              <select
+                value={aboutCtaBuilder.buttonLayout || 'stacked-mobile'}
+                onChange={(e) => handleAboutCtaBuilderChange('buttonLayout', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='stacked-mobile'>Stacked Mobile / Row Desktop</option>
+                <option value='inline'>Inline</option>
+                <option value='split'>Split Emphasis</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Emphasis Style</label>
+              <select
+                value={aboutCtaBuilder.emphasisStyle || 'soft'}
+                onChange={(e) => handleAboutCtaBuilderChange('emphasisStyle', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='soft'>Soft Panel</option>
+                <option value='strong'>Strong Panel</option>
+                <option value='outline'>Outline Surface</option>
+              </select>
+            </div>
+
+            <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 xl:pt-6'>
+              <input
+                type='checkbox'
+                checked={aboutCtaBuilder.showSecondaryButton ?? true}
+                onChange={(e) => handleAboutCtaBuilderChange('showSecondaryButton', e.target.checked)}
+                className='rounded border-gray-300 text-accent focus:ring-accent'
+              />
+              Show secondary button
             </label>
           </div>
         </div>
@@ -1844,7 +1959,11 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' },
               { label: 'Highlights Width', value: aboutHighlightsBuilder.contentWidth || 'wide' },
               { label: 'Highlights Layout', value: ABOUT_HIGHLIGHTS_LAYOUT_LABELS[aboutHighlightsBuilder.cardLayout || 'stacked'] || 'Stacked' },
-              { label: 'Highlights Icons', value: (aboutHighlightsBuilder.showIcons ?? true) ? 'Shown' : 'Hidden' }
+              { label: 'Highlights Icons', value: (aboutHighlightsBuilder.showIcons ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'CTA Width', value: aboutCtaBuilder.contentWidth || 'wide' },
+              { label: 'CTA Buttons', value: CTA_LAYOUT_LABELS[aboutCtaBuilder.buttonLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
+              { label: 'CTA Emphasis', value: ABOUT_CTA_EMPHASIS_LABELS[aboutCtaBuilder.emphasisStyle || 'soft'] || 'Soft Panel' },
+              { label: 'Secondary CTA', value: (aboutCtaBuilder.showSecondaryButton ?? true) ? 'Shown' : 'Hidden' }
             ].map((item) => (
               <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
                 <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
