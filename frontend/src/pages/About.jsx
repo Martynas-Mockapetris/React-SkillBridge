@@ -110,9 +110,11 @@ const About = () => {
 
           <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
             {showHighlights && (
-              <div className={`${getSectionSpacingClass(aboutSectionSpacing.highlights || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')}`}>
-                <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
-              </div>
+              <section className={`${getSectionSpacingClass(aboutSectionSpacing.highlights || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')} relative z-10`}>
+                <div className='container mx-auto px-4'>
+                  <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
+                </div>
+              </section>
             )}
 
             {showCta && (
