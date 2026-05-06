@@ -144,6 +144,19 @@ const DEFAULT_ABOUT_HERO_BUILDER = {
   showEyebrow: true
 }
 
+const DEFAULT_ABOUT_HIGHLIGHTS_BUILDER = {
+  contentAlign: 'left',
+  contentWidth: 'wide',
+  cardLayout: 'stacked',
+  showIcons: true
+}
+
+const ABOUT_HIGHLIGHTS_LAYOUT_LABELS = {
+  stacked: 'Stacked',
+  grid: 'Balanced Grid',
+  'feature-first': 'Feature First'
+}
+
 const DEFAULT_ABOUT_SECTION_VISIBILITY = ABOUT_SECTION_ITEMS.reduce((acc, item) => {
   acc[item.visibilityKey] = true
   return acc
@@ -393,6 +406,18 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     }))
   }
 
+  const handleAboutHighlightsBuilderChange = (key, value) => {
+    updateSiteBuilderValue('aboutHighlights', (currentValue = {}) => ({
+      ...DEFAULT_ABOUT_HIGHLIGHTS_BUILDER,
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const resetAboutHighlightsBuilder = () => {
+    updateSiteBuilderValue('aboutHighlights', { ...DEFAULT_ABOUT_HIGHLIGHTS_BUILDER })
+  }
+
   const handleAboutSectionVisibilityChange = (key, value) => {
     updateSiteBuilderValue('aboutSections', (currentValue = {}) => ({
       ...currentValue,
@@ -443,6 +468,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         values: {
           ...prev.siteBuilder.values,
           aboutHero: cloneHomeBuilderValue(DEFAULT_ABOUT_HERO_BUILDER),
+          aboutHighlights: cloneHomeBuilderValue(DEFAULT_ABOUT_HIGHLIGHTS_BUILDER),
           aboutSections: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_VISIBILITY),
           aboutSectionSpacing: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_SPACING),
           aboutSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_BACKGROUNDS)
@@ -1536,6 +1562,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
   const renderAboutLayoutPanel = () => {
     const aboutHeroBuilder = getSiteBuilderValue('aboutHero', {})
+    const aboutHighlightsBuilder = getSiteBuilderValue('aboutHighlights', {})
     const sectionVisibility = getSiteBuilderValue('aboutSections', {})
     const sectionSpacing = getSiteBuilderValue('aboutSectionSpacing', {})
     const sectionBackgrounds = getSiteBuilderValue('aboutSectionBackgrounds', {})
@@ -1606,6 +1633,69 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             />
             Show eyebrow
           </label>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Highlights Layout</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the About highlights section layout, width, and icon treatment.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutHighlightsBuilder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Highlights
+            </button>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4'>
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+              <select
+                value={aboutHighlightsBuilder.contentAlign || 'left'}
+                onChange={(e) => handleAboutHighlightsBuilderChange('contentAlign', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='left'>Left</option>
+                <option value='center'>Center</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Width</label>
+              <select
+                value={aboutHighlightsBuilder.contentWidth || 'wide'}
+                onChange={(e) => handleAboutHighlightsBuilderChange('contentWidth', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='narrow'>Narrow</option>
+                <option value='wide'>Wide</option>
+                <option value='full'>Full</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Card Layout</label>
+              <select
+                value={aboutHighlightsBuilder.cardLayout || 'stacked'}
+                onChange={(e) => handleAboutHighlightsBuilderChange('cardLayout', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='stacked'>Stacked</option>
+                <option value='grid'>Balanced Grid</option>
+                <option value='feature-first'>Feature First</option>
+              </select>
+            </div>
+
+            <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 xl:pt-6'>
+              <input
+                type='checkbox'
+                checked={aboutHighlightsBuilder.showIcons ?? true}
+                onChange={(e) => handleAboutHighlightsBuilderChange('showIcons', e.target.checked)}
+                className='rounded border-gray-300 text-accent focus:ring-accent'
+              />
+              Show highlight icons
+            </label>
+          </div>
         </div>
 
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
@@ -1751,7 +1841,10 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               { label: 'Eyebrow', value: (aboutHeroBuilder.showEyebrow ?? true) ? 'Shown' : 'Hidden' },
               { label: 'Visible Sections', value: String(visibleSectionsCount) },
               { label: 'Hidden Sections', value: String(hiddenSectionsCount) },
-              { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' }
+              { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' },
+              { label: 'Highlights Width', value: aboutHighlightsBuilder.contentWidth || 'wide' },
+              { label: 'Highlights Layout', value: ABOUT_HIGHLIGHTS_LAYOUT_LABELS[aboutHighlightsBuilder.cardLayout || 'stacked'] || 'Stacked' },
+              { label: 'Highlights Icons', value: (aboutHighlightsBuilder.showIcons ?? true) ? 'Shown' : 'Hidden' }
             ].map((item) => (
               <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
                 <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>

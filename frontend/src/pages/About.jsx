@@ -40,6 +40,11 @@ const About = () => {
     return publicConfig.siteBuilder.values?.aboutHero || {}
   }, [publicConfig])
 
+  const aboutHighlightsBuilder = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return {}
+    return publicConfig.siteBuilder.values?.aboutHighlights || {}
+  }, [publicConfig])
+
   const aboutSectionVisibility = useMemo(() => {
     if (!publicConfig?.siteBuilder?.enabled) return {}
     return publicConfig.siteBuilder.values?.aboutSections || {}
@@ -86,7 +91,7 @@ const About = () => {
 
             {showHighlights && (
               <div className={`${getSectionSpacingClass(aboutSectionSpacing.highlights || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')}`}>
-                <AboutHighlights mission={mission} vision={vision} />
+                <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
               </div>
             )}
 
