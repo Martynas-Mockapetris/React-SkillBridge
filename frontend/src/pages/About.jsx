@@ -96,9 +96,11 @@ const About = () => {
         {!loading && !error && (
           <>
             {showHero && (
-              <div className={`${getSectionSpacingClass(aboutSectionSpacing.hero || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')}`}>
-                <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
-              </div>
+              <section className={`${getSectionSpacingClass(aboutSectionSpacing.hero || {})} ${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')}`}>
+                <div className='container mx-auto px-4'>
+                  <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
+                </div>
+              </section>
             )}
 
             {showHighlights && (
