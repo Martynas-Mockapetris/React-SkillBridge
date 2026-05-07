@@ -1860,9 +1860,13 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
               return (
                 <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
-                  <div className='min-w-0'>
-                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
-                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Visible on page' : 'Hidden by visibility settings'}</p>
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-semibold text-accent'>{index + 1}</span>
+
+                    <div className='min-w-0'>
+                      <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                      <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Visible on page' : 'Hidden by visibility settings'}</p>
+                    </div>
                   </div>
 
                   <div className='flex items-center gap-2'>
