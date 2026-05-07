@@ -92,7 +92,7 @@ export const SETTINGS_VIEW_MAP = {
     pageDescription: 'Manage About page layout, section visibility, and presentation settings.',
     sectionId: 'about',
     sectionTitle: 'Layout Settings',
-    sectionDescription: 'Control About page hero presentation, block visibility, spacing, and backgrounds.'
+    sectionDescription: 'Control About page hero presentation, block visibility, and backgrounds.'
   },
   'about.content': {
     pageTitle: 'About Page',

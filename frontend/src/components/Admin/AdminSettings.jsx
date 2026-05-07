@@ -1796,64 +1796,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
           <div className='flex items-center justify-between gap-3'>
             <div>
-              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Spacing</h5>
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the vertical spacing for each About page block.</p>
-            </div>
-
-            <button
-              type='button'
-              onClick={resetAboutSectionSpacing}
-              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
-              Reset Spacing
-            </button>
-          </div>
-
-          <div className='space-y-3'>
-            {ABOUT_SECTION_ITEMS.map((item) => {
-              const spacing = sectionSpacing[item.key] || {}
-
-              return (
-                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
-                  <p className='text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</p>
-
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                    <div>
-                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Top Spacing</label>
-                      <select
-                        value={spacing.top || 'normal'}
-                        onChange={(e) => handleAboutSectionSpacingChange(item.key, 'top', e.target.value)}
-                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
-                        <option value='none'>None</option>
-                        <option value='tight'>Tight</option>
-                        <option value='normal'>Normal</option>
-                        <option value='relaxed'>Relaxed</option>
-                        <option value='loose'>Loose</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Bottom Spacing</label>
-                      <select
-                        value={spacing.bottom || 'normal'}
-                        onChange={(e) => handleAboutSectionSpacingChange(item.key, 'bottom', e.target.value)}
-                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
-                        <option value='none'>None</option>
-                        <option value='tight'>Tight</option>
-                        <option value='normal'>Normal</option>
-                        <option value='relaxed'>Relaxed</option>
-                        <option value='loose'>Loose</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
-          <div className='flex items-center justify-between gap-3'>
-            <div>
               <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Backgrounds</h5>
               <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the background treatment for each About page block.</p>
             </div>
