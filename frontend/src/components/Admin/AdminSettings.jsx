@@ -1931,6 +1931,45 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           </div>
         </div>
 
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h6 className='text-sm font-semibold text-gray-900 dark:text-white'>Current Render Order</h6>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>This is the order the About page will use after saving, with visibility applied per block.</p>
+            </div>
+            <span className='text-xs text-gray-500 dark:text-gray-400'>Total: {sectionOrder.length}</span>
+          </div>
+
+          <div className='space-y-2'>
+            {sectionOrder.map((sectionKey, index) => {
+              const item = ABOUT_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
+              const isVisible = sectionVisibility[item?.visibilityKey] ?? true
+
+              if (!item) return null
+
+              return (
+                <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 px-3 py-2'>
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-semibold text-accent'>{index + 1}</span>
+
+                    <div className='min-w-0'>
+                      <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                      <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Will render on page' : 'Hidden and skipped in public render'}</p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-2 py-1 rounded-full text-[11px] font-semibold ${
+                      isVisible ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                    }`}>
+                    {isVisible ? 'Visible' : 'Hidden'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
         <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
           <div>
             <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
