@@ -188,8 +188,6 @@ const DEFAULT_ABOUT_SECTION_VISIBILITY = ABOUT_SECTION_ITEMS.reduce((acc, item) 
   return acc
 }, {})
 
-const DEFAULT_ABOUT_SECTION_SPACING = {}
-
 const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
 
 const LAYOUT_PRESET_LABELS = {
@@ -463,18 +461,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     }))
   }
 
-  const handleAboutSectionSpacingChange = (sectionKey, edge, value) => {
-    updateSiteBuilderValue('aboutSectionSpacing', (currentValue = {}) => ({
-      ...currentValue,
-      [sectionKey]: {
-        top: currentValue?.[sectionKey]?.top || 'normal',
-        bottom: currentValue?.[sectionKey]?.bottom || 'normal',
-        ...(currentValue?.[sectionKey] || {}),
-        [edge]: value
-      }
-    }))
-  }
-
   const handleAboutSectionBackgroundChange = (sectionKey, value) => {
     updateSiteBuilderValue('aboutSectionBackgrounds', (currentValue = {}) => ({
       ...currentValue,
@@ -488,10 +474,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
   const resetAboutSectionVisibility = () => {
     updateSiteBuilderValue('aboutSections', { ...DEFAULT_ABOUT_SECTION_VISIBILITY })
-  }
-
-  const resetAboutSectionSpacing = () => {
-    updateSiteBuilderValue('aboutSectionSpacing', { ...DEFAULT_ABOUT_SECTION_SPACING })
   }
 
   const resetAboutSectionBackgrounds = () => {
@@ -509,7 +491,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           aboutHighlights: cloneHomeBuilderValue(DEFAULT_ABOUT_HIGHLIGHTS_BUILDER),
           aboutCta: cloneHomeBuilderValue(DEFAULT_ABOUT_CTA_BUILDER),
           aboutSections: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_VISIBILITY),
-          aboutSectionSpacing: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_SPACING),
           aboutSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_BACKGROUNDS)
         }
       }
@@ -1604,7 +1585,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     const aboutHighlightsBuilder = getSiteBuilderValue('aboutHighlights', {})
     const aboutCtaBuilder = getSiteBuilderValue('aboutCta', {})
     const sectionVisibility = getSiteBuilderValue('aboutSections', {})
-    const sectionSpacing = getSiteBuilderValue('aboutSectionSpacing', {})
     const sectionBackgrounds = getSiteBuilderValue('aboutSectionBackgrounds', {})
 
     const visibleSectionsCount = ABOUT_SECTION_ITEMS.filter((item) => sectionVisibility[item.visibilityKey] ?? true).length
@@ -1810,39 +1790,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               />
               Show secondary button
             </label>
-          </div>
-        </div>
-
-        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
-          <div className='flex items-center justify-between gap-3'>
-            <div>
-              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Visibility</h5>
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Choose which blocks should appear on the public About page.</p>
-            </div>
-
-            <button
-              type='button'
-              onClick={resetAboutSectionVisibility}
-              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
-              Reset Visibility
-            </button>
-          </div>
-
-          <div className='space-y-2'>
-            {ABOUT_SECTION_ITEMS.map((item) => {
-              const isVisible = sectionVisibility[item.visibilityKey] ?? true
-
-              return (
-                <label key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
-                  <div className='min-w-0'>
-                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
-                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Currently visible on the About page' : 'Currently hidden from the About page'}</p>
-                  </div>
-
-                  <input type='checkbox' checked={isVisible} onChange={(e) => handleAboutSectionVisibilityChange(item.visibilityKey, e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
-                </label>
-              )
-            })}
           </div>
         </div>
 
