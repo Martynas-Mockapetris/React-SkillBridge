@@ -1940,6 +1940,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               { label: 'Eyebrow', value: (aboutHeroBuilder.showEyebrow ?? true) ? 'Shown' : 'Hidden' },
               { label: 'Visible Sections', value: String(visibleSectionsCount) },
               { label: 'Hidden Sections', value: String(hiddenSectionsCount) },
+              { label: 'Render Order', value: sectionOrder.map((key) => ABOUT_SECTION_ITEMS.find((item) => item.key === key)?.label || key).join(' -> ') },
               { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' },
               { label: 'Highlights Width', value: aboutHighlightsBuilder.contentWidth || 'wide' },
               { label: 'Highlights Layout', value: ABOUT_HIGHLIGHTS_LAYOUT_LABELS[aboutHighlightsBuilder.cardLayout || 'stacked'] || 'Stacked' },
