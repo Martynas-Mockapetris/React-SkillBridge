@@ -188,6 +188,10 @@ const DEFAULT_ABOUT_SECTION_VISIBILITY = ABOUT_SECTION_ITEMS.reduce((acc, item) 
   return acc
 }, {})
 
+const DEFAULT_ABOUT_SECTION_ORDER = ABOUT_SECTION_ITEMS.map((item) => item.key)
+
+const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
+
 const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
 
 const LAYOUT_PRESET_LABELS = {
@@ -491,6 +495,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
           aboutHighlights: cloneHomeBuilderValue(DEFAULT_ABOUT_HIGHLIGHTS_BUILDER),
           aboutCta: cloneHomeBuilderValue(DEFAULT_ABOUT_CTA_BUILDER),
           aboutSections: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_VISIBILITY),
+          aboutSectionOrder: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_ORDER),
           aboutSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_BACKGROUNDS)
         }
       }
