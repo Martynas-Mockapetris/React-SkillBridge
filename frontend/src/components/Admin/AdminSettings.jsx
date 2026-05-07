@@ -463,6 +463,32 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     }))
   }
 
+  const moveAboutSectionOrderItem = (key, direction) => {
+    updateSiteBuilderValue('aboutSectionOrder', (savedOrder) => {
+      const currentOrder = Array.isArray(savedOrder) && savedOrder.length ? [...savedOrder] : [...DEFAULT_ABOUT_SECTION_ORDER]
+      const allowedKeys = new Set(DEFAULT_ABOUT_SECTION_ORDER)
+      const sanitizedOrder = currentOrder.filter((item) => allowedKeys.has(item))
+      const missingKeys = DEFAULT_ABOUT_SECTION_ORDER.filter((item) => !sanitizedOrder.includes(item))
+      const normalizedOrder = [...sanitizedOrder, ...missingKeys]
+
+      const currentIndex = normalizedOrder.indexOf(key)
+      if (currentIndex === -1) {
+        return normalizedOrder
+      }
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+      if (targetIndex < 0 || targetIndex >= normalizedOrder.length) {
+        return normalizedOrder
+      }
+
+      const nextOrder = [...normalizedOrder]
+      const [movedItem] = nextOrder.splice(currentIndex, 1)
+      nextOrder.splice(targetIndex, 0, movedItem)
+
+      return nextOrder
+    })
+  }
+
   const handleAboutSectionBackgroundChange = (sectionKey, value) => {
     updateSiteBuilderValue('aboutSectionBackgrounds', (currentValue = {}) => ({
       ...currentValue,
@@ -498,6 +524,10 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         }
       }
     }))
+  }
+
+  const resetAboutSectionOrder = () => {
+    updateSiteBuilderValue('aboutSectionOrder', [...DEFAULT_ABOUT_SECTION_ORDER])
   }
 
   const handleHomeSectionSpacingChange = (sectionKey, edge, value) => {
@@ -1588,6 +1618,16 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     const aboutHighlightsBuilder = getSiteBuilderValue('aboutHighlights', {})
     const aboutCtaBuilder = getSiteBuilderValue('aboutCta', {})
     const sectionVisibility = getSiteBuilderValue('aboutSections', {})
+    const sectionOrder = (() => {
+      const savedOrder = getSiteBuilderValue('aboutSectionOrder', [])
+      if (!Array.isArray(savedOrder) || !savedOrder.length) return DEFAULT_ABOUT_SECTION_ORDER
+
+      const allowedKeys = new Set(DEFAULT_ABOUT_SECTION_ORDER)
+      const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
+      const missingKeys = DEFAULT_ABOUT_SECTION_ORDER.filter((key) => !sanitizedOrder.includes(key))
+
+      return [...sanitizedOrder, ...missingKeys]
+    })()
     const sectionBackgrounds = getSiteBuilderValue('aboutSectionBackgrounds', {})
 
     const visibleSectionsCount = ABOUT_SECTION_ITEMS.filter((item) => sectionVisibility[item.visibilityKey] ?? true).length
@@ -1793,6 +1833,58 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               />
               Show secondary button
             </label>
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Order</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the top-to-bottom order of blocks on the public About page.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutSectionOrder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Order
+            </button>
+          </div>
+
+          <div className='space-y-2'>
+            {sectionOrder.map((sectionKey, index, order) => {
+              const item = ABOUT_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
+              const isVisible = sectionVisibility[item?.visibilityKey] ?? true
+
+              if (!item) return null
+
+              return (
+                <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Visible on page' : 'Hidden by visibility settings'}</p>
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => moveAboutSectionOrderItem(item.key, 'up')}
+                      disabled={index === 0}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Up
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={() => moveAboutSectionOrderItem(item.key, 'down')}
+                      disabled={index === order.length - 1}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Down
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 
