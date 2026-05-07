@@ -9,8 +9,8 @@ const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondar
   const emphasisStyle = layout.emphasisStyle || 'soft'
   const showSecondaryButton = layout.showSecondaryButton ?? true
 
-  const widthClass = contentWidth === 'narrow' ? 'max-w-3xl mx-auto' : contentWidth === 'full' ? 'max-w-6xl' : 'max-w-4xl'
-  const textAlignClass = contentAlign === 'center' ? 'text-center mx-auto' : 'text-left'
+  const widthClass = contentWidth === 'narrow' ? 'max-w-5xl mx-auto' : 'w-full'
+  const textAlignClass = contentAlign === 'center' ? 'text-center' : 'text-left'
   const buttonWrapClass =
     buttonLayout === 'inline'
       ? `mt-6 flex flex-wrap gap-3 ${contentAlign === 'center' ? 'justify-center' : ''}`
@@ -26,8 +26,8 @@ const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondar
         : 'rounded-3xl border theme-border bg-white/50 dark:bg-black/20 p-8 md:p-10'
 
   return (
-    <motion.div className={surfaceClass} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}>
-      <div className={`${widthClass} ${textAlignClass}`}>
+    <motion.div className={`${surfaceClass} ${widthClass}`} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}>
+      <div className={textAlignClass}>
         <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-3'>{eyebrow}</p>
         <h2 className='text-2xl md:text-3xl font-semibold theme-text'>{headline}</h2>
         <p className='mt-3 theme-text-secondary leading-relaxed'>{body}</p>
