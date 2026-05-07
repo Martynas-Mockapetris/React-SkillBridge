@@ -63,7 +63,7 @@ const SECTION_DEFS = {
   },
   about: {
     title: 'About Page',
-    description: 'Manage About page content and visibility settings.',
+    description: 'Manage About page content, messaging, and CTA settings.',
     fields: [
       { key: 'headline', label: 'Headline', type: 'text', placeholder: 'Build your freelance career with confidence' },
       { key: 'subheadline', label: 'Subheadline', type: 'text', placeholder: 'Connect clients and freelancers in one place' },

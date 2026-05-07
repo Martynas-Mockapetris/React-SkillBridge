@@ -96,10 +96,10 @@ export const SETTINGS_VIEW_MAP = {
   },
   'about.content': {
     pageTitle: 'About Page',
-    pageDescription: 'Manage About page copy and messaging.',
+    pageDescription: 'Manage About page copy, messaging, and CTA content.',
     sectionId: 'about',
     sectionTitle: 'Content Block',
-    sectionDescription: 'Edit the public About page headline, subheadline, mission, and vision content.'
+    sectionDescription: 'Edit the public About page headline, subheadline, mission, vision, and CTA content.'
   },
   contact: {
     pageTitle: 'Site Builder',
@@ -205,10 +205,10 @@ export const SETTINGS_VIEW_REGISTRY = [
     id: 'about.content',
     groupId: 'site-builder',
     pageTitle: 'About Page',
-    pageDescription: 'Manage About page copy and messaging.',
+    pageDescription: 'Manage About page copy, messaging, and CTA content.',
     sectionId: 'about',
     sectionTitle: 'Content Block',
-    sectionDescription: 'Edit the public About page headline, subheadline, mission, and vision content.',
+    sectionDescription: 'Edit the public About page headline, subheadline, mission, vision, and CTA content.',
     isImplemented: true
   },
   {
