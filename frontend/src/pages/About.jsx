@@ -7,6 +7,8 @@ import AboutCta from '../components/About/AboutCta'
 import { getPublicSystemConfig } from '../services/configService'
 import { getSectionBackgroundClass } from '../components/Home/homeSectionLayout'
 
+const DEFAULT_ABOUT_SECTION_ORDER = ['hero', 'highlights', 'cta']
+
 const About = () => {
   const [publicConfig, setPublicConfig] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -55,6 +57,21 @@ const About = () => {
     return publicConfig.siteBuilder.values?.aboutSections || {}
   }, [publicConfig])
 
+  const aboutSectionOrder = useMemo(() => {
+    if (!publicConfig?.siteBuilder?.enabled) return DEFAULT_ABOUT_SECTION_ORDER
+
+    const savedOrder = publicConfig.siteBuilder.values?.aboutSectionOrder
+    if (!Array.isArray(savedOrder) || !savedOrder.length) {
+      return DEFAULT_ABOUT_SECTION_ORDER
+    }
+
+    const allowedKeys = new Set(DEFAULT_ABOUT_SECTION_ORDER)
+    const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
+    const missingKeys = DEFAULT_ABOUT_SECTION_ORDER.filter((key) => !sanitizedOrder.includes(key))
+
+    return [...sanitizedOrder, ...missingKeys]
+  }, [publicConfig])
+
   const aboutSectionBackgrounds = useMemo(() => {
     if (!publicConfig?.siteBuilder?.enabled) return {}
     return publicConfig.siteBuilder.values?.aboutSectionBackgrounds || {}
@@ -95,38 +112,50 @@ const About = () => {
 
       {!loading && !error && (
         <div className='relative z-10 flex flex-col gap-4 pb-20'>
-          {showHero && (
-            <section className={`${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')} relative z-10`}>
-              <div className='container mx-auto px-4'>
-                <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
-              </div>
-            </section>
-          )}
+          {aboutSectionOrder
+            .map((sectionKey) => {
+              switch (sectionKey) {
+                case 'hero':
+                  return showHero ? (
+                    <section key='hero' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')} relative z-10`}>
+                      <div className='container mx-auto px-4'>
+                        <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
+                      </div>
+                    </section>
+                  ) : null
 
-          {showHighlights && (
-            <section className={`${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')} relative z-10`}>
-              <div className='container mx-auto px-4'>
-                <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
-              </div>
-            </section>
-          )}
+                case 'highlights':
+                  return showHighlights ? (
+                    <section key='highlights' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')} relative z-10`}>
+                      <div className='container mx-auto px-4'>
+                        <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
+                      </div>
+                    </section>
+                  ) : null
 
-          {showCta && (
-            <section className={`${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')} relative z-10`}>
-              <div className='container mx-auto px-4'>
-                <AboutCta
-                  eyebrow={ctaEyebrow}
-                  headline={ctaHeadline}
-                  body={ctaBody}
-                  primaryLabel={ctaPrimaryLabel}
-                  primaryHref={ctaPrimaryHref}
-                  secondaryLabel={ctaSecondaryLabel}
-                  secondaryHref={ctaSecondaryHref}
-                  layout={aboutCtaBuilder}
-                />
-              </div>
-            </section>
-          )}
+                case 'cta':
+                  return showCta ? (
+                    <section key='cta' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')} relative z-10`}>
+                      <div className='container mx-auto px-4'>
+                        <AboutCta
+                          eyebrow={ctaEyebrow}
+                          headline={ctaHeadline}
+                          body={ctaBody}
+                          primaryLabel={ctaPrimaryLabel}
+                          primaryHref={ctaPrimaryHref}
+                          secondaryLabel={ctaSecondaryLabel}
+                          secondaryHref={ctaSecondaryHref}
+                          layout={aboutCtaBuilder}
+                        />
+                      </div>
+                    </section>
+                  ) : null
+
+                default:
+                  return null
+              }
+            })
+            .filter(Boolean)}
         </div>
       )}
     </section>

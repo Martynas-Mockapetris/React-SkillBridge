@@ -177,6 +177,10 @@ const DEFAULT_ABOUT_CTA_BUILDER = {
   showSecondaryButton: true
 }
 
+const DEFAULT_ABOUT_SECTION_ORDER = ABOUT_SECTION_ITEMS.map((item) => item.key)
+
+const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
+
 const ABOUT_CTA_EMPHASIS_LABELS = {
   soft: 'Soft Panel',
   strong: 'Strong Panel',
@@ -187,12 +191,6 @@ const DEFAULT_ABOUT_SECTION_VISIBILITY = ABOUT_SECTION_ITEMS.reduce((acc, item) 
   acc[item.visibilityKey] = true
   return acc
 }, {})
-
-const DEFAULT_ABOUT_SECTION_ORDER = ABOUT_SECTION_ITEMS.map((item) => item.key)
-
-const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
-
-const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
 
 const LAYOUT_PRESET_LABELS = {
   centered: 'Centered',
