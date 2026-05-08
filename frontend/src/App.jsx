@@ -26,6 +26,7 @@ import AdminUserDetail from './pages/AdminUserDetail'
 import Blog from './pages/Blog'
 import BlogPostDetail from './pages/BlogPostDetail'
 import About from './pages/About'
+import Contact from './pages/Contact'
 
 function App() {
   return (
@@ -47,7 +48,7 @@ function App() {
           <Route path='/verify-email' element={<VerifyEmail />} />
           <Route path='/project/:id' element={<ProjectDetail />} />
           <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
-
+          <Route path='/contact' element={<Contact />} />
           {/* Protected routes - require authentication */}
           <Route
             path='/profile'
