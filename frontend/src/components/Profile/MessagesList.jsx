@@ -2,7 +2,7 @@ import { useState } from 'react' // Add useState for reply functionality
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaChevronUp } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
-import { sendMessage } from '../../services/messageService' // Import message service
+import { sendMessage, markMessageAsRead } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const MessagesList = ({ messages, loading, onReplySent }) => {
@@ -15,12 +15,29 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
   // State for managing expanded/collapsed conversations
   const [expandedConversations, setExpandedConversations] = useState({}) // { projectId: true/false }
 
-  // Toggle conversation expansion
-  const toggleConversation = (projectId) => {
+  // Toggle conversation expansion and mark unread incoming messages as read when opening
+  const toggleConversation = async (conversationKey, groupMessages) => {
+    const isOpening = !expandedConversations[conversationKey]
+
     setExpandedConversations((prev) => ({
       ...prev,
-      [projectId]: !prev[projectId]
+      [conversationKey]: !prev[conversationKey]
     }))
+
+    if (!isOpening) return
+
+    const unreadIncomingMessages = getUnreadIncomingMessages(groupMessages)
+    if (unreadIncomingMessages.length === 0) return
+
+    try {
+      await Promise.all(unreadIncomingMessages.map((message) => markMessageAsRead(message._id)))
+
+      if (onReplySent) {
+        await onReplySent()
+      }
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error)
+    }
   }
 
   // Get current user from localStorage
@@ -193,7 +210,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
               transition={{ duration: 0.3, delay: groupIndex * 0.05 }}
               className='theme-card p-6 rounded-lg hover:shadow-lg transition-all'>
               {/* Direct Message Header */}
-              <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(conversationKey)}>
+              <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(conversationKey, groupMessages)}>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-3 flex-1'>
                     <motion.div animate={{ rotate: expandedConversations[conversationKey] ? 180 : 0 }} transition={{ duration: 0.3 }}>
@@ -347,7 +364,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
             transition={{ duration: 0.3, delay: groupIndex * 0.05 }}
             className='theme-card p-6 rounded-lg hover:shadow-lg transition-all'>
             {/* Project Header - Clickable Accordion */}
-            <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(project._id)}>
+            <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(project._id, groupMessages)}>
               <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-3 flex-1'>
                   {/* Expand/Collapse Icon */}
