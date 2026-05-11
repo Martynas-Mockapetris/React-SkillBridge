@@ -38,24 +38,26 @@ const Profile = () => {
     }
   }, [currentUser, navigate])
 
-  // Fetch messages when Messages tab is active
+  // Fetch messages on load and when Messages tab is opened
   useEffect(() => {
     const fetchMessages = async () => {
-      if (activeTab === 'messages') {
-        try {
-          setMessagesLoading(true)
-          const data = await getUserMessages()
-          setMessages(data)
-        } catch (error) {
-          console.error('Error fetching messages:', error)
-        } finally {
-          setMessagesLoading(false)
-        }
+      if (!currentUser) return
+
+      try {
+        setMessagesLoading(true)
+        const data = await getUserMessages()
+        setMessages(data)
+      } catch (error) {
+        console.error('Error fetching messages:', error)
+      } finally {
+        setMessagesLoading(false)
       }
     }
 
-    fetchMessages()
-  }, [activeTab])
+    if (activeTab === 'messages' || messages.length === 0) {
+      fetchMessages()
+    }
+  }, [activeTab, currentUser])
 
   const unreadMessageCount = Array.isArray(messages) ? messages.filter((message) => !message.isRead && (message.receiver?._id || message.receiver) === currentUser?._id).length : 0
 
