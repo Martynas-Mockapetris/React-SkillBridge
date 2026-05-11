@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaSyncAlt } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaSyncAlt, FaTimes } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
@@ -31,6 +31,7 @@ const Profile = () => {
   const navigate = useNavigate()
   const profileCompleteness = calculateProfileCompleteness(currentUser)
   const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const [dismissedBanners, setDismissedBanners] = useState({})
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -58,6 +59,24 @@ const Profile = () => {
 
     fetchMessages()
   }, [currentUser, hasLoadedMessages])
+
+  useEffect(() => {
+    if (!currentUser?._id) return
+
+    const nextDismissed = {}
+    const lockBannerId = getLockBannerId()
+    const emailBannerId = getEmailBannerId()
+
+    if (lockBannerId) {
+      nextDismissed[lockBannerId] = localStorage.getItem(getBannerStorageKey(lockBannerId)) === 'true'
+    }
+
+    if (emailBannerId) {
+      nextDismissed[emailBannerId] = localStorage.getItem(getBannerStorageKey(emailBannerId)) === 'true'
+    }
+
+    setDismissedBanners(nextDismissed)
+  }, [currentUser?._id, currentUser?.isLocked, currentUser?.lockReason, currentUser?.lockDurationDays, currentUser?.lockExpiresAt, currentUser?.isEmailVerified, currentUser?.emailVerifiedAt])
 
   const unreadMessageCount = Array.isArray(messages) ? messages.filter((message) => !message.isRead && (message.receiver?._id || message.receiver) === currentUser?._id).length : 0
 
@@ -112,6 +131,38 @@ const Profile = () => {
     if (diffHours > 0) return `${diffHours} hour${diffHours === 1 ? '' : 's'} remaining`
     const diffMinutes = Math.floor(diffMs / (1000 * 60))
     return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} remaining`
+  }
+
+  const getBannerStorageKey = (bannerId) => {
+    if (!currentUser?._id) return ''
+    return `profile-banner-dismissed:${currentUser._id}:${bannerId}`
+  }
+
+  const getLockBannerId = () => {
+    if (!currentUser?.isLocked) return ''
+    return ['locked', currentUser.lockReason || 'no-reason', currentUser.lockDurationDays || 'manual', currentUser.lockExpiresAt || 'no-expiry'].join(':')
+  }
+
+  const getEmailBannerId = () => {
+    if (!currentUser) return ''
+    return currentUser.isEmailVerified ? `email-verified:${currentUser.emailVerifiedAt || 'no-date'}` : 'email-unverified'
+  }
+
+  const dismissBanner = (bannerId) => {
+    const storageKey = getBannerStorageKey(bannerId)
+    if (storageKey) {
+      localStorage.setItem(storageKey, 'true')
+    }
+
+    setDismissedBanners((prev) => ({
+      ...prev,
+      [bannerId]: true
+    }))
+  }
+
+  const isBannerDismissed = (bannerId) => {
+    if (!bannerId) return false
+    return Boolean(dismissedBanners[bannerId])
   }
 
   const tabs = [
@@ -196,19 +247,36 @@ const Profile = () => {
     }
   }
 
+  const lockBannerId = getLockBannerId()
+  const emailBannerId = getEmailBannerId()
+
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         {/* Locked Account Banner */}
-        {currentUser?.isLocked && (
+        {currentUser?.isLocked && !isBannerDismissed(lockBannerId) && (
           <motion.div className='mb-6 p-5 rounded-lg border border-red-200 bg-red-50 dark:border-red-800/60 dark:bg-red-900/20'>
             <div className='flex items-start gap-3'>
-              <FaLock className='text-red-600 dark:text-red-300 mt-1' />
+              <FaLock className='text-red-600 dark:text-red-300 mt-1 shrink-0' />
+
               <div className='flex-1'>
-                <p className='font-semibold text-red-700 dark:text-red-200 mb-1'>Account Locked</p>
-                <p className='text-sm text-red-600 dark:text-red-300 mb-4'>You can finish ongoing work, but new projects, proposals, and outbound messages stay disabled until the lock lifts.</p>
+                <div className='flex items-start justify-between gap-4'>
+                  <div>
+                    <p className='font-semibold text-red-700 dark:text-red-200 mb-1'>Account Locked</p>
+                    <p className='text-sm text-red-600 dark:text-red-300 mb-4'>You can finish ongoing work, but new projects, proposals, and outbound messages stay disabled until the lock lifts.</p>
+                  </div>
+
+                  <button
+                    type='button'
+                    onClick={() => dismissBanner(lockBannerId)}
+                    className='inline-flex items-center justify-center rounded-full p-2 text-red-600 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-900/40 transition-colors'
+                    aria-label='Dismiss account locked message'>
+                    <FaTimes />
+                  </button>
+                </div>
+
                 <dl className='text-sm text-red-700 dark:text-red-200 space-y-1'>
                   <div className='flex flex-wrap gap-1'>
                     <dt className='font-semibold mr-1'>Reason:</dt>
@@ -228,44 +296,74 @@ const Profile = () => {
           </motion.div>
         )}
         {/* Email Verification Banner */}
-        {currentUser?.isEmailVerified ? (
-          <motion.div className='mb-6 p-5 rounded-lg border border-green-200 bg-green-50 dark:border-green-800/60 dark:bg-green-900/20'>
-            <div className='flex items-start gap-3'>
-              <FaCheckCircle className='text-green-600 dark:text-green-300 mt-1' />
-              <div className='flex-1'>
-                <p className='font-semibold text-green-700 dark:text-green-200 mb-1'>Email Verified</p>
-                <p className='text-sm text-green-600 dark:text-green-300'>Your account email has been verified{currentUser.emailVerifiedAt ? ` on ${new Date(currentUser.emailVerifiedAt).toLocaleString()}` : ''}.</p>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div className='mb-6 p-5 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-900/20'>
-            <div className='flex items-start gap-3'>
-              <FaExclamationTriangle className='text-amber-600 dark:text-amber-300 mt-1' />
-              <div className='flex-1'>
-                <p className='font-semibold text-amber-700 dark:text-amber-200 mb-1'>Email Not Verified</p>
-                <p className='text-sm text-amber-700 dark:text-amber-300 mb-4'>Verify your email address to complete account verification and make account recovery more reliable.</p>
+        {currentUser?.isEmailVerified
+          ? !isBannerDismissed(emailBannerId) && (
+              <motion.div className='mb-6 p-5 rounded-lg border border-green-200 bg-green-50 dark:border-green-800/60 dark:bg-green-900/20'>
+                <div className='flex items-start gap-3'>
+                  <FaCheckCircle className='text-green-600 dark:text-green-300 mt-1 shrink-0' />
 
-                <div className='flex flex-wrap gap-3'>
-                  <button
-                    type='button'
-                    onClick={handleResendVerification}
-                    disabled={isResendingVerification}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isResendingVerification ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'}`}>
-                    {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
-                  </button>
+                  <div className='flex-1'>
+                    <div className='flex items-start justify-between gap-4'>
+                      <div>
+                        <p className='font-semibold text-green-700 dark:text-green-200 mb-1'>Email Verified</p>
+                        <p className='text-sm text-green-600 dark:text-green-300'>
+                          Your account email has been verified{currentUser.emailVerifiedAt ? ` on ${new Date(currentUser.emailVerifiedAt).toLocaleString()}` : ''}.
+                        </p>
+                      </div>
 
-                  <button
-                    type='button'
-                    onClick={() => navigate('/verify-email')}
-                    className='px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors'>
-                    Open Verification Page
-                  </button>
+                      <button
+                        type='button'
+                        onClick={() => dismissBanner(emailBannerId)}
+                        className='inline-flex items-center justify-center rounded-full p-2 text-green-600 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-900/40 transition-colors'
+                        aria-label='Dismiss email verified message'>
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
+              </motion.div>
+            )
+          : !isBannerDismissed(emailBannerId) && (
+              <motion.div className='mb-6 p-5 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-900/20'>
+                <div className='flex items-start gap-3'>
+                  <FaExclamationTriangle className='text-amber-600 dark:text-amber-300 mt-1 shrink-0' />
+
+                  <div className='flex-1'>
+                    <div className='flex items-start justify-between gap-4'>
+                      <div>
+                        <p className='font-semibold text-amber-700 dark:text-amber-200 mb-1'>Email Not Verified</p>
+                        <p className='text-sm text-amber-700 dark:text-amber-300 mb-4'>Verify your email address to complete account verification and make account recovery more reliable.</p>
+                      </div>
+
+                      <button
+                        type='button'
+                        onClick={() => dismissBanner(emailBannerId)}
+                        className='inline-flex items-center justify-center rounded-full p-2 text-amber-600 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors'
+                        aria-label='Dismiss email verification message'>
+                        <FaTimes />
+                      </button>
+                    </div>
+
+                    <div className='flex flex-wrap gap-3'>
+                      <button
+                        type='button'
+                        onClick={handleResendVerification}
+                        disabled={isResendingVerification}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isResendingVerification ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'}`}>
+                        {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
+                      </button>
+
+                      <button
+                        type='button'
+                        onClick={() => navigate('/verify-email')}
+                        className='px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors'>
+                        Open Verification Page
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
         {/* Profile Header */}
         <motion.div className='flex items-center gap-6 mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <motion.div className='w-24 h-24 rounded-full overflow-hidden border-4 border-accent' whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
