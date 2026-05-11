@@ -1,15 +1,37 @@
+import { useEffect, useMemo, useState } from 'react'
 import { FaTwitter, FaLinkedin, FaGithub } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { hasAdminPanelAccess } from '../../utils/accessRoles'
+import { getPublicSystemConfig } from '../../services/configService'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
   const { currentUser } = useAuth()
   const canAccessAdmin = currentUser && hasAdminPanelAccess(currentUser)
 
+  const [publicConfig, setPublicConfig] = useState(null)
+
+  useEffect(() => {
+    const loadPublicConfig = async () => {
+      try {
+        const data = await getPublicSystemConfig()
+        setPublicConfig(data || null)
+      } catch (error) {
+        console.error('Failed to load footer config:', error.response?.data || error.message)
+      }
+    }
+
+    loadPublicConfig()
+  }, [])
+
   const linkStyles = 'theme-text-secondary hover:text-accent transition-colors duration-300'
   const headingStyles = 'font-heading font-semibold theme-text'
+
+  const supportEmail = useMemo(() => {
+    if (!publicConfig?.contact?.enabled) return ''
+    return publicConfig.contact.values?.supportEmail || ''
+  }, [publicConfig])
 
   return (
     <footer className='p-8 theme-bg transition-colors duration-300'>
@@ -54,6 +76,11 @@ const Footer = () => {
               <Link to='/contact' className={linkStyles}>
                 Contact
               </Link>
+              {supportEmail && (
+                <a href={`mailto:${supportEmail}`} className={linkStyles}>
+                  {supportEmail}
+                </a>
+              )}
             </div>
           </div>
 
@@ -150,6 +177,11 @@ const Footer = () => {
               <Link to='/contact' className={linkStyles}>
                 Contact
               </Link>
+              {supportEmail && (
+                <a href={`mailto:${supportEmail}`} className={linkStyles}>
+                  {supportEmail}
+                </a>
+              )}
               <Link to='/privacy' className={linkStyles}>
                 Privacy Policy
               </Link>

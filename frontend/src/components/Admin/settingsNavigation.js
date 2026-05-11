@@ -198,7 +198,7 @@ export const SETTINGS_VIEW_REGISTRY = [
     pageDescription: 'Manage About page layout, section visibility, and presentation settings.',
     sectionId: 'about',
     sectionTitle: 'Layout Settings',
-    sectionDescription: 'Control About page hero presentation, block visibility, and backgrounds.'
+    sectionDescription: 'Control About page hero presentation, block visibility, and backgrounds.',
     isImplemented: true
   },
   {
