@@ -132,8 +132,6 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
 
       if (onReplySent) {
         await onReplySent()
-      } else {
-        window.location.reload()
       }
     } catch (error) {
       console.error('Failed to send reply:', error)
