@@ -72,7 +72,15 @@ const MessagesList = ({ messages, loading }) => {
       }
     })
 
-    return Object.values(grouped)
+    return Object.values(grouped).sort((a, b) => {
+      const aLastMessage = a.messages?.[a.messages.length - 1]
+      const bLastMessage = b.messages?.[b.messages.length - 1]
+
+      const aTime = aLastMessage?.createdAt ? new Date(aLastMessage.createdAt).getTime() : 0
+      const bTime = bLastMessage?.createdAt ? new Date(bLastMessage.createdAt).getTime() : 0
+
+      return bTime - aTime
+    })
   }
   const getDisplayName = (user) => {
     if (!user) return 'Unknown'
