@@ -83,6 +83,22 @@ const MessagesList = ({ messages, loading }) => {
     return user?.userType !== 'admin'
   }
 
+  const getLastMessagePreviewData = (groupMessages) => {
+    if (!Array.isArray(groupMessages) || groupMessages.length === 0) {
+      return null
+    }
+
+    const lastMessage = groupMessages[groupMessages.length - 1]
+    const isOwnMessage = lastMessage.sender?._id === currentUser._id || lastMessage.sender === currentUser._id
+    const senderName = isOwnMessage ? 'You' : lastMessage.sender?.firstName || 'Unknown'
+
+    return {
+      lastMessage,
+      senderName,
+      timestamp: formatDate(lastMessage.createdAt)
+    }
+  }
+
   // Handle sending a reply
   const handleReply = async (conversationKeyOrProjectId, receiverId, isDirectMessage = false) => {
     const replyText = replyTexts[conversationKeyOrProjectId]
@@ -147,6 +163,7 @@ const MessagesList = ({ messages, loading }) => {
           const isSending = sendingStates[conversationKey] || false
           const title = otherUser.userType === 'admin' ? 'Message from Administrator' : `Conversation with ${otherUser.firstName} ${otherUser.lastName}`
           const canReplyDirect = canReplyToUser(otherUser)
+          const lastMessagePreview = getLastMessagePreviewData(groupMessages)
 
           return (
             <motion.div
