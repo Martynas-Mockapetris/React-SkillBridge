@@ -349,7 +349,7 @@ const Profile = () => {
                   </button>
                 </div>
 
-                <MessagesList messages={messages} loading={messagesLoading} />
+                <MessagesList messages={messages} loading={messagesLoading} onReplySent={handleRefreshMessages} />
               </div>
             )}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
