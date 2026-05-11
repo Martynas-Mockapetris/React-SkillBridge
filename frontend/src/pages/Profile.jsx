@@ -249,6 +249,8 @@ const Profile = () => {
 
   const lockBannerId = getLockBannerId()
   const emailBannerId = getEmailBannerId()
+  const isEmailVerified = Boolean(currentUser?.isEmailVerified)
+  const isLocked = Boolean(currentUser?.isLocked)
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
@@ -373,9 +375,27 @@ const Profile = () => {
             <h1 className='text-3xl font-bold theme-text'>
               {currentUser?.firstName} {currentUser?.lastName}
             </h1>
-            <p className='theme-text-secondary'>{getRoleLabel()}</p>
+
+            <div className='mt-1 flex flex-wrap items-center gap-2'>
+              <p className='theme-text-secondary'>{getRoleLabel()}</p>
+
+              {isEmailVerified && (
+                <span className='inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                  <FaCheckCircle className='w-4 h-4' />
+                  <span>Verified</span>
+                </span>
+              )}
+
+              {isLocked && (
+                <span className='inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300'>
+                  <FaLock className='w-4 h-4' />
+                  <span>Locked</span>
+                </span>
+              )}
+            </div>
+
             {!hasAdminPanelAccess(currentUser) && (
-              <div className='flex items-center gap-2'>
+              <div className='flex items-center gap-2 mt-3'>
                 {ratingStats?.totalRatings > 0 ? (
                   <>
                     <div className='flex items-center gap-1'>
@@ -391,7 +411,7 @@ const Profile = () => {
                     </span>
                   </>
                 ) : (
-                  <p className='text-sm theme-text-secondary'>No ratings yet</p>
+                  <p className='text-sm theme-text-secondary mt-3'>No ratings yet</p>
                 )}
               </div>
             )}
