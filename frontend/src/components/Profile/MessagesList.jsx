@@ -107,6 +107,15 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
     }
   }
 
+  const getUnreadIncomingMessages = (groupMessages) => {
+    if (!Array.isArray(groupMessages)) return []
+
+    return groupMessages.filter((message) => {
+      const receiverId = message.receiver?._id || message.receiver
+      return !message.isRead && receiverId === currentUser._id
+    })
+  }
+
   // Handle sending a reply
   const handleReply = async (conversationKeyOrProjectId, receiverId, isDirectMessage = false) => {
     const replyText = replyTexts[conversationKeyOrProjectId]
@@ -174,6 +183,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
           const title = otherUser.userType === 'admin' ? 'Message from Administrator' : `Conversation with ${otherUser.firstName} ${otherUser.lastName}`
           const canReplyDirect = canReplyToUser(otherUser)
           const lastMessagePreview = getLastMessagePreviewData(groupMessages)
+          const unreadIncomingMessages = getUnreadIncomingMessages(groupMessages)
 
           return (
             <motion.div
@@ -323,6 +333,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
 
         const currentReplyText = replyTexts[project._id] || ''
         const isSending = sendingStates[project._id] || false
+        const unreadIncomingMessages = getUnreadIncomingMessages(groupMessages)
 
         return (
           <motion.div
