@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
+import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaSyncAlt } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
@@ -162,6 +162,21 @@ const Profile = () => {
     setActiveTab('freelance')
   }
 
+  const handleRefreshMessages = async () => {
+    if (!currentUser) return
+
+    try {
+      setMessagesLoading(true)
+      const data = await getUserMessages()
+      setMessages(data)
+      setHasLoadedMessages(true)
+    } catch (error) {
+      console.error('Error refreshing messages:', error)
+    } finally {
+      setMessagesLoading(false)
+    }
+  }
+
   const handleResendVerification = async () => {
     try {
       setIsResendingVerification(true)
@@ -316,7 +331,27 @@ const Profile = () => {
               />
             )}
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
-            {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
+            {activeTab === 'messages' && (
+              <div className='space-y-4'>
+                <div className='flex items-center justify-between gap-3'>
+                  <div>
+                    <h2 className='text-xl font-semibold theme-text'>Messages</h2>
+                    <p className='text-sm theme-text-secondary'>Review recent conversations and refresh when you want the latest state.</p>
+                  </div>
+
+                  <button
+                    type='button'
+                    onClick={handleRefreshMessages}
+                    disabled={messagesLoading}
+                    className='inline-flex items-center gap-2 px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-60'>
+                    <FaSyncAlt className={messagesLoading ? 'animate-spin' : ''} />
+                    <span>{messagesLoading ? 'Refreshing...' : 'Refresh'}</span>
+                  </button>
+                </div>
+
+                <MessagesList messages={messages} loading={messagesLoading} />
+              </div>
+            )}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
             {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
             {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
