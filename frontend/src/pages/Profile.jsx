@@ -57,6 +57,8 @@ const Profile = () => {
     fetchMessages()
   }, [activeTab])
 
+  const unreadMessageCount = Array.isArray(messages) ? messages.filter((message) => !message.isRead && (message.receiver?._id || message.receiver) === currentUser?._id).length : 0
+
   // Fetch ratings for freelancers
   useEffect(() => {
     const fetchRatings = async () => {
@@ -114,7 +116,7 @@ const Profile = () => {
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     // Projects tab - not visible to admins
     ...(!hasAdminPanelAccess(currentUser) ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
-    { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
+    { id: 'messages', label: 'Messages', icon: <FaEnvelope />, badge: unreadMessageCount > 0 ? unreadMessageCount : null },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
       ? [
@@ -294,6 +296,7 @@ const Profile = () => {
               transition={{ duration: 0.3, delay: index * 0.1 }}>
               {tab.icon}
               <span>{tab.label}</span>
+              {tab.badge ? <span className='min-w-[1.5rem] h-6 px-2 rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center'>{tab.badge}</span> : null}
             </motion.button>
           ))}
         </motion.div>
