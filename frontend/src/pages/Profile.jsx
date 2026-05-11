@@ -23,6 +23,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
   const [messages, setMessages] = useState([])
   const [messagesLoading, setMessagesLoading] = useState(false)
+  const [hasLoadedMessages, setHasLoadedMessages] = useState(false)
   const { currentUser, getUserProfile } = useAuth()
   const [ratings, setRatings] = useState(null)
   const [ratingStats, setRatingStats] = useState(null)
@@ -38,15 +39,16 @@ const Profile = () => {
     }
   }, [currentUser, navigate])
 
-  // Fetch messages on load and when Messages tab is opened
+  // Fetch messages once so the unread badge and messages tab can share the same data
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!currentUser) return
+      if (!currentUser || hasLoadedMessages) return
 
       try {
         setMessagesLoading(true)
         const data = await getUserMessages()
         setMessages(data)
+        setHasLoadedMessages(true)
       } catch (error) {
         console.error('Error fetching messages:', error)
       } finally {
@@ -54,10 +56,8 @@ const Profile = () => {
       }
     }
 
-    if (activeTab === 'messages' || messages.length === 0) {
-      fetchMessages()
-    }
-  }, [activeTab, currentUser])
+    fetchMessages()
+  }, [currentUser, hasLoadedMessages])
 
   const unreadMessageCount = Array.isArray(messages) ? messages.filter((message) => !message.isRead && (message.receiver?._id || message.receiver) === currentUser?._id).length : 0
 
