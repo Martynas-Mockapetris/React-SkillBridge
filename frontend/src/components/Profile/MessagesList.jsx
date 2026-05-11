@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { sendMessage } from '../../services/messageService' // Import message service
 import LoadingSpinner from '../shared/LoadingSpinner'
 
-const MessagesList = ({ messages, loading }) => {
+const MessagesList = ({ messages, loading, onReplySent }) => {
   const navigate = useNavigate()
 
   // State for managing replies per project
@@ -130,7 +130,11 @@ const MessagesList = ({ messages, loading }) => {
       // Clear the input
       setReplyTexts({ ...replyTexts, [conversationKeyOrProjectId]: '' })
 
-      window.location.reload()
+      if (onReplySent) {
+        await onReplySent()
+      } else {
+        window.location.reload()
+      }
     } catch (error) {
       console.error('Failed to send reply:', error)
     } finally {
