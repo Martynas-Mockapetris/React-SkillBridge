@@ -215,10 +215,14 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                       </p>
                       <p className='text-sm theme-text-secondary'>{otherUser.userType === 'admin' ? 'Administrator notice' : 'Direct message'}</p>
                     </div>
-                    <div className='px-3 py-1 bg-accent/10 rounded-full'>
-                      <span className='text-sm font-semibold text-accent'>
-                        {groupMessages.length} {groupMessages.length === 1 ? 'message' : 'messages'}
-                      </span>
+                    <div className='flex items-center gap-2'>
+                      {unreadIncomingMessages.length > 0 ? <span className='px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-semibold'>{unreadIncomingMessages.length} unread</span> : null}
+
+                      <div className='px-3 py-1 bg-accent/10 rounded-full'>
+                        <span className='text-sm font-semibold text-accent'>
+                          {groupMessages.length} {groupMessages.length === 1 ? 'message' : 'messages'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -359,10 +363,14 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                   </div>
 
                   {/* Message Count Badge */}
-                  <div className='px-3 py-1 bg-accent/10 rounded-full'>
-                    <span className='text-sm font-semibold text-accent'>
-                      {groupMessages.length} {groupMessages.length === 1 ? 'message' : 'messages'}
-                    </span>
+                  <div className='flex items-center gap-2'>
+                    {unreadIncomingMessages.length > 0 ? <span className='px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-semibold'>{unreadIncomingMessages.length} unread</span> : null}
+
+                    <div className='px-3 py-1 bg-accent/10 rounded-full'>
+                      <span className='text-sm font-semibold text-accent'>
+                        {groupMessages.length} {groupMessages.length === 1 ? 'message' : 'messages'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
