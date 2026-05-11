@@ -209,6 +209,7 @@ const MessagesList = ({ messages, loading }) => {
                   <div className='flex items-center gap-2 text-sm'>
                     <span className='font-semibold theme-text'>{lastMessagePreview.senderName}:</span>
                     <span className='theme-text-secondary line-clamp-1 flex-1'>{lastMessagePreview.lastMessage.content}</span>
+                    <span className='text-xs theme-text-secondary whitespace-nowrap'>{lastMessagePreview.timestamp}</span>
                   </div>
                 </div>
               )}
