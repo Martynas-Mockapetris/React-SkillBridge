@@ -206,17 +206,13 @@ const ProfileSettings = () => {
     focus:outline-none focus:ring-2 focus:ring-accent/50
   `
   return (
-    <motion.div className='space-y-8 p-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+    <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       {isLoading ? (
         <div className='flex justify-center items-center h-64'>
           <LoadingSpinner />
         </div>
       ) : (
         <>
-          <motion.h2 className='text-2xl font-bold theme-text' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            Profile Settings
-          </motion.h2>
-
           <motion.div
             className='mb-6 p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
             initial={{ opacity: 0, y: 12 }}

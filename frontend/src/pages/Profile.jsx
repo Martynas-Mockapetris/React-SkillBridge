@@ -472,7 +472,16 @@ const Profile = () => {
             )}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
             {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
-            {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
+            {activeTab === 'settings' && (
+              <div className='space-y-4'>
+                <div>
+                  <h2 className='text-xl font-semibold theme-text'>Profile Settings</h2>
+                  <p className='text-sm theme-text-secondary'>Update your personal details, public profile information, and freelancer presence.</p>
+                </div>
+
+                <ProfileSettings user={currentUser} />
+              </div>
+            )}
             {activeTab === 'security' && <SecuritySettings user={currentUser} />}
           </motion.div>
         </AnimatePresence>
