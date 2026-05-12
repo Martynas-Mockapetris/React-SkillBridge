@@ -217,14 +217,12 @@ const ProfileSettings = () => {
   // Utility function for input field CSS classes
   const inputClasses = (errorField) => `
     w-full pl-10 p-3 rounded-lg
-    bg-light/10
+    theme-input theme-text
     transition-all duration-300
+    border ${errors[errorField] ? 'border-red-500' : 'dark:border-light/10 border-primary/10'}
     dark:placeholder:text-light/40 placeholder:text-primary/40
     dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
-    focus:bg-light/20
     focus:outline-none focus:ring-2 focus:ring-accent/50
-    hover:scale-[1.02] hover:shadow-lg
-    ${errors[errorField] ? 'border-2 border-red-500' : 'border theme-border'}
   `
   return (
     <motion.div className='space-y-8 p-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
