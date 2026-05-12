@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes, FaSyncAlt } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
@@ -28,7 +28,7 @@ const initialFormState = {
 }
 
 const ProfileSettings = () => {
-  const { currentUser, updateUserProfile, getUserProfile } = useAuth()
+  const { currentUser, updateUserProfile } = useAuth()
   const profileCompleteness = calculateProfileCompleteness(currentUser)
   const missingRequired = profileCompleteness?.missingRequired ?? []
   const missingOptional = profileCompleteness?.missingOptional ?? []
@@ -40,8 +40,7 @@ const ProfileSettings = () => {
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notification, setNotification] = useState({ type: '', message: '' })
-  const [isLoading, setIsLoading] = useState(true)
-  const apiCallInProgressRef = useRef(false)
+  const [isLoading, setIsLoading] = useState(!currentUser)
   const [profileImageFile, setProfileImageFile] = useState(null)
   const [previewImage, setPreviewImage] = useState(currentUser?.profilePicture || '')
 
@@ -75,32 +74,14 @@ const ProfileSettings = () => {
     setIsLoading(false)
   }
 
-  // Fetch complete profile data when component mounts
+  // Update form data when currentUser becomes available
   useEffect(() => {
-    const fetchFullProfile = async () => {
-      if (apiCallInProgressRef.current) return
-
-      apiCallInProgressRef.current = true
+    if (!currentUser) {
       setIsLoading(true)
-
-      try {
-        await getUserProfile() // This updates currentUser in context
-      } catch (error) {
-        console.error('Error fetching profile data:', error)
-      } finally {
-        apiCallInProgressRef.current = false
-        setIsLoading(false)
-      }
+      return
     }
 
-    fetchFullProfile()
-  }, []) // Empty dependency array - only runs once on mount
-
-  // Update form data when currentUser changes
-  useEffect(() => {
-    if (currentUser) {
-      populateFormWithUserData(currentUser)
-    }
+    populateFormWithUserData(currentUser)
   }, [currentUser])
 
   // Handle form field changes
