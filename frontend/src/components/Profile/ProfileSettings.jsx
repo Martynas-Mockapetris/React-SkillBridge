@@ -38,6 +38,7 @@ const ProfileSettings = () => {
   const showFreelancerSection = userRole === 'freelancer' || userRole === 'both' || userRole === 'admin'
 
   const [formData, setFormData] = useState(initialFormState)
+  const [savedFormData, setSavedFormData] = useState(initialFormState)
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(!currentUser)
@@ -46,7 +47,7 @@ const ProfileSettings = () => {
   const populateFormWithUserData = (user) => {
     if (!user) return
 
-    setFormData({
+    const nextFormData = {
       fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
       email: user.email || '',
       phone: user.phone || '',
@@ -65,8 +66,10 @@ const ProfileSettings = () => {
       serviceCategories: user.serviceCategories || '',
       upworkProfile: user.upworkProfile || '',
       fiverrProfile: user.fiverrProfile || ''
-    })
+    }
 
+    setFormData(nextFormData)
+    setSavedFormData(nextFormData)
     setIsLoading(false)
   }
 
@@ -88,6 +91,8 @@ const ProfileSettings = () => {
       [name]: value
     }))
   }
+
+  const hasUnsavedChanges = JSON.stringify(formData) !== JSON.stringify(savedFormData)
 
   // Validate all form fields and return if valid
   const validateForm = () => {
@@ -161,10 +166,15 @@ const ProfileSettings = () => {
         const response = await updateUserProfile(profileData)
 
         // Update the form state with the response to refresh the image display
-        setFormData((prev) => ({
-          ...prev,
-          profilePicture: response.profilePicture || prev.profilePicture
-        }))
+        setFormData((prev) => {
+          const nextFormData = {
+            ...prev,
+            profilePicture: response.profilePicture || prev.profilePicture
+          }
+
+          setSavedFormData(nextFormData)
+          return nextFormData
+        })
 
         toast.success('Changes saved successfully!')
       } catch (error) {
@@ -179,10 +189,13 @@ const ProfileSettings = () => {
 
   // Reset form to current user data or initial state
   const handleReset = () => {
+    if (!hasUnsavedChanges) return
+
     if (currentUser) {
       populateFormWithUserData(currentUser)
     } else {
       setFormData(initialFormState)
+      setSavedFormData(initialFormState)
     }
     setErrors({})
     toast.info('Form has been reset')
@@ -222,12 +235,17 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {missingRequired.length > 0 && (
-              <div className='mt-3'>
-                <p className='text-xs uppercase tracking-wide text-red-500 mb-1'>Required fields to complete</p>
-                <p className='text-sm theme-text-secondary'>{missingRequired.map((item) => item.label).join(', ')}</p>
+            <div className='flex items-center justify-between gap-4 flex-wrap'>
+              {missingRequired.length > 0 && (
+                <div className='mt-3'>
+                  <p className='text-xs uppercase tracking-wide text-red-500 mb-1'>Required fields to complete</p>
+                  <p className='text-sm theme-text-secondary'>{missingRequired.map((item) => item.label).join(', ')}</p>
+                </div>
+              )}
+              <div className='text-sm theme-text-secondary'>
+                <p className={hasUnsavedChanges ? 'text-amber-500' : 'theme-text-secondary'}>{hasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}</p>
               </div>
-            )}
+            </div>
           </motion.div>
 
           <form onSubmit={handleSubmit}>
@@ -426,15 +444,15 @@ const ProfileSettings = () => {
 
             <div className='flex gap-4'>
               <motion.button
-                type='button'
-                onClick={handleReset}
-                className='flex-1 bg-gray-500 text-white font-medium py-3 px-6 rounded-lg
-              hover:bg-gray-600 transition-colors duration-300
-              focus:outline-none focus:ring-2 focus:ring-gray-500/50'
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isSubmitting}>
-                Reset Form
+                type='submit'
+                className='flex-1 bg-accent text-white font-medium py-3 px-6 rounded-lg
+              hover:bg-accent/90 transition-colors duration-300
+              focus:outline-none focus:ring-2 focus:ring-accent/50
+              disabled:opacity-50 disabled:cursor-not-allowed'
+                whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
+                whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
+                disabled={isSubmitting || !hasUnsavedChanges}>
+                {isSubmitting ? 'Saving Changes...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
               </motion.button>
 
               <motion.button
