@@ -93,6 +93,9 @@ const ProfileSettings = () => {
   }
 
   const hasUnsavedChanges = JSON.stringify(formData) !== JSON.stringify(savedFormData)
+  const currentAvatarUrl = formData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`
+  const savedAvatarUrl = savedFormData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`
+  const hasAvatarChanges = currentAvatarUrl !== savedAvatarUrl
 
   // Validate all form fields and return if valid
   const validateForm = () => {
@@ -251,7 +254,7 @@ const ProfileSettings = () => {
           <form onSubmit={handleSubmit}>
             <motion.div className='grid lg:grid-cols-2 gap-6 mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               {/* Basic Information */}
-              <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5'>
+              <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 h-full'>
                 <h3 className='text-xl font-semibold theme-text mb-4'>Basic Information</h3>
                 <div className='space-y-4'>
                   {[
@@ -328,33 +331,45 @@ const ProfileSettings = () => {
               </motion.div>
 
               {/* Right Column: Profile Picture and Social Links */}
-              <motion.div className='flex flex-col gap-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                {/* Profile Picture */}
-                <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex flex-col items-center'>
+              <motion.div className='flex flex-col gap-6 h-full' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+                <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex flex-col items-center text-center'>
                   <h3 className='text-lg font-semibold theme-text mb-4'>Profile Picture</h3>
-                  <img
-                    key={formData.profilePicture}
-                    src={formData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`}
-                    alt='Profile'
-                    className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover'
-                  />
-                  <motion.button
-                    type='button'
-                    onClick={() => {
-                      const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-                      const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
-                      setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
-                    }}
-                    className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}>
-                    <FaSyncAlt className='text-sm' />
-                    <span className='text-sm font-medium'>Generate Avatar</span>
-                  </motion.button>
+                  <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
+
+                  <div className='flex flex-wrap items-center justify-center gap-3'>
+                    <motion.button
+                      type='button'
+                      onClick={() => {
+                        const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+                        const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
+                        setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
+                      }}
+                      className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}>
+                      <FaSyncAlt className='text-sm' />
+                      <span className='text-sm font-medium'>Generate New Avatar</span>
+                    </motion.button>
+
+                    {hasAvatarChanges && (
+                      <motion.button
+                        type='button'
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            profilePicture: savedFormData.profilePicture
+                          }))
+                        }
+                        className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors duration-300'
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}>
+                        Use Current Avatar
+                      </motion.button>
+                    )}
+                  </div>
                 </motion.div>
 
-                {/* Social Links */}
-                <motion.div className='p-6 h-fit rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5'>
+                <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex-1'>
                   <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
                   <div className='space-y-4'>
                     {[
