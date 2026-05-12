@@ -482,7 +482,16 @@ const Profile = () => {
                 <ProfileSettings user={currentUser} />
               </div>
             )}
-            {activeTab === 'security' && <SecuritySettings user={currentUser} />}
+            {activeTab === 'security' && (
+              <div className='space-y-4'>
+                <div>
+                  <h2 className='text-xl font-semibold theme-text'>Security Settings</h2>
+                  <p className='text-sm theme-text-secondary'>Manage your password and keep your account protected.</p>
+                </div>
+
+                <SecuritySettings user={currentUser} />
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

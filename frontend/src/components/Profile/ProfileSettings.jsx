@@ -370,10 +370,10 @@ const ProfileSettings = () => {
                 </motion.div>
 
                 <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex-1'>
-                  <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
+                  <h3 className='text-xl font-semibold theme-text mb-4'>Portfolio & Social Links</h3>
                   <div className='space-y-4'>
                     {[
-                      { name: 'website', label: 'Website', icon: <FaGlobe />, placeholder: 'Enter your website URL' },
+                      { name: 'website', label: 'Portfolio', icon: <FaGlobe />, placeholder: 'Enter your portfolio URL' },
                       { name: 'github', label: 'GitHub', icon: <FaGithub />, placeholder: 'Enter your GitHub profile' },
                       { name: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin />, placeholder: 'Enter your LinkedIn profile' },
                       { name: 'twitter', label: 'Twitter', icon: <FaTwitter />, placeholder: 'Enter your Twitter handle' }
