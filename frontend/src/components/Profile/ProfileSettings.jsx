@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes, FaSyncAlt } from 'react-icons/fa'
+import { motion } from 'framer-motion'
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaSyncAlt } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 import { useAuth } from '../../context/AuthContext'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import { calculateProfileCompleteness } from '../../utils/profileCompleteness'
@@ -39,7 +40,6 @@ const ProfileSettings = () => {
   const [formData, setFormData] = useState(initialFormState)
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [notification, setNotification] = useState({ type: '', message: '' })
   const [isLoading, setIsLoading] = useState(!currentUser)
   const [profileImageFile, setProfileImageFile] = useState(null)
   const [previewImage, setPreviewImage] = useState(currentUser?.profilePicture || '')
@@ -173,11 +173,11 @@ const ProfileSettings = () => {
           profilePicture: response.profilePicture || prev.profilePicture
         }))
 
-        setNotification({ type: 'success', message: 'Changes saved successfully!' })
+        toast.success('Changes saved successfully!')
       } catch (error) {
         console.error('Error updating profile:', error)
         console.error('Error details:', error.response?.data || error.message)
-        setNotification({ type: 'error', message: 'Failed to save changes. Please try again.' })
+        toast.error('Failed to save changes. Please try again.')
       } finally {
         setIsSubmitting(false)
       }
@@ -192,7 +192,7 @@ const ProfileSettings = () => {
       setFormData(initialFormState)
     }
     setErrors({})
-    setNotification({ type: 'info', message: 'Form has been reset' })
+    toast.info('Form has been reset')
   }
 
   // Utility function for input field CSS classes
@@ -213,21 +213,6 @@ const ProfileSettings = () => {
         </div>
       ) : (
         <>
-          <AnimatePresence>
-            {notification.message && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={`fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`}>
-                <div className='flex items-center gap-2'>
-                  {notification.type === 'success' ? <FaCheck /> : <FaTimes />}
-                  {notification.message}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <motion.h2 className='text-2xl font-bold theme-text' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             Profile Settings
           </motion.h2>
