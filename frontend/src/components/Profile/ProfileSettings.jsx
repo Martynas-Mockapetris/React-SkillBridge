@@ -41,14 +41,10 @@ const ProfileSettings = () => {
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(!currentUser)
-  const [profileImageFile, setProfileImageFile] = useState(null)
-  const [previewImage, setPreviewImage] = useState(currentUser?.profilePicture || '')
 
   // Helper function to populate form with user data
   const populateFormWithUserData = (user) => {
     if (!user) return
-
-    console.log('Loading user profile - profilePicture from DB:', user.profilePicture)
 
     setFormData({
       fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
@@ -161,11 +157,8 @@ const ProfileSettings = () => {
           fiverrProfile: formData.fiverrProfile
         }
 
-        console.log('Submitting profile data with profilePicture:', profileData.profilePicture)
-
         // Send profile update to API
         const response = await updateUserProfile(profileData)
-        console.log('Profile update response:', response)
 
         // Update the form state with the response to refresh the image display
         setFormData((prev) => ({
