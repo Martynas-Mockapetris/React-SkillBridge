@@ -285,14 +285,31 @@ const ProfileSettings = () => {
                 <div className='space-y-4'>
                   {[
                     { name: 'fullName', label: 'Full Name', icon: <FaUser />, type: 'text', placeholder: 'Enter your full name' },
-                    { name: 'email', label: 'Email', icon: <FaEnvelope />, type: 'email', placeholder: 'Enter your email address' },
+                    {
+                      name: 'email',
+                      label: 'Email',
+                      icon: <FaEnvelope />,
+                      type: 'email',
+                      placeholder: 'Enter your email address',
+                      readOnly: true,
+                      helperText: 'Email changes require a separate verification flow and cannot be edited here.'
+                    },
                     { name: 'location', label: 'Location', icon: <FaMapMarkerAlt />, type: 'text', placeholder: 'Enter your location' }
                   ].map((field) => (
                     <div key={field.name}>
                       <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
                       <div className='relative'>
                         <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
-                        <input type={field.type} name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} placeholder={field.placeholder} />
+                        <input
+                          type={field.type}
+                          name={field.name}
+                          value={formData[field.name]}
+                          onChange={handleChange}
+                          readOnly={field.readOnly}
+                          className={`${inputClasses(field.name)} ${field.readOnly ? 'cursor-not-allowed opacity-80' : ''}`}
+                          placeholder={field.placeholder}
+                        />
+                        {field.helperText && <p className='text-xs theme-text-muted mt-2'>{field.helperText}</p>}
                         {errors[field.name] && (
                           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                             {errors[field.name]}
