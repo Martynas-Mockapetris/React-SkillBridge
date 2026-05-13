@@ -255,7 +255,11 @@ const ProfileSettings = () => {
             <motion.div className='grid lg:grid-cols-2 gap-6 mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               {/* Basic Information */}
               <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 h-full'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Basic Information</h3>
+                <h3 className='text-xl font-semibold theme-text mb-2'>Basic Information</h3>
+                <p className='text-sm theme-text-secondary mb-4'>Add the core details people use to recognize you and understand your background quickly.</p>
+                <div className='mb-4'>
+                  <p className='text-xs uppercase tracking-wide theme-text-muted'>Identity & Contact</p>
+                </div>
                 <div className='space-y-4'>
                   {[
                     { name: 'fullName', label: 'Full Name', icon: <FaUser />, type: 'text', placeholder: 'Enter your full name' },
@@ -310,6 +314,7 @@ const ProfileSettings = () => {
 
                   <div>
                     <label className='block mb-2 theme-text-secondary text-sm'>Skills</label>
+
                     <div className='relative'>
                       <span className='absolute left-3 top-4 text-accent text-[16px]'>
                         <FaTools />
@@ -333,7 +338,8 @@ const ProfileSettings = () => {
               {/* Right Column: Profile Picture and Social Links */}
               <motion.div className='flex flex-col gap-6 h-full' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
                 <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex flex-col items-center text-center'>
-                  <h3 className='text-lg font-semibold theme-text mb-4'>Profile Picture</h3>
+                  <h3 className='text-lg font-semibold theme-text mb-2'>Profile Picture</h3>
+                  <p className='text-sm theme-text-secondary mb-4'>Choose an avatar that helps clients recognize your profile quickly.</p>
                   <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
 
                   <div className='flex flex-wrap items-center justify-center gap-3'>
@@ -370,7 +376,8 @@ const ProfileSettings = () => {
                 </motion.div>
 
                 <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex-1'>
-                  <h3 className='text-xl font-semibold theme-text mb-4'>Portfolio & Social Links</h3>
+                  <h3 className='text-xl font-semibold theme-text mb-2'>Portfolio & Social Links</h3>
+                  <p className='text-sm theme-text-secondary mb-4'>Share the links clients can use to review your work, code, and professional presence.</p>
                   <div className='space-y-4'>
                     {[
                       { name: 'website', label: 'Portfolio', icon: <FaGlobe />, placeholder: 'Enter your portfolio URL' },
@@ -397,7 +404,8 @@ const ProfileSettings = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Freelancer Details</h3>
+                <h3 className='text-xl font-semibold theme-text mb-2'>Freelancer Details</h3>
+                <p className='text-sm theme-text-secondary mb-4'>Describe how you work, what you offer, and the experience clients can expect from you.</p>
                 <div className='grid gap-6'>
                   <div className='grid md:grid-cols-2 gap-4'>
                     <div>
@@ -439,6 +447,7 @@ const ProfileSettings = () => {
 
                   <div>
                     <label className='block mb-2 theme-text-secondary text-sm'>Platform Links</label>
+                    <p className='text-xs theme-text-muted mb-3'>Add marketplace profiles if you want clients to see more work history or reviews.</p>
                     <div className='grid md:grid-cols-2 gap-4'>
                       {[
                         { name: 'upworkProfile', placeholder: 'Upwork Profile URL' },
