@@ -154,7 +154,7 @@ const SecuritySettings = () => {
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.div
-        className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5'
+        className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}>
@@ -235,13 +235,16 @@ const SecuritySettings = () => {
 
                   <div className='mt-3 flex items-center justify-between gap-3 flex-wrap'>
                     <p className='text-xs theme-text-muted'>Need help? Generate a strong password and store it in your password manager.</p>
-                    <button type='button' onClick={generateStrongPassword} className='text-accent text-sm font-medium hover:text-accent/80'>
+                    <button
+                      type='button'
+                      onClick={generateStrongPassword}
+                      className='inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors'>
                       Generate Strong Password
                     </button>
                   </div>
 
                   <div className='mt-3'>
-                    <div className='h-2 w-full bg-gray-200 rounded-full overflow-hidden'>
+                    <div className='h-2 w-full rounded-full overflow-hidden bg-primary/10 dark:bg-light/10'>
                       <motion.div
                         className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
                         initial={{ width: 0 }}
@@ -295,7 +298,8 @@ const SecuritySettings = () => {
             type='submit'
             className='w-full bg-accent text-white font-medium py-3 px-6 rounded-lg
               hover:bg-accent/90 transition-colors duration-300
-              focus:outline-none focus:ring-2 focus:ring-accent/50'
+              focus:outline-none focus:ring-2 focus:ring-accent/50
+              disabled:opacity-50 disabled:cursor-not-allowed'
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}>
             Update Password

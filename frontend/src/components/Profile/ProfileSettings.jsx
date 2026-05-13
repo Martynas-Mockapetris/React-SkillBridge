@@ -337,7 +337,7 @@ const ProfileSettings = () => {
 
               {/* Right Column: Profile Picture and Social Links */}
               <motion.div className='flex flex-col gap-6 h-full' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex flex-col items-center text-center'>
+                <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex flex-col items-center text-center'>
                   <h3 className='text-lg font-semibold theme-text mb-2'>Profile Picture</h3>
                   <p className='text-sm theme-text-secondary mb-4'>Choose an avatar that helps clients recognize your profile quickly.</p>
                   <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
@@ -375,7 +375,7 @@ const ProfileSettings = () => {
                   </div>
                 </motion.div>
 
-                <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex-1'>
+                <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex-1'>
                   <h3 className='text-xl font-semibold theme-text mb-2'>Portfolio & Social Links</h3>
                   <p className='text-sm theme-text-secondary mb-4'>Share the links clients can use to review your work, code, and professional presence.</p>
                   <div className='space-y-4'>
