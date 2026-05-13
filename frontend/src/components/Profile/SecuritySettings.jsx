@@ -158,66 +158,138 @@ const SecuritySettings = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}>
-        <h3 className='text-xl font-semibold theme-text mb-4'>Change Password</h3>
+        <h3 className='text-xl font-semibold theme-text mb-2'>Change Password</h3>
+        <p className='text-sm theme-text-secondary mb-4'>Use a strong password you do not reuse elsewhere to keep your account protected.</p>
 
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          {[
-            { name: 'currentPassword', label: 'Current Password', placeholder: 'Enter current password' },
-            { name: 'newPassword', label: 'New Password', placeholder: 'Enter new password' },
-            { name: 'confirmPassword', label: 'Confirm Password', placeholder: 'Confirm new password' }
-          ].map((field) => (
-            <div key={field.name}>
-              <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          <div>
+            <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Verification</p>
+            <div>
+              <label className='block mb-2 theme-text-secondary text-sm'>Current Password</label>
               <div className='relative'>
                 <span className='absolute left-3 top-4 text-accent text-[16px]'>
                   <FaLock />
                 </span>
                 <input
-                  type={showPasswords[field.name] ? 'text' : 'password'}
-                  name={field.name}
-                  value={passwordData[field.name]}
+                  type={showPasswords.currentPassword ? 'text' : 'password'}
+                  name='currentPassword'
+                  value={passwordData.currentPassword}
                   onChange={handleChange}
-                  className={getInputClasses(field.name)}
-                  placeholder={field.placeholder}
+                  className={getInputClasses('currentPassword')}
+                  placeholder='Enter current password'
                 />
                 <button
                   type='button'
                   onClick={() =>
                     setShowPasswords((prev) => ({
                       ...prev,
-                      [field.name]: !prev[field.name]
+                      currentPassword: !prev.currentPassword
                     }))
                   }
                   className='absolute right-3 top-4 text-accent text-[16px]'>
-                  {showPasswords[field.name] ? <FaEyeSlash /> : <FaEye />}
+                  {showPasswords.currentPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
-                {errors[field.name] && (
+                {errors.currentPassword && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                    {errors[field.name]}
+                    {errors.currentPassword}
                   </motion.p>
-                )}
-                {field.name === 'newPassword' && (
-                  <>
-                    <button type='button' onClick={generateStrongPassword} className='absolute right-12 top-4 text-accent text-sm font-medium hover:text-accent/80'>
-                      Generate
-                    </button>
-                    <div className='mt-2'>
-                      <div className='h-2 w-full bg-gray-200 rounded-full overflow-hidden'>
-                        <motion.div
-                          className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${passwordStrength}%` }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      </div>
-                      <p className='text-sm mt-1 theme-text-secondary'>Password Strength: {passwordStrength <= 40 ? 'Weak' : passwordStrength <= 80 ? 'Medium' : 'Strong'}</p>
-                    </div>
-                    <PasswordRequirements password={passwordData.newPassword} />
-                  </>
                 )}
               </div>
             </div>
-          ))}
+
+            <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
+              <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>New Password</p>
+
+              <div className='space-y-6'>
+                <div>
+                  <label className='block mb-2 theme-text-secondary text-sm'>New Password</label>
+                  <div className='relative'>
+                    <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                      <FaLock />
+                    </span>
+                    <input
+                      type={showPasswords.newPassword ? 'text' : 'password'}
+                      name='newPassword'
+                      value={passwordData.newPassword}
+                      onChange={handleChange}
+                      className={getInputClasses('newPassword')}
+                      placeholder='Enter new password'
+                    />
+                    <button
+                      type='button'
+                      onClick={() =>
+                        setShowPasswords((prev) => ({
+                          ...prev,
+                          newPassword: !prev.newPassword
+                        }))
+                      }
+                      className='absolute right-3 top-4 text-accent text-[16px]'>
+                      {showPasswords.newPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                    {errors.newPassword && (
+                      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                        {errors.newPassword}
+                      </motion.p>
+                    )}
+                  </div>
+
+                  <div className='mt-3 flex items-center justify-between gap-3 flex-wrap'>
+                    <p className='text-xs theme-text-muted'>Need help? Generate a strong password and store it in your password manager.</p>
+                    <button type='button' onClick={generateStrongPassword} className='text-accent text-sm font-medium hover:text-accent/80'>
+                      Generate Strong Password
+                    </button>
+                  </div>
+
+                  <div className='mt-3'>
+                    <div className='h-2 w-full bg-gray-200 rounded-full overflow-hidden'>
+                      <motion.div
+                        className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${passwordStrength}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                    <p className='text-sm mt-1 theme-text-secondary'>Password Strength: {passwordStrength <= 40 ? 'Weak' : passwordStrength <= 80 ? 'Medium' : 'Strong'}</p>
+                  </div>
+
+                  <PasswordRequirements password={passwordData.newPassword} />
+                </div>
+
+                <div>
+                  <label className='block mb-2 theme-text-secondary text-sm'>Confirm Password</label>
+                  <div className='relative'>
+                    <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                      <FaLock />
+                    </span>
+                    <input
+                      type={showPasswords.confirmPassword ? 'text' : 'password'}
+                      name='confirmPassword'
+                      value={passwordData.confirmPassword}
+                      onChange={handleChange}
+                      className={getInputClasses('confirmPassword')}
+                      placeholder='Confirm new password'
+                    />
+                    <button
+                      type='button'
+                      onClick={() =>
+                        setShowPasswords((prev) => ({
+                          ...prev,
+                          confirmPassword: !prev.confirmPassword
+                        }))
+                      }
+                      className='absolute right-3 top-4 text-accent text-[16px]'>
+                      {showPasswords.confirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                    {errors.confirmPassword && (
+                      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                        {errors.confirmPassword}
+                      </motion.p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <motion.button
             type='submit'
