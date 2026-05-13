@@ -2,6 +2,7 @@ import express from 'express'
 import {
   getUserProfile,
   updateUserProfile,
+  changeUserPassword,
   deleteUserAccount,
   getUserStats,
   addToFavorites,
@@ -39,6 +40,7 @@ router.get('/test', (req, res) => {
 // Profile routes
 router.get('/profile', protect, getUserProfile)
 router.put('/profile', protect, updateUserProfile)
+router.put('/profile/password', protect, changeUserPassword)
 router.delete('/profile', protect, deleteUserAccount)
 
 // Stats route
