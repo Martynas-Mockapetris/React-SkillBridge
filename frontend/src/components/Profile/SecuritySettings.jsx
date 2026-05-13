@@ -56,7 +56,9 @@ const SecuritySettings = () => {
     }
 
     // Confirm password validation
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+    if (!passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your new password'
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match'
     }
 
@@ -237,8 +239,26 @@ const SecuritySettings = () => {
   focus:outline-none focus:ring-2 focus:ring-accent/50
 `
 
+  const hasUppercase = /[A-Z]/.test(passwordData.newPassword)
+  const hasLowercase = /[a-z]/.test(passwordData.newPassword)
+  const hasNumber = /[0-9]/.test(passwordData.newPassword)
+  const hasSpecialCharacter = /[!@#$%^&*]/.test(passwordData.newPassword)
+  const hasMinimumLength = passwordData.newPassword.length >= 8
+  const isNewPasswordDifferent = Boolean(passwordData.currentPassword && passwordData.newPassword && passwordData.currentPassword !== passwordData.newPassword)
+  const doPasswordsMatch = Boolean(passwordData.newPassword && passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword)
   const hasStartedPasswordFlow = Boolean(passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword)
-  const canSubmitPassword = Boolean(passwordData.currentPassword && passwordData.newPassword && passwordData.confirmPassword)
+  const canSubmitPassword = Boolean(
+    passwordData.currentPassword &&
+    passwordData.newPassword &&
+    passwordData.confirmPassword &&
+    hasMinimumLength &&
+    hasUppercase &&
+    hasLowercase &&
+    hasNumber &&
+    hasSpecialCharacter &&
+    isNewPasswordDifferent &&
+    doPasswordsMatch
+  )
 
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -397,7 +417,7 @@ const SecuritySettings = () => {
                 : isSubmitting
                   ? 'Updating your password now.'
                   : !canSubmitPassword
-                    ? 'Complete all password fields before updating your password.'
+                    ? 'Complete all requirements and make sure both new password fields match before submitting.'
                     : 'Your password details are ready to submit.'}
             </p>
 
