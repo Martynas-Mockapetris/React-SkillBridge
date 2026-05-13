@@ -84,24 +84,35 @@ const SecuritySettings = () => {
 
     const getRandomChar = (str) => str.charAt(Math.floor(Math.random() * str.length))
 
-    // Ensure one of each required character type
     let password = [getRandomChar(lowercase), getRandomChar(uppercase), getRandomChar(numbers), getRandomChar(symbols)]
 
-    // Add additional random characters to reach desired length (12)
     const allChars = lowercase + uppercase + numbers + symbols
     for (let i = password.length; i < 12; i++) {
       password.push(getRandomChar(allChars))
     }
 
-    // Shuffle the password array
     password = password.sort(() => Math.random() - 0.5)
 
     const newPassword = password.join('')
+
     setPasswordData((prev) => ({
       ...prev,
       newPassword,
-      confirmPassword: '' // Clear confirm password field
+      confirmPassword: ''
     }))
+
+    setErrors((prev) => {
+      const nextErrors = { ...prev }
+      delete nextErrors.newPassword
+      delete nextErrors.confirmPassword
+
+      if (passwordData.currentPassword !== newPassword) {
+        delete nextErrors.newPassword
+      }
+
+      return nextErrors
+    })
+
     setPasswordStrength(calculatePasswordStrength(newPassword))
   }
 
@@ -130,12 +141,38 @@ const SecuritySettings = () => {
   // Updates strength when password changes
   const handleChange = (e) => {
     const { name, value } = e.target
-    setPasswordData((prev) => ({
-      ...prev,
-      [name]: value
-    }))
 
-    // Calculate strength only for new password field
+    setPasswordData((prev) => {
+      const nextPasswordData = {
+        ...prev,
+        [name]: value
+      }
+
+      setErrors((prevErrors) => {
+        const nextErrors = {
+          ...prevErrors
+        }
+
+        delete nextErrors[name]
+
+        if (name === 'currentPassword' || name === 'newPassword') {
+          if (nextPasswordData.currentPassword !== nextPasswordData.newPassword) {
+            delete nextErrors.newPassword
+          }
+        }
+
+        if (name === 'newPassword' || name === 'confirmPassword') {
+          if (nextPasswordData.newPassword === nextPasswordData.confirmPassword) {
+            delete nextErrors.confirmPassword
+          }
+        }
+
+        return nextErrors
+      })
+
+      return nextPasswordData
+    })
+
     if (name === 'newPassword') {
       setPasswordStrength(calculatePasswordStrength(value))
     }
