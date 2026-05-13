@@ -468,6 +468,19 @@ const ProfileSettings = () => {
 
             <div className='flex gap-4'>
               <motion.button
+                type='button'
+                onClick={handleReset}
+                className='flex-1 bg-gray-500 text-white font-medium py-3 px-6 rounded-lg
+              hover:bg-gray-600 transition-colors duration-300
+              focus:outline-none focus:ring-2 focus:ring-gray-500/50
+              disabled:opacity-50 disabled:cursor-not-allowed'
+                whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
+                whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
+                disabled={isSubmitting || !hasUnsavedChanges}>
+                Reset Form
+              </motion.button>
+
+              <motion.button
                 type='submit'
                 className='flex-1 bg-accent text-white font-medium py-3 px-6 rounded-lg
               hover:bg-accent/90 transition-colors duration-300
@@ -477,18 +490,6 @@ const ProfileSettings = () => {
                 whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
                 disabled={isSubmitting || !hasUnsavedChanges}>
                 {isSubmitting ? 'Saving Changes...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
-              </motion.button>
-
-              <motion.button
-                type='submit'
-                className='flex-1 bg-accent text-white font-medium py-3 px-6 rounded-lg
-              hover:bg-accent/90 transition-colors duration-300
-              focus:outline-none focus:ring-2 focus:ring-accent/50
-              disabled:opacity-50 disabled:cursor-not-allowed'
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isSubmitting}>
-                {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
               </motion.button>
             </div>
           </form>
