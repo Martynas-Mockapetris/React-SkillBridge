@@ -30,10 +30,6 @@ export const getUserProfile = async (req, res) => {
 // @route   PUT /api/users/profile
 // @access  Private
 export const updateUserProfile = async (req, res) => {
-  console.log('PUT /profile route reached')
-  console.log('Request body:', req.body)
-  console.log('User from token:', req.user)
-
   try {
     const user = await User.findById(req.user._id)
 
