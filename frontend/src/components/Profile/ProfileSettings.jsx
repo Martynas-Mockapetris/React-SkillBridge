@@ -407,45 +407,53 @@ const ProfileSettings = () => {
                 <h3 className='text-xl font-semibold theme-text mb-2'>Freelancer Details</h3>
                 <p className='text-sm theme-text-secondary mb-4'>Describe how you work, what you offer, and the experience clients can expect from you.</p>
                 <div className='grid gap-6'>
-                  <div className='grid md:grid-cols-2 gap-4'>
-                    <div>
-                      <label className='block mb-2 theme-text-secondary text-sm'>Hourly Rate</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-3 text-accent'>€</span>
-                        <input type='number' name='hourlyRate' value={formData.hourlyRate} onChange={handleChange} className={inputClasses('hourlyRate')} placeholder='€ per hour' />
+                  <div>
+                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Rates & Experience</p>
+                    <div className='grid md:grid-cols-2 gap-4'>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Hourly Rate</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-3 text-accent'>€</span>
+                          <input type='number' name='hourlyRate' value={formData.hourlyRate} onChange={handleChange} className={inputClasses('hourlyRate')} placeholder='€ per hour' />
+                        </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                          <FaStar />
-                        </span>
-                        <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={inputClasses('experienceLevel')}>
-                          <option value='entry'>Entry Level</option>
-                          <option value='intermediate'>Intermediate</option>
-                          <option value='expert'>Expert</option>
-                        </select>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaStar />
+                          </span>
+                          <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={inputClasses('experienceLevel')}>
+                            <option value='entry'>Entry Level</option>
+                            <option value='intermediate'>Intermediate</option>
+                            <option value='expert'>Expert</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {[
-                    { name: 'languages', label: 'Languages', icon: <FaLanguage />, placeholder: 'English (Native), Spanish (Fluent), etc.' },
-                    { name: 'certifications', label: 'Certifications', icon: <FaCertificate />, placeholder: 'List your relevant certifications' },
-                    { name: 'serviceCategories', label: 'Service Categories', icon: <FaList />, placeholder: 'Web Development, Mobile Apps, UI/UX Design, etc.' }
-                  ].map((field) => (
-                    <div key={field.name}>
-                      <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
-                        <textarea name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} rows='2' placeholder={field.placeholder} />
-                      </div>
-                    </div>
-                  ))}
+                  <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
+                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Capabilities & Services</p>
 
-                  <div>
+                    {[
+                      { name: 'languages', label: 'Languages', icon: <FaLanguage />, placeholder: 'English (Native), Spanish (Fluent), etc.' },
+                      { name: 'certifications', label: 'Certifications', icon: <FaCertificate />, placeholder: 'List your relevant certifications' },
+                      { name: 'serviceCategories', label: 'Service Categories', icon: <FaList />, placeholder: 'Web Development, Mobile Apps, UI/UX Design, etc.' }
+                    ].map((field) => (
+                      <div key={field.name}>
+                        <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
+                          <textarea name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} rows='2' placeholder={field.placeholder} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
+                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>External Profiles</p>
                     <label className='block mb-2 theme-text-secondary text-sm'>Platform Links</label>
                     <p className='text-xs theme-text-muted mb-3'>Add marketplace profiles if you want clients to see more work history or reviews.</p>
                     <div className='grid md:grid-cols-2 gap-4'>
