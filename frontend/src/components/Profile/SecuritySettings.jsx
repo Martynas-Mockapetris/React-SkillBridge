@@ -151,6 +151,9 @@ const SecuritySettings = () => {
   focus:outline-none focus:ring-2 focus:ring-accent/50
 `
 
+  const hasStartedPasswordFlow = Boolean(passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword)
+  const canSubmitPassword = Boolean(passwordData.currentPassword && passwordData.newPassword && passwordData.confirmPassword)
+
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.div
@@ -243,19 +246,25 @@ const SecuritySettings = () => {
                     </button>
                   </div>
 
-                  <div className='mt-3'>
-                    <div className='h-2 w-full rounded-full overflow-hidden bg-primary/10 dark:bg-light/10'>
-                      <motion.div
-                        className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${passwordStrength}%` }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </div>
-                    <p className='text-sm mt-1 theme-text-secondary'>Password Strength: {passwordStrength <= 40 ? 'Weak' : passwordStrength <= 80 ? 'Medium' : 'Strong'}</p>
-                  </div>
+                  {passwordData.newPassword ? (
+                    <>
+                      <div className='mt-3'>
+                        <div className='h-2 w-full rounded-full overflow-hidden bg-primary/10 dark:bg-light/10'>
+                          <motion.div
+                            className={`h-full ${passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${passwordStrength}%` }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </div>
+                        <p className='text-sm mt-1 theme-text-secondary'>Password Strength: {passwordStrength <= 40 ? 'Weak' : passwordStrength <= 80 ? 'Medium' : 'Strong'}</p>
+                      </div>
 
-                  <PasswordRequirements password={passwordData.newPassword} />
+                      <PasswordRequirements password={passwordData.newPassword} />
+                    </>
+                  ) : (
+                    <p className='text-sm theme-text-secondary mt-3'>Start typing a new password to see strength feedback and requirements.</p>
+                  )}
                 </div>
 
                 <div>
@@ -294,16 +303,27 @@ const SecuritySettings = () => {
             </div>
           </div>
 
-          <motion.button
-            type='submit'
-            className='w-full bg-accent text-white font-medium py-3 px-6 rounded-lg
+          <div className='space-y-3'>
+            <p className='text-sm theme-text-secondary'>
+              {!hasStartedPasswordFlow
+                ? 'Enter your current and new password to begin.'
+                : !canSubmitPassword
+                  ? 'Complete all password fields before updating your password.'
+                  : 'Your password details are ready to submit.'}
+            </p>
+
+            <motion.button
+              type='submit'
+              className='w-full bg-accent text-white font-medium py-3 px-6 rounded-lg
               hover:bg-accent/90 transition-colors duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50
               disabled:opacity-50 disabled:cursor-not-allowed'
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}>
-            Update Password
-          </motion.button>
+              whileHover={canSubmitPassword ? { scale: 1.02 } : undefined}
+              whileTap={canSubmitPassword ? { scale: 0.98 } : undefined}
+              disabled={!canSubmitPassword}>
+              Update Password
+            </motion.button>
+          </div>
         </form>
       </motion.div>
     </motion.div>
