@@ -125,6 +125,36 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  headline: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  availabilityStatus: {
+    type: String,
+    enum: ['available', 'limited', 'unavailable'],
+    default: 'available'
+  },
+  profileVisibility: {
+    type: String,
+    enum: ['public', 'members', 'private'],
+    default: 'public'
+  },
+  responseTime: {
+    type: String,
+    enum: ['within_24_hours', 'within_3_days', 'within_week', 'flexible'],
+    default: 'within_24_hours'
+  },
+  servicesOffered: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  tools: {
+    type: String,
+    trim: true,
+    default: ''
+  },
 
   // Social links
   website: {
