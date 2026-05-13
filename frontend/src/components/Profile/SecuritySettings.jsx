@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 
 const SecuritySettings = () => {
   const [passwordData, setPasswordData] = useState({
@@ -136,9 +137,10 @@ const SecuritySettings = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (validateForm()) {
-      console.log('Password change submitted:', passwordData)
-    }
+
+    if (!validateForm()) return
+
+    toast.info('Password update is not connected yet. The form is ready, but backend support still needs to be implemented.')
   }
 
   const getInputClasses = (fieldName) => `
@@ -162,7 +164,8 @@ const SecuritySettings = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}>
         <h3 className='text-xl font-semibold theme-text mb-2'>Change Password</h3>
-        <p className='text-sm theme-text-secondary mb-4'>Use a strong password you do not reuse elsewhere to keep your account protected.</p>
+        <p className='text-sm theme-text-secondary mb-2'>Use a strong password you do not reuse elsewhere to keep your account protected.</p>
+        <p className='text-xs theme-text-muted mb-4'>This interface is prepared, but password update requests are not connected to the backend yet.</p>
 
         <form onSubmit={handleSubmit} className='space-y-6'>
           <div>
