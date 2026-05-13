@@ -269,6 +269,17 @@ export const updateUserProfile = async (profileData) => {
   }
 }
 
+// Changes the user's password
+export const changeUserPassword = async (passwordData) => {
+  try {
+    const response = await authAxios.put('/api/users/profile/password', passwordData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to change password:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Get all freelancers (freelancer + both)
 export const getFreelancers = async () => {
   try {
