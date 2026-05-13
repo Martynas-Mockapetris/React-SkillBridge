@@ -155,6 +155,61 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     default: ''
   },
+  workPreference: {
+    type: String,
+    enum: ['remote', 'hybrid', 'onsite', 'flexible'],
+    default: 'flexible'
+  },
+  yearsOfExperience: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
+  minimumProjectBudget: {
+    type: Number,
+    min: 0,
+    default: null
+  },
+  preferredProjectSize: {
+    type: String,
+    enum: ['small', 'medium', 'large', 'ongoing', 'flexible'],
+    default: 'flexible'
+  },
+  preferredEngagements: {
+    type: [String],
+    default: []
+  },
+  timezone: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  availabilityDetails: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  industries: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  showLocationPublic: {
+    type: Boolean,
+    default: true
+  },
+  showHourlyRate: {
+    type: Boolean,
+    default: true
+  },
+  allowDirectMessages: {
+    type: Boolean,
+    default: true
+  },
+  allowProjectInvites: {
+    type: Boolean,
+    default: true
+  },
 
   // Social links
   website: {
