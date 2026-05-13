@@ -20,6 +20,7 @@ const SecuritySettings = () => {
   const [errors, setErrors] = useState({})
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [passwordUpdated, setPasswordUpdated] = useState(false)
 
   const validateForm = () => {
     const newErrors = {}
@@ -84,6 +85,10 @@ const SecuritySettings = () => {
     const numbers = '0123456789'
     const symbols = '!@#$%^&*'
 
+    if (passwordUpdated) {
+      setPasswordUpdated(false)
+    }
+
     const getRandomChar = (str) => str.charAt(Math.floor(Math.random() * str.length))
 
     let password = [getRandomChar(lowercase), getRandomChar(uppercase), getRandomChar(numbers), getRandomChar(symbols)]
@@ -144,6 +149,10 @@ const SecuritySettings = () => {
   const handleChange = (e) => {
     const { name, value } = e.target
 
+    if (passwordUpdated) {
+      setPasswordUpdated(false)
+    }
+
     setPasswordData((prev) => {
       const nextPasswordData = {
         ...prev,
@@ -202,6 +211,7 @@ const SecuritySettings = () => {
       })
       setErrors({})
       setPasswordStrength(0)
+      setPasswordUpdated(true)
       setShowPasswords({
         currentPassword: false,
         newPassword: false,
@@ -210,6 +220,7 @@ const SecuritySettings = () => {
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to update password.'
       toast.error(message)
+      setPasswordUpdated(false)
 
       if (message.toLowerCase().includes('current password')) {
         setErrors((prev) => ({
@@ -411,6 +422,11 @@ const SecuritySettings = () => {
           </div>
 
           <div className='space-y-3'>
+            {passwordUpdated && (
+              <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className='text-sm text-green-600 dark:text-green-400'>
+                Password updated successfully. Use your new password the next time you sign in.
+              </motion.p>
+            )}
             <p className='text-sm theme-text-secondary'>
               {!hasStartedPasswordFlow
                 ? 'Enter your current and new password to begin.'
