@@ -21,6 +21,7 @@ const SecuritySettings = () => {
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [passwordUpdated, setPasswordUpdated] = useState(false)
+  const [sessionExpired, setSessionExpired] = useState(false)
 
   const validateForm = () => {
     const newErrors = {}
@@ -89,6 +90,10 @@ const SecuritySettings = () => {
       setPasswordUpdated(false)
     }
 
+    if (sessionExpired) {
+      setSessionExpired(false)
+    }
+
     const getRandomChar = (str) => str.charAt(Math.floor(Math.random() * str.length))
 
     let password = [getRandomChar(lowercase), getRandomChar(uppercase), getRandomChar(numbers), getRandomChar(symbols)]
@@ -153,6 +158,10 @@ const SecuritySettings = () => {
       setPasswordUpdated(false)
     }
 
+    if (sessionExpired) {
+      setSessionExpired(false)
+    }
+
     setPasswordData((prev) => {
       const nextPasswordData = {
         ...prev,
@@ -196,6 +205,7 @@ const SecuritySettings = () => {
 
     try {
       setIsSubmitting(true)
+      setSessionExpired(false)
 
       const response = await changeUserPassword({
         currentPassword: passwordData.currentPassword,
@@ -218,9 +228,17 @@ const SecuritySettings = () => {
         confirmPassword: false
       })
     } catch (error) {
+      const status = error.response?.status
       const message = error.response?.data?.message || 'Failed to update password.'
-      toast.error(message)
       setPasswordUpdated(false)
+
+      if (status === 401) {
+        setSessionExpired(true)
+        toast.error('Your session has expired. Please sign in again before updating your password.')
+        return
+      }
+
+      toast.error(message)
 
       if (message.toLowerCase().includes('current password')) {
         setErrors((prev) => ({
@@ -422,6 +440,11 @@ const SecuritySettings = () => {
           </div>
 
           <div className='space-y-3'>
+            {sessionExpired && (
+              <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className='text-sm text-amber-600 dark:text-amber-400'>
+                Your session expired before the password update completed. Sign in again, then retry this form.
+              </motion.p>
+            )}
             {passwordUpdated && (
               <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className='text-sm text-green-600 dark:text-green-400'>
                 Password updated successfully. Use your new password the next time you sign in.
