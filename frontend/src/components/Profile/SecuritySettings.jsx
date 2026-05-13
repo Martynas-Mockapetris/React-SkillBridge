@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import { changeUserPassword } from '../../services/userService'
 
 const SecuritySettings = () => {
   const [passwordData, setPasswordData] = useState({
@@ -18,6 +19,7 @@ const SecuritySettings = () => {
 
   const [errors, setErrors] = useState({})
   const [passwordStrength, setPasswordStrength] = useState(0)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const validateForm = () => {
     const newErrors = {}
@@ -47,6 +49,10 @@ const SecuritySettings = () => {
       if (!/[!@#$%^&*]/.test(passwordData.newPassword)) {
         newErrors.newPassword = 'Password must contain at least one special character'
       }
+    }
+
+    if (passwordData.currentPassword && passwordData.newPassword && passwordData.currentPassword === passwordData.newPassword) {
+      newErrors.newPassword = 'New password must be different from current password'
     }
 
     // Confirm password validation
@@ -135,12 +141,53 @@ const SecuritySettings = () => {
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!validateForm()) return
 
-    toast.info('Password update is not connected yet. The form is ready, but backend support still needs to be implemented.')
+    try {
+      setIsSubmitting(true)
+
+      const response = await changeUserPassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      })
+
+      toast.success(response.message || 'Password updated successfully.')
+
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      })
+      setErrors({})
+      setPasswordStrength(0)
+      setShowPasswords({
+        currentPassword: false,
+        newPassword: false,
+        confirmPassword: false
+      })
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update password.'
+      toast.error(message)
+
+      if (message.toLowerCase().includes('current password')) {
+        setErrors((prev) => ({
+          ...prev,
+          currentPassword: message
+        }))
+      }
+
+      if (message.toLowerCase().includes('new password')) {
+        setErrors((prev) => ({
+          ...prev,
+          newPassword: message
+        }))
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const getInputClasses = (fieldName) => `
@@ -165,7 +212,7 @@ const SecuritySettings = () => {
         transition={{ duration: 0.6 }}>
         <h3 className='text-xl font-semibold theme-text mb-2'>Change Password</h3>
         <p className='text-sm theme-text-secondary mb-2'>Use a strong password you do not reuse elsewhere to keep your account protected.</p>
-        <p className='text-xs theme-text-muted mb-4'>This interface is prepared, but password update requests are not connected to the backend yet.</p>
+        <p className='text-xs theme-text-muted mb-4'>Your current password is required before a new one can be saved.</p>
 
         <form onSubmit={handleSubmit} className='space-y-6'>
           <div>
@@ -310,9 +357,11 @@ const SecuritySettings = () => {
             <p className='text-sm theme-text-secondary'>
               {!hasStartedPasswordFlow
                 ? 'Enter your current and new password to begin.'
-                : !canSubmitPassword
-                  ? 'Complete all password fields before updating your password.'
-                  : 'Your password details are ready to submit.'}
+                : isSubmitting
+                  ? 'Updating your password now.'
+                  : !canSubmitPassword
+                    ? 'Complete all password fields before updating your password.'
+                    : 'Your password details are ready to submit.'}
             </p>
 
             <motion.button
@@ -321,10 +370,10 @@ const SecuritySettings = () => {
               hover:bg-accent/90 transition-colors duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50
               disabled:opacity-50 disabled:cursor-not-allowed'
-              whileHover={canSubmitPassword ? { scale: 1.02 } : undefined}
-              whileTap={canSubmitPassword ? { scale: 0.98 } : undefined}
-              disabled={!canSubmitPassword}>
-              Update Password
+              whileHover={canSubmitPassword && !isSubmitting ? { scale: 1.02 } : undefined}
+              whileTap={canSubmitPassword && !isSubmitting ? { scale: 0.98 } : undefined}
+              disabled={!canSubmitPassword || isSubmitting}>
+              {isSubmitting ? 'Updating Password...' : 'Update Password'}
             </motion.button>
           </div>
         </form>
