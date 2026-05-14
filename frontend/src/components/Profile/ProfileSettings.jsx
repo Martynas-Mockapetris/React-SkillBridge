@@ -272,9 +272,24 @@ const ProfileSettings = () => {
 
         toast.success('Changes saved successfully!')
       } catch (error) {
-        console.error('Error updating profile:', error)
-        console.error('Error details:', error.response?.data || error.message)
-        toast.error('Failed to save changes. Please try again.')
+        const message = error.response?.data?.message || 'Failed to save changes. Please try again.'
+        const validationErrors = error.response?.data?.errors
+
+        if (validationErrors && typeof validationErrors === 'object') {
+          const nextErrors = {}
+
+          Object.entries(validationErrors).forEach(([field, details]) => {
+            if (details?.message) {
+              nextErrors[field] = details.message
+            }
+          })
+
+          if (Object.keys(nextErrors).length > 0) {
+            setErrors(nextErrors)
+          }
+        }
+
+        toast.error(message)
       } finally {
         setIsSubmitting(false)
       }
