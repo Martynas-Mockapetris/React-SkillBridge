@@ -95,7 +95,7 @@ const ProfileSettings = () => {
       linkedin: user.linkedin || '',
       twitter: user.twitter || '',
       profilePicture: user.profilePicture || '',
-      hourlyRate: user.hourlyRate || '',
+      hourlyRate: user.hourlyRate ?? '',
       experienceLevel: user.experienceLevel || 'entry',
       languages: user.languages || '',
       certifications: user.certifications || '',
@@ -122,10 +122,20 @@ const ProfileSettings = () => {
   // Handle form field changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
+    const nextValue = type === 'checkbox' ? checked : value
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: nextValue
     }))
+
+    setErrors((prev) => {
+      if (!prev[name]) return prev
+
+      const nextErrors = { ...prev }
+      delete nextErrors[name]
+      return nextErrors
+    })
   }
 
   const hasUnsavedChanges = JSON.stringify(formData) !== JSON.stringify(savedFormData)
@@ -137,24 +147,48 @@ const ProfileSettings = () => {
   const validateForm = () => {
     const newErrors = {}
 
-    // Basic validation - required fields
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Full name is required'
     }
 
-    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required'
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email'
     }
 
-    // Phone validation (optional)
+    if (!formData.headline.trim()) {
+      newErrors.headline = 'Professional headline is required'
+    }
+
+    if (!formData.skills.trim()) {
+      newErrors.skills = 'Skills are required'
+    }
+
+    if (!formData.bio.trim()) {
+      newErrors.bio = 'Bio is required'
+    }
+
+    if (!formData.servicesOffered.trim()) {
+      newErrors.servicesOffered = 'Services offered is required'
+    }
+
     if (formData.phone && !/^\+[0-9 ]{8,20}$/.test(formData.phone.replace(/_/g, ''))) {
       newErrors.phone = 'Please enter a valid phone number'
     }
 
-    // URL validations for web profiles
+    const numericFields = [
+      { name: 'hourlyRate', label: 'Hourly rate' },
+      { name: 'minimumProjectBudget', label: 'Minimum project budget' },
+      { name: 'yearsOfExperience', label: 'Years of experience' }
+    ]
+
+    numericFields.forEach(({ name, label }) => {
+      if (formData[name] !== '' && (Number.isNaN(Number(formData[name])) || Number(formData[name]) < 0)) {
+        newErrors[name] = `${label} must be 0 or greater`
+      }
+    })
+
     const urlFields = ['website', 'github', 'linkedin', 'twitter', 'upworkProfile', 'fiverrProfile']
     urlFields.forEach((field) => {
       if (formData[field] && !/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(formData[field])) {
@@ -363,6 +397,11 @@ const ProfileSettings = () => {
                         <FaBriefcase />
                       </span>
                       <input type='text' name='headline' value={formData.headline} onChange={handleChange} className={inputClasses('headline')} placeholder='Frontend developer focused on fast, polished client work' />
+                      {errors.headline && (
+                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                          {errors.headline}
+                        </motion.p>
+                      )}
                     </div>
                   </div>
 
@@ -389,6 +428,11 @@ const ProfileSettings = () => {
                         <FaTools />
                       </span>
                       <textarea name='skills' value={formData.skills} onChange={handleChange} className={inputClasses('skills')} rows='3' placeholder='Separate skills with commas' />
+                      {errors.skills && (
+                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                          {errors.skills}
+                        </motion.p>
+                      )}
                     </div>
                   </div>
 
@@ -399,6 +443,11 @@ const ProfileSettings = () => {
                         <FaBook />
                       </span>
                       <textarea name='bio' value={formData.bio} onChange={handleChange} className={inputClasses('bio')} rows='4' placeholder='Describe yourself' />
+                      {errors.bio && (
+                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                          {errors.bio}
+                        </motion.p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -459,6 +508,11 @@ const ProfileSettings = () => {
                         <div className='relative'>
                           <span className='absolute left-3 top-4 text-accent text-[16px]'>{social.icon}</span>
                           <input type='url' name={social.name} value={formData[social.name]} onChange={handleChange} className={inputClasses(social.name)} placeholder={social.placeholder} />
+                          {errors[social.name] && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors[social.name]}
+                            </motion.p>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -484,6 +538,11 @@ const ProfileSettings = () => {
                         <div className='relative'>
                           <span className='absolute left-3 top-3 text-accent'>€</span>
                           <input type='number' name='hourlyRate' value={formData.hourlyRate} onChange={handleChange} className={inputClasses('hourlyRate')} placeholder='€ per hour' />
+                          {errors.hourlyRate && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.hourlyRate}
+                            </motion.p>
+                          )}
                         </div>
                       </div>
 
@@ -492,6 +551,11 @@ const ProfileSettings = () => {
                         <div className='relative'>
                           <span className='absolute left-3 top-3 text-accent'>€</span>
                           <input type='number' name='minimumProjectBudget' value={formData.minimumProjectBudget} onChange={handleChange} className={inputClasses('minimumProjectBudget')} placeholder='Minimum budget' />
+                          {errors.minimumProjectBudget && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.minimumProjectBudget}
+                            </motion.p>
+                          )}
                         </div>
                       </div>
 
@@ -524,6 +588,11 @@ const ProfileSettings = () => {
                             className={inputClasses('yearsOfExperience')}
                             placeholder='Years of experience'
                           />
+                          {errors.yearsOfExperience && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.yearsOfExperience}
+                            </motion.p>
+                          )}
                         </div>
                       </div>
 
@@ -597,6 +666,11 @@ const ProfileSettings = () => {
                             rows='3'
                             placeholder='Landing pages, React dashboards, API integrations, design system work'
                           />
+                          {errors.servicesOffered && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.servicesOffered}
+                            </motion.p>
+                          )}
                         </div>
                       </div>
 
@@ -750,11 +824,18 @@ const ProfileSettings = () => {
                         { name: 'upworkProfile', placeholder: 'Upwork Profile URL' },
                         { name: 'fiverrProfile', placeholder: 'Fiverr Profile URL' }
                       ].map((platform) => (
-                        <div key={platform.name} className='relative'>
-                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                            <FaBriefcase />
-                          </span>
-                          <input type='url' name={platform.name} value={formData[platform.name]} onChange={handleChange} className={inputClasses(platform.name)} placeholder={platform.placeholder} />
+                        <div key={platform.name}>
+                          <div className='relative'>
+                            <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                              <FaBriefcase />
+                            </span>
+                            <input type='url' name={platform.name} value={formData[platform.name]} onChange={handleChange} className={inputClasses(platform.name)} placeholder={platform.placeholder} />
+                          </div>
+                          {errors[platform.name] && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors[platform.name]}
+                            </motion.p>
+                          )}
                         </div>
                       ))}
                     </div>
