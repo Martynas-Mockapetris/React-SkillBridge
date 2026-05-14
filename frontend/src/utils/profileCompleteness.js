@@ -2,16 +2,23 @@ export const PROFILE_COMPLETENESS_RULES = [
   { key: 'firstName', label: 'First name', weight: 1, required: true },
   { key: 'lastName', label: 'Last name', weight: 1, required: true },
   { key: 'email', label: 'Email', weight: 2, required: true },
+  { key: 'headline', label: 'Professional headline', weight: 2, required: true },
   { key: 'phone', label: 'Phone number', weight: 1, required: false },
   { key: 'location', label: 'Location', weight: 1, required: false },
+  { key: 'timezone', label: 'Timezone', weight: 1, required: false },
   { key: 'skills', label: 'Skills', weight: 2, required: true },
   { key: 'bio', label: 'Bio', weight: 2, required: true },
+  { key: 'servicesOffered', label: 'Services offered', weight: 2, required: true },
+  { key: 'tools', label: 'Tools and stack', weight: 1, required: false },
+  { key: 'industries', label: 'Industries', weight: 1, required: false },
+  { key: 'languages', label: 'Languages', weight: 1, required: false },
+  { key: 'serviceCategories', label: 'Service categories', weight: 1, required: false },
+  { key: 'availabilityDetails', label: 'Availability details', weight: 1, required: false },
   { key: 'profilePicture', label: 'Profile picture', weight: 1, required: false },
   { key: 'website', label: 'Website', weight: 1, required: false },
   { key: 'github', label: 'GitHub profile', weight: 1, required: false },
   { key: 'linkedin', label: 'LinkedIn profile', weight: 1, required: false },
-  { key: 'languages', label: 'Languages', weight: 1, required: false },
-  { key: 'serviceCategories', label: 'Service categories', weight: 1, required: false }
+  { key: 'preferredEngagements', label: 'Preferred engagements', weight: 1, required: false }
 ]
 
 const hasValue = (value) => {
