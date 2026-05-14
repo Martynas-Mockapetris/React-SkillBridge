@@ -14,6 +14,24 @@ const initialFormState = {
   location: '',
   skills: '',
   bio: '',
+  headline: '',
+  availabilityStatus: 'available',
+  profileVisibility: 'public',
+  responseTime: 'within_24_hours',
+  servicesOffered: '',
+  tools: '',
+  workPreference: 'flexible',
+  yearsOfExperience: '',
+  minimumProjectBudget: '',
+  preferredProjectSize: 'flexible',
+  preferredEngagements: '',
+  timezone: '',
+  availabilityDetails: '',
+  industries: '',
+  showLocationPublic: true,
+  showHourlyRate: true,
+  allowDirectMessages: true,
+  allowProjectInvites: true,
   website: '',
   github: '',
   linkedin: '',
@@ -54,6 +72,24 @@ const ProfileSettings = () => {
       location: user.location || '',
       skills: user.skills || '',
       bio: user.bio || '',
+      headline: user.headline || '',
+      availabilityStatus: user.availabilityStatus || 'available',
+      profileVisibility: user.profileVisibility || 'public',
+      responseTime: user.responseTime || 'within_24_hours',
+      servicesOffered: user.servicesOffered || '',
+      tools: user.tools || '',
+      workPreference: user.workPreference || 'flexible',
+      yearsOfExperience: user.yearsOfExperience ?? '',
+      minimumProjectBudget: user.minimumProjectBudget ?? '',
+      preferredProjectSize: user.preferredProjectSize || 'flexible',
+      preferredEngagements: Array.isArray(user.preferredEngagements) ? user.preferredEngagements.join(', ') : '',
+      timezone: user.timezone || '',
+      availabilityDetails: user.availabilityDetails || '',
+      industries: user.industries || '',
+      showLocationPublic: user.showLocationPublic ?? true,
+      showHourlyRate: user.showHourlyRate ?? true,
+      allowDirectMessages: user.allowDirectMessages ?? true,
+      allowProjectInvites: user.allowProjectInvites ?? true,
       website: user.website || '',
       github: user.github || '',
       linkedin: user.linkedin || '',
@@ -85,10 +121,10 @@ const ProfileSettings = () => {
 
   // Handle form field changes
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
   }
 
@@ -151,6 +187,27 @@ const ProfileSettings = () => {
           location: formData.location,
           skills: formData.skills,
           bio: formData.bio,
+          headline: formData.headline,
+          availabilityStatus: formData.availabilityStatus,
+          profileVisibility: formData.profileVisibility,
+          responseTime: formData.responseTime,
+          servicesOffered: formData.servicesOffered,
+          tools: formData.tools,
+          workPreference: formData.workPreference,
+          yearsOfExperience: formData.yearsOfExperience === '' ? undefined : Number(formData.yearsOfExperience),
+          minimumProjectBudget: formData.minimumProjectBudget === '' ? undefined : Number(formData.minimumProjectBudget),
+          preferredProjectSize: formData.preferredProjectSize,
+          preferredEngagements: formData.preferredEngagements
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean),
+          timezone: formData.timezone,
+          availabilityDetails: formData.availabilityDetails,
+          industries: formData.industries,
+          showLocationPublic: formData.showLocationPublic,
+          showHourlyRate: formData.showHourlyRate,
+          allowDirectMessages: formData.allowDirectMessages,
+          allowProjectInvites: formData.allowProjectInvites,
           website: formData.website,
           github: formData.github,
           linkedin: formData.linkedin,
@@ -214,6 +271,8 @@ const ProfileSettings = () => {
     dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
     focus:outline-none focus:ring-2 focus:ring-accent/50
   `
+  const toggleClasses = 'h-4 w-4 rounded border-primary/20 text-accent focus:ring-accent/50 dark:border-light/20 dark:bg-transparent'
+
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       {isLoading ? (
@@ -296,6 +355,16 @@ const ProfileSettings = () => {
                       </div>
                     </div>
                   ))}
+
+                  <div>
+                    <label className='block mb-2 theme-text-secondary text-sm'>Professional Headline</label>
+                    <div className='relative'>
+                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                        <FaBriefcase />
+                      </span>
+                      <input type='text' name='headline' value={formData.headline} onChange={handleChange} className={inputClasses('headline')} placeholder='Frontend developer focused on fast, polished client work' />
+                    </div>
+                  </div>
 
                   <div>
                     <label className='block mb-2 theme-text-secondary text-sm'>Phone Number</label>
@@ -408,13 +477,21 @@ const ProfileSettings = () => {
                 <p className='text-sm theme-text-secondary mb-4'>Describe how you work, what you offer, and the experience clients can expect from you.</p>
                 <div className='grid gap-6'>
                   <div>
-                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Rates & Experience</p>
+                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Rates, Availability & Experience</p>
                     <div className='grid md:grid-cols-2 gap-4'>
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Hourly Rate</label>
                         <div className='relative'>
                           <span className='absolute left-3 top-3 text-accent'>€</span>
                           <input type='number' name='hourlyRate' value={formData.hourlyRate} onChange={handleChange} className={inputClasses('hourlyRate')} placeholder='€ per hour' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Minimum Project Budget</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-3 text-accent'>€</span>
+                          <input type='number' name='minimumProjectBudget' value={formData.minimumProjectBudget} onChange={handleChange} className={inputClasses('minimumProjectBudget')} placeholder='Minimum budget' />
                         </div>
                       </div>
 
@@ -431,25 +508,237 @@ const ProfileSettings = () => {
                           </select>
                         </div>
                       </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Years of Experience</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaStar />
+                          </span>
+                          <input
+                            type='number'
+                            min='0'
+                            name='yearsOfExperience'
+                            value={formData.yearsOfExperience}
+                            onChange={handleChange}
+                            className={inputClasses('yearsOfExperience')}
+                            placeholder='Years of experience'
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Availability Status</label>
+                        <select name='availabilityStatus' value={formData.availabilityStatus} onChange={handleChange} className={inputClasses('availabilityStatus')}>
+                          <option value='available'>Available</option>
+                          <option value='limited'>Limited availability</option>
+                          <option value='unavailable'>Unavailable</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Response Time</label>
+                        <select name='responseTime' value={formData.responseTime} onChange={handleChange} className={inputClasses('responseTime')}>
+                          <option value='within_24_hours'>Within 24 hours</option>
+                          <option value='within_3_days'>Within 3 days</option>
+                          <option value='within_week'>Within a week</option>
+                          <option value='flexible'>Flexible</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Work Preference</label>
+                        <select name='workPreference' value={formData.workPreference} onChange={handleChange} className={inputClasses('workPreference')}>
+                          <option value='remote'>Remote</option>
+                          <option value='hybrid'>Hybrid</option>
+                          <option value='onsite'>On-site</option>
+                          <option value='flexible'>Flexible</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Preferred Project Size</label>
+                        <select name='preferredProjectSize' value={formData.preferredProjectSize} onChange={handleChange} className={inputClasses('preferredProjectSize')}>
+                          <option value='small'>Small</option>
+                          <option value='medium'>Medium</option>
+                          <option value='large'>Large</option>
+                          <option value='ongoing'>Ongoing</option>
+                          <option value='flexible'>Flexible</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Timezone</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaGlobe />
+                          </span>
+                          <input type='text' name='timezone' value={formData.timezone} onChange={handleChange} className={inputClasses('timezone')} placeholder='Europe/Vilnius' />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
-                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Capabilities & Services</p>
+                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Capabilities, Services & Focus</p>
 
-                    {[
-                      { name: 'languages', label: 'Languages', icon: <FaLanguage />, placeholder: 'English (Native), Spanish (Fluent), etc.' },
-                      { name: 'certifications', label: 'Certifications', icon: <FaCertificate />, placeholder: 'List your relevant certifications' },
-                      { name: 'serviceCategories', label: 'Service Categories', icon: <FaList />, placeholder: 'Web Development, Mobile Apps, UI/UX Design, etc.' }
-                    ].map((field) => (
-                      <div key={field.name}>
-                        <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
+                    <div className='grid gap-4'>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Services Offered</label>
                         <div className='relative'>
-                          <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
-                          <textarea name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} rows='2' placeholder={field.placeholder} />
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaBriefcase />
+                          </span>
+                          <textarea
+                            name='servicesOffered'
+                            value={formData.servicesOffered}
+                            onChange={handleChange}
+                            className={inputClasses('servicesOffered')}
+                            rows='3'
+                            placeholder='Landing pages, React dashboards, API integrations, design system work'
+                          />
                         </div>
                       </div>
-                    ))}
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Tools & Stack</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaTools />
+                          </span>
+                          <textarea name='tools' value={formData.tools} onChange={handleChange} className={inputClasses('tools')} rows='2' placeholder='React, Node.js, MongoDB, Figma, Tailwind CSS' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Preferred Engagements</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaList />
+                          </span>
+                          <textarea
+                            name='preferredEngagements'
+                            value={formData.preferredEngagements}
+                            onChange={handleChange}
+                            className={inputClasses('preferredEngagements')}
+                            rows='2'
+                            placeholder='One-off builds, long-term support, product iterations'
+                          />
+                        </div>
+                        <p className='text-xs theme-text-muted mt-2'>Separate engagement types with commas.</p>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Industries</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaBook />
+                          </span>
+                          <textarea name='industries' value={formData.industries} onChange={handleChange} className={inputClasses('industries')} rows='2' placeholder='SaaS, e-commerce, education, hospitality' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Availability Details</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaMapMarkerAlt />
+                          </span>
+                          <textarea
+                            name='availabilityDetails'
+                            value={formData.availabilityDetails}
+                            onChange={handleChange}
+                            className={inputClasses('availabilityDetails')}
+                            rows='3'
+                            placeholder='Available for new work from June, best for async collaboration, weekday calls preferred'
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Languages</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaLanguage />
+                          </span>
+                          <textarea name='languages' value={formData.languages} onChange={handleChange} className={inputClasses('languages')} rows='2' placeholder='English (Native), Spanish (Fluent), etc.' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Certifications</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaCertificate />
+                          </span>
+                          <textarea name='certifications' value={formData.certifications} onChange={handleChange} className={inputClasses('certifications')} rows='2' placeholder='List your relevant certifications' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Service Categories</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaList />
+                          </span>
+                          <textarea
+                            name='serviceCategories'
+                            value={formData.serviceCategories}
+                            onChange={handleChange}
+                            className={inputClasses('serviceCategories')}
+                            rows='2'
+                            placeholder='Web Development, Mobile Apps, UI/UX Design, etc.'
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
+                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Visibility & Contact Preferences</p>
+
+                    <div className='grid md:grid-cols-2 gap-4'>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Profile Visibility</label>
+                        <select name='profileVisibility' value={formData.profileVisibility} onChange={handleChange} className={inputClasses('profileVisibility')}>
+                          <option value='public'>Public</option>
+                          <option value='members'>Members only</option>
+                          <option value='private'>Private</option>
+                        </select>
+                      </div>
+
+                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                        <input type='checkbox' name='showLocationPublic' checked={formData.showLocationPublic} onChange={handleChange} className={toggleClasses} />
+                        <span>
+                          <span className='block text-sm theme-text'>Show location publicly</span>
+                          <span className='block text-xs theme-text-muted'>Let visitors see your location on your profile.</span>
+                        </span>
+                      </label>
+
+                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                        <input type='checkbox' name='showHourlyRate' checked={formData.showHourlyRate} onChange={handleChange} className={toggleClasses} />
+                        <span>
+                          <span className='block text-sm theme-text'>Show hourly rate publicly</span>
+                          <span className='block text-xs theme-text-muted'>Display your rate as part of your public positioning.</span>
+                        </span>
+                      </label>
+
+                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                        <input type='checkbox' name='allowDirectMessages' checked={formData.allowDirectMessages} onChange={handleChange} className={toggleClasses} />
+                        <span>
+                          <span className='block text-sm theme-text'>Allow direct messages</span>
+                          <span className='block text-xs theme-text-muted'>Clients can contact you directly from the platform.</span>
+                        </span>
+                      </label>
+
+                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                        <input type='checkbox' name='allowProjectInvites' checked={formData.allowProjectInvites} onChange={handleChange} className={toggleClasses} />
+                        <span>
+                          <span className='block text-sm theme-text'>Allow project invites</span>
+                          <span className='block text-xs theme-text-muted'>Clients can invite you to relevant opportunities.</span>
+                        </span>
+                      </label>
+                    </div>
                   </div>
 
                   <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
