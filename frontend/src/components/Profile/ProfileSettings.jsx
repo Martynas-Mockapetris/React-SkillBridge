@@ -577,8 +577,11 @@ const ProfileSettings = () => {
                 <h3 className='text-xl font-semibold theme-text mb-2'>Freelancer Details</h3>
                 <p className='text-sm theme-text-secondary mb-4'>Describe how you work, what you offer, and the experience clients can expect from you.</p>
                 <div className='grid gap-6'>
-                  <div>
-                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Rates, Availability & Experience</p>
+                  <div className='p-5 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Rates, Availability & Experience</p>
+                      <p className='text-sm theme-text-secondary'>Set your pricing, availability, and preferred working style so clients can understand fit quickly.</p>
+                    </div>
                     <div className='grid md:grid-cols-2 gap-4'>
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Hourly Rate</label>
@@ -730,8 +733,11 @@ const ProfileSettings = () => {
                     </div>
                   </div>
 
-                  <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
-                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Capabilities, Services & Focus</p>
+                  <div className='p-5 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Capabilities, Services & Focus</p>
+                      <p className='text-sm theme-text-secondary'>Describe what you deliver, the tools you use, and the kinds of work you want to attract.</p>
+                    </div>
 
                     <div className='grid gap-4'>
                       <div>
@@ -850,10 +856,13 @@ const ProfileSettings = () => {
                     </div>
                   </div>
 
-                  <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
-                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>Visibility & Contact Preferences</p>
+                  <div className='p-5 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Visibility & Contact Preferences</p>
+                      <p className='text-sm theme-text-secondary'>Control what visitors can see and how clients are allowed to reach you.</p>
+                    </div>
 
-                    <div className='grid md:grid-cols-2 gap-4'>
+                    <div className='space-y-4'>
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Profile Visibility</label>
                         <div className={selectShellClasses('profileVisibility')}>
@@ -871,44 +880,48 @@ const ProfileSettings = () => {
                         </div>
                       </div>
 
-                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
-                        <input type='checkbox' name='showLocationPublic' checked={formData.showLocationPublic} onChange={handleChange} className={toggleClasses} />
-                        <span>
-                          <span className='block text-sm theme-text'>Show location publicly</span>
-                          <span className='block text-xs theme-text-muted'>Let visitors see your location on your profile.</span>
-                        </span>
-                      </label>
+                      <div className='grid md:grid-cols-2 gap-4'>
+                        <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                          <input type='checkbox' name='showLocationPublic' checked={formData.showLocationPublic} onChange={handleChange} className={toggleClasses} />
+                          <span>
+                            <span className='block text-sm theme-text'>Show location publicly</span>
+                            <span className='block text-xs theme-text-muted'>Let visitors see your location on your profile.</span>
+                          </span>
+                        </label>
 
-                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
-                        <input type='checkbox' name='showHourlyRate' checked={formData.showHourlyRate} onChange={handleChange} className={toggleClasses} />
-                        <span>
-                          <span className='block text-sm theme-text'>Show hourly rate publicly</span>
-                          <span className='block text-xs theme-text-muted'>Display your rate as part of your public positioning.</span>
-                        </span>
-                      </label>
+                        <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                          <input type='checkbox' name='showHourlyRate' checked={formData.showHourlyRate} onChange={handleChange} className={toggleClasses} />
+                          <span>
+                            <span className='block text-sm theme-text'>Show hourly rate publicly</span>
+                            <span className='block text-xs theme-text-muted'>Display your rate as part of your public positioning.</span>
+                          </span>
+                        </label>
 
-                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
-                        <input type='checkbox' name='allowDirectMessages' checked={formData.allowDirectMessages} onChange={handleChange} className={toggleClasses} />
-                        <span>
-                          <span className='block text-sm theme-text'>Allow direct messages</span>
-                          <span className='block text-xs theme-text-muted'>Clients can contact you directly from the platform.</span>
-                        </span>
-                      </label>
+                        <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                          <input type='checkbox' name='allowDirectMessages' checked={formData.allowDirectMessages} onChange={handleChange} className={toggleClasses} />
+                          <span>
+                            <span className='block text-sm theme-text'>Allow direct messages</span>
+                            <span className='block text-xs theme-text-muted'>Clients can contact you directly from the platform.</span>
+                          </span>
+                        </label>
 
-                      <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
-                        <input type='checkbox' name='allowProjectInvites' checked={formData.allowProjectInvites} onChange={handleChange} className={toggleClasses} />
-                        <span>
-                          <span className='block text-sm theme-text'>Allow project invites</span>
-                          <span className='block text-xs theme-text-muted'>Clients can invite you to relevant opportunities.</span>
-                        </span>
-                      </label>
+                        <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
+                          <input type='checkbox' name='allowProjectInvites' checked={formData.allowProjectInvites} onChange={handleChange} className={toggleClasses} />
+                          <span>
+                            <span className='block text-sm theme-text'>Allow project invites</span>
+                            <span className='block text-xs theme-text-muted'>Clients can invite you to relevant opportunities.</span>
+                          </span>
+                        </label>
+                      </div>
                     </div>
                   </div>
 
-                  <div className='pt-2 border-t dark:border-light/10 border-primary/10'>
-                    <p className='text-xs uppercase tracking-wide theme-text-muted mb-4'>External Profiles</p>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Platform Links</label>
-                    <p className='text-xs theme-text-muted mb-3'>Add marketplace profiles if you want clients to see more work history or reviews.</p>
+                  <div className='p-5 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>External Profiles</p>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Platform Links</label>
+                      <p className='text-xs theme-text-muted'>Add marketplace profiles if you want clients to see more work history or reviews.</p>
+                    </div>
                     <div className='grid md:grid-cols-2 gap-4'>
                       {[
                         { name: 'upworkProfile', placeholder: 'Upwork Profile URL' },
