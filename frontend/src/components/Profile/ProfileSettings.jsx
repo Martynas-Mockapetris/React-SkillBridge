@@ -460,21 +460,6 @@ const ProfileSettings = () => {
                       )}
                     </div>
                   </div>
-
-                  <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
-                    <div className='relative'>
-                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                        <FaBook />
-                      </span>
-                      <textarea name='bio' value={formData.bio} onChange={handleChange} className={inputClasses('bio')} rows='4' placeholder='Describe yourself' />
-                      {errors.bio && (
-                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                          {errors.bio}
-                        </motion.p>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </motion.div>
 
@@ -532,6 +517,28 @@ const ProfileSettings = () => {
                         {errors.headline && (
                           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                             {errors.headline}
+                          </motion.p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaBook />
+                        </span>
+                        <textarea
+                          name='bio'
+                          value={formData.bio}
+                          onChange={handleChange}
+                          className={inputClasses('bio')}
+                          rows='4'
+                          placeholder='Briefly describe your background, strengths, and the kind of work you do best'
+                        />
+                        {errors.bio && (
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                            {errors.bio}
                           </motion.p>
                         )}
                       </div>
