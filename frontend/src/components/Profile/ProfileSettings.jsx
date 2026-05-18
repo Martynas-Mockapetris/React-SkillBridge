@@ -406,103 +406,119 @@ const ProfileSettings = () => {
               {/* Basic Information */}
               <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 h-full'>
                 <h3 className='text-xl font-semibold theme-text mb-2'>Basic Information</h3>
-                <p className='text-sm theme-text-secondary mb-4'>Add the core details people use to recognize you and understand your background quickly.</p>
-                <div className='mb-4'>
-                  <p className='text-xs uppercase tracking-wide theme-text-muted'>Identity & Contact</p>
-                </div>
-                <div className='space-y-4'>
-                  {[
-                    { name: 'fullName', label: 'Full Name', icon: <FaUser />, type: 'text', placeholder: 'Enter your full name' },
-                    {
-                      name: 'email',
-                      label: 'Email',
-                      icon: <FaEnvelope />,
-                      type: 'email',
-                      placeholder: 'Enter your email address',
-                      readOnly: true,
-                      helperText: 'Email changes require a separate verification flow and cannot be edited here.'
-                    }
-                  ].map((field) => (
-                    <div key={field.name}>
-                      <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
-                        <input
-                          type={field.type}
-                          name={field.name}
-                          value={formData[field.name]}
-                          onChange={handleChange}
-                          readOnly={field.readOnly}
-                          className={`${inputClasses(field.name)} ${field.readOnly ? 'cursor-not-allowed opacity-80' : ''}`}
-                          placeholder={field.placeholder}
-                        />
-                        {field.helperText && <p className='text-xs theme-text-muted mt-2'>{field.helperText}</p>}
-                        {errors[field.name] && (
-                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                            {errors[field.name]}
-                          </motion.p>
-                        )}
+                <p className='text-sm theme-text-secondary mb-4'>Details people use to recognize you and understand your background quickly.</p>
+                <div className='grid gap-5'>
+                  <div className='p-4 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Identity</p>
+                    </div>
+
+                    <div className='space-y-5'>
+                      <div className='flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'>
+                        <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
+
+                        <div className='flex flex-wrap items-center justify-center gap-3'>
+                          <motion.button
+                            type='button'
+                            onClick={() => {
+                              const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+                              const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
+                              setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
+                            }}
+                            className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}>
+                            <FaSyncAlt className='text-sm' />
+                            <span className='text-sm font-medium'>Generate New Avatar</span>
+                          </motion.button>
+
+                          {hasAvatarChanges && (
+                            <motion.button
+                              type='button'
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  profilePicture: savedFormData.profilePicture
+                                }))
+                              }
+                              className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors duration-300'
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}>
+                              Use Current Avatar
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Full Name</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaUser />
+                          </span>
+                          <input type='text' name='fullName' value={formData.fullName} onChange={handleChange} className={inputClasses('fullName')} placeholder='Enter your full name' />
+                          {errors.fullName && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.fullName}
+                            </motion.p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
 
-                  <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Phone Number</label>
-                    <div className='relative'>
-                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                        <FaPhone />
-                      </span>
-                      <input type='tel' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
-                      {errors.phone && (
-                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                          {errors.phone}
-                        </motion.p>
-                      )}
+                  <div className='p-4 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Contact</p>
+                      <p className='text-sm theme-text-secondary'>Show the primary ways clients or collaborators can identify and reach you.</p>
+                    </div>
+
+                    <div className='space-y-4'>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Email</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaEnvelope />
+                          </span>
+                          <input
+                            type='email'
+                            name='email'
+                            value={formData.email}
+                            onChange={handleChange}
+                            readOnly
+                            className={`${inputClasses('email')} cursor-not-allowed opacity-80`}
+                            placeholder='Enter your email address'
+                          />
+                          <p className='text-xs theme-text-muted mt-2'>Email changes require a separate verification flow and cannot be edited here.</p>
+                          {errors.email && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.email}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Phone Number</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaPhone />
+                          </span>
+                          <input type='tel' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
+                          {errors.phone && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.phone}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Right Column: Profile Picture and Social Links */}
+              {/* Right Column: Public Presence */}
               <motion.div className='flex flex-col gap-6 h-full' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex flex-col items-center text-center'>
-                  <h3 className='text-lg font-semibold theme-text mb-2'>Profile Picture</h3>
-                  <p className='text-sm theme-text-secondary mb-4'>Choose an avatar that helps clients recognize your profile quickly.</p>
-                  <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
-
-                  <div className='flex flex-wrap items-center justify-center gap-3'>
-                    <motion.button
-                      type='button'
-                      onClick={() => {
-                        const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-                        const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
-                        setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
-                      }}
-                      className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}>
-                      <FaSyncAlt className='text-sm' />
-                      <span className='text-sm font-medium'>Generate New Avatar</span>
-                    </motion.button>
-
-                    {hasAvatarChanges && (
-                      <motion.button
-                        type='button'
-                        onClick={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            profilePicture: savedFormData.profilePicture
-                          }))
-                        }
-                        className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors duration-300'
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}>
-                        Use Current Avatar
-                      </motion.button>
-                    )}
-                  </div>
-                </motion.div>
-
                 <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex-1'>
                   <h3 className='text-xl font-semibold theme-text mb-2'>Public Presence</h3>
                   <p className='text-sm theme-text-secondary mb-4'>Shape how people discover you, review your work, and understand your public profile at a glance.</p>
