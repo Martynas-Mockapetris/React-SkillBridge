@@ -306,8 +306,11 @@ const ProfileSettings = () => {
     } else {
       setFormData(initialFormState)
       setSavedFormData(initialFormState)
+      setIsLoading(false)
     }
+
     setErrors({})
+    setIsSubmitting(false)
     toast.info('Form has been reset')
   }
 
