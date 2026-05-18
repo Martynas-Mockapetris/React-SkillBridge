@@ -1,6 +1,26 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaSyncAlt } from 'react-icons/fa'
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaTools,
+  FaBook,
+  FaGlobe,
+  FaGithub,
+  FaLinkedin,
+  FaTwitter,
+  FaStar,
+  FaLanguage,
+  FaCertificate,
+  FaList,
+  FaBriefcase,
+  FaSyncAlt,
+  FaChevronDown,
+  FaClock,
+  FaEye
+} from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useAuth } from '../../context/AuthContext'
 import LoadingSpinner from '../shared/LoadingSpinner'
@@ -324,6 +344,9 @@ const ProfileSettings = () => {
     dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
     focus:outline-none focus:ring-2 focus:ring-accent/50
   `
+  const selectClasses = (errorField) => `${inputClasses(errorField)} theme-select`
+  const selectIconClasses = 'absolute left-3 top-4 text-accent text-[16px] pointer-events-none'
+  const selectChevronClasses = 'absolute right-3 top-4 text-accent text-[14px] pointer-events-none'
   const toggleClasses = 'h-4 w-4 rounded border-primary/20 text-accent focus:ring-accent/50 dark:border-light/20 dark:bg-transparent'
 
   return (
@@ -581,14 +604,17 @@ const ProfileSettings = () => {
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
                         <div className='relative'>
-                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <span className={selectIconClasses}>
                             <FaStar />
                           </span>
-                          <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={inputClasses('experienceLevel')}>
+                          <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={selectClasses('experienceLevel')}>
                             <option value='entry'>Entry Level</option>
                             <option value='intermediate'>Intermediate</option>
                             <option value='expert'>Expert</option>
                           </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
                         </div>
                       </div>
 
@@ -617,42 +643,74 @@ const ProfileSettings = () => {
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Availability Status</label>
-                        <select name='availabilityStatus' value={formData.availabilityStatus} onChange={handleChange} className={inputClasses('availabilityStatus')}>
-                          <option value='available'>Available</option>
-                          <option value='limited'>Limited availability</option>
-                          <option value='unavailable'>Unavailable</option>
-                        </select>
+                        <div className='relative'>
+                          <span className={selectIconClasses}>
+                            <FaBriefcase />
+                          </span>
+                          <select name='availabilityStatus' value={formData.availabilityStatus} onChange={handleChange} className={selectClasses('availabilityStatus')}>
+                            <option value='available'>Available</option>
+                            <option value='limited'>Limited availability</option>
+                            <option value='unavailable'>Unavailable</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
                       </div>
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Response Time</label>
-                        <select name='responseTime' value={formData.responseTime} onChange={handleChange} className={inputClasses('responseTime')}>
-                          <option value='within_24_hours'>Within 24 hours</option>
-                          <option value='within_3_days'>Within 3 days</option>
-                          <option value='within_week'>Within a week</option>
-                          <option value='flexible'>Flexible</option>
-                        </select>
+                        <div className='relative'>
+                          <span className={selectIconClasses}>
+                            <FaClock />
+                          </span>
+                          <select name='responseTime' value={formData.responseTime} onChange={handleChange} className={selectClasses('responseTime')}>
+                            <option value='within_24_hours'>Within 24 hours</option>
+                            <option value='within_3_days'>Within 3 days</option>
+                            <option value='within_week'>Within a week</option>
+                            <option value='flexible'>Flexible</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
                       </div>
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Work Preference</label>
-                        <select name='workPreference' value={formData.workPreference} onChange={handleChange} className={inputClasses('workPreference')}>
-                          <option value='remote'>Remote</option>
-                          <option value='hybrid'>Hybrid</option>
-                          <option value='onsite'>On-site</option>
-                          <option value='flexible'>Flexible</option>
-                        </select>
+                        <div className='relative'>
+                          <span className={selectIconClasses}>
+                            <FaMapMarkerAlt />
+                          </span>
+                          <select name='workPreference' value={formData.workPreference} onChange={handleChange} className={selectClasses('workPreference')}>
+                            <option value='remote'>Remote</option>
+                            <option value='hybrid'>Hybrid</option>
+                            <option value='onsite'>On-site</option>
+                            <option value='flexible'>Flexible</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
                       </div>
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Preferred Project Size</label>
-                        <select name='preferredProjectSize' value={formData.preferredProjectSize} onChange={handleChange} className={inputClasses('preferredProjectSize')}>
-                          <option value='small'>Small</option>
-                          <option value='medium'>Medium</option>
-                          <option value='large'>Large</option>
-                          <option value='ongoing'>Ongoing</option>
-                          <option value='flexible'>Flexible</option>
-                        </select>
+                        <div className='relative'>
+                          <span className={selectIconClasses}>
+                            <FaList />
+                          </span>
+                          <select name='preferredProjectSize' value={formData.preferredProjectSize} onChange={handleChange} className={selectClasses('preferredProjectSize')}>
+                            <option value='small'>Small</option>
+                            <option value='medium'>Medium</option>
+                            <option value='large'>Large</option>
+                            <option value='ongoing'>Ongoing</option>
+                            <option value='flexible'>Flexible</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
                       </div>
 
                       <div>
@@ -793,11 +851,19 @@ const ProfileSettings = () => {
                     <div className='grid md:grid-cols-2 gap-4'>
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Profile Visibility</label>
-                        <select name='profileVisibility' value={formData.profileVisibility} onChange={handleChange} className={inputClasses('profileVisibility')}>
-                          <option value='public'>Public</option>
-                          <option value='members'>Members only</option>
-                          <option value='private'>Private</option>
-                        </select>
+                        <div className='relative'>
+                          <span className={selectIconClasses}>
+                            <FaEye />
+                          </span>
+                          <select name='profileVisibility' value={formData.profileVisibility} onChange={handleChange} className={selectClasses('profileVisibility')}>
+                            <option value='public'>Public</option>
+                            <option value='members'>Members only</option>
+                            <option value='private'>Private</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
                       </div>
 
                       <label className='flex items-start gap-3 p-4 rounded-lg border dark:border-light/10 border-primary/10'>
