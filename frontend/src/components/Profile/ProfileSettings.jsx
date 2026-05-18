@@ -462,22 +462,6 @@ const ProfileSettings = () => {
                   </div>
 
                   <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Skills</label>
-
-                    <div className='relative'>
-                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                        <FaTools />
-                      </span>
-                      <textarea name='skills' value={formData.skills} onChange={handleChange} className={inputClasses('skills')} rows='3' placeholder='Separate skills with commas' />
-                      {errors.skills && (
-                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                          {errors.skills}
-                        </motion.p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
                     <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
                     <div className='relative'>
                       <span className='absolute left-3 top-4 text-accent text-[16px]'>
@@ -809,6 +793,21 @@ const ProfileSettings = () => {
                           {errors.servicesOffered && (
                             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                               {errors.servicesOffered}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Skills</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaTools />
+                          </span>
+                          <textarea name='skills' value={formData.skills} onChange={handleChange} className={inputClasses('skills')} rows='3' placeholder='JavaScript, React, UI implementation, API integration' />
+                          {errors.skills && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.skills}
                             </motion.p>
                           )}
                         </div>
