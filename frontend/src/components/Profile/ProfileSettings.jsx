@@ -747,6 +747,41 @@ const ProfileSettings = () => {
                           </span>
                         </div>
                       </div>
+
+                      <div className='md:col-span-2'>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Preferred Engagements</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaList />
+                          </span>
+                          <textarea
+                            name='preferredEngagements'
+                            value={formData.preferredEngagements}
+                            onChange={handleChange}
+                            className={inputClasses('preferredEngagements')}
+                            rows='2'
+                            placeholder='One-off builds, long-term support, product iterations'
+                          />
+                        </div>
+                        <p className='text-xs theme-text-muted mt-2'>Separate engagement types with commas.</p>
+                      </div>
+
+                      <div className='md:col-span-2'>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Availability Details</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaMapMarkerAlt />
+                          </span>
+                          <textarea
+                            name='availabilityDetails'
+                            value={formData.availabilityDetails}
+                            onChange={handleChange}
+                            className={inputClasses('availabilityDetails')}
+                            rows='3'
+                            placeholder='Available for new work from June, best for async collaboration, weekday calls preferred'
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -790,47 +825,12 @@ const ProfileSettings = () => {
                       </div>
 
                       <div>
-                        <label className='block mb-2 theme-text-secondary text-sm'>Preferred Engagements</label>
-                        <div className='relative'>
-                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                            <FaList />
-                          </span>
-                          <textarea
-                            name='preferredEngagements'
-                            value={formData.preferredEngagements}
-                            onChange={handleChange}
-                            className={inputClasses('preferredEngagements')}
-                            rows='2'
-                            placeholder='One-off builds, long-term support, product iterations'
-                          />
-                        </div>
-                        <p className='text-xs theme-text-muted mt-2'>Separate engagement types with commas.</p>
-                      </div>
-
-                      <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Industries</label>
                         <div className='relative'>
                           <span className='absolute left-3 top-4 text-accent text-[16px]'>
                             <FaBook />
                           </span>
                           <textarea name='industries' value={formData.industries} onChange={handleChange} className={inputClasses('industries')} rows='2' placeholder='SaaS, e-commerce, education, hospitality' />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className='block mb-2 theme-text-secondary text-sm'>Availability Details</label>
-                        <div className='relative'>
-                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                            <FaMapMarkerAlt />
-                          </span>
-                          <textarea
-                            name='availabilityDetails'
-                            value={formData.availabilityDetails}
-                            onChange={handleChange}
-                            className={inputClasses('availabilityDetails')}
-                            rows='3'
-                            placeholder='Available for new work from June, best for async collaboration, weekday calls preferred'
-                          />
                         </div>
                       </div>
 
