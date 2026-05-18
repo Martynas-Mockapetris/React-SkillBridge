@@ -247,7 +247,7 @@ const ProfileSettings = () => {
           linkedin: formData.linkedin,
           twitter: formData.twitter,
           profilePicture: formData.profilePicture,
-          hourlyRate: formData.hourlyRate ? Number(formData.hourlyRate) : undefined,
+          hourlyRate: formData.hourlyRate === '' ? undefined : Number(formData.hourlyRate),
           experienceLevel: formData.experienceLevel,
           languages: formData.languages,
           certifications: formData.certifications,
