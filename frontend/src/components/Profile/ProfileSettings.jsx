@@ -421,8 +421,7 @@ const ProfileSettings = () => {
                       placeholder: 'Enter your email address',
                       readOnly: true,
                       helperText: 'Email changes require a separate verification flow and cannot be edited here.'
-                    },
-                    { name: 'location', label: 'Location', icon: <FaMapMarkerAlt />, type: 'text', placeholder: 'Enter your location' }
+                    }
                   ].map((field) => (
                     <div key={field.name}>
                       <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
@@ -446,21 +445,6 @@ const ProfileSettings = () => {
                       </div>
                     </div>
                   ))}
-
-                  <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Professional Headline</label>
-                    <div className='relative'>
-                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                        <FaBriefcase />
-                      </span>
-                      <input type='text' name='headline' value={formData.headline} onChange={handleChange} className={inputClasses('headline')} placeholder='Frontend developer focused on fast, polished client work' />
-                      {errors.headline && (
-                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                          {errors.headline}
-                        </motion.p>
-                      )}
-                    </div>
-                  </div>
 
                   <div>
                     <label className='block mb-2 theme-text-secondary text-sm'>Phone Number</label>
@@ -554,6 +538,39 @@ const ProfileSettings = () => {
                   <h3 className='text-xl font-semibold theme-text mb-2'>Public Presence</h3>
                   <p className='text-sm theme-text-secondary mb-4'>Shape how people discover you, review your work, and understand your public profile at a glance.</p>
                   <div className='space-y-4'>
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Professional Headline</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaBriefcase />
+                        </span>
+                        <input type='text' name='headline' value={formData.headline} onChange={handleChange} className={inputClasses('headline')} placeholder='Frontend developer focused on fast, polished client work' />
+                        {errors.headline && (
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                            {errors.headline}
+                          </motion.p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Location</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaMapMarkerAlt />
+                        </span>
+                        <input type='text' name='location' value={formData.location} onChange={handleChange} className={inputClasses('location')} placeholder='Enter your location' />
+                      </div>
+                    </div>
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Timezone</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaGlobe />
+                        </span>
+                        <input type='text' name='timezone' value={formData.timezone} onChange={handleChange} className={inputClasses('timezone')} placeholder='Europe/Vilnius' />
+                      </div>
+                    </div>
                     {[
                       { name: 'website', label: 'Portfolio', icon: <FaGlobe />, placeholder: 'Enter your portfolio URL' },
                       { name: 'github', label: 'GitHub', icon: <FaGithub />, placeholder: 'Enter your GitHub profile' },
@@ -728,16 +745,6 @@ const ProfileSettings = () => {
                           <span className={selectChevronClasses}>
                             <FaChevronDown />
                           </span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className='block mb-2 theme-text-secondary text-sm'>Timezone</label>
-                        <div className='relative'>
-                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                            <FaGlobe />
-                          </span>
-                          <input type='text' name='timezone' value={formData.timezone} onChange={handleChange} className={inputClasses('timezone')} placeholder='Europe/Vilnius' />
                         </div>
                       </div>
                     </div>
