@@ -607,6 +607,71 @@ const ProfileSettings = () => {
                 className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.65 }}>
+                <h3 className='text-xl font-semibold theme-text mb-2'>Visibility & Contact Preferences</h3>
+                <p className='text-sm theme-text-secondary mb-4'>Control what visitors can see and how clients are allowed to reach you.</p>
+
+                <div className='grid gap-5'>
+                  <div>
+                    <label className='block mb-2 theme-text-secondary text-sm'>Profile Visibility</label>
+                    <div className={selectShellClasses('profileVisibility')}>
+                      <span className={selectIconClasses}>
+                        <FaEye />
+                      </span>
+                      <select name='profileVisibility' value={formData.profileVisibility} onChange={handleChange} className={selectFieldClasses}>
+                        <option value='public'>Public</option>
+                        <option value='members'>Members only</option>
+                        <option value='private'>Private</option>
+                      </select>
+                      <span className={selectChevronClasses}>
+                        <FaChevronDown />
+                      </span>
+                    </div>
+                    <p className='text-xs theme-text-muted mt-2'>Choose who can view your full profile details on the platform.</p>
+                  </div>
+
+                  <div className='grid md:grid-cols-2 gap-4'>
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='showLocationPublic' checked={formData.showLocationPublic} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Show location publicly</p>
+                        <p className='text-xs theme-text-muted mt-1'>Let visitors see your location on the public profile.</p>
+                      </div>
+                    </label>
+
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='showHourlyRate' checked={formData.showHourlyRate} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Show hourly rate</p>
+                        <p className='text-xs theme-text-muted mt-1'>Display your hourly pricing to help clients evaluate fit faster.</p>
+                      </div>
+                    </label>
+
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='allowDirectMessages' checked={formData.allowDirectMessages} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Allow direct messages</p>
+                        <p className='text-xs theme-text-muted mt-1'>Let clients contact you directly from your profile.</p>
+                      </div>
+                    </label>
+
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='allowProjectInvites' checked={formData.allowProjectInvites} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Allow project invites</p>
+                        <p className='text-xs theme-text-muted mt-1'>Allow clients to invite you to relevant opportunities.</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {showFreelancerSection && (
+              <motion.div
+                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}>
                 <h3 className='text-xl font-semibold theme-text mb-2'>Professional Settings</h3>
                 <p className='text-sm theme-text-secondary mb-4'>Organize how you present your services, work preferences, visibility, and external professional presence.</p>
@@ -890,117 +955,6 @@ const ProfileSettings = () => {
                             rows='2'
                             placeholder='Web Development, Mobile Apps, UI/UX Design, etc.'
                           />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className='p-5 rounded-xl theme-input border theme-border'>
-                    <div className='mb-4'>
-                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Visibility & Contact Preferences</p>
-                      <p className='text-sm theme-text-secondary'>Control what visitors can see and how clients are allowed to reach you.</p>
-                    </div>
-
-                    <div className='grid gap-5'>
-                      <div className='p-4 rounded-xl theme-input border theme-border'>
-                        <div className='mb-4'>
-                          <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Profile Summary</p>
-                          <p className='text-sm theme-text-secondary'>Lead with the short public description people will notice first when they open your profile.</p>
-                        </div>
-
-                        <div className='space-y-4'>
-                          <div>
-                            <label className='block mb-2 theme-text-secondary text-sm'>Professional Headline</label>
-                            <div className='relative'>
-                              <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                                <FaBriefcase />
-                              </span>
-                              <input
-                                type='text'
-                                name='headline'
-                                value={formData.headline}
-                                onChange={handleChange}
-                                className={inputClasses('headline')}
-                                placeholder='Frontend developer focused on fast, polished client work'
-                              />
-                              {errors.headline && (
-                                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                                  {errors.headline}
-                                </motion.p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
-                            <div className='relative'>
-                              <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                                <FaBook />
-                              </span>
-                              <textarea
-                                name='bio'
-                                value={formData.bio}
-                                onChange={handleChange}
-                                className={inputClasses('bio')}
-                                rows='4'
-                                placeholder='Briefly describe your background, strengths, and the kind of work you do best'
-                              />
-                              {errors.bio && (
-                                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                                  {errors.bio}
-                                </motion.p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className='p-4 rounded-xl theme-input border theme-border'>
-                        <div className='mb-4'>
-                          <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Public Details & Links</p>
-                          <p className='text-sm theme-text-secondary'>Add the practical details and external destinations visitors use to evaluate and contact you.</p>
-                        </div>
-
-                        <div className='space-y-4'>
-                          <div>
-                            <label className='block mb-2 theme-text-secondary text-sm'>Location</label>
-                            <div className='relative'>
-                              <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                                <FaMapMarkerAlt />
-                              </span>
-                              <input type='text' name='location' value={formData.location} onChange={handleChange} className={inputClasses('location')} placeholder='Enter your location' />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className='block mb-2 theme-text-secondary text-sm'>Timezone</label>
-                            <div className='relative'>
-                              <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                                <FaGlobe />
-                              </span>
-                              <input type='text' name='timezone' value={formData.timezone} onChange={handleChange} className={inputClasses('timezone')} placeholder='Europe/Vilnius' />
-                            </div>
-                          </div>
-
-                          {[
-                            { name: 'website', label: 'Portfolio', icon: <FaGlobe />, placeholder: 'Enter your portfolio URL' },
-                            { name: 'github', label: 'GitHub', icon: <FaGithub />, placeholder: 'Enter your GitHub profile' },
-                            { name: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin />, placeholder: 'Enter your LinkedIn profile' },
-                            { name: 'twitter', label: 'Twitter', icon: <FaTwitter />, placeholder: 'Enter your Twitter handle' }
-                          ].map((social) => (
-                            <div key={social.name}>
-                              <label className='block mb-2 theme-text-secondary text-sm'>{social.label}</label>
-                              <div className='relative'>
-                                <span className='absolute left-3 top-4 text-accent text-[16px]'>{social.icon}</span>
-                                <input type='url' name={social.name} value={formData[social.name]} onChange={handleChange} className={inputClasses(social.name)} placeholder={social.placeholder} />
-                                {errors[social.name] && (
-                                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                                    {errors[social.name]}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
                         </div>
                       </div>
                     </div>
