@@ -270,6 +270,7 @@ const ProfileSettings = () => {
           return nextFormData
         })
 
+        setErrors({})
         toast.success('Changes saved successfully!')
       } catch (error) {
         const message = error.response?.data?.message || 'Failed to save changes. Please try again.'
