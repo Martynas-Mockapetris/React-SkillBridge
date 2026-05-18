@@ -551,8 +551,8 @@ const ProfileSettings = () => {
                 </motion.div>
 
                 <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex-1'>
-                  <h3 className='text-xl font-semibold theme-text mb-2'>Portfolio & Social Links</h3>
-                  <p className='text-sm theme-text-secondary mb-4'>Share the links clients can use to review your work, code, and professional presence.</p>
+                  <h3 className='text-xl font-semibold theme-text mb-2'>Public Presence</h3>
+                  <p className='text-sm theme-text-secondary mb-4'>Shape how people discover you, review your work, and understand your public profile at a glance.</p>
                   <div className='space-y-4'>
                     {[
                       { name: 'website', label: 'Portfolio', icon: <FaGlobe />, placeholder: 'Enter your portfolio URL' },
@@ -584,13 +584,13 @@ const ProfileSettings = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}>
-                <h3 className='text-xl font-semibold theme-text mb-2'>Freelancer Details</h3>
-                <p className='text-sm theme-text-secondary mb-4'>Describe how you work, what you offer, and the experience clients can expect from you.</p>
+                <h3 className='text-xl font-semibold theme-text mb-2'>Professional Settings</h3>
+                <p className='text-sm theme-text-secondary mb-4'>Organize how you present your services, work preferences, visibility, and external professional presence.</p>
                 <div className='grid gap-6'>
                   <div className='p-5 rounded-xl theme-input border theme-border'>
                     <div className='mb-4'>
-                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Rates, Availability & Experience</p>
-                      <p className='text-sm theme-text-secondary'>Set your pricing, availability, and preferred working style so clients can understand fit quickly.</p>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Work Preferences</p>
+                      <p className='text-sm theme-text-secondary'>Set your pricing, availability, experience, and preferred working style so clients can understand fit quickly.</p>
                     </div>
                     <div className='grid md:grid-cols-2 gap-4'>
                       <div>
@@ -745,8 +745,8 @@ const ProfileSettings = () => {
 
                   <div className='p-5 rounded-xl theme-input border theme-border'>
                     <div className='mb-4'>
-                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Capabilities, Services & Focus</p>
-                      <p className='text-sm theme-text-secondary'>Describe what you deliver, the tools you use, and the kinds of work you want to attract.</p>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Services & Expertise</p>
+                      <p className='text-sm theme-text-secondary'>Describe what you offer, the tools you use, and the expertise areas you want clients to notice first.</p>
                     </div>
 
                     <div className='grid gap-4'>
