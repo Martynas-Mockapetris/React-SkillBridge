@@ -344,7 +344,12 @@ const ProfileSettings = () => {
     dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
     focus:outline-none focus:ring-2 focus:ring-accent/50
   `
-  const selectClasses = (errorField) => `${inputClasses(errorField)} theme-select`
+  const selectShellClasses = (errorField) => `
+    relative rounded-lg theme-input transition-all duration-300
+    border ${errors[errorField] ? 'border-red-500' : 'dark:border-light/10 border-primary/10'}
+    focus-within:ring-2 focus-within:ring-accent/50
+  `
+  const selectFieldClasses = 'w-full bg-transparent theme-text pl-10 pr-10 py-3 rounded-lg appearance-none focus:outline-none theme-select'
   const selectIconClasses = 'absolute left-3 top-4 text-accent text-[16px] pointer-events-none'
   const selectChevronClasses = 'absolute right-3 top-4 text-accent text-[14px] pointer-events-none'
   const toggleClasses = 'h-4 w-4 rounded border-primary/20 text-accent focus:ring-accent/50 dark:border-light/20 dark:bg-transparent'
@@ -603,11 +608,11 @@ const ProfileSettings = () => {
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
-                        <div className='relative'>
+                        <div className={selectShellClasses('experienceLevel')}>
                           <span className={selectIconClasses}>
                             <FaStar />
                           </span>
-                          <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={selectClasses('experienceLevel')}>
+                          <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={selectFieldClasses}>
                             <option value='entry'>Entry Level</option>
                             <option value='intermediate'>Intermediate</option>
                             <option value='expert'>Expert</option>
@@ -643,11 +648,11 @@ const ProfileSettings = () => {
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Availability Status</label>
-                        <div className='relative'>
+                        <div className={selectShellClasses('availabilityStatus')}>
                           <span className={selectIconClasses}>
                             <FaBriefcase />
                           </span>
-                          <select name='availabilityStatus' value={formData.availabilityStatus} onChange={handleChange} className={selectClasses('availabilityStatus')}>
+                          <select name='availabilityStatus' value={formData.availabilityStatus} onChange={handleChange} className={selectFieldClasses}>
                             <option value='available'>Available</option>
                             <option value='limited'>Limited availability</option>
                             <option value='unavailable'>Unavailable</option>
@@ -660,11 +665,11 @@ const ProfileSettings = () => {
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Response Time</label>
-                        <div className='relative'>
+                        <div className={selectShellClasses('responseTime')}>
                           <span className={selectIconClasses}>
                             <FaClock />
                           </span>
-                          <select name='responseTime' value={formData.responseTime} onChange={handleChange} className={selectClasses('responseTime')}>
+                          <select name='responseTime' value={formData.responseTime} onChange={handleChange} className={selectFieldClasses}>
                             <option value='within_24_hours'>Within 24 hours</option>
                             <option value='within_3_days'>Within 3 days</option>
                             <option value='within_week'>Within a week</option>
@@ -678,11 +683,11 @@ const ProfileSettings = () => {
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Work Preference</label>
-                        <div className='relative'>
+                        <div className={selectShellClasses('workPreference')}>
                           <span className={selectIconClasses}>
                             <FaMapMarkerAlt />
                           </span>
-                          <select name='workPreference' value={formData.workPreference} onChange={handleChange} className={selectClasses('workPreference')}>
+                          <select name='workPreference' value={formData.workPreference} onChange={handleChange} className={selectFieldClasses}>
                             <option value='remote'>Remote</option>
                             <option value='hybrid'>Hybrid</option>
                             <option value='onsite'>On-site</option>
@@ -696,11 +701,11 @@ const ProfileSettings = () => {
 
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Preferred Project Size</label>
-                        <div className='relative'>
+                        <div className={selectShellClasses('preferredProjectSize')}>
                           <span className={selectIconClasses}>
                             <FaList />
                           </span>
-                          <select name='preferredProjectSize' value={formData.preferredProjectSize} onChange={handleChange} className={selectClasses('preferredProjectSize')}>
+                          <select name='preferredProjectSize' value={formData.preferredProjectSize} onChange={handleChange} className={selectFieldClasses}>
                             <option value='small'>Small</option>
                             <option value='medium'>Medium</option>
                             <option value='large'>Large</option>
@@ -851,11 +856,11 @@ const ProfileSettings = () => {
                     <div className='grid md:grid-cols-2 gap-4'>
                       <div>
                         <label className='block mb-2 theme-text-secondary text-sm'>Profile Visibility</label>
-                        <div className='relative'>
+                        <div className={selectShellClasses('profileVisibility')}>
                           <span className={selectIconClasses}>
                             <FaEye />
                           </span>
-                          <select name='profileVisibility' value={formData.profileVisibility} onChange={handleChange} className={selectClasses('profileVisibility')}>
+                          <select name='profileVisibility' value={formData.profileVisibility} onChange={handleChange} className={selectFieldClasses}>
                             <option value='public'>Public</option>
                             <option value='members'>Members only</option>
                             <option value='private'>Private</option>
