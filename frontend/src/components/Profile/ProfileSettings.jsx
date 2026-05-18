@@ -345,13 +345,23 @@ const ProfileSettings = () => {
     focus:outline-none focus:ring-2 focus:ring-accent/50
   `
   const selectShellClasses = (errorField) => `
-    relative rounded-lg theme-input transition-all duration-300
-    border ${errors[errorField] ? 'border-red-500' : 'dark:border-light/10 border-primary/10'}
+    relative rounded-lg
+    bg-primary/15 dark:bg-light/12
+    transition-all duration-300
+    border ${errors[errorField] ? 'border-red-500' : 'border-primary/15 dark:border-light/10'}
+    shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]
+    hover:border-accent/35 hover:bg-primary/20 dark:hover:bg-light/15
+    focus-within:border-accent/45
     focus-within:ring-2 focus-within:ring-accent/50
   `
-  const selectFieldClasses = 'w-full bg-transparent theme-text pl-10 pr-10 py-3 rounded-lg appearance-none focus:outline-none theme-select'
-  const selectIconClasses = 'absolute left-3 top-4 text-accent text-[16px] pointer-events-none'
-  const selectChevronClasses = 'absolute right-3 top-4 text-accent text-[14px] pointer-events-none'
+  const selectFieldClasses = `
+    w-full min-h-[50px] bg-transparent theme-text
+    pl-10 pr-10 py-3 rounded-lg
+    appearance-none theme-select
+    focus:outline-none
+  `
+  const selectIconClasses = 'absolute left-3 top-1/2 -translate-y-1/2 text-accent text-[16px] pointer-events-none'
+  const selectChevronClasses = 'absolute right-3 top-1/2 -translate-y-1/2 text-accent text-[14px] pointer-events-none'
   const toggleClasses = 'h-4 w-4 rounded border-primary/20 text-accent focus:ring-accent/50 dark:border-light/20 dark:bg-transparent'
 
   return (

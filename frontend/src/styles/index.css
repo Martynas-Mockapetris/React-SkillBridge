@@ -34,16 +34,23 @@
   .theme-input-focus {
     @apply bg-primary/20 dark:bg-light/20;
   }
+
   .theme-select {
-    @apply appearance-none pr-10;
-    color-scheme: light dark;
+    @apply appearance-none;
+    color-scheme: dark;
   }
 
   .theme-select option {
-    @apply bg-light text-primary;
+    background-color: #f4efe6;
+    color: #1f2937;
   }
 
   .dark .theme-select option {
-    @apply bg-primary text-light;
+    background-color: #1f2a44;
+    color: #f4efe6;
+  }
+
+  .theme-select:disabled {
+    @apply opacity-70 cursor-not-allowed;
   }
 }
