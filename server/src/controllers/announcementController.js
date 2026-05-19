@@ -1,5 +1,24 @@
 import Announcement from '../models/Announcement.js'
 
+const announcementListingUserFields = [
+  'firstName',
+  'lastName',
+  'profilePicture',
+  'userType',
+  'headline',
+  'availabilityStatus',
+  'experienceLevel',
+  'yearsOfExperience',
+  'skills',
+  'serviceCategories',
+  'location',
+  'timezone',
+  'hourlyRate',
+  'showHourlyRate',
+  'showLocationPublic',
+  'profileVisibility'
+].join(' ')
+
 // Create a new announcement
 export const createAnnouncement = async (req, res) => {
   try {
@@ -54,7 +73,7 @@ export const getAnnouncementsByUser = async (req, res) => {
 // Get all active announcements (for browsing)
 export const getAllAnnouncements = async (req, res) => {
   try {
-    const announcements = await Announcement.find({ isActive: true }).populate('userId', 'firstName lastName profilePicture userType').sort({ createdAt: -1 })
+    const announcements = await Announcement.find({ isActive: true }).populate('userId', announcementListingUserFields).sort({ createdAt: -1 })
 
     res.json(announcements)
   } catch (error) {
