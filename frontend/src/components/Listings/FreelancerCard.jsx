@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { FaStar, FaCheckCircle, FaUser } from 'react-icons/fa'
+import { FaCheckCircle, FaClock, FaEuroSign, FaMapMarkerAlt, FaUser } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 
@@ -7,116 +7,131 @@ const FreelancerCard = ({ freelancer, index }) => {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
 
-  // freelancer object now contains a single announcement
   const announcement = freelancer
   const freelancerInfo = freelancer.freelancer
 
-  // Truncate text to specified length
-  const truncateText = (text, maxLength = 80) => {
+  const truncateText = (text, maxLength = 100) => {
     if (!text) return ''
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
   }
 
-  // Handle card click - require login
-  const handleCardClick = (e) => {
-    if (!currentUser) {
-      e.preventDefault()
-      navigate('/login')
-      return
-    }
+  const roleLabel = freelancerInfo.userType === 'both' ? 'Client & Freelancer' : 'Freelancer'
+
+  const quickFacts = [
+    {
+      key: 'availability',
+      icon: <FaClock className='text-[11px]' />,
+      label: freelancerInfo.availabilityLabel
+    },
+    {
+      key: 'rate',
+      icon: <FaEuroSign className='text-[11px]' />,
+      label: freelancerInfo.hourlyRateLabel
+    },
+    freelancerInfo.location
+      ? {
+          key: 'location',
+          icon: <FaMapMarkerAlt className='text-[11px]' />,
+          label: freelancerInfo.location
+        }
+      : null
+  ].filter(Boolean)
+
+  const CardShell = ({ children, locked = false }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={
+        locked
+          ? undefined
+          : {
+              scale: 1.02,
+              transition: { duration: 0.1 }
+            }
+      }
+      transition={{ duration: 0.2, delay: index * 0.1 }}
+      onClick={() => navigate(locked ? '/login' : `/freelancer/${freelancerInfo._id}`)}
+      className={`relative bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 flex flex-col h-full ${
+        locked ? 'opacity-75 hover:opacity-100' : ''
+      }`}>
+      {children}
+    </motion.div>
+  )
+
+  const CardContent = ({ blurred = false }) => (
+    <div className={blurred ? 'opacity-50 pointer-events-none' : ''}>
+      <div className='flex items-start gap-4 mb-4'>
+        <img src={freelancerInfo.profilePicture || `https://i.pravatar.cc/150?u=${freelancerInfo._id}`} alt={freelancerInfo.name} className='w-14 h-14 rounded-full object-cover flex-shrink-0 border border-accent/20' />
+
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-start justify-between gap-3 mb-2'>
+            <div className='min-w-0'>
+              <h3 className='text-lg font-bold theme-text leading-tight'>{freelancerInfo.name}</h3>
+              <p className='text-sm theme-text-secondary mt-1 line-clamp-2'>{freelancerInfo.specialty}</p>
+            </div>
+
+            <span className='inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-accent/20 text-accent whitespace-nowrap'>{roleLabel}</span>
+          </div>
+        </div>
+      </div>
+
+      {quickFacts.length > 0 && (
+        <div className='flex flex-wrap gap-2 mb-4 pb-4 border-b border-accent/20'>
+          {quickFacts.map((fact) => (
+            <span key={fact.key} className='inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-primary/10 dark:bg-light/10 theme-text-secondary border border-primary/10 dark:border-light/10'>
+              {fact.icon}
+              <span>{fact.label}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className='flex-1 mb-4'>
+        <div className='bg-accent/10 rounded-lg p-4 border-l-2 border-accent h-full flex flex-col'>
+          <p className='text-[11px] uppercase tracking-wide text-accent/80 mb-2'>Current Announcement</p>
+          <h4 className='text-sm font-semibold text-accent mb-2 line-clamp-2'>{announcement.title}</h4>
+          <p className='text-xs theme-text-secondary line-clamp-3 mb-4 flex-1'>{truncateText(announcement.background, 120)}</p>
+
+          {freelancerInfo.primarySkills && freelancerInfo.primarySkills.length > 0 && (
+            <div className='flex flex-wrap gap-1.5'>
+              {freelancerInfo.primarySkills.slice(0, 4).map((skill, skillIdx) => (
+                <span key={skillIdx} className='text-xs bg-accent/20 text-accent px-2 py-0.5 rounded'>
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className='flex items-center justify-between gap-3 border-t border-accent/20 pt-4'>
+        <div className='flex items-center gap-2 theme-text-secondary text-sm'>
+          <FaCheckCircle className='text-accent' />
+          <span>View Profile</span>
+        </div>
+
+        <span className='text-xs theme-text-muted'>{freelancerInfo.yearsOfExperience > 0 ? `Years of experience: ${freelancerInfo.yearsOfExperience}+` : 'Years of experience: N/A'}</span>
+      </div>
+    </div>
+  )
+
+  if (currentUser) {
+    return (
+      <CardShell>
+        <CardContent />
+      </CardShell>
+    )
   }
 
   return (
-    <>
-      {currentUser ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{
-            scale: 1.02,
-            transition: { duration: 0.1 }
-          }}
-          transition={{ duration: 0.2, delay: index * 0.1 }}
-          onClick={() => navigate(`/freelancer/${freelancerInfo._id}`)}
-          className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 flex flex-col h-full'>
-          {/* Header: Freelancer Profile Info */}
-          <div className='flex items-center gap-4 mb-4'>
-            <img src={freelancerInfo.profilePicture || `https://i.pravatar.cc/150?u=${freelancerInfo._id}`} alt={freelancerInfo.firstName} className='w-14 h-14 rounded-full object-cover flex-shrink-0' />
-            <div className='flex-1'>
-              <h3 className='text-lg font-bold mb-1 theme-text'>
-                {freelancerInfo.firstName} {freelancerInfo.lastName}
-              </h3>
-              <span className='inline-block px-2 py-1 rounded text-xs font-medium bg-accent/20 text-accent'>{freelancerInfo.userType === 'both' ? 'Client & Freelancer' : 'Freelancer'}</span>
-            </div>
-          </div>
+    <CardShell locked>
+      <div className='absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center flex-col gap-2 backdrop-blur-sm z-10'>
+        <FaUser className='text-accent text-3xl' />
+        <span className='text-sm font-semibold text-white text-center px-4'>Login to View Profile</span>
+      </div>
 
-          {/* Stats Row */}
-          <div className='flex items-center justify-between mb-4 pb-4 border-b border-accent/20'>
-            <div className='flex items-center gap-1'>
-              <FaStar className='text-accent text-sm' />
-              <span className='font-medium theme-text text-sm'>New</span>
-            </div>
-            <span className='font-bold text-accent text-sm'>{announcement.hourlyRate}€/hr</span>
-          </div>
-
-          {/* Announcement Section */}
-          <div className='flex-1 mb-4'>
-            <div className='bg-accent/10 rounded-lg p-4 border-l-2 border-accent h-full flex flex-col'>
-              {/* Announcement Title */}
-              <h4 className='text-sm font-semibold text-accent mb-2'>{announcement.title}</h4>
-
-              {/* Announcement Background/Description */}
-              <p className='text-xs theme-text-secondary line-clamp-3 mb-3 flex-1'>{truncateText(announcement.background, 100)}</p>
-
-              {/* Skills */}
-              {announcement.skills && announcement.skills.length > 0 && (
-                <div className='flex flex-wrap gap-1'>
-                  {announcement.skills.slice(0, 3).map((skill, skillIdx) => (
-                    <span key={skillIdx} className='text-xs bg-accent/20 text-accent px-2 py-0.5 rounded'>
-                      {skill}
-                    </span>
-                  ))}
-                  {announcement.skills.length > 3 && <span className='text-xs theme-text-secondary px-2 py-0.5'>+{announcement.skills.length - 3}</span>}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Footer: View Profile */}
-          <div className='flex items-center gap-2 theme-text-secondary text-sm border-t border-accent/20 pt-4'>
-            <FaCheckCircle className='text-accent' />
-            <span>View Profile</span>
-          </div>
-        </motion.div>
-      ) : (
-        // Non-logged-in state - locked card
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: index * 0.1 }}
-          onClick={() => navigate('/login')}
-          className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 flex flex-col h-full opacity-75 hover:opacity-100'>
-          {/* Show card content but overlay with login prompt */}
-          <div className='absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center flex-col gap-2 backdrop-blur-sm z-10'>
-            <FaUser className='text-accent text-3xl' />
-            <span className='text-sm font-semibold text-white text-center px-4'>Login to View Profile</span>
-          </div>
-
-          {/* Blurred content below */}
-          <div className='opacity-50 pointer-events-none'>
-            <div className='flex items-center gap-4 mb-4'>
-              <img src={freelancerInfo.profilePicture || `https://i.pravatar.cc/150?u=${freelancerInfo._id}`} alt={freelancerInfo.firstName} className='w-14 h-14 rounded-full object-cover flex-shrink-0' />
-              <div className='flex-1'>
-                <h3 className='text-lg font-bold mb-1 theme-text'>
-                  {freelancerInfo.firstName} {freelancerInfo.lastName}
-                </h3>
-                <span className='inline-block px-2 py-1 rounded text-xs font-medium bg-accent/20 text-accent'>{freelancerInfo.userType === 'both' ? 'Client & Freelancer' : 'Freelancer'}</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </>
+      <CardContent blurred />
+    </CardShell>
   )
 }
 
