@@ -607,6 +607,11 @@ const ProjectsList = () => {
                   {project.status === 'draft' && (
                     <motion.button
                       onClick={async () => {
+                        if (!currentUser?.isEmailVerified) {
+                          window.alert('Verify your email before publishing projects.')
+                          return
+                        }
+
                         try {
                           await publishProject(project._id)
                           await fetchProjects()
@@ -614,10 +619,11 @@ const ProjectsList = () => {
                           console.error('Error publishing project:', err)
                         }
                       }}
-                      className='w-full py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded transition-all'
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}>
-                      Publish Project
+                      disabled={!currentUser?.isEmailVerified}
+                      className='w-full py-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-500/10 disabled:hover:text-green-500'
+                      whileHover={currentUser?.isEmailVerified ? { scale: 1.02 } : {}}
+                      whileTap={currentUser?.isEmailVerified ? { scale: 0.98 } : {}}>
+                      {currentUser?.isEmailVerified ? 'Publish Project' : 'Verify Email to Publish'}
                     </motion.button>
                   )}
                 </div>

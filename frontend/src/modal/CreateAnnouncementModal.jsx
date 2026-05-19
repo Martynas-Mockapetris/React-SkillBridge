@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheck } from 'react-icons/fa'
 import { createAnnouncement, updateAnnouncement } from '../services/announcementService'
 
-const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editingAnnouncement }) => {
+const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editingAnnouncement, isVerified = true }) => {
   const isEditMode = !!editingAnnouncement
   // Form state
   const [formData, setFormData] = useState({
@@ -67,6 +67,11 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editi
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!isVerified && !isEditMode) {
+      setError('Verify your email before publishing announcements.')
+      return
+    }
 
     // Validate before submitting
     if (!validateForm()) {
@@ -159,7 +164,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editi
               onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className='flex items-center justify-between p-6 border-b dark:border-light/10 border-primary/10 sticky top-0 bg-inherit rounded-t-lg'>
-                <h2 className='text-2xl font-bold theme-text'>Create Announcement</h2>
+                <h2 className='text-2xl font-bold theme-text'>{isEditMode ? 'Edit Announcement' : 'Create Announcement'}</h2>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -172,6 +177,11 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editi
 
               {/* Content */}
               <form onSubmit={handleSubmit} className='p-6 space-y-4'>
+                {!isVerified && !isEditMode && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className='bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 p-4 rounded-lg'>
+                    Verify your email before publishing announcements.
+                  </motion.div>
+                )}
                 {/* Success Message */}
                 {success && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className='flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 p-4 rounded-lg'>
