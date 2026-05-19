@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
@@ -20,6 +20,7 @@ import { ProjectHeader, SkillsRequired, RateNegotiationCard, ProjectActions, Mes
 const ProjectDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser, loading: authLoading } = useAuth()
 
   const [project, setProject] = useState(null)
@@ -99,6 +100,11 @@ const ProjectDetail = () => {
   }
 
   const handleBack = () => {
+    if (location.state?.returnTo) {
+      navigate(location.state.returnTo)
+      return
+    }
+
     navigate(-1)
   }
 

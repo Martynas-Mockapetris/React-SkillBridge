@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { FaCalendarAlt, FaHeart, FaCheckCircle } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
@@ -7,6 +7,8 @@ import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
 const ProjectCard = ({ project, index }) => {
+  const location = useLocation()
+  const returnTo = `${location.pathname}${location.search}`
   const { currentUser } = useAuth()
   const [favorites, setFavorites] = useState([])
   const [isFavoriting, setIsFavoriting] = useState(false)
@@ -59,7 +61,7 @@ const ProjectCard = ({ project, index }) => {
   }
 
   return (
-    <Link to={`/project/${project._id}`}>
+    <Link to={`/project/${project._id}`} state={{ returnTo }}>
       <motion.div
         // ... (keep all existing motion div props)
         className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 relative'>

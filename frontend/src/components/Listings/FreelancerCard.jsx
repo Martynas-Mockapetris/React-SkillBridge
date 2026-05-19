@@ -1,14 +1,16 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FaCheckCircle, FaClock, FaEuroSign, FaMapMarkerAlt, FaUser } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 
 const FreelancerCard = ({ freelancer, index }) => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser } = useAuth()
 
   const announcement = freelancer
   const freelancerInfo = freelancer.freelancer
+  const returnTo = `${location.pathname}${location.search}`
 
   const truncateText = (text, maxLength = 100) => {
     if (!text) return ''
@@ -50,7 +52,16 @@ const FreelancerCard = ({ freelancer, index }) => {
             }
       }
       transition={{ duration: 0.2, delay: index * 0.1 }}
-      onClick={() => navigate(locked ? '/login' : `/freelancer/${freelancerInfo._id}`)}
+      onClick={() => {
+        if (locked) {
+          navigate('/login')
+          return
+        }
+
+        navigate(`/freelancer/${freelancerInfo._id}`, {
+          state: { returnTo }
+        })
+      }}
       className={`relative bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 flex flex-col h-full ${
         locked ? 'opacity-75 hover:opacity-100' : ''
       }`}>

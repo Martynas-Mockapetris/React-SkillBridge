@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaStar, FaArrowLeft, FaHeart, FaRegHeart, FaPhone, FaEnvelope, FaBriefcase, FaClock, FaEuroSign, FaMapMarkerAlt, FaGlobe, FaTools, FaCheckCircle } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
@@ -97,6 +97,7 @@ const parseCommaSeparatedList = (value) => {
 const UserDetail = () => {
   const { freelancerId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser } = useAuth()
 
   // State
@@ -152,11 +153,20 @@ const UserDetail = () => {
     return <LoadingSpinner fullScreen />
   }
 
+  const handleBack = () => {
+    if (location.state?.returnTo) {
+      navigate(location.state.returnTo)
+      return
+    }
+
+    navigate(-1)
+  }
+
   if (!freelancer) {
     return (
       <div className='flex flex-col items-center justify-center min-h-screen'>
         <h1 className='text-2xl font-bold theme-text mb-4'>Freelancer not found</h1>
-        <button onClick={() => navigate('/listings')} className='btn-primary'>
+        <button onClick={handleBack} className='btn-primary'>
           Back to Listings
         </button>
       </div>
@@ -211,7 +221,7 @@ const UserDetail = () => {
 
       <div className='container mx-auto px-4 py-12 relative z-10'>
         {/* Back Button */}
-        <motion.button onClick={() => navigate(-1)} className='flex items-center gap-2 text-accent hover:text-accent/80 mb-8 transition-colors' whileHover={{ x: -5 }}>
+        <motion.button onClick={handleBack} className='flex items-center gap-2 text-accent hover:text-accent/80 mb-8 transition-colors' whileHover={{ x: -5 }}>
           <FaArrowLeft />
           <span>Back</span>
         </motion.button>
