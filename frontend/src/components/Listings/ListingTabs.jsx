@@ -88,6 +88,59 @@ const normalizeListingTab = (value) => {
   return 'projects'
 }
 
+const defaultProjectFilters = {
+  category: 'all',
+  priority: 'all',
+  budget: 'all'
+}
+
+const defaultFreelancerFilters = {
+  availability: 'all',
+  verified: 'all',
+  rate: 'all'
+}
+
+const matchesBudgetRange = (budget, range) => {
+  if (range === 'all') return true
+
+  const normalizedBudget = Number(budget)
+  if (Number.isNaN(normalizedBudget)) return false
+
+  switch (range) {
+    case 'under-500':
+      return normalizedBudget < 500
+    case '500-2000':
+      return normalizedBudget >= 500 && normalizedBudget <= 2000
+    case '2000-5000':
+      return normalizedBudget > 2000 && normalizedBudget <= 5000
+    case '5000-plus':
+      return normalizedBudget > 5000
+    default:
+      return true
+  }
+}
+
+const matchesRateRange = (rate, range) => {
+  if (range === 'all') return true
+  if (range === 'unspecified') return rate === null || rate === undefined || Number.isNaN(Number(rate))
+
+  const normalizedRate = Number(rate)
+  if (Number.isNaN(normalizedRate)) return false
+
+  switch (range) {
+    case 'under-25':
+      return normalizedRate < 25
+    case '25-50':
+      return normalizedRate >= 25 && normalizedRate <= 50
+    case '50-100':
+      return normalizedRate > 50 && normalizedRate <= 100
+    case '100-plus':
+      return normalizedRate > 100
+    default:
+      return true
+  }
+}
+
 const ListingTabs = () => {
   const location = useLocation()
   const initialTab = normalizeListingTab(location.state?.activeTab)
@@ -98,6 +151,8 @@ const ListingTabs = () => {
   const [projects, setProjects] = useState([])
   const [freelancers, setFreelancers] = useState([])
   const [error, setError] = useState(null)
+  const [projectFilters, setProjectFilters] = useState(defaultProjectFilters)
+  const [freelancerFilters, setFreelancerFilters] = useState(defaultFreelancerFilters)
   const { searchTerm } = useContext(SearchContext)
 
   useEffect(() => {
@@ -106,26 +161,43 @@ const ListingTabs = () => {
     setCurrentPage(1)
   }, [location.state])
 
-  // Function to filter projects by search term
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeTab, searchTerm, projectFilters, freelancerFilters])
+
+  // Function to filter projects by search term and project-specific filters
   const filterProjects = (projectsList) => {
-    if (!searchTerm) return projectsList // If no search, return all
-
-    return projectsList.filter(
-      (project) =>
-        // Search in title, description, and skills
-        project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.skills?.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-  }
-
-  // Function to filter freelancers by search term
-  const filterFreelancers = (freelancersList) => {
-    if (!searchTerm) return freelancersList
-
     const normalizedSearch = searchTerm.toLowerCase()
 
-    return freelancersList.filter((freelancer) => freelancer.searchText?.includes(normalizedSearch))
+    return projectsList.filter((project) => {
+      const matchesSearch =
+        !searchTerm ||
+        project.title.toLowerCase().includes(normalizedSearch) ||
+        project.description.toLowerCase().includes(normalizedSearch) ||
+        project.skills?.some((skill) => skill.toLowerCase().includes(normalizedSearch))
+
+      const matchesCategory = projectFilters.category === 'all' || project.category === projectFilters.category
+      const matchesPriority = projectFilters.priority === 'all' || (project.priority || 'low') === projectFilters.priority
+      const matchesBudget = matchesBudgetRange(project.budget, projectFilters.budget)
+
+      return matchesSearch && matchesCategory && matchesPriority && matchesBudget
+    })
+  }
+
+  // Function to filter freelancers by search term and freelancer-specific filters
+  const filterFreelancers = (freelancersList) => {
+    const normalizedSearch = searchTerm.toLowerCase()
+
+    return freelancersList.filter((freelancer) => {
+      const freelancerInfo = freelancer.freelancer || {}
+
+      const matchesSearch = !searchTerm || freelancer.searchText?.includes(normalizedSearch)
+      const matchesAvailability = freelancerFilters.availability === 'all' || freelancerInfo.availabilityStatus === freelancerFilters.availability
+      const matchesVerified = freelancerFilters.verified === 'all' || (freelancerFilters.verified === 'verified' ? Boolean(freelancerInfo.isEmailVerified) : !freelancerInfo.isEmailVerified)
+      const matchesRate = matchesRateRange(freelancerInfo.hourlyRate, freelancerFilters.rate)
+
+      return matchesSearch && matchesAvailability && matchesVerified && matchesRate
+    })
   }
 
   // Fetch projects from API
@@ -177,6 +249,7 @@ const ListingTabs = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const filteredProjects = filterProjects(projects)
   const filteredFreelancers = filterFreelancers(freelancers)
+  const projectCategories = [...new Set(projects.map((project) => project.category).filter(Boolean))].sort((a, b) => a.localeCompare(b))
 
   const currentItems = activeTab === 'projects' ? filteredProjects.slice(indexOfFirstItem, indexOfLastItem) : filteredFreelancers.slice(indexOfFirstItem, indexOfLastItem)
 
@@ -238,6 +311,115 @@ const ListingTabs = () => {
             exit={{ opacity: 0, x: activeTab === 'projects' ? 20 : -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
+            <div className='mb-8 rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] backdrop-blur-sm p-5'>
+              <div className='flex items-center justify-between gap-3 flex-wrap mb-4'>
+                <div>
+                  <h3 className='text-lg font-semibold theme-text'>{activeTab === 'projects' ? 'Project filters' : 'Freelancer filters'}</h3>
+                  <p className='text-sm theme-text-secondary'>Refine {activeTab === 'projects' ? 'project opportunities' : 'freelancer matches'} using filters tailored to the selected tab.</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (activeTab === 'projects') {
+                      setProjectFilters(defaultProjectFilters)
+                    } else {
+                      setFreelancerFilters(defaultFreelancerFilters)
+                    }
+                  }}
+                  className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text-secondary hover:text-accent hover:border-accent transition-colors'>
+                  Clear filters
+                </button>
+              </div>
+
+              {activeTab === 'projects' ? (
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <label className='space-y-2'>
+                    <span className='block text-sm font-medium theme-text'>Category</span>
+                    <select
+                      value={projectFilters.category}
+                      onChange={(event) => setProjectFilters((current) => ({ ...current, category: event.target.value }))}
+                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      <option value='all'>All categories</option>
+                      {projectCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className='space-y-2'>
+                    <span className='block text-sm font-medium theme-text'>Priority</span>
+                    <select
+                      value={projectFilters.priority}
+                      onChange={(event) => setProjectFilters((current) => ({ ...current, priority: event.target.value }))}
+                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      <option value='all'>Any priority</option>
+                      <option value='low'>Low</option>
+                      <option value='medium'>Medium</option>
+                      <option value='high'>High</option>
+                    </select>
+                  </label>
+
+                  <label className='space-y-2'>
+                    <span className='block text-sm font-medium theme-text'>Budget</span>
+                    <select
+                      value={projectFilters.budget}
+                      onChange={(event) => setProjectFilters((current) => ({ ...current, budget: event.target.value }))}
+                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      <option value='all'>Any budget</option>
+                      <option value='under-500'>Under 500 EUR</option>
+                      <option value='500-2000'>500-2000 EUR</option>
+                      <option value='2000-5000'>2000-5000 EUR</option>
+                      <option value='5000-plus'>5000+ EUR</option>
+                    </select>
+                  </label>
+                </div>
+              ) : (
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <label className='space-y-2'>
+                    <span className='block text-sm font-medium theme-text'>Availability</span>
+                    <select
+                      value={freelancerFilters.availability}
+                      onChange={(event) => setFreelancerFilters((current) => ({ ...current, availability: event.target.value }))}
+                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      <option value='all'>Any availability</option>
+                      <option value='available'>Available</option>
+                      <option value='limited'>Limited availability</option>
+                      <option value='unavailable'>Unavailable</option>
+                    </select>
+                  </label>
+
+                  <label className='space-y-2'>
+                    <span className='block text-sm font-medium theme-text'>Verification</span>
+                    <select
+                      value={freelancerFilters.verified}
+                      onChange={(event) => setFreelancerFilters((current) => ({ ...current, verified: event.target.value }))}
+                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      <option value='all'>All profiles</option>
+                      <option value='verified'>Verified only</option>
+                      <option value='unverified'>Unverified only</option>
+                    </select>
+                  </label>
+
+                  <label className='space-y-2'>
+                    <span className='block text-sm font-medium theme-text'>Hourly rate</span>
+                    <select
+                      value={freelancerFilters.rate}
+                      onChange={(event) => setFreelancerFilters((current) => ({ ...current, rate: event.target.value }))}
+                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      <option value='all'>Any rate</option>
+                      <option value='under-25'>Under 25 EUR/hr</option>
+                      <option value='25-50'>25-50 EUR/hr</option>
+                      <option value='50-100'>50-100 EUR/hr</option>
+                      <option value='100-plus'>100+ EUR/hr</option>
+                      <option value='unspecified'>Rate on request</option>
+                    </select>
+                  </label>
+                </div>
+              )}
+            </div>
+
             {/* Error message */}
             {error && activeTab === 'projects' && (
               <div className='text-center py-8'>
@@ -257,8 +439,24 @@ const ListingTabs = () => {
               </div>
             )}
 
+            {!isLoading && !error && activeTab === 'projects' && projects.length > 0 && filteredProjects.length === 0 && (
+              <div className='text-center py-12'>
+                <FaBriefcase className='text-6xl theme-text-secondary mx-auto mb-4 opacity-50' />
+                <h3 className='text-xl font-semibold theme-text mb-2'>No projects match these filters</h3>
+                <p className='theme-text-secondary'>Try broadening the category, priority, budget, or search criteria.</p>
+              </div>
+            )}
+
+            {!isLoading && activeTab === 'freelancers' && filteredFreelancers.length === 0 && (
+              <div className='text-center py-12'>
+                <FaUser className='text-6xl theme-text-secondary mx-auto mb-4 opacity-50' />
+                <h3 className='text-xl font-semibold theme-text mb-2'>No freelancers match these filters</h3>
+                <p className='theme-text-secondary'>Adjust availability, verification, rate, or search to widen the results.</p>
+              </div>
+            )}
+
             {/* Grid of cards */}
-            {(!error || activeTab === 'freelancers') && (
+            {((!error || activeTab === 'freelancers') && isLoading) || currentItems.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {isLoading
                   ? Array(6)
@@ -268,7 +466,7 @@ const ListingTabs = () => {
                     ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
                     : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer._id} freelancer={freelancer} index={index} />)}
               </div>
-            )}
+            ) : null}
 
             {/* Pagination */}
             {!isLoading && totalPages > 1 && (
