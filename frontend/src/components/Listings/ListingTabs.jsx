@@ -1,7 +1,7 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { FaUser, FaBriefcase, FaSearch } from 'react-icons/fa'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { SearchContext } from '../../context/SearchContext'
 import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
@@ -100,6 +100,19 @@ const defaultFreelancerFilters = {
   rate: 'all'
 }
 
+const getFiltersFromSearchParams = (searchParams) => ({
+  project: {
+    category: searchParams.get('projectCategory') || 'all',
+    priority: searchParams.get('projectPriority') || 'all',
+    budget: searchParams.get('projectBudget') || 'all'
+  },
+  freelancer: {
+    availability: searchParams.get('freelancerAvailability') || 'all',
+    verified: searchParams.get('freelancerVerified') || 'all',
+    rate: searchParams.get('freelancerRate') || 'all'
+  }
+})
+
 const matchesBudgetRange = (budget, range) => {
   if (range === 'all') return true
 
@@ -143,28 +156,95 @@ const matchesRateRange = (rate, range) => {
 
 const ListingTabs = () => {
   const location = useLocation()
-  const initialTab = normalizeListingTab(location.state?.activeTab)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const initialFilters = getFiltersFromSearchParams(searchParams)
+  const initialTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
+  const initialPage = Math.max(Number(searchParams.get('page')) || 1, 1)
+  const initialSearch = searchParams.get('search') || ''
 
   const [activeTab, setActiveTab] = useState(initialTab)
   const [isLoading, setIsLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(initialPage)
   const [projects, setProjects] = useState([])
   const [freelancers, setFreelancers] = useState([])
   const [error, setError] = useState(null)
-  const [projectFilters, setProjectFilters] = useState(defaultProjectFilters)
-  const [freelancerFilters, setFreelancerFilters] = useState(defaultFreelancerFilters)
+  const [projectFilters, setProjectFilters] = useState(initialFilters.project)
+  const [freelancerFilters, setFreelancerFilters] = useState(initialFilters.freelancer)
   const { searchTerm, updateSearch } = useContext(SearchContext)
-  const [searchInput, setSearchInput] = useState(searchTerm)
+  const [searchInput, setSearchInput] = useState(initialSearch)
+  const hasInitializedPageReset = useRef(false)
 
   useEffect(() => {
-    const nextTab = normalizeListingTab(location.state?.activeTab)
-    setActiveTab(nextTab)
-    setCurrentPage(1)
-  }, [location.state])
+    const nextTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
+    const nextPage = Math.max(Number(searchParams.get('page')) || 1, 1)
+    const nextSearch = searchParams.get('search') || ''
+    const nextFilters = getFiltersFromSearchParams(searchParams)
+
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab)
+    }
+
+    if (nextPage !== currentPage) {
+      setCurrentPage(nextPage)
+    }
+
+    if (nextSearch !== searchTerm) {
+      updateSearch(nextSearch)
+    }
+
+    if (nextSearch !== searchInput) {
+      setSearchInput(nextSearch)
+    }
+
+    if (JSON.stringify(nextFilters.project) !== JSON.stringify(projectFilters)) {
+      setProjectFilters(nextFilters.project)
+    }
+
+    if (JSON.stringify(nextFilters.freelancer) !== JSON.stringify(freelancerFilters)) {
+      setFreelancerFilters(nextFilters.freelancer)
+    }
+  }, [searchParams, location.state])
 
   useEffect(() => {
-    setSearchInput(searchTerm)
-  }, [searchTerm])
+    const nextParams = new URLSearchParams(searchParams)
+
+    nextParams.set('tab', activeTab)
+
+    if (currentPage > 1) {
+      nextParams.set('page', String(currentPage))
+    } else {
+      nextParams.delete('page')
+    }
+
+    if (searchTerm) {
+      nextParams.set('search', searchTerm)
+    } else {
+      nextParams.delete('search')
+    }
+
+    if (projectFilters.category !== 'all') nextParams.set('projectCategory', projectFilters.category)
+    else nextParams.delete('projectCategory')
+
+    if (projectFilters.priority !== 'all') nextParams.set('projectPriority', projectFilters.priority)
+    else nextParams.delete('projectPriority')
+
+    if (projectFilters.budget !== 'all') nextParams.set('projectBudget', projectFilters.budget)
+    else nextParams.delete('projectBudget')
+
+    if (freelancerFilters.availability !== 'all') nextParams.set('freelancerAvailability', freelancerFilters.availability)
+    else nextParams.delete('freelancerAvailability')
+
+    if (freelancerFilters.verified !== 'all') nextParams.set('freelancerVerified', freelancerFilters.verified)
+    else nextParams.delete('freelancerVerified')
+
+    if (freelancerFilters.rate !== 'all') nextParams.set('freelancerRate', freelancerFilters.rate)
+    else nextParams.delete('freelancerRate')
+
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true })
+    }
+  }, [activeTab, currentPage, searchTerm, projectFilters, freelancerFilters, searchParams, setSearchParams])
 
   const handleSearchSubmit = () => {
     updateSearch(searchInput.trim())
@@ -182,6 +262,11 @@ const ListingTabs = () => {
   }
 
   useEffect(() => {
+    if (!hasInitializedPageReset.current) {
+      hasInitializedPageReset.current = true
+      return
+    }
+
     setCurrentPage(1)
   }, [activeTab, searchTerm, projectFilters, freelancerFilters])
 
@@ -257,7 +342,6 @@ const ListingTabs = () => {
           setIsLoading(false)
         }
       }
-      setCurrentPage(1)
     }
 
     fetchProjects()
