@@ -70,7 +70,15 @@ const FreelancerCard = ({ freelancer, index }) => {
               <p className='text-sm theme-text-secondary mt-1 line-clamp-2'>{freelancerInfo.specialty}</p>
             </div>
 
-            <span className='inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-accent/20 text-accent whitespace-nowrap'>{roleLabel}</span>
+            <div className='flex flex-col items-end gap-2 shrink-0'>
+              <span className='inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-accent/20 text-accent whitespace-nowrap'>{roleLabel}</span>
+              {freelancerInfo.isEmailVerified && (
+                <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 whitespace-nowrap'>
+                  <FaCheckCircle className='text-[10px]' />
+                  Verified
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

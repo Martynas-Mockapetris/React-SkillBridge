@@ -16,7 +16,8 @@ const announcementListingUserFields = [
   'hourlyRate',
   'showHourlyRate',
   'showLocationPublic',
-  'profileVisibility'
+  'profileVisibility',
+  'isEmailVerified'
 ].join(' ')
 
 // Create a new announcement

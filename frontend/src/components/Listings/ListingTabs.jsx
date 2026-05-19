@@ -76,7 +76,8 @@ const buildFreelancerListingModel = (announcement) => {
       hourlyRateLabel: effectiveHourlyRate !== null ? `€${effectiveHourlyRate}/hr` : 'Rate on request',
       showHourlyRate: user.showHourlyRate ?? true,
       showLocationPublic: user.showLocationPublic ?? true,
-      profileVisibility: user.profileVisibility || 'public'
+      profileVisibility: user.profileVisibility || 'public',
+      isEmailVerified: Boolean(user.isEmailVerified)
     }
   }
 }

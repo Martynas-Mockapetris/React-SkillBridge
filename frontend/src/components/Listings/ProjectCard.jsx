@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
+import { FaCalendarAlt, FaHeart, FaCheckCircle } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
@@ -98,9 +98,17 @@ const ProjectCard = ({ project, index }) => {
           <div className='flex items-center gap-3 mb-4 pb-4 border-b dark:border-light/10 border-primary/10'>
             <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-10 h-10 rounded-full object-cover' />
             <div>
-              <p className='font-medium theme-text text-sm'>
-                {project.user.firstName} {project.user.lastName}
-              </p>
+              <div className='flex items-center gap-2 flex-wrap'>
+                <p className='font-medium theme-text text-sm'>
+                  {project.user.firstName} {project.user.lastName}
+                </p>
+                {project.user.isEmailVerified && (
+                  <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                    <FaCheckCircle className='text-[10px]' />
+                    Verified
+                  </span>
+                )}
+              </div>
               <p className='text-xs theme-text-secondary'>{project.user.email}</p>
             </div>
           </div>

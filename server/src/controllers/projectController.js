@@ -202,7 +202,7 @@ const publishProject = async (req, res) => {
 const getAllProjects = async (req, res) => {
   try {
     // Show only active projects in listings
-    const projects = await Project.find({ status: 'active' }).populate('user', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
+    const projects = await Project.find({ status: 'active' }).populate('user', 'firstName lastName email profilePicture isEmailVerified').sort({ createdAt: -1 })
 
     res.json(projects)
   } catch (error) {
