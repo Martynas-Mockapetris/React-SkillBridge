@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
 import { motion } from 'framer-motion'
-import { FaUser, FaBriefcase } from 'react-icons/fa'
+import { FaUser, FaBriefcase, FaSearch } from 'react-icons/fa'
 import { useLocation } from 'react-router-dom'
 import { SearchContext } from '../../context/SearchContext'
 import ProjectCard from './ProjectCard'
@@ -153,13 +153,33 @@ const ListingTabs = () => {
   const [error, setError] = useState(null)
   const [projectFilters, setProjectFilters] = useState(defaultProjectFilters)
   const [freelancerFilters, setFreelancerFilters] = useState(defaultFreelancerFilters)
-  const { searchTerm } = useContext(SearchContext)
+  const { searchTerm, updateSearch } = useContext(SearchContext)
+  const [searchInput, setSearchInput] = useState(searchTerm)
 
   useEffect(() => {
     const nextTab = normalizeListingTab(location.state?.activeTab)
     setActiveTab(nextTab)
     setCurrentPage(1)
   }, [location.state])
+
+  useEffect(() => {
+    setSearchInput(searchTerm)
+  }, [searchTerm])
+
+  const handleSearchSubmit = () => {
+    updateSearch(searchInput.trim())
+  }
+
+  const handleSearchReset = () => {
+    setSearchInput('')
+    updateSearch('')
+  }
+
+  const handleSearchKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleSearchSubmit()
+    }
+  }
 
   useEffect(() => {
     setCurrentPage(1)
@@ -254,6 +274,10 @@ const ListingTabs = () => {
   const currentItems = activeTab === 'projects' ? filteredProjects.slice(indexOfFirstItem, indexOfLastItem) : filteredFreelancers.slice(indexOfFirstItem, indexOfLastItem)
 
   const totalPages = Math.ceil((activeTab === 'projects' ? filteredProjects.length : filteredFreelancers.length) / itemsPerPage)
+  const activeProjectFilterCount = Object.values(projectFilters).filter((value) => value !== 'all').length
+  const activeFreelancerFilterCount = Object.values(freelancerFilters).filter((value) => value !== 'all').length
+  const activeFilterCount = activeTab === 'projects' ? activeProjectFilterCount : activeFreelancerFilterCount
+  const visibleResultsCount = activeTab === 'projects' ? filteredProjects.length : filteredFreelancers.length
 
   return (
     <section className='w-full pt-0 pb-20 theme-bg relative z-[2]'>
@@ -311,34 +335,86 @@ const ListingTabs = () => {
             exit={{ opacity: 0, x: activeTab === 'projects' ? 20 : -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
-            <div className='mb-8 rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] backdrop-blur-sm p-5'>
-              <div className='flex items-center justify-between gap-3 flex-wrap mb-4'>
-                <div>
-                  <h3 className='text-lg font-semibold theme-text'>{activeTab === 'projects' ? 'Project filters' : 'Freelancer filters'}</h3>
-                  <p className='text-sm theme-text-secondary'>Refine {activeTab === 'projects' ? 'project opportunities' : 'freelancer matches'} using filters tailored to the selected tab.</p>
+            <div className='mb-8 overflow-hidden rounded-[28px] border dark:border-light/10 border-primary/10 bg-gradient-to-br from-white/80 via-white/60 to-accent/5 dark:from-light/[0.06] dark:via-light/[0.03] dark:to-accent/10 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,0.06)]'>
+              <div className='flex flex-col gap-5 border-b dark:border-light/10 border-primary/10 px-5 py-5 md:px-6'>
+                <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
+                  <div className='space-y-3'>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <span className='inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent'>
+                        {activeTab === 'projects' ? 'Project discovery' : 'Freelancer discovery'}
+                      </span>
+                      <span className='inline-flex items-center rounded-full dark:bg-light/10 bg-primary/5 px-3 py-1 text-xs font-medium theme-text-secondary'>
+                        {visibleResultsCount} result{visibleResultsCount === 1 ? '' : 's'}
+                      </span>
+                      {activeFilterCount > 0 && (
+                        <span className='inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300'>
+                          {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <h3 className='text-xl font-semibold theme-text'>{activeTab === 'projects' ? 'Narrow project opportunities' : 'Refine freelancer matches'}</h3>
+                      <p className='mt-1 max-w-2xl text-sm leading-6 theme-text-secondary'>
+                        {activeTab === 'projects'
+                          ? 'Search first, then narrow the listings by category, urgency, and budget so the project grid feels curated instead of generic.'
+                          : 'Search first, then use availability, trust, and pricing signals to quickly reduce the list to the most relevant candidates.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (activeTab === 'projects') {
+                        setProjectFilters(defaultProjectFilters)
+                      } else {
+                        setFreelancerFilters(defaultFreelancerFilters)
+                      }
+                    }}
+                    className='inline-flex items-center justify-center rounded-full border dark:border-light/10 border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary hover:border-accent hover:text-accent hover:bg-accent/5 transition-all'>
+                    Clear filters
+                  </button>
                 </div>
 
-                <button
-                  onClick={() => {
-                    if (activeTab === 'projects') {
-                      setProjectFilters(defaultProjectFilters)
-                    } else {
-                      setFreelancerFilters(defaultFreelancerFilters)
-                    }
-                  }}
-                  className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text-secondary hover:text-accent hover:border-accent transition-colors'>
-                  Clear filters
-                </button>
+                <div className='grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
+                  <label className='block'>
+                    <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{activeTab === 'projects' ? 'Search projects' : 'Search freelancers'}</span>
+                    <div className='relative'>
+                      <FaSearch className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-accent/80' size={16} />
+                      <input
+                        type='text'
+                        value={searchInput}
+                        onChange={(event) => setSearchInput(event.target.value)}
+                        onKeyDown={handleSearchKeyDown}
+                        placeholder={activeTab === 'projects' ? 'Search by title, description, or skills' : 'Search by name, specialty, or skills'}
+                        className='w-full rounded-2xl border dark:border-light/10 border-primary/10 bg-white/80 dark:bg-light/[0.06] py-3 pl-11 pr-4 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'
+                      />
+                    </div>
+                  </label>
+
+                  <div className='flex flex-col gap-3 sm:flex-row'>
+                    <button onClick={handleSearchSubmit} className='inline-flex items-center justify-center rounded-2xl bg-accent px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-accent/90'>
+                      Search
+                    </button>
+
+                    <button
+                      onClick={handleSearchReset}
+                      className='inline-flex items-center justify-center rounded-2xl border dark:border-light/10 border-primary/10 px-5 py-3 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:text-accent hover:bg-accent/5'>
+                      Reset search
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {activeTab === 'projects' ? (
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <label className='space-y-2'>
-                    <span className='block text-sm font-medium theme-text'>Category</span>
+                <div className='grid grid-cols-1 gap-4 p-5 md:grid-cols-3 md:p-6'>
+                  <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
+                    <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Category</span>
+                    <span className='mt-1 block text-sm theme-text-secondary'>Match projects by discipline</span>
                     <select
                       value={projectFilters.category}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, category: event.target.value }))}
-                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      className='theme-select mt-4 w-full rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.06] px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
                       <option value='all'>All categories</option>
                       {projectCategories.map((category) => (
                         <option key={category} value={category}>
@@ -348,12 +424,13 @@ const ListingTabs = () => {
                     </select>
                   </label>
 
-                  <label className='space-y-2'>
-                    <span className='block text-sm font-medium theme-text'>Priority</span>
+                  <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
+                    <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Priority</span>
+                    <span className='mt-1 block text-sm theme-text-secondary'>Surface the urgency level you want</span>
                     <select
                       value={projectFilters.priority}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, priority: event.target.value }))}
-                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      className='theme-select mt-4 w-full rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.06] px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
                       <option value='all'>Any priority</option>
                       <option value='low'>Low</option>
                       <option value='medium'>Medium</option>
@@ -361,12 +438,13 @@ const ListingTabs = () => {
                     </select>
                   </label>
 
-                  <label className='space-y-2'>
-                    <span className='block text-sm font-medium theme-text'>Budget</span>
+                  <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
+                    <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Budget</span>
+                    <span className='mt-1 block text-sm theme-text-secondary'>Screen by commercial fit</span>
                     <select
                       value={projectFilters.budget}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, budget: event.target.value }))}
-                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      className='theme-select mt-4 w-full rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.06] px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
                       <option value='all'>Any budget</option>
                       <option value='under-500'>Under 500 EUR</option>
                       <option value='500-2000'>500-2000 EUR</option>
@@ -376,13 +454,14 @@ const ListingTabs = () => {
                   </label>
                 </div>
               ) : (
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <label className='space-y-2'>
-                    <span className='block text-sm font-medium theme-text'>Availability</span>
+                <div className='grid grid-cols-1 gap-4 p-5 md:grid-cols-3 md:p-6'>
+                  <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
+                    <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Availability</span>
+                    <span className='mt-1 block text-sm theme-text-secondary'>See who can start sooner</span>
                     <select
                       value={freelancerFilters.availability}
                       onChange={(event) => setFreelancerFilters((current) => ({ ...current, availability: event.target.value }))}
-                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      className='theme-select mt-4 w-full rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.06] px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
                       <option value='all'>Any availability</option>
                       <option value='available'>Available</option>
                       <option value='limited'>Limited availability</option>
@@ -390,24 +469,26 @@ const ListingTabs = () => {
                     </select>
                   </label>
 
-                  <label className='space-y-2'>
-                    <span className='block text-sm font-medium theme-text'>Verification</span>
+                  <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
+                    <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Verification</span>
+                    <span className='mt-1 block text-sm theme-text-secondary'>Use trust as a quick screening signal</span>
                     <select
                       value={freelancerFilters.verified}
                       onChange={(event) => setFreelancerFilters((current) => ({ ...current, verified: event.target.value }))}
-                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      className='theme-select mt-4 w-full rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.06] px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
                       <option value='all'>All profiles</option>
                       <option value='verified'>Verified only</option>
                       <option value='unverified'>Unverified only</option>
                     </select>
                   </label>
 
-                  <label className='space-y-2'>
-                    <span className='block text-sm font-medium theme-text'>Hourly rate</span>
+                  <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
+                    <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Hourly rate</span>
+                    <span className='mt-1 block text-sm theme-text-secondary'>Keep pricing expectations aligned</span>
                     <select
                       value={freelancerFilters.rate}
                       onChange={(event) => setFreelancerFilters((current) => ({ ...current, rate: event.target.value }))}
-                      className='w-full px-4 py-3 rounded-xl theme-input theme-text border dark:border-light/10 border-primary/10'>
+                      className='theme-select mt-4 w-full rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.06] px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
                       <option value='all'>Any rate</option>
                       <option value='under-25'>Under 25 EUR/hr</option>
                       <option value='25-50'>25-50 EUR/hr</option>
@@ -418,6 +499,15 @@ const ListingTabs = () => {
                   </label>
                 </div>
               )}
+
+              <div className='flex flex-col gap-2 border-t dark:border-light/10 border-primary/10 px-5 py-4 text-sm theme-text-secondary md:flex-row md:items-center md:justify-between md:px-6'>
+                <p>
+                  {activeFilterCount > 0
+                    ? `Showing ${visibleResultsCount} refined result${visibleResultsCount === 1 ? '' : 's'} for the current filters.`
+                    : `Showing all ${activeTab === 'projects' ? 'available projects' : 'available freelancers'} right now.`}
+                </p>
+                <p className='text-xs uppercase tracking-[0.16em] opacity-70'>{activeTab === 'projects' ? 'Discovery tuned for clients' : 'Discovery tuned for hiring'}</p>
+              </div>
             </div>
 
             {/* Error message */}
