@@ -59,7 +59,7 @@ const FreelancerCard = ({ freelancer, index }) => {
   )
 
   const CardContent = ({ blurred = false }) => (
-    <div className={blurred ? 'opacity-50 pointer-events-none' : ''}>
+    <div className={`${blurred ? 'opacity-50 pointer-events-none ' : ''}flex flex-col h-full`}>
       <div className='flex items-start gap-4 mb-4'>
         <img src={freelancerInfo.profilePicture || `https://i.pravatar.cc/150?u=${freelancerInfo._id}`} alt={freelancerInfo.name} className='w-14 h-14 rounded-full object-cover flex-shrink-0 border border-accent/20' />
 
@@ -104,7 +104,7 @@ const FreelancerCard = ({ freelancer, index }) => {
         </div>
       </div>
 
-      <div className='flex items-center justify-between gap-3 border-t border-accent/20 pt-4'>
+      <div className='mt-auto flex items-center justify-between gap-3 border-t border-accent/20 pt-4'>
         <div className='flex items-center gap-2 theme-text-secondary text-sm'>
           <FaCheckCircle className='text-accent' />
           <span>View Profile</span>
