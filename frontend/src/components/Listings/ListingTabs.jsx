@@ -376,19 +376,19 @@ const ListingTabs = () => {
                         onChange={(event) => setSearchInput(event.target.value)}
                         onKeyDown={handleSearchKeyDown}
                         placeholder={activeTab === 'projects' ? 'Search by title, description, or skills' : 'Search by name, specialty, or skills'}
-                        className='w-full rounded-lg border dark:border-light/10 border-primary/10 bg-white/80 dark:bg-light/[0.06] py-3 pl-11 pr-4 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'
+                        className='h-[50px] w-full rounded-lg border dark:border-light/10 border-primary/10 bg-white/80 dark:bg-light/[0.06] pl-11 pr-4 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'
                       />
                     </div>
                   </label>
 
                   <div className='flex flex-col gap-3 sm:flex-row'>
-                    <button onClick={handleSearchSubmit} className='inline-flex items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-accent/90'>
+                    <button onClick={handleSearchSubmit} className='inline-flex h-[50px] items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-all hover:bg-accent/90'>
                       Search
                     </button>
 
                     <button
                       onClick={handleSearchReset}
-                      className='inline-flex items-center justify-center rounded-lg border dark:border-light/10 border-primary/10 px-5 py-3 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:text-accent hover:bg-accent/5'>
+                      className='inline-flex h-[50px] items-center justify-center rounded-lg border dark:border-light/10 border-primary/10 px-5 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:text-accent hover:bg-accent/5'>
                       Reset search
                     </button>
                   </div>
