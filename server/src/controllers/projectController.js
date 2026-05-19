@@ -170,6 +170,11 @@ const publishProject = async (req, res) => {
     if (req.user.isLocked) {
       return res.status(403).json({ message: 'Your account is locked. You cannot publish projects.' })
     }
+
+    if (!req.user.isEmailVerified) {
+      return res.status(403).json({ message: 'Verify your email before publishing projects.' })
+    }
+
     const projectId = req.params.id
     const project = await Project.findById(projectId)
 
