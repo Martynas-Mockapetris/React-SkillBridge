@@ -192,6 +192,8 @@ const UserDetail = () => {
   const workPreferenceLabel = formatWorkPreferenceLabel(freelancer.workPreference)
   const experienceLevelLabel = formatExperienceLevelLabel(freelancer.experienceLevel)
   const preferredProjectSizeLabel = formatProjectSizeLabel(freelancer.preferredProjectSize)
+  const canDirectMessage = freelancer.allowDirectMessages !== false
+  const canInviteToProjects = freelancer.allowProjectInvites !== false
   const announcementServicePreview = parseCommaSeparatedList(freelancer.servicesOffered).slice(0, 3)
   const announcementCategoryPreview = parseCommaSeparatedList(freelancer.serviceCategories).slice(0, 3)
 
@@ -244,26 +246,37 @@ const UserDetail = () => {
               </div>
             )}
             {/* Action Buttons */}
-            <div className='flex gap-3'>
-              <motion.button onClick={() => setShowContactModal(true)} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all' whileHover={{ scale: 1.05 }}>
-                Contact Freelancer
-              </motion.button>
-              <motion.button
-                onClick={() => {
-                  if (!currentUser) {
-                    alert('Please login to hire a freelancer')
-                    return
-                  }
-                  setShowHireModal(true)
-                }}
-                className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'
-                whileHover={{ scale: 1.05 }}>
-                Hire
-              </motion.button>
+            <div className='flex flex-wrap gap-3'>
+              {canDirectMessage ? (
+                <motion.button onClick={() => setShowContactModal(true)} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all' whileHover={{ scale: 1.05 }}>
+                  Contact Freelancer
+                </motion.button>
+              ) : (
+                <div className='px-6 py-2 rounded-lg bg-gray-100 dark:bg-light/10 theme-text-secondary text-sm border dark:border-light/10 border-primary/10'>Direct messages disabled</div>
+              )}
+
+              {canInviteToProjects ? (
+                <motion.button
+                  onClick={() => {
+                    if (!currentUser) {
+                      alert('Please login to hire a freelancer')
+                      return
+                    }
+                    setShowHireModal(true)
+                  }}
+                  className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'
+                  whileHover={{ scale: 1.05 }}>
+                  Hire
+                </motion.button>
+              ) : (
+                <div className='px-6 py-2 rounded-lg bg-gray-100 dark:bg-light/10 theme-text-secondary text-sm border dark:border-light/10 border-primary/10'>Project invites disabled</div>
+              )}
+
               <motion.button onClick={handleToggleFavorite} className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
                 {isFavorited ? <FaHeart /> : <FaRegHeart />}
               </motion.button>
             </div>
+            {(!canDirectMessage || !canInviteToProjects) && <p className='mt-3 text-sm theme-text-secondary'>This freelancer has limited contact preferences enabled in their profile settings.</p>}
           </div>
         </motion.div>
 
