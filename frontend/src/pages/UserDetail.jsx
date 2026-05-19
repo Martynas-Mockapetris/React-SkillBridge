@@ -192,6 +192,8 @@ const UserDetail = () => {
   const workPreferenceLabel = formatWorkPreferenceLabel(freelancer.workPreference)
   const experienceLevelLabel = formatExperienceLevelLabel(freelancer.experienceLevel)
   const preferredProjectSizeLabel = formatProjectSizeLabel(freelancer.preferredProjectSize)
+  const announcementServicePreview = parseCommaSeparatedList(freelancer.servicesOffered).slice(0, 3)
+  const announcementCategoryPreview = parseCommaSeparatedList(freelancer.serviceCategories).slice(0, 3)
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
@@ -373,19 +375,65 @@ const UserDetail = () => {
             <h2 className='text-2xl font-bold theme-text mb-6'>Active Announcements</h2>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               {announcements.map((announcement) => (
-                <motion.div key={announcement._id} className='theme-card p-6 rounded-lg'>
-                  <h3 className='text-xl font-bold theme-text mb-2'>{announcement.title}</h3>
-                  <p className='theme-text-secondary mb-4'>{announcement.background}</p>
-                  <div className='flex justify-between items-center'>
-                    <span className='font-bold theme-text'>€{announcement.hourlyRate}/hr</span>
-                    <div className='flex gap-2 flex-wrap'>
-                      {announcement.skills?.map((skill) => (
-                        <span key={skill} className='text-xs bg-accent/20 text-accent px-2 py-1 rounded'>
-                          {skill}
-                        </span>
-                      ))}
+                <motion.div
+                  key={announcement._id}
+                  className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10 backdrop-blur-sm h-full flex flex-col'>
+                  <div className='flex items-start justify-between gap-4 mb-4'>
+                    <div>
+                      <p className='text-[11px] uppercase tracking-wide text-accent/80 mb-2'>Freelance Offer</p>
+                      <h3 className='text-xl font-bold theme-text leading-snug'>{announcement.title}</h3>
                     </div>
+                    <span className='shrink-0 inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-accent/15 text-accent'>€{announcement.hourlyRate}/hr</span>
                   </div>
+
+                  <p className='theme-text-secondary leading-7 mb-5'>{announcement.background}</p>
+
+                  {announcement.skills?.length > 0 && (
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Announcement Skills</p>
+                      <div className='flex flex-wrap gap-2'>
+                        {announcement.skills.map((skill) => (
+                          <span key={skill} className='px-3 py-1 rounded-full text-sm bg-accent/15 text-accent'>
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {(announcementServicePreview.length > 0 || announcementCategoryPreview.length > 0) && (
+                    <div className='mt-auto pt-4 border-t dark:border-light/10 border-primary/10 grid sm:grid-cols-2 gap-4'>
+                      <div>
+                        <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Services</p>
+                        <div className='flex flex-wrap gap-2'>
+                          {announcementServicePreview.length > 0 ? (
+                            announcementServicePreview.map((service) => (
+                              <span key={service} className='px-3 py-1 rounded-full text-xs bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                                {service}
+                              </span>
+                            ))
+                          ) : (
+                            <span className='text-sm theme-text-secondary'>Not specified</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Categories</p>
+                        <div className='flex flex-wrap gap-2'>
+                          {announcementCategoryPreview.length > 0 ? (
+                            announcementCategoryPreview.map((category) => (
+                              <span key={category} className='px-3 py-1 rounded-full text-xs bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                                {category}
+                              </span>
+                            ))
+                          ) : (
+                            <span className='text-sm theme-text-secondary'>Not specified</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>
