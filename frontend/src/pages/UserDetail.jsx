@@ -265,7 +265,7 @@ const UserDetail = () => {
           </div>
         </motion.div>
 
-        <motion.div className='mb-12 grid lg:grid-cols-[1.2fr,0.8fr] gap-6' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
+        <motion.div className='mb-12 grid lg:grid-cols-2 gap-6 items-stretch' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
           <div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10'>
             <h2 className='text-2xl font-bold theme-text mb-4'>Professional Snapshot</h2>
 
@@ -329,37 +329,39 @@ const UserDetail = () => {
             )}
           </div>
 
-          <div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10'>
-            <h2 className='text-2xl font-bold theme-text mb-4'>Working Style</h2>
-            <div className='space-y-4'>
-              <div>
-                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Work Preference</p>
-                <p className='theme-text-secondary'>{workPreferenceLabel}</p>
+          <div className='h-full p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10'>
+            <h2 className='text-2xl font-bold theme-text mb-3'>Working Style</h2>
+            <div className='grid sm:grid-cols-2 gap-3'>
+              <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border dark:border-light/10 border-primary/10'>
+                <p className='text-[11px] uppercase tracking-wide theme-text-muted mb-1'>Work Preference</p>
+                <p className='text-sm theme-text-secondary leading-6'>{workPreferenceLabel}</p>
               </div>
 
-              <div>
-                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Response Time</p>
-                <p className='theme-text-secondary'>{responseTimeLabel}</p>
+              <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border dark:border-light/10 border-primary/10'>
+                <p className='text-[11px] uppercase tracking-wide theme-text-muted mb-1'>Response Time</p>
+                <p className='text-sm theme-text-secondary leading-6'>{responseTimeLabel}</p>
               </div>
 
-              <div>
-                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Experience Level</p>
-                <p className='theme-text-secondary'>{experienceLevelLabel}</p>
+              <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border dark:border-light/10 border-primary/10'>
+                <p className='text-[11px] uppercase tracking-wide theme-text-muted mb-1'>Experience Level</p>
+                <p className='text-sm theme-text-secondary leading-6'>{experienceLevelLabel}</p>
               </div>
 
-              <div>
-                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Preferred Project Size</p>
-                <p className='theme-text-secondary'>{preferredProjectSizeLabel}</p>
+              <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border dark:border-light/10 border-primary/10'>
+                <p className='text-[11px] uppercase tracking-wide theme-text-muted mb-1'>Preferred Project Size</p>
+                <p className='text-sm theme-text-secondary leading-6'>{preferredProjectSizeLabel}</p>
               </div>
 
-              <div>
-                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Preferred Engagements</p>
-                <p className='theme-text-secondary'>{Array.isArray(freelancer.preferredEngagements) && freelancer.preferredEngagements.length > 0 ? freelancer.preferredEngagements.join(', ') : 'Not specified'}</p>
+              <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border dark:border-light/10 border-primary/10'>
+                <p className='text-[11px] uppercase tracking-wide theme-text-muted mb-1'>Preferred Engagements</p>
+                <p className='text-sm theme-text-secondary leading-6'>
+                  {Array.isArray(freelancer.preferredEngagements) && freelancer.preferredEngagements.length > 0 ? freelancer.preferredEngagements.join(', ') : 'Not specified'}
+                </p>
               </div>
 
-              <div>
-                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Availability Details</p>
-                <p className='theme-text-secondary'>{freelancer.availabilityDetails || 'No additional availability details provided.'}</p>
+              <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border dark:border-light/10 border-primary/10'>
+                <p className='text-[11px] uppercase tracking-wide theme-text-muted mb-1'>Availability Details</p>
+                <p className='text-sm theme-text-secondary leading-6'>{freelancer.availabilityDetails || 'No additional availability details provided.'}</p>
               </div>
             </div>
           </div>
