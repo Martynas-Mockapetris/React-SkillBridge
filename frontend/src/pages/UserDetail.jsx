@@ -25,6 +25,66 @@ const formatAvailabilityLabel = (value) => {
   }
 }
 
+const formatResponseTimeLabel = (value) => {
+  switch (value) {
+    case 'within_24_hours':
+      return 'Within 24 hours'
+    case 'within_3_days':
+      return 'Within 3 days'
+    case 'within_week':
+      return 'Within a week'
+    case 'flexible':
+      return 'Flexible'
+    default:
+      return 'Not specified'
+  }
+}
+
+const formatWorkPreferenceLabel = (value) => {
+  switch (value) {
+    case 'remote':
+      return 'Remote'
+    case 'hybrid':
+      return 'Hybrid'
+    case 'onsite':
+      return 'On-site'
+    case 'flexible':
+      return 'Flexible'
+    default:
+      return 'Not specified'
+  }
+}
+
+const formatExperienceLevelLabel = (value) => {
+  switch (value) {
+    case 'entry':
+      return 'Entry level'
+    case 'intermediate':
+      return 'Intermediate'
+    case 'expert':
+      return 'Expert'
+    default:
+      return 'Not specified'
+  }
+}
+
+const formatProjectSizeLabel = (value) => {
+  switch (value) {
+    case 'small':
+      return 'Small'
+    case 'medium':
+      return 'Medium'
+    case 'large':
+      return 'Large'
+    case 'ongoing':
+      return 'Ongoing'
+    case 'flexible':
+      return 'Flexible'
+    default:
+      return 'Not specified'
+  }
+}
+
 const parseCommaSeparatedList = (value) => {
   if (!value || typeof value !== 'string') return []
 
@@ -128,6 +188,10 @@ const UserDetail = () => {
   const visibleHourlyRate = freelancer.showHourlyRate && freelancer.hourlyRate ? `€${freelancer.hourlyRate}/hr` : 'Rate on request'
   const profileSkills = parseCommaSeparatedList(freelancer.skills).slice(0, 6)
   const offeredServices = parseCommaSeparatedList(freelancer.servicesOffered).slice(0, 4)
+  const responseTimeLabel = formatResponseTimeLabel(freelancer.responseTime)
+  const workPreferenceLabel = formatWorkPreferenceLabel(freelancer.workPreference)
+  const experienceLevelLabel = formatExperienceLevelLabel(freelancer.experienceLevel)
+  const preferredProjectSizeLabel = formatProjectSizeLabel(freelancer.preferredProjectSize)
 
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
@@ -270,12 +334,22 @@ const UserDetail = () => {
             <div className='space-y-4'>
               <div>
                 <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Work Preference</p>
-                <p className='theme-text-secondary'>{freelancer.workPreference || 'Flexible'}</p>
+                <p className='theme-text-secondary'>{workPreferenceLabel}</p>
               </div>
 
               <div>
                 <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Response Time</p>
-                <p className='theme-text-secondary'>{freelancer.responseTime || 'Within 24 hours'}</p>
+                <p className='theme-text-secondary'>{responseTimeLabel}</p>
+              </div>
+
+              <div>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Experience Level</p>
+                <p className='theme-text-secondary'>{experienceLevelLabel}</p>
+              </div>
+
+              <div>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Preferred Project Size</p>
+                <p className='theme-text-secondary'>{preferredProjectSizeLabel}</p>
               </div>
 
               <div>
