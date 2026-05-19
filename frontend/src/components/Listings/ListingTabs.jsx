@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { motion } from 'framer-motion'
 import { FaUser, FaBriefcase } from 'react-icons/fa'
-import { useContext } from 'react'
+import { useLocation } from 'react-router-dom'
 import { SearchContext } from '../../context/SearchContext'
 import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
@@ -82,14 +82,29 @@ const buildFreelancerListingModel = (announcement) => {
   }
 }
 
+const normalizeListingTab = (value) => {
+  if (value === 'freelancers' || value === 'talent') return 'freelancers'
+  if (value === 'projects' || value === 'work') return 'projects'
+  return 'projects'
+}
+
 const ListingTabs = () => {
-  const [activeTab, setActiveTab] = useState('projects')
+  const location = useLocation()
+  const initialTab = normalizeListingTab(location.state?.activeTab)
+
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [projects, setProjects] = useState([])
   const [freelancers, setFreelancers] = useState([])
   const [error, setError] = useState(null)
   const { searchTerm } = useContext(SearchContext)
+
+  useEffect(() => {
+    const nextTab = normalizeListingTab(location.state?.activeTab)
+    setActiveTab(nextTab)
+    setCurrentPage(1)
+  }, [location.state])
 
   // Function to filter projects by search term
   const filterProjects = (projectsList) => {

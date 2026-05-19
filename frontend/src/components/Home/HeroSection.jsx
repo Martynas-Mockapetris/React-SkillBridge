@@ -41,9 +41,10 @@ const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {}, sectionBa
 
   const descriptionClass = contentAlign === 'left' ? 'theme-text-secondary text-lg md:text-xl max-w-2xl' : 'theme-text-secondary text-lg md:text-xl max-w-2xl mx-auto'
 
-  // Nukreipimas i listings puslapi su papildoma informacija apie aktyvaus tabo busena
+  // Navigate to listings with a tab value that ListingTabs can consume directly
   const handleNavigation = (type) => {
-    navigate('/listings', { state: { activeTab: type } })
+    const targetTab = type === 'talent' ? 'freelancers' : 'projects'
+    navigate('/listings', { state: { activeTab: targetTab } })
   }
 
   return (
