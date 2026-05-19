@@ -25,6 +25,12 @@ export const createAnnouncement = async (req, res) => {
     const { hourlyRate, skills, background, title } = req.body
     const userId = req.user._id
 
+    if (!req.user.isEmailVerified) {
+      return res.status(403).json({
+        message: 'Verify your email before publishing announcements.'
+      })
+    }
+
     // Validate required fields
     if (!hourlyRate || !skills || !background || !title) {
       return res.status(400).json({ message: 'All fields are required' })
@@ -157,7 +163,15 @@ export const toggleAnnouncementStatus = async (req, res) => {
       return res.status(403).json({ message: 'You can only toggle your own announcements' })
     }
 
-    announcement.isActive = !announcement.isActive
+    const nextIsActive = !announcement.isActive
+
+    if (nextIsActive && !req.user.isEmailVerified) {
+      return res.status(403).json({
+        message: 'Verify your email before publishing announcements.'
+      })
+    }
+
+    announcement.isActive = nextIsActive
     await announcement.save()
 
     res.json({ message: `Announcement ${announcement.isActive ? 'resumed' : 'paused'}`, announcement })
