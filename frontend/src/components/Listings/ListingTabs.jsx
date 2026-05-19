@@ -10,6 +10,77 @@ import { getAllProjects } from '../../services/projectService'
 import { getAllAnnouncements } from '../../services/announcementService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 
+const parseCommaSeparatedList = (value) => {
+  if (!value || typeof value !== 'string') return []
+
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+const formatAvailabilityLabel = (value) => {
+  switch (value) {
+    case 'available':
+      return 'Available'
+    case 'limited':
+      return 'Limited availability'
+    case 'unavailable':
+      return 'Unavailable'
+    default:
+      return 'Availability not specified'
+  }
+}
+
+const buildFreelancerListingModel = (announcement) => {
+  const user = announcement.userId || {}
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || 'Freelancer'
+
+  const fallbackSkills = parseCommaSeparatedList(user.skills)
+  const fallbackCategories = parseCommaSeparatedList(user.serviceCategories)
+  const primarySkills = (announcement.skills && announcement.skills.length > 0 ? announcement.skills : [...fallbackSkills, ...fallbackCategories]).slice(0, 4)
+
+  const specialty = user.headline?.trim() || fallbackCategories[0] || 'Freelancer available for project work'
+  const publicLocation = user.showLocationPublic && user.location ? user.location : ''
+  const effectiveHourlyRate = user.showHourlyRate ? (user.hourlyRate ?? announcement.hourlyRate ?? null) : null
+
+  return {
+    _id: announcement._id,
+    title: announcement.title,
+    background: announcement.background,
+    hourlyRate: announcement.hourlyRate,
+    skills: announcement.skills,
+    isActive: announcement.isActive,
+    name,
+    specialty,
+    searchText: [name, specialty, announcement.title, announcement.background, ...primarySkills].filter(Boolean).join(' ').toLowerCase(),
+    freelancer: {
+      _id: user._id,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      name,
+      specialty,
+      profilePicture: user.profilePicture || '',
+      userType: user.userType,
+      headline: user.headline || '',
+      availabilityStatus: user.availabilityStatus || 'available',
+      availabilityLabel: formatAvailabilityLabel(user.availabilityStatus),
+      experienceLevel: user.experienceLevel || 'entry',
+      yearsOfExperience: user.yearsOfExperience ?? 0,
+      skills: user.skills || '',
+      serviceCategories: user.serviceCategories || '',
+      primarySkills,
+      location: publicLocation,
+      timezone: user.timezone || '',
+      hourlyRate: effectiveHourlyRate,
+      hourlyRateLabel: effectiveHourlyRate !== null ? `€${effectiveHourlyRate}/hr` : 'Rate on request',
+      showHourlyRate: user.showHourlyRate ?? true,
+      showLocationPublic: user.showLocationPublic ?? true,
+      profileVisibility: user.profileVisibility || 'public'
+    }
+  }
+}
+
 const ListingTabs = () => {
   const [activeTab, setActiveTab] = useState('projects')
   const [isLoading, setIsLoading] = useState(true)
@@ -34,13 +105,11 @@ const ListingTabs = () => {
 
   // Function to filter freelancers by search term
   const filterFreelancers = (freelancersList) => {
-    if (!searchTerm) return freelancersList // If no search, return all
+    if (!searchTerm) return freelancersList
 
-    return freelancersList.filter(
-      (freelancer) =>
-        // Search in name and specialty
-        freelancer.name.toLowerCase().includes(searchTerm.toLowerCase()) || freelancer.specialty.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const normalizedSearch = searchTerm.toLowerCase()
+
+    return freelancersList.filter((freelancer) => freelancer.searchText?.includes(normalizedSearch))
   }
 
   // Fetch projects from API
@@ -70,22 +139,7 @@ const ListingTabs = () => {
           // Filter to only include announcements from freelancers or both users
           const filteredAnnouncements = announcements.filter((announcement) => announcement.userId && ['freelancer', 'both'].includes(announcement.userId.userType))
 
-          // Map announcements to card format (each announcement = separate card)
-          const mapped = filteredAnnouncements.map((announcement) => ({
-            _id: announcement._id,
-            title: announcement.title,
-            background: announcement.background,
-            hourlyRate: announcement.hourlyRate,
-            skills: announcement.skills,
-            isActive: announcement.isActive,
-            freelancer: {
-              _id: announcement.userId._id,
-              firstName: announcement.userId.firstName,
-              lastName: announcement.userId.lastName,
-              profilePicture: announcement.userId.profilePicture,
-              userType: announcement.userId.userType
-            }
-          }))
+          const mapped = filteredAnnouncements.map(buildFreelancerListingModel)
 
           setFreelancers(mapped)
         } catch (err) {
