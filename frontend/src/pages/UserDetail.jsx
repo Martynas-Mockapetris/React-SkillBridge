@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaStar, FaArrowLeft, FaHeart, FaRegHeart, FaPhone, FaEnvelope } from 'react-icons/fa'
+import { FaStar, FaArrowLeft, FaHeart, FaRegHeart, FaPhone, FaEnvelope, FaBriefcase, FaClock, FaEuroSign, FaMapMarkerAlt, FaGlobe, FaTools, FaCheckCircle } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { getUserById, addFreelancerToFavorites, removeFreelancerFromFavorites, getUserProfile } from '../services/userService'
@@ -11,6 +11,28 @@ import LoadingSpinner from '../components/shared/LoadingSpinner'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import DirectContactModal from '../modal/DirectContactModal'
 import HireFreelancerModal from '../modal/HireFreelancerModal'
+
+const formatAvailabilityLabel = (value) => {
+  switch (value) {
+    case 'available':
+      return 'Available'
+    case 'limited':
+      return 'Limited availability'
+    case 'unavailable':
+      return 'Unavailable'
+    default:
+      return 'Availability not specified'
+  }
+}
+
+const parseCommaSeparatedList = (value) => {
+  if (!value || typeof value !== 'string') return []
+
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
 
 const UserDetail = () => {
   const { freelancerId } = useParams()
@@ -101,6 +123,12 @@ const UserDetail = () => {
     }
   }
 
+  const availabilityLabel = formatAvailabilityLabel(freelancer.availabilityStatus)
+  const visibleLocation = freelancer.showLocationPublic ? freelancer.location : ''
+  const visibleHourlyRate = freelancer.showHourlyRate && freelancer.hourlyRate ? `€${freelancer.hourlyRate}/hr` : 'Rate on request'
+  const profileSkills = parseCommaSeparatedList(freelancer.skills).slice(0, 6)
+  const offeredServices = parseCommaSeparatedList(freelancer.servicesOffered).slice(0, 4)
+
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
       {/* Molecular patterns */}
@@ -129,7 +157,15 @@ const UserDetail = () => {
             <h1 className='text-4xl font-bold theme-text mb-2'>
               {freelancer.firstName} {freelancer.lastName}
             </h1>
-            <p className='theme-text-secondary mb-2'>Freelancer</p>
+            <div className='flex flex-wrap items-center gap-2 mb-2'>
+              <p className='theme-text-secondary'>{freelancer.headline || 'Freelancer'}</p>
+              {freelancer.isEmailVerified && (
+                <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                  <FaCheckCircle className='text-[10px]' />
+                  Verified
+                </span>
+              )}
+            </div>
             {ratingStats && (
               <div className='flex items-center gap-3 mb-4'>
                 <span className='text-2xl font-bold text-accent'>{ratingStats.averageRating.toFixed(1)}</span>
@@ -161,6 +197,96 @@ const UserDetail = () => {
               <motion.button onClick={handleToggleFavorite} className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
                 {isFavorited ? <FaHeart /> : <FaRegHeart />}
               </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div className='mb-12 grid lg:grid-cols-[1.2fr,0.8fr] gap-6' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
+          <div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10'>
+            <h2 className='text-2xl font-bold theme-text mb-4'>Professional Snapshot</h2>
+
+            {freelancer.bio && <p className='theme-text-secondary leading-7 mb-5'>{freelancer.bio}</p>}
+
+            <div className='flex flex-wrap gap-3 mb-5'>
+              <span className='inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                <FaClock className='text-accent' />
+                {availabilityLabel}
+              </span>
+
+              <span className='inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                <FaBriefcase className='text-accent' />
+                {freelancer.yearsOfExperience > 0 ? `Years of experience: ${freelancer.yearsOfExperience}+` : 'Years of experience: N/A'}
+              </span>
+
+              <span className='inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                <FaEuroSign className='text-accent' />
+                {visibleHourlyRate}
+              </span>
+
+              {visibleLocation && (
+                <span className='inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                  <FaMapMarkerAlt className='text-accent' />
+                  {visibleLocation}
+                </span>
+              )}
+
+              {freelancer.timezone && (
+                <span className='inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                  <FaGlobe className='text-accent' />
+                  {freelancer.timezone}
+                </span>
+              )}
+            </div>
+
+            {profileSkills.length > 0 && (
+              <div className='mb-5'>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-3'>Core Skills</p>
+                <div className='flex flex-wrap gap-2'>
+                  {profileSkills.map((skill) => (
+                    <span key={skill} className='px-3 py-1 rounded-full text-sm bg-accent/15 text-accent'>
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {offeredServices.length > 0 && (
+              <div>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-3'>Services Offered</p>
+                <div className='flex flex-wrap gap-2'>
+                  {offeredServices.map((service) => (
+                    <span key={service} className='px-3 py-1 rounded-full text-sm bg-primary/10 dark:bg-light/10 theme-text-secondary border dark:border-light/10 border-primary/10'>
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10'>
+            <h2 className='text-2xl font-bold theme-text mb-4'>Working Style</h2>
+            <div className='space-y-4'>
+              <div>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Work Preference</p>
+                <p className='theme-text-secondary'>{freelancer.workPreference || 'Flexible'}</p>
+              </div>
+
+              <div>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Response Time</p>
+                <p className='theme-text-secondary'>{freelancer.responseTime || 'Within 24 hours'}</p>
+              </div>
+
+              <div>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Preferred Engagements</p>
+                <p className='theme-text-secondary'>{Array.isArray(freelancer.preferredEngagements) && freelancer.preferredEngagements.length > 0 ? freelancer.preferredEngagements.join(', ') : 'Not specified'}</p>
+              </div>
+
+              <div>
+                <p className='text-xs uppercase tracking-wide theme-text-muted mb-1'>Availability Details</p>
+                <p className='theme-text-secondary'>{freelancer.availabilityDetails || 'No additional availability details provided.'}</p>
+              </div>
             </div>
           </div>
         </motion.div>
