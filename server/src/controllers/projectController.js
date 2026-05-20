@@ -3,10 +3,16 @@ import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
-const ADMIN_AUDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'isLocked', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']
-const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status']
+const ADMIN_AUDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'projectBrief', 'isLocked', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']
+const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'projectBrief']
 const ALLOWED_PROJECT_PRIORITIES = ['low', 'medium', 'high']
 const ALLOWED_PROJECT_STATUSES = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
+
+const PROJECT_BRIEF_EXPERIENCE_LEVELS = ['not_specified', 'junior', 'mid', 'senior', 'expert']
+const PROJECT_BRIEF_DURATIONS = ['not_specified', 'less_than_1_week', '1_to_2_weeks', '2_to_4_weeks', '1_to_3_months', '3_plus_months', 'ongoing']
+const PROJECT_BRIEF_WORKLOADS = ['not_specified', 'under_10_hours', '10_to_20_hours', '20_to_30_hours', '30_plus_hours', 'full_time']
+const PROJECT_BRIEF_START_PREFERENCES = ['not_specified', 'immediately', 'this_week', 'within_2_weeks', 'flexible']
+const PROJECT_BRIEF_BUDGET_TYPES = ['not_specified', 'fixed', 'hourly', 'negotiable']
 
 const ALLOWED_ADMIN_STATUS_TRANSITIONS = {
   draft: ['active', 'inactive', 'archived', 'paused', 'cancelled'],
@@ -63,6 +69,46 @@ const normalizeRateNegotiation = (value) => {
   }
 
   return typeof value === 'object' ? value : undefined
+}
+
+const normalizeOptionalText = (value) => {
+  if (value === undefined || value === null) return ''
+  return String(value).trim()
+}
+
+const normalizeEnumValue = (value, allowedValues, fallback = 'not_specified') => {
+  if (value === undefined || value === null || value === '') {
+    return fallback
+  }
+
+  const normalizedValue = String(value).trim()
+  return allowedValues.includes(normalizedValue) ? normalizedValue : fallback
+}
+
+const normalizeProjectBrief = (value) => {
+  let parsedValue = value
+
+  if (typeof value === 'string') {
+    try {
+      parsedValue = JSON.parse(value)
+    } catch {
+      parsedValue = null
+    }
+  }
+
+  const brief = parsedValue && typeof parsedValue === 'object' && !Array.isArray(parsedValue) ? parsedValue : {}
+
+  return {
+    objective: normalizeOptionalText(brief.objective),
+    deliverables: normalizeStringArray(brief.deliverables),
+    scopeNotes: normalizeOptionalText(brief.scopeNotes),
+    experienceLevel: normalizeEnumValue(brief.experienceLevel, PROJECT_BRIEF_EXPERIENCE_LEVELS),
+    duration: normalizeEnumValue(brief.duration, PROJECT_BRIEF_DURATIONS),
+    workload: normalizeEnumValue(brief.workload, PROJECT_BRIEF_WORKLOADS),
+    startPreference: normalizeEnumValue(brief.startPreference, PROJECT_BRIEF_START_PREFERENCES),
+    budgetType: normalizeEnumValue(brief.budgetType, PROJECT_BRIEF_BUDGET_TYPES),
+    applicationInstructions: normalizeOptionalText(brief.applicationInstructions)
+  }
 }
 
 const validateAdminProjectUpdatePayload = (payload) => {
@@ -123,10 +169,11 @@ const createProject = async (req, res) => {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
-    const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation } = req.body
+    const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation, projectBrief } = req.body
 
     const normalizedSkills = normalizeStringArray(skills)
     const normalizedRateNegotiation = normalizeRateNegotiation(rateNegotiation)
+    const normalizedProjectBrief = normalizeProjectBrief(projectBrief)
 
     const attachments = req.files
       ? req.files.map((file) => ({
@@ -184,45 +231,7 @@ const createProject = async (req, res) => {
       priority: priority || 'low',
       deadline,
       status: normalizedStatus,
-      attachments,
-      rateNegotiation: processedRateNegotiation || undefined
-    })
-
-    console.log('Saving project to database:', project)
-
-    const createdProject = await project.save()
-    console.log('Project saved successfully:', createdProject)
-
-    res.status(201).json(createdProject)
-  } catch (error) {
-    console.error('Error creating project:', error)
-    res.status(500).json({ message: 'Server error', error: error.message })
-  }
-}
-
-    const shouldSetBudget = !rateNegotiation || rateNegotiation.status !== 'proposed'
-    const finalBudget = shouldSetBudget ? Number(budget) : undefined
-
-    console.log('=== CREATE PROJECT DEBUG ===')
-    console.log('RateNegotiation status:', rateNegotiation?.status)
-    console.log('Should set budget:', shouldSetBudget)
-    console.log('Final budget value:', finalBudget)
-    console.log('Original budget from request:', budget)
-
-    // Create new project
-    const project = new Project({
-      user: req.user._id, // This comes from the protect middleware
-      assignee: assigneeId || null,
-      title,
-      description,
-      category,
-      skills: Array.isArray(skills) ? skills : skills.split(','),
-      // Only set budget if there's no rate negotiation (i.e., this is a fixed budget project)
-      // If rate negotiation is proposed, leave budget empty until agreed
-      budget: finalBudget,
-      priority: priority || 'low',
-      deadline,
-      status: normalizedStatus,
+      projectBrief: normalizedProjectBrief,
       attachments,
       rateNegotiation: processedRateNegotiation || undefined
     })
@@ -456,7 +465,7 @@ const deleteProjectAsAdmin = async (req, res) => {
 const updateProjectAsAdmin = async (req, res) => {
   try {
     const payload = req.body || {}
-    const { title, description, category, skills, budget, priority, deadline, status } = payload
+    const { title, description, category, skills, budget, priority, deadline, status, projectBrief } = payload
 
     const validation = validateAdminProjectUpdatePayload(payload)
     if (!validation.valid) {
@@ -513,6 +522,7 @@ const updateProjectAsAdmin = async (req, res) => {
 
     if (priority !== undefined) project.priority = priority
     if (deadline !== undefined) project.deadline = deadline
+    if (projectBrief !== undefined) project.projectBrief = normalizeProjectBrief(projectBrief)
 
     if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
       project.status = status
@@ -933,7 +943,7 @@ const getProjectByIdOwner = async (req, res) => {
 // @access  Private
 const updateProject = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, priority, deadline } = req.body
+    const { title, description, category, skills, budget, priority, deadline, projectBrief } = req.body
 
     let project = await Project.findById(req.params.id)
 
@@ -957,7 +967,7 @@ const updateProject = async (req, res) => {
 
     // If not draft, only allow extending deadline
     if (!isDraft) {
-      const hasOtherUpdates = title || description || category || skills || budget || priority || (req.files && req.files.length > 0)
+      const hasOtherUpdates = title || description || category || skills || budget || priority || projectBrief || (req.files && req.files.length > 0)
 
       if (hasOtherUpdates) {
         return res.status(400).json({ message: 'Only deadline extension is allowed after publish' })
@@ -1001,6 +1011,7 @@ const updateProject = async (req, res) => {
     project.budget = budget || project.budget
     project.priority = priority || project.priority
     project.deadline = deadline || project.deadline
+    if (projectBrief !== undefined) project.projectBrief = normalizeProjectBrief(projectBrief)
     project.attachments = [...project.attachments, ...newAttachments]
 
     const updatedProject = await project.save()
