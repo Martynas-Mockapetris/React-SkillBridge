@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
-const ProjectCard = ({ project, index }) => {
+const ProjectCard = ({ project, index, isApplied = false }) => {
   const location = useLocation()
   const returnTo = `${location.pathname}${location.search}`
   const { currentUser } = useAuth()
@@ -78,6 +78,7 @@ const ProjectCard = ({ project, index }) => {
           <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>{formatProjectStatusLabel(project.status || 'active')}</span>
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+          {isApplied && <span className='inline-block px-3 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/20'>Applied</span>}
         </div>
 
         {/* Description */}

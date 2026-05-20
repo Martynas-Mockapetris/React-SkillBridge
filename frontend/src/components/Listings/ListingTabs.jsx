@@ -6,9 +6,10 @@ import { SearchContext } from '../../context/SearchContext'
 import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
-import { getAllProjects } from '../../services/projectService'
+import { getAllProjects, getInterestedProjects } from '../../services/projectService'
 import { getAllAnnouncements } from '../../services/announcementService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import { useAuth } from '../../context/AuthContext'
 
 const parseCommaSeparatedList = (value) => {
   if (!value || typeof value !== 'string') return []
@@ -156,6 +157,7 @@ const matchesRateRange = (rate, range) => {
 
 const ListingTabs = () => {
   const location = useLocation()
+  const { currentUser } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const initialFilters = getFiltersFromSearchParams(searchParams)
@@ -174,6 +176,7 @@ const ListingTabs = () => {
   const { searchTerm, updateSearch } = useContext(SearchContext)
   const [searchInput, setSearchInput] = useState(initialSearch)
   const hasInitializedPageReset = useRef(false)
+  const [appliedProjectIds, setAppliedProjectIds] = useState(new Set())
 
   useEffect(() => {
     const nextTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
@@ -304,6 +307,26 @@ const ListingTabs = () => {
       return matchesSearch && matchesAvailability && matchesVerified && matchesRate
     })
   }
+
+  useEffect(() => {
+    const loadAppliedProjects = async () => {
+      if (!currentUser) {
+        setAppliedProjectIds(new Set())
+        return
+      }
+
+      try {
+        const interestedProjects = await getInterestedProjects()
+        const appliedIds = new Set(interestedProjects.map((project) => project._id))
+        setAppliedProjectIds(appliedIds)
+      } catch (error) {
+        console.error('Error loading applied projects:', error)
+        setAppliedProjectIds(new Set())
+      }
+    }
+
+    loadAppliedProjects()
+  }, [currentUser?._id])
 
   // Fetch projects from API
   useEffect(() => {
@@ -626,7 +649,7 @@ const ListingTabs = () => {
                       .fill(0)
                       .map((_, index) => <CardLoader key={index} />)
                   : activeTab === 'projects'
-                    ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} />)
+                    ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} isApplied={appliedProjectIds.has(project._id)} />)
                     : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer._id} freelancer={freelancer} index={index} />)}
               </div>
             ) : null}
