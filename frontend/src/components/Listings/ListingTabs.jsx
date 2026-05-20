@@ -8,6 +8,7 @@ import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
 import { getAllProjects, getInterestedProjects } from '../../services/projectService'
 import { getAllAnnouncements } from '../../services/announcementService'
+import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { useAuth } from '../../context/AuthContext'
 
@@ -179,6 +180,8 @@ const ListingTabs = () => {
   const [searchInput, setSearchInput] = useState(initialSearch)
   const hasInitializedPageReset = useRef(false)
   const [appliedProjectIds, setAppliedProjectIds] = useState(new Set())
+  const [favoriteProjectIds, setFavoriteProjectIds] = useState(new Set())
+  const [favoritingProjectIds, setFavoritingProjectIds] = useState(new Set())
 
   useEffect(() => {
     const nextTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
@@ -300,6 +303,25 @@ const ListingTabs = () => {
     })
   }
 
+  useEffect(() => {
+    const loadFavoriteProjects = async () => {
+      if (!currentUser) {
+        setFavoriteProjectIds(new Set())
+        return
+      }
+
+      try {
+        const favoriteProjects = await getFavoriteProjects()
+        setFavoriteProjectIds(new Set(favoriteProjects.map((project) => project._id)))
+      } catch (error) {
+        console.error('Error loading favorite projects:', error)
+        setFavoriteProjectIds(new Set())
+      }
+    }
+
+    loadFavoriteProjects()
+  }, [currentUser?._id])
+
   // Function to filter freelancers by search term and freelancer-specific filters
   const filterFreelancers = (freelancersList) => {
     const normalizedSearch = searchTerm.toLowerCase()
@@ -377,6 +399,49 @@ const ListingTabs = () => {
 
     fetchProjects()
   }, [activeTab])
+
+  const handleToggleFavoriteProject = async (projectId) => {
+    if (!currentUser) {
+      alert('Please login to favorite projects')
+      return
+    }
+
+    setFavoritingProjectIds((current) => {
+      const next = new Set(current)
+      next.add(projectId)
+      return next
+    })
+
+    try {
+      const isAlreadyFavorited = favoriteProjectIds.has(projectId)
+
+      if (isAlreadyFavorited) {
+        await removeFromFavorites(projectId)
+      } else {
+        await addToFavorites(projectId)
+      }
+
+      setFavoriteProjectIds((current) => {
+        const next = new Set(current)
+
+        if (next.has(projectId)) {
+          next.delete(projectId)
+        } else {
+          next.add(projectId)
+        }
+
+        return next
+      })
+    } catch (error) {
+      console.error('Error toggling favorite project:', error)
+    } finally {
+      setFavoritingProjectIds((current) => {
+        const next = new Set(current)
+        next.delete(projectId)
+        return next
+      })
+    }
+  }
 
   // Pagination
   const itemsPerPage = 6
@@ -670,7 +735,17 @@ const ListingTabs = () => {
                       .fill(0)
                       .map((_, index) => <CardLoader key={index} />)
                   : activeTab === 'projects'
-                    ? currentItems.map((project, index) => <ProjectCard key={project._id} project={project} index={index} isApplied={appliedProjectIds.has(project._id)} />)
+                    ? currentItems.map((project, index) => (
+                        <ProjectCard
+                          key={project._id}
+                          project={project}
+                          index={index}
+                          isApplied={appliedProjectIds.has(project._id)}
+                          isFavorited={favoriteProjectIds.has(project._id)}
+                          isFavoriting={favoritingProjectIds.has(project._id)}
+                          onToggleFavorite={handleToggleFavoriteProject}
+                        />
+                      ))
                     : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer._id} freelancer={freelancer} index={index} />)}
               </div>
             ) : null}
