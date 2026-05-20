@@ -17,6 +17,7 @@ import { useProjectModals } from '../hooks/useProjectModals'
 import { useFavorites } from '../hooks/useFavorites'
 import { useProjectMessages } from '../hooks/useProjectMessages'
 import { ProjectHeader, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
+import { normalizeSkills } from '../utils/skillUtils'
 
 const PROJECT_BRIEF_LABELS = {
   experienceLevel: {
@@ -163,12 +164,7 @@ const ProjectDetail = () => {
   const assigneeDisplayName = getDisplayName(project?.assignee, 'No freelancer assigned yet')
   const projectBrief = project?.projectBrief || {}
   const deliverables = Array.isArray(projectBrief.deliverables) ? projectBrief.deliverables : []
-  const normalizedSkills = Array.isArray(project?.skills)
-    ? project.skills
-        .flatMap((skill) => String(skill).split(','))
-        .map((skill) => skill.trim())
-        .filter(Boolean)
-    : []
+  const normalizedSkills = normalizeSkills(project?.skills)
 
   const experienceLevelLabel = getProjectBriefLabel('experienceLevel', projectBrief.experienceLevel)
   const durationLabel = getProjectBriefLabel('duration', projectBrief.duration)

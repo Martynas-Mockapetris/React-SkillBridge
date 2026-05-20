@@ -3,10 +3,12 @@ import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import VerificationBadge from '../shared/VerificationBadge'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
+import { normalizeSkills } from '../../utils/skillUtils'
 
 const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
   const location = useLocation()
   const returnTo = `${location.pathname}${location.search}`
+  const normalizedSkills = normalizeSkills(project.skills)
 
   const handleFavoriteClick = async (e) => {
     e.preventDefault()
@@ -48,14 +50,14 @@ const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, i
         <p className='theme-text-secondary text-sm mb-4 line-clamp-2'>{project.description}</p>
 
         {/* Skills */}
-        {project.skills && project.skills.length > 0 && (
+        {normalizedSkills.length > 0 && (
           <div className='flex flex-wrap gap-2 mb-4'>
-            {project.skills.slice(0, 3).map((skill, idx) => (
-              <span key={idx} className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>
+            {normalizedSkills.slice(0, 3).map((skill, idx) => (
+              <span key={`${skill}-${idx}`} className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>
                 {skill}
               </span>
             ))}
-            {project.skills.length > 3 && <span className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>+{project.skills.length - 3}</span>}
+            {normalizedSkills.length > 3 && <span className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>+{normalizedSkills.length - 3}</span>}
           </div>
         )}
 
