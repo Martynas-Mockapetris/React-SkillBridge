@@ -218,32 +218,32 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
     try {
       setSubmitting(true)
-      // Prepare the project data
+
       const projectData = {
-        title: formData.title,
-        description: formData.description,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         category: formData.category,
         priority: formData.priority,
         skills: formData.skills,
         budget: parseFloat(formData.budget),
         deadline: formData.deadline,
         status: 'active',
-        progress: 0 // Add initial progress
+        attachments: formData.attachments
       }
 
       console.log('Sending project data:', projectData)
 
-      // Create the project
       if (isEditMode && initialData) {
         const updatePayload = isDeadlineOnly
           ? { deadline: formData.deadline }
           : {
-              title: formData.title,
-              description: formData.description,
+              title: formData.title.trim(),
+              description: formData.description.trim(),
               category: formData.category,
               skills: formData.skills,
               budget: parseFloat(formData.budget),
-              deadline: formData.deadline
+              deadline: formData.deadline,
+              attachments: formData.attachments
             }
 
         await updateProject(initialData._id, updatePayload)
@@ -257,11 +257,9 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
       const createdProject = await createProject(projectData)
       console.log('Project created:', createdProject)
 
-      // Reset form and close modal
       resetForm()
       onClose()
 
-      // Call the onProjectCreated callback to refresh the projects list
       if (onProjectCreated) {
         onProjectCreated()
       }
@@ -276,7 +274,6 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
   }
 
   const handleSaveDraft = async () => {
-    // For drafts, we can be more lenient, but at minimum require a title
     if (!formData.title.trim()) {
       setCurrentStep(1)
       toast.error('Please enter a project title')
@@ -285,35 +282,31 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
     try {
       setSubmitting(true)
-      // Prepare the project data
+
       const projectData = {
-        title: formData.title,
-        description: formData.description || '',
+        title: formData.title.trim(),
+        description: formData.description.trim() || '',
         category: formData.category || '',
         skills: formData.skills,
         priority: formData.priority,
         budget: formData.budget ? parseFloat(formData.budget) : 0,
         deadline: formData.deadline || new Date().toISOString().split('T')[0],
         status: 'draft',
-        progress: 0
+        attachments: formData.attachments
       }
 
       console.log('Saving draft:', projectData)
 
-      // Use the service function instead of direct axios call
       const savedDraft = await saveProjectDraft(projectData)
       console.log('Draft saved:', savedDraft)
 
-      // Reset form and close modal
       resetForm()
       onClose()
 
-      // Call the onProjectCreated callback to refresh the projects list
       if (onProjectCreated) {
         onProjectCreated()
       }
 
-      // Show success message
       toast.success('Draft saved successfully!')
     } catch (err) {
       console.error('Error saving draft:', err)

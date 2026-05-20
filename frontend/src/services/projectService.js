@@ -1,11 +1,46 @@
 import axios from 'axios'
 import { authAxios } from '../utils/axiosConfig'
 
+const buildProjectFormData = (projectData = {}) => {
+  const formData = new FormData()
+
+  Object.entries(projectData).forEach(([key, value]) => {
+    if (value === undefined || value === null) return
+
+    if (key === 'attachments') {
+      const files = Array.isArray(value) ? value : [value]
+
+      files.forEach((file) => {
+        if (file) {
+          formData.append('attachments', file)
+        }
+      })
+      return
+    }
+
+    if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+      formData.append(key, JSON.stringify(value))
+      return
+    }
+
+    formData.append(key, value)
+  })
+
+  return formData
+}
+
+const sendProjectMultipartRequest = async (method, url, projectData) => {
+  const formData = buildProjectFormData(projectData)
+  const response = await authAxios[method](url, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+  return response.data
+}
+
 // Create a new project
 export const createProject = async (projectData) => {
   try {
-    const response = await authAxios.post('/api/projects', projectData)
-    return response.data
+    return await sendProjectMultipartRequest('post', '/api/projects', projectData)
   } catch (error) {
     console.error('Failed to create project:', error.response?.data || error.message)
     throw error
@@ -15,10 +50,8 @@ export const createProject = async (projectData) => {
 // Save a project as draft
 export const saveProjectDraft = async (projectData) => {
   try {
-    // Set status to draft
     const draftData = { ...projectData, status: 'draft' }
-    const response = await authAxios.post('/api/projects', draftData)
-    return response.data
+    return await sendProjectMultipartRequest('post', '/api/projects', draftData)
   } catch (error) {
     console.error('Failed to save draft:', error.response?.data || error.message)
     throw error
@@ -91,6 +124,16 @@ export const deleteProjectAsAdmin = async (projectId) => {
   }
 }
 
+// Update a project
+export const updateProject = async (projectId, projectData) => {
+  try {
+    return await sendProjectMultipartRequest('put', `/api/projects/${projectId}`, projectData)
+  } catch (error) {
+    console.error('Failed to update project:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Update project as admin
 export const updateProjectAsAdmin = async (projectId, projectData) => {
   try {
@@ -134,17 +177,6 @@ export const removeAssigneeAsAdmin = async (projectId) => {
     return response.data
   } catch (error) {
     console.error('Failed to remove assignee as admin:', error.response?.data || error.message)
-    throw error
-  }
-}
-
-// Update an existing project
-export const updateProject = async (projectId, projectData) => {
-  try {
-    const response = await authAxios.put(`/api/projects/${projectId}`, projectData)
-    return response.data
-  } catch (error) {
-    console.error('Failed to update project:', error.response?.data || error.message)
     throw error
   }
 }

@@ -22,6 +22,49 @@ const ALLOWED_ADMIN_STATUS_TRANSITIONS = {
   paused: ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
 }
 
+const normalizeStringArray = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean)
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsedValue = JSON.parse(value)
+
+      if (Array.isArray(parsedValue)) {
+        return parsedValue.map((item) => String(item).trim()).filter(Boolean)
+      }
+    } catch {
+      return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    }
+
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
+const normalizeRateNegotiation = (value) => {
+  if (!value) return undefined
+
+  if (typeof value === 'string') {
+    try {
+      const parsedValue = JSON.parse(value)
+      return parsedValue && typeof parsedValue === 'object' ? parsedValue : undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  return typeof value === 'object' ? value : undefined
+}
+
 const validateAdminProjectUpdatePayload = (payload) => {
   const providedFields = Object.keys(payload || {})
   const invalidFields = providedFields.filter((field) => !ADMIN_EDITABLE_PROJECT_FIELDS.includes(field))
@@ -73,7 +116,6 @@ const validateAdminProjectUpdatePayload = (payload) => {
 // @access  Private
 const createProject = async (req, res) => {
   try {
-    // Check if user is locked
     if (req.user.isLocked) {
       return res.status(403).json({ message: 'Your account is locked. You cannot create projects.' })
     }
@@ -83,7 +125,9 @@ const createProject = async (req, res) => {
 
     const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation } = req.body
 
-    // Process attachments if any
+    const normalizedSkills = normalizeStringArray(skills)
+    const normalizedRateNegotiation = normalizeRateNegotiation(rateNegotiation)
+
     const attachments = req.files
       ? req.files.map((file) => ({
           name: file.originalname,
@@ -95,32 +139,66 @@ const createProject = async (req, res) => {
     let normalizedStatus = status || 'draft'
 
     if (assigneeId && !status) {
-      // If initial rate proposal included, set to negotiating instead of assigned
-      normalizedStatus = rateNegotiation?.status === 'proposed' ? 'negotiating' : 'assigned'
+      normalizedStatus = normalizedRateNegotiation?.status === 'proposed' ? 'negotiating' : 'assigned'
     }
 
     if (assigneeId && assigneeId.toString() === req.user._id.toString()) {
       return res.status(400).json({ message: 'Cannot assign project to yourself' })
     }
 
-    // Process rateNegotiation if present - replace 'owner' with actual user ID
-    let processedRateNegotiation = rateNegotiation
-    if (rateNegotiation) {
+    let processedRateNegotiation = normalizedRateNegotiation
+    if (normalizedRateNegotiation) {
       processedRateNegotiation = {
-        ...rateNegotiation,
-        currentOffer: rateNegotiation.currentOffer
+        ...normalizedRateNegotiation,
+        currentOffer: normalizedRateNegotiation.currentOffer
           ? {
-              ...rateNegotiation.currentOffer,
+              ...normalizedRateNegotiation.currentOffer,
               proposedBy: req.user._id
             }
           : undefined,
         history:
-          rateNegotiation.history?.map((offer) => ({
+          normalizedRateNegotiation.history?.map((offer) => ({
             ...offer,
             proposedBy: req.user._id
           })) || []
       }
     }
+
+    const shouldSetBudget = !normalizedRateNegotiation || normalizedRateNegotiation.status !== 'proposed'
+    const finalBudget = shouldSetBudget ? Number(budget) : undefined
+
+    console.log('=== CREATE PROJECT DEBUG ===')
+    console.log('RateNegotiation status:', normalizedRateNegotiation?.status)
+    console.log('Should set budget:', shouldSetBudget)
+    console.log('Final budget value:', finalBudget)
+    console.log('Original budget from request:', budget)
+
+    const project = new Project({
+      user: req.user._id,
+      assignee: assigneeId || null,
+      title,
+      description,
+      category,
+      skills: normalizedSkills,
+      budget: finalBudget,
+      priority: priority || 'low',
+      deadline,
+      status: normalizedStatus,
+      attachments,
+      rateNegotiation: processedRateNegotiation || undefined
+    })
+
+    console.log('Saving project to database:', project)
+
+    const createdProject = await project.save()
+    console.log('Project saved successfully:', createdProject)
+
+    res.status(201).json(createdProject)
+  } catch (error) {
+    console.error('Error creating project:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
 
     const shouldSetBudget = !rateNegotiation || rateNegotiation.status !== 'proposed'
     const finalBudget = shouldSetBudget ? Number(budget) : undefined
@@ -919,7 +997,7 @@ const updateProject = async (req, res) => {
     project.title = title || project.title
     project.description = description || project.description
     project.category = category || project.category
-    project.skills = Array.isArray(skills) ? skills : skills ? skills.split(',') : project.skills
+    project.skills = skills !== undefined ? normalizeStringArray(skills) : project.skills
     project.budget = budget || project.budget
     project.priority = priority || project.priority
     project.deadline = deadline || project.deadline
