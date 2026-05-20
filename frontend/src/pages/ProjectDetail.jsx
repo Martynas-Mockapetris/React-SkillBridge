@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck, FaCheckCircle, FaEnvelope } from 'react-icons/fa'
+import { FaArrowLeft, FaTimes, FaCheck, FaCheckCircle, FaEnvelope } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
@@ -93,11 +93,6 @@ const ProjectDetail = () => {
       time
     }
   })
-
-  const formatPriority = (priority) => {
-    if (!priority) return 'Low'
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
-  }
 
   const collaborationStageLabel =
     project?.status === 'active'
@@ -270,16 +265,16 @@ const ProjectDetail = () => {
               {/* Collaboration Overview */}
               {project.user && (
                 <div className='theme-card p-6 rounded-lg space-y-5'>
-                  <div className='flex flex-col gap-3'>
+                  <div className='space-y-3'>
                     <div className='flex flex-wrap items-center justify-between gap-3'>
                       <h3 className='text-xl font-semibold theme-text'>Collaboration Overview</h3>
                       <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${collaborationStageClasses}`}>{collaborationStageLabel}</span>
                     </div>
-                    <p className='text-sm theme-text-secondary'>{relationshipSummary}</p>
+                    <p className='text-sm leading-6 theme-text-secondary'>{relationshipSummary}</p>
                   </div>
 
                   <div className='space-y-4'>
-                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <div className='rounded-lg border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
                       <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary mb-3'>Client</p>
                       <div className='flex items-center gap-3'>
                         <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover border border-accent/20' />
@@ -365,67 +360,42 @@ const ProjectDetail = () => {
                 handleAcceptRate={handleAcceptRate}
               />
 
-              {/* Project Details Card */}
+              {/* Delivery Snapshot */}
               <div className='theme-card p-6 rounded-lg space-y-4'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Project Details</h3>
+                <h3 className='text-xl font-semibold theme-text'>Delivery Snapshot</h3>
 
-                {/* Budget */}
-                {(!project.rateNegotiation || project.rateNegotiation.status === 'accepted') && (
-                  <div className='flex items-center gap-3 theme-text-secondary'>
-                    <FaDollarSign className='text-accent' />
-                    <div>
-                      <p className='text-sm'>Budget</p>
-                      <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
+                {project.rateNegotiation?.currentOffer ? (
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
+                    <div className='mt-2 flex flex-wrap items-center gap-2'>
+                      <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>
+                        {project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}
+                      </span>
+
+                      {project.rateNegotiation?.status === 'proposed' && (
+                        <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'>Offer Pending</span>
+                      )}
                     </div>
                   </div>
-                )}
-
-                {/* Proposed Budget (when negotiating) */}
-                {project.rateNegotiation?.status === 'proposed' && (
-                  <div className='flex items-center gap-3 p-3 rounded-lg bg-orange-100 dark:bg-orange-900/20'>
-                    <FaDollarSign className='text-orange-600 dark:text-orange-400' />
-                    <div>
-                      <p className='text-sm text-orange-800 dark:text-orange-200'>Proposed Budget</p>
-                      <div className='flex items-center gap-2'>
-                        <p className='text-lg font-semibold text-orange-900 dark:text-orange-100'>€{project.rateNegotiation.currentOffer?.amount}</p>
-                        <span className='text-xs px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded font-semibold'>PROPOSED</span>
-                      </div>
-                    </div>
+                ) : (
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
+                    <p className='mt-2 text-sm theme-text-secondary'>Fixed project budget with no active negotiation.</p>
                   </div>
                 )}
 
-                {/* Rate Type */}
-                {project.rateNegotiation?.currentOffer && (
-                  <div className='flex items-center gap-3 theme-text-secondary text-sm'>
-                    <span className='px-2 py-1 bg-accent/10 dark:bg-accent/20 text-accent rounded font-medium'>{project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}</span>
-                  </div>
-                )}
-
-                {/* Deadline */}
-                <div className='flex items-center gap-3 theme-text-secondary'>
-                  <FaClock className='text-accent' />
-                  <div>
-                    <p className='text-sm'>Deadline</p>
-                    <p className='text-lg font-semibold theme-text'>{new Date(project.deadline).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className='flex items-center gap-3 theme-text-secondary'>
-                  <FaUser className='text-accent' />
-                  <div>
-                    <p className='text-sm'>Status</p>
-                    <p className='text-lg font-semibold theme-text'>{formatStatus(project.status)}</p>
-                  </div>
-                </div>
-
-                {/* Priority */}
-                <div className='flex items-center gap-3 theme-text-secondary'>
-                  <FaTags className='text-accent' />
-                  <div>
-                    <p className='text-sm'>Priority</p>
-                    <p className='text-lg font-semibold theme-text'>{formatPriority(project.priority)}</p>
-                  </div>
+                <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Timeline</p>
+                  <p className='mt-2 text-base font-semibold theme-text'>{project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible deadline'}</p>
+                  <p className='mt-1 text-sm theme-text-secondary'>
+                    {project.status === 'under_review'
+                      ? 'Work is completed and waiting for client review.'
+                      : project.status === 'in_progress'
+                        ? 'Delivery is actively in progress.'
+                        : project.status === 'negotiating'
+                          ? 'Budget and rate are still being finalized.'
+                          : 'Project timing depends on the current collaboration stage.'}
+                  </p>
                 </div>
               </div>
 
