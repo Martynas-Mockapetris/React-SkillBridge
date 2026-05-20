@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
+import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck, FaCheckCircle, FaEnvelope } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
@@ -98,6 +98,41 @@ const ProjectDetail = () => {
     if (!priority) return 'Low'
     return priority.charAt(0).toUpperCase() + priority.slice(1)
   }
+
+  const collaborationStageLabel =
+    project?.status === 'active'
+      ? 'Open for proposals'
+      : project?.status === 'assigned'
+        ? 'Freelancer assigned'
+        : project?.status === 'negotiating'
+          ? 'Negotiation in progress'
+          : project?.status === 'in_progress'
+            ? 'Work in progress'
+            : project?.status === 'under_review'
+              ? 'Awaiting review'
+              : formatStatus(project?.status)
+
+  const collaborationStageClasses =
+    project?.status === 'negotiating'
+      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+      : project?.status === 'in_progress'
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+        : project?.status === 'under_review'
+          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+          : 'bg-accent/10 text-accent'
+
+  const relationshipSummary = isOwner
+    ? 'You are managing this project as the client.'
+    : isAssignee
+      ? 'You are the assigned freelancer on this project.'
+      : project?.assignee
+        ? 'This project already has a selected freelancer.'
+        : 'This project is still open for the right collaborator.'
+
+  const canContactAssignee = (project?.user?._id === currentUser?._id || project?.user === currentUser?._id) && !['completed', 'archived', 'cancelled_by_admin', 'deleted_by_owner'].includes(project?.status)
+
+  const clientDisplayName = project?.user ? `${project.user.firstName} ${project.user.lastName}` : 'Client not available'
+  const assigneeDisplayName = project?.assignee ? `${project.assignee.firstName} ${project.assignee.lastName}` : 'No freelancer assigned yet'
 
   const handleBack = () => {
     if (location.state?.returnTo) {
@@ -196,12 +231,6 @@ const ProjectDetail = () => {
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
             {/* Main Content */}
             <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-              {/* Description Section */}
-              <div className='theme-card p-2 rounded-lg'>
-                <h2 className='text-2xl font-semibold theme-text mb-4'>Description</h2>
-                <p className='theme-text-secondary leading-relaxed'>{project.description}</p>
-              </div>
-
               {/* Skills Required */}
               <SkillsRequired skills={project.skills} />
 
@@ -237,40 +266,86 @@ const ProjectDetail = () => {
             </motion.div>
 
             {/* Sidebar */}
-            <motion.div className='space-y-6 p-2' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
-              {/* Assigned Person Card */}
-              {project.assignee && (
-                <div className='theme-card p-6 rounded-lg border-2 border-accent/30'>
-                  <h3 className='text-xl font-semibold theme-text mb-4 flex items-center gap-2'>
-                    <span className='w-3 h-3 bg-accent rounded-full'></span>
-                    Assigned To
-                  </h3>
-                  <div className='flex items-center gap-3 mb-4'>
-                    <img
-                      src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`}
-                      alt={project.assignee.firstName}
-                      className='w-14 h-14 rounded-full object-cover border-2 border-accent/20'
-                    />
-                    <div>
-                      <p className='font-semibold theme-text'>
-                        {project.assignee.firstName} {project.assignee.lastName}
-                      </p>
-                      <p className='text-sm theme-text-secondary'>{project.assignee.email}</p>
+            <motion.div className='space-y-5' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+              {/* Collaboration Overview */}
+              {project.user && (
+                <div className='theme-card p-6 rounded-lg space-y-5'>
+                  <div className='flex flex-col gap-3'>
+                    <div className='flex flex-wrap items-center justify-between gap-3'>
+                      <h3 className='text-xl font-semibold theme-text'>Collaboration Overview</h3>
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${collaborationStageClasses}`}>{collaborationStageLabel}</span>
+                    </div>
+                    <p className='text-sm theme-text-secondary'>{relationshipSummary}</p>
+                  </div>
+
+                  <div className='space-y-4'>
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary mb-3'>Client</p>
+                      <div className='flex items-center gap-3'>
+                        <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover border border-accent/20' />
+                        <div className='min-w-0'>
+                          <div className='flex items-center gap-2 flex-wrap'>
+                            <p className='font-semibold theme-text'>{clientDisplayName}</p>
+                            {project.user.isEmailVerified && (
+                              <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                                <FaCheckCircle className='text-[10px]' />
+                                Verified
+                              </span>
+                            )}
+                          </div>
+                          <p className='text-sm theme-text-secondary'>{project.user.headline || 'Project owner'}</p>
+                          <p className='text-xs theme-text-muted mt-1 inline-flex items-center gap-1'>
+                            <FaEnvelope className='text-[10px]' />
+                            <span className='truncate'>{project.user.email}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary mb-3'>Freelancer</p>
+
+                      {project.assignee ? (
+                        <div className='flex items-center gap-3'>
+                          <img
+                            src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`}
+                            alt={project.assignee.firstName}
+                            className='w-12 h-12 rounded-full object-cover border border-accent/20'
+                          />
+                          <div className='min-w-0'>
+                            <div className='flex items-center gap-2 flex-wrap'>
+                              <p className='font-semibold theme-text'>{assigneeDisplayName}</p>
+                              {project.assignee.isEmailVerified && (
+                                <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                                  <FaCheckCircle className='text-[10px]' />
+                                  Verified
+                                </span>
+                              )}
+                            </div>
+                            <p className='text-sm theme-text-secondary'>{project.assignee.headline || 'Assigned freelancer'}</p>
+                            <p className='text-xs theme-text-muted mt-1 inline-flex items-center gap-1'>
+                              <FaEnvelope className='text-[10px]' />
+                              <span className='truncate'>{project.assignee.email}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className='rounded-lg border border-dashed dark:border-light/10 border-primary/10 p-4'>
+                          <p className='font-medium theme-text'>{assigneeDisplayName}</p>
+                          <p className='text-sm theme-text-secondary mt-1'>The project is still open and no freelancer has been assigned yet.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Contact button */}
-                  {/* Only show if project is NOT (completed/archived) */}
-                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && !['completed', 'archived', 'cancelled_by_admin', 'deleted_by_owner'].includes(project.status) && (
-                    <div className='pt-4 border-t dark:border-light/10 border-primary/10'>
-                      <motion.button
-                        onClick={() => navigate(`/messages`)}
-                        className='w-full py-2 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded transition-all text-sm'
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}>
-                        Contact Assignee
-                      </motion.button>
-                    </div>
+                  {project.assignee && canContactAssignee && (
+                    <motion.button
+                      onClick={() => navigate('/messages')}
+                      className='w-full py-3 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded-lg transition-all text-sm font-medium'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Contact Assignee
+                    </motion.button>
                   )}
                 </div>
               )}
@@ -353,22 +428,6 @@ const ProjectDetail = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Client Info */}
-              {project.user && (
-                <div className='theme-card p-6 rounded-lg'>
-                  <h3 className='text-xl font-semibold theme-text mb-4'>Client Info</h3>
-                  <div className='flex items-center gap-3'>
-                    <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
-                    <div>
-                      <p className='font-semibold theme-text'>
-                        {project.user.firstName} {project.user.lastName}
-                      </p>
-                      <p className='text-sm theme-text-secondary'>{project.user.email}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Action Buttons */}
               <ProjectActions

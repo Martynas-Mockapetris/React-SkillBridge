@@ -757,6 +757,8 @@ const removeAssigneeAsAdmin = async (req, res) => {
   }
 }
 
+const PROJECT_DETAIL_USER_FIELDS = 'firstName lastName email profilePicture isEmailVerified headline'
+
 // @desc    Get project by ID (PUBLIC - only active)
 // @route   GET /api/projects/:id
 // @access  Public
@@ -820,7 +822,7 @@ const getProjectById = async (req, res) => {
 // @access  Private (creator only)
 const getProjectByIdOwner = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+    const project = await Project.findById(req.params.id).populate('user', PROJECT_DETAIL_USER_FIELDS).populate('assignee', PROJECT_DETAIL_USER_FIELDS)
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
