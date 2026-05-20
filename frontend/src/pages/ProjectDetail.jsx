@@ -17,6 +17,51 @@ import { useFavorites } from '../hooks/useFavorites'
 import { useProjectMessages } from '../hooks/useProjectMessages'
 import { ProjectHeader, SkillsRequired, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
 
+const PROJECT_BRIEF_LABELS = {
+  experienceLevel: {
+    not_specified: 'Not specified',
+    junior: 'Junior',
+    mid: 'Mid',
+    senior: 'Senior',
+    expert: 'Expert'
+  },
+  duration: {
+    not_specified: 'Not specified',
+    less_than_1_week: 'Less than 1 week',
+    '1_to_2_weeks': '1 to 2 weeks',
+    '2_to_4_weeks': '2 to 4 weeks',
+    '1_to_3_months': '1 to 3 months',
+    '3_plus_months': '3+ months',
+    ongoing: 'Ongoing'
+  },
+  workload: {
+    not_specified: 'Not specified',
+    under_10_hours: 'Under 10 hrs/week',
+    '10_to_20_hours': '10 to 20 hrs/week',
+    '20_to_30_hours': '20 to 30 hrs/week',
+    '30_plus_hours': '30+ hrs/week',
+    full_time: 'Full time'
+  },
+  startPreference: {
+    not_specified: 'Not specified',
+    immediately: 'Immediately',
+    this_week: 'This week',
+    within_2_weeks: 'Within 2 weeks',
+    flexible: 'Flexible'
+  },
+  budgetType: {
+    not_specified: 'Not specified',
+    fixed: 'Fixed',
+    hourly: 'Hourly',
+    negotiable: 'Negotiable'
+  }
+}
+
+const getProjectBriefLabel = (group, value) => {
+  if (!value) return 'Not specified'
+  return PROJECT_BRIEF_LABELS[group]?.[value] || 'Not specified'
+}
+
 const ProjectDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -107,6 +152,14 @@ const ProjectDetail = () => {
 
   const clientDisplayName = getDisplayName(project?.user, 'Client not available')
   const assigneeDisplayName = getDisplayName(project?.assignee, 'No freelancer assigned yet')
+  const projectBrief = project.projectBrief || {}
+  const deliverables = Array.isArray(projectBrief.deliverables) ? projectBrief.deliverables : []
+
+  const experienceLevelLabel = getProjectBriefLabel('experienceLevel', projectBrief.experienceLevel)
+  const durationLabel = getProjectBriefLabel('duration', projectBrief.duration)
+  const workloadLabel = getProjectBriefLabel('workload', projectBrief.workload)
+  const startPreferenceLabel = getProjectBriefLabel('startPreference', projectBrief.startPreference)
+  const budgetTypeLabel = getProjectBriefLabel('budgetType', projectBrief.budgetType)
 
   const handleBack = () => {
     if (location.state?.returnTo) {
@@ -205,6 +258,77 @@ const ProjectDetail = () => {
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
             {/* Main Content */}
             <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg space-y-6'>
+                <div className='space-y-2'>
+                  <h3 className='text-xl font-semibold theme-text'>Project Brief</h3>
+                  <p className='text-sm leading-6 theme-text-secondary'>Summary of the project scope, expectations, and delivery requirements.</p>
+                </div>
+
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Experience Level</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{experienceLevelLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Start Preference</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{startPreferenceLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Estimated Duration</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{durationLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Workload</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{workloadLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4 md:col-span-2'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Budget Model</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{budgetTypeLabel}</p>
+                    <p className='mt-1 text-sm theme-text-secondary'>
+                      {project.rateNegotiation?.currentOffer ? 'This project currently includes an active rate discussion.' : 'No active rate negotiation is in progress.'}
+                    </p>
+                  </div>
+                </div>
+
+                {projectBrief.objective && (
+                  <div className='space-y-2'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Objective</p>
+                    <p className='text-sm leading-7 theme-text'>{projectBrief.objective}</p>
+                  </div>
+                )}
+
+                {deliverables.length > 0 && (
+                  <div className='space-y-3'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Deliverables</p>
+                    <div className='flex flex-wrap gap-2'>
+                      {deliverables.map((deliverable, index) => (
+                        <span key={`${deliverable}-${index}`} className='inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-accent/10 text-accent'>
+                          {deliverable}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {projectBrief.scopeNotes && (
+                  <div className='space-y-2'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Scope Notes</p>
+                    <p className='text-sm leading-7 theme-text'>{projectBrief.scopeNotes}</p>
+                  </div>
+                )}
+
+                {projectBrief.applicationInstructions && (
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-accent/5 p-4 space-y-2'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] text-accent'>Application Instructions</p>
+                    <p className='text-sm leading-7 theme-text'>{projectBrief.applicationInstructions}</p>
+                  </div>
+                )}
+              </motion.div>
+
               {/* Skills Required */}
               <SkillsRequired skills={project.skills} />
 
@@ -375,6 +499,21 @@ const ProjectDetail = () => {
                           ? 'Budget and rate are still being finalized.'
                           : 'Project timing depends on the current collaboration stage.'}
                   </p>
+                </div>
+
+                <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Work Expectations</p>
+                  <div className='mt-2 flex flex-col gap-2 text-sm theme-text-secondary'>
+                    <p>
+                      <span className='font-semibold theme-text'>Experience:</span> {experienceLevelLabel}
+                    </p>
+                    <p>
+                      <span className='font-semibold theme-text'>Duration:</span> {durationLabel}
+                    </p>
+                    <p>
+                      <span className='font-semibold theme-text'>Workload:</span> {workloadLabel}
+                    </p>
+                  </div>
                 </div>
               </div>
 
