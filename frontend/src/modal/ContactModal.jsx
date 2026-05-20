@@ -19,7 +19,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
     try {
       setIsSubmitting(true)
       await sendMessage(project.user._id, content, null, project._id)
-      toast.success('Message sent successfully!')
+      toast.success('Application sent successfully!')
       setContent('')
       onClose()
     } catch (error) {
@@ -57,13 +57,13 @@ const ContactModal = ({ isOpen, onClose, project }) => {
 
             {/* Header */}
             <div className='mb-6'>
-              <h2 className='text-2xl font-bold theme-text mb-2'>Contact Project Owner</h2>
+              <h2 className='text-2xl font-bold theme-text mb-2'>Apply for This Project</h2>
               <p className='theme-text-secondary'>
-                Send a message to{' '}
+                Send your introduction and project interest to{' '}
                 <span className='font-semibold text-accent'>
                   {project.user?.firstName} {project.user?.lastName}
                 </span>{' '}
-                about "{project.title}"
+                for "{project.title}"
               </p>
             </div>
 
@@ -72,13 +72,13 @@ const ContactModal = ({ isOpen, onClose, project }) => {
               {/* Message textarea */}
               <div>
                 <label htmlFor='message' className='block mb-2 font-medium theme-text'>
-                  Your Message
+                  Your Introduction
                 </label>
                 <textarea
                   id='message'
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder='Introduce yourself and explain your interest in this project...'
+                  placeholder='Introduce yourself, share relevant experience, and explain why you are a good fit for this project...'
                   rows={6}
                   className='w-full px-4 py-3 rounded-lg border dark:border-light/10 border-primary/20 
                     dark:bg-light/5 bg-white theme-text focus:outline-none focus:border-accent 
@@ -86,6 +86,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
                   disabled={isSubmitting}
                 />
                 <p className='text-sm theme-text-secondary mt-1'>{content.length} / 500 characters</p>
+                <p className='text-xs theme-text-muted mt-2'>Sending this message also registers your interest in the project for the client.</p>
               </div>
 
               {/* Buttons */}
@@ -112,7 +113,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
                   ) : (
                     <>
                       <FaPaperPlane />
-                      Send Message
+                      Send Application
                     </>
                   )}
                 </button>

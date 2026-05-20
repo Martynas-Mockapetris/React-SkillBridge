@@ -47,16 +47,16 @@ const ProjectActions = ({
         </button>
       )}
 
-      {/* Contact Creator / Login Button */}
+      {/* Apply / Express Interest CTA */}
       {!['completed', 'archived', 'deleted_by_owner'].includes(project.status) && (
         <>
           {currentUser && currentUser._id !== project.user?._id ? (
             <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-              Contact Creator
+              Apply for Project
             </button>
           ) : !currentUser ? (
             <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-              Login to Contact
+              Login to Apply
             </button>
           ) : (
             <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
