@@ -71,14 +71,20 @@ const ProjectCard = ({ project, index, isApplied = false }) => {
         </motion.button>
 
         {/* Project title */}
-        <h3 className='text-xl font-bold mb-2 theme-text line-clamp-1 pr-8'>{project.title}</h3>
+        <div className='mb-2 pr-8 flex items-start gap-2'>
+          <h3 className='text-xl font-bold theme-text line-clamp-2 min-w-0'>{project.title}</h3>
+          {isApplied && (
+            <span className='shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-semibold bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/40'>
+              Applied
+            </span>
+          )}
+        </div>
 
         {/* Category + Status + Priority badges */}
         <div className='flex items-center gap-2 mb-4 flex-wrap'>
           <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>{formatProjectStatusLabel(project.status || 'active')}</span>
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
-          {isApplied && <span className='inline-block px-3 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/20'>Applied</span>}
         </div>
 
         {/* Description */}
