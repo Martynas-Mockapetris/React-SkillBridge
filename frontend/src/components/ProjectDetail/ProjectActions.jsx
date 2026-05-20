@@ -7,6 +7,7 @@ const ProjectActions = ({
   currentUser,
   isOwner,
   isAssignee,
+  hasApplied,
   isFavorited,
   favoriteLoading,
   handleToggleFavorite,
@@ -51,8 +52,10 @@ const ProjectActions = ({
       {!['completed', 'archived', 'deleted_by_owner'].includes(project.status) && (
         <>
           {currentUser && currentUser._id !== project.user?._id ? (
-            <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-              Apply for Project
+            <button
+              onClick={() => setIsContactModalOpen(true)}
+              className={`w-full py-3 rounded-lg transition-all ${hasApplied ? 'bg-accent/10 text-accent hover:bg-accent hover:text-white' : 'bg-accent text-white hover:bg-accent/90'}`}>
+              {hasApplied ? 'Send Follow-up Message' : 'Apply for Project'}
             </button>
           ) : !currentUser ? (
             <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>

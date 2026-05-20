@@ -107,6 +107,14 @@ const ProjectDetail = () => {
 
   const isOwner = currentUser && project && currentUser._id === project.user?._id
   const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
+  const hasApplied = Boolean(
+    currentUser &&
+    Array.isArray(project?.interestedUsers) &&
+    project.interestedUsers.some((entry) => {
+      const userId = entry?.userId?._id || entry?.userId
+      return userId?.toString() === currentUser._id?.toString()
+    })
+  )
 
   // Fetch project on mount or when id/currentUser changes
   useEffect(() => {
@@ -527,6 +535,7 @@ const ProjectDetail = () => {
                 currentUser={currentUser}
                 isOwner={isOwner}
                 isAssignee={isAssignee}
+                hasApplied={hasApplied}
                 isFavorited={isFavorited}
                 favoriteLoading={favoriteLoading}
                 handleToggleFavorite={handleToggleFavorite}
