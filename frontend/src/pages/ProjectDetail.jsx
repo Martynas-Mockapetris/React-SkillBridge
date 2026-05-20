@@ -15,7 +15,7 @@ import { useRateNegotiation } from '../hooks/useRateNegotiation'
 import { useProjectModals } from '../hooks/useProjectModals'
 import { useFavorites } from '../hooks/useFavorites'
 import { useProjectMessages } from '../hooks/useProjectMessages'
-import { ProjectHeader, SkillsRequired, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
+import { ProjectHeader, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
 
 const PROJECT_BRIEF_LABELS = {
   experienceLevel: {
@@ -152,7 +152,7 @@ const ProjectDetail = () => {
 
   const clientDisplayName = getDisplayName(project?.user, 'Client not available')
   const assigneeDisplayName = getDisplayName(project?.assignee, 'No freelancer assigned yet')
-  const projectBrief = project.projectBrief || {}
+  const projectBrief = project?.projectBrief || {}
   const deliverables = Array.isArray(projectBrief.deliverables) ? projectBrief.deliverables : []
 
   const experienceLevelLabel = getProjectBriefLabel('experienceLevel', projectBrief.experienceLevel)
@@ -258,6 +258,7 @@ const ProjectDetail = () => {
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
             {/* Main Content */}
             <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+              {/* Project Brief Section */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg space-y-6'>
                 <div className='space-y-2'>
                   <h3 className='text-xl font-semibold theme-text'>Project Brief</h3>
@@ -285,12 +286,25 @@ const ProjectDetail = () => {
                     <p className='mt-2 text-base font-semibold theme-text'>{workloadLabel}</p>
                   </div>
 
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4 md:col-span-2'>
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Budget Model</p>
                     <p className='mt-2 text-base font-semibold theme-text'>{budgetTypeLabel}</p>
-                    <p className='mt-1 text-sm theme-text-secondary'>
-                      {project.rateNegotiation?.currentOffer ? 'This project currently includes an active rate discussion.' : 'No active rate negotiation is in progress.'}
-                    </p>
+                    <p className='mt-1 text-sm theme-text-secondary'>{project.rateNegotiation?.currentOffer ? 'Active rate discussion in progress.' : 'No active rate negotiation.'}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Skills Required</p>
+                    {project.skills?.length > 0 ? (
+                      <div className='mt-2 flex flex-wrap gap-2'>
+                        {project.skills.map((skill, index) => (
+                          <span key={`${skill}-${index}`} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className='mt-2 text-base font-semibold theme-text'>Not specified</p>
+                    )}
                   </div>
                 </div>
 
@@ -327,10 +341,62 @@ const ProjectDetail = () => {
                     <p className='text-sm leading-7 theme-text'>{projectBrief.applicationInstructions}</p>
                   </div>
                 )}
-              </motion.div>
 
-              {/* Skills Required */}
-              <SkillsRequired skills={project.skills} />
+                <div className='pt-2 space-y-4'>
+                  <h3 className='text-xl font-semibold theme-text'>Delivery Snapshot</h3>
+
+                  {project.rateNegotiation?.currentOffer ? (
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
+                      <div className='mt-2 flex flex-wrap items-center gap-2'>
+                        <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>
+                          {project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}
+                        </span>
+
+                        {project.rateNegotiation?.status === 'proposed' && (
+                          <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'>Offer Pending</span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
+                      <p className='mt-2 text-sm theme-text-secondary'>Fixed project budget with no active negotiation.</p>
+                    </div>
+                  )}
+
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Timeline</p>
+                      <p className='mt-2 text-base font-semibold theme-text'>{project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible deadline'}</p>
+                      <p className='mt-1 text-sm theme-text-secondary'>
+                        {project.status === 'under_review'
+                          ? 'Work is completed and waiting for client review.'
+                          : project.status === 'in_progress'
+                            ? 'Delivery is actively in progress.'
+                            : project.status === 'negotiating'
+                              ? 'Budget and rate are still being finalized.'
+                              : 'Project timing depends on the current collaboration stage.'}
+                      </p>
+                    </div>
+
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Work Expectations</p>
+                      <div className='mt-2 flex flex-col gap-2 text-sm theme-text-secondary'>
+                        <p>
+                          <span className='font-semibold theme-text'>Experience:</span> {experienceLevelLabel}
+                        </p>
+                        <p>
+                          <span className='font-semibold theme-text'>Duration:</span> {durationLabel}
+                        </p>
+                        <p>
+                          <span className='font-semibold theme-text'>Workload:</span> {workloadLabel}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
 
               {/* Review Feedback Section - visible to both */}
               {project.review && project.review.decision && (
@@ -448,75 +514,6 @@ const ProjectDetail = () => {
                 </div>
               )}
 
-              {/* Rate Negotiation */}
-              <RateNegotiationCard
-                project={project}
-                currentUser={currentUser}
-                rateAmount={rateAmount}
-                setRateAmount={setRateAmount}
-                rateType={rateType}
-                setRateType={setRateType}
-                rateLoading={rateLoading}
-                rateError={rateError}
-                handleProposeRate={handleProposeRate}
-                handleCounterRate={handleCounterRate}
-                handleAcceptRate={handleAcceptRate}
-              />
-
-              {/* Delivery Snapshot */}
-              <div className='theme-card p-6 rounded-lg space-y-4'>
-                <h3 className='text-xl font-semibold theme-text'>Delivery Snapshot</h3>
-
-                {project.rateNegotiation?.currentOffer ? (
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
-                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
-                    <div className='mt-2 flex flex-wrap items-center gap-2'>
-                      <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>
-                        {project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}
-                      </span>
-
-                      {project.rateNegotiation?.status === 'proposed' && (
-                        <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'>Offer Pending</span>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
-                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
-                    <p className='mt-2 text-sm theme-text-secondary'>Fixed project budget with no active negotiation.</p>
-                  </div>
-                )}
-
-                <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
-                  <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Timeline</p>
-                  <p className='mt-2 text-base font-semibold theme-text'>{project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible deadline'}</p>
-                  <p className='mt-1 text-sm theme-text-secondary'>
-                    {project.status === 'under_review'
-                      ? 'Work is completed and waiting for client review.'
-                      : project.status === 'in_progress'
-                        ? 'Delivery is actively in progress.'
-                        : project.status === 'negotiating'
-                          ? 'Budget and rate are still being finalized.'
-                          : 'Project timing depends on the current collaboration stage.'}
-                  </p>
-                </div>
-
-                <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
-                  <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Work Expectations</p>
-                  <div className='mt-2 flex flex-col gap-2 text-sm theme-text-secondary'>
-                    <p>
-                      <span className='font-semibold theme-text'>Experience:</span> {experienceLevelLabel}
-                    </p>
-                    <p>
-                      <span className='font-semibold theme-text'>Duration:</span> {durationLabel}
-                    </p>
-                    <p>
-                      <span className='font-semibold theme-text'>Workload:</span> {workloadLabel}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               {/* Action Buttons */}
               <ProjectActions
                 project={project}
@@ -531,6 +528,21 @@ const ProjectDetail = () => {
                 setIsSubmitModalOpen={setIsSubmitModalOpen}
                 setIsReviewModalOpen={setIsReviewModalOpen}
                 loadProject={loadProject}
+              />
+
+              {/* Rate Negotiation */}
+              <RateNegotiationCard
+                project={project}
+                currentUser={currentUser}
+                rateAmount={rateAmount}
+                setRateAmount={setRateAmount}
+                rateType={rateType}
+                setRateType={setRateType}
+                rateLoading={rateLoading}
+                rateError={rateError}
+                handleProposeRate={handleProposeRate}
+                handleCounterRate={handleCounterRate}
+                handleAcceptRate={handleAcceptRate}
               />
             </motion.div>
           </div>
