@@ -6,7 +6,7 @@ import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
-import { formatStatus } from '../utils/formatters'
+import { getCollaborationStageClasses, getCollaborationStageLabel, getDisplayName, getProjectRelationshipSummary } from '../utils/projectDetailUI'
 import SubmitProjectModal from '../modal/SubmitProjectModal'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
@@ -94,40 +94,19 @@ const ProjectDetail = () => {
     }
   })
 
-  const collaborationStageLabel =
-    project?.status === 'active'
-      ? 'Open for proposals'
-      : project?.status === 'assigned'
-        ? 'Freelancer assigned'
-        : project?.status === 'negotiating'
-          ? 'Negotiation in progress'
-          : project?.status === 'in_progress'
-            ? 'Work in progress'
-            : project?.status === 'under_review'
-              ? 'Awaiting review'
-              : formatStatus(project?.status)
+  const collaborationStageLabel = getCollaborationStageLabel(project?.status)
+  const collaborationStageClasses = getCollaborationStageClasses(project?.status)
 
-  const collaborationStageClasses =
-    project?.status === 'negotiating'
-      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-      : project?.status === 'in_progress'
-        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-        : project?.status === 'under_review'
-          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-          : 'bg-accent/10 text-accent'
-
-  const relationshipSummary = isOwner
-    ? 'You are managing this project as the client.'
-    : isAssignee
-      ? 'You are the assigned freelancer on this project.'
-      : project?.assignee
-        ? 'This project already has a selected freelancer.'
-        : 'This project is still open for the right collaborator.'
+  const relationshipSummary = getProjectRelationshipSummary({
+    isOwner,
+    isAssignee,
+    hasAssignee: Boolean(project?.assignee)
+  })
 
   const canContactAssignee = (project?.user?._id === currentUser?._id || project?.user === currentUser?._id) && !['completed', 'archived', 'cancelled_by_admin', 'deleted_by_owner'].includes(project?.status)
 
-  const clientDisplayName = project?.user ? `${project.user.firstName} ${project.user.lastName}` : 'Client not available'
-  const assigneeDisplayName = project?.assignee ? `${project.assignee.firstName} ${project.assignee.lastName}` : 'No freelancer assigned yet'
+  const clientDisplayName = getDisplayName(project?.user, 'Client not available')
+  const assigneeDisplayName = getDisplayName(project?.assignee, 'No freelancer assigned yet')
 
   const handleBack = () => {
     if (location.state?.returnTo) {
