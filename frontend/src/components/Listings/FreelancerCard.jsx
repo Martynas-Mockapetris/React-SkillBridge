@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { FaCheckCircle, FaClock, FaEuroSign, FaMapMarkerAlt, FaUser } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
+import VerificationBadge from '../shared/VerificationBadge'
 
 const FreelancerCard = ({ freelancer, index }) => {
   const navigate = useNavigate()
@@ -83,12 +84,7 @@ const FreelancerCard = ({ freelancer, index }) => {
 
             <div className='flex flex-col items-end gap-2 shrink-0'>
               <span className='inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-accent/20 text-accent whitespace-nowrap'>{roleLabel}</span>
-              {freelancerInfo.isEmailVerified && (
-                <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 whitespace-nowrap'>
-                  <FaCheckCircle className='text-[10px]' />
-                  Verified
-                </span>
-              )}
+              <VerificationBadge isVerified={freelancerInfo.isEmailVerified} className='whitespace-nowrap px-2.5 py-1' />
             </div>
           </div>
         </div>

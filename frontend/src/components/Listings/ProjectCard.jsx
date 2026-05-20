@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
-import { FaCalendarAlt, FaHeart, FaCheckCircle } from 'react-icons/fa'
+import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import VerificationBadge from '../shared/VerificationBadge'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 
 const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
@@ -67,12 +68,7 @@ const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, i
                 <p className='font-medium theme-text text-sm'>
                   {project.user.firstName} {project.user.lastName}
                 </p>
-                {project.user.isEmailVerified && (
-                  <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
-                    <FaCheckCircle className='text-[10px]' />
-                    Verified
-                  </span>
-                )}
+                <VerificationBadge isVerified={project.user.isEmailVerified} />
               </div>
               <p className='text-xs theme-text-secondary'>{project.user.email}</p>
             </div>

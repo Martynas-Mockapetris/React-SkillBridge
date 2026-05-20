@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaTimes, FaCheck, FaCheckCircle, FaEnvelope } from 'react-icons/fa'
+import { FaArrowLeft, FaTimes, FaCheck, FaEnvelope } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
@@ -11,6 +11,7 @@ import SubmitProjectModal from '../modal/SubmitProjectModal'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import ReviewProjectModal from '../modal/ReviewProjectModal'
+import VerificationBadge from '../components/shared/VerificationBadge'
 import { useRateNegotiation } from '../hooks/useRateNegotiation'
 import { useProjectModals } from '../hooks/useProjectModals'
 import { useFavorites } from '../hooks/useFavorites'
@@ -465,12 +466,7 @@ const ProjectDetail = () => {
                         <div className='min-w-0'>
                           <div className='flex items-center gap-2 flex-wrap'>
                             <p className='font-semibold theme-text'>{clientDisplayName}</p>
-                            {project.user.isEmailVerified && (
-                              <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
-                                <FaCheckCircle className='text-[10px]' />
-                                Verified
-                              </span>
-                            )}
+                            <VerificationBadge isVerified={project.user.isEmailVerified} />
                           </div>
                           <p className='text-sm theme-text-secondary'>{project.user.headline || 'Project owner'}</p>
                           <p className='text-xs theme-text-muted mt-1 inline-flex items-center gap-1'>
@@ -494,12 +490,7 @@ const ProjectDetail = () => {
                           <div className='min-w-0'>
                             <div className='flex items-center gap-2 flex-wrap'>
                               <p className='font-semibold theme-text'>{assigneeDisplayName}</p>
-                              {project.assignee.isEmailVerified && (
-                                <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
-                                  <FaCheckCircle className='text-[10px]' />
-                                  Verified
-                                </span>
-                              )}
+                              <VerificationBadge isVerified={project.assignee.isEmailVerified} />
                             </div>
                             <p className='text-sm theme-text-secondary'>{project.assignee.headline || 'Assigned freelancer'}</p>
                             <p className='text-xs theme-text-muted mt-1 inline-flex items-center gap-1'>
