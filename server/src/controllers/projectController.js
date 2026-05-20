@@ -852,7 +852,7 @@ const PROJECT_DETAIL_USER_FIELDS = 'firstName lastName email profilePicture isEm
 // @access  Public
 const getProjectById = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+    const project = await Project.findById(req.params.id).populate('user', PROJECT_DETAIL_USER_FIELDS).populate('assignee', PROJECT_DETAIL_USER_FIELDS)
 
     if (!project) {
       console.log(`[GET PROJECT] Project ${req.params.id} not found in DB`)
