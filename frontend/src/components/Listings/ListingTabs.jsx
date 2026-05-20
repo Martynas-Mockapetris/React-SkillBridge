@@ -92,7 +92,8 @@ const normalizeListingTab = (value) => {
 const defaultProjectFilters = {
   category: 'all',
   priority: 'all',
-  budget: 'all'
+  budget: 'all',
+  applied: 'all'
 }
 
 const defaultFreelancerFilters = {
@@ -105,7 +106,8 @@ const getFiltersFromSearchParams = (searchParams) => ({
   project: {
     category: searchParams.get('projectCategory') || 'all',
     priority: searchParams.get('projectPriority') || 'all',
-    budget: searchParams.get('projectBudget') || 'all'
+    budget: searchParams.get('projectBudget') || 'all',
+    applied: searchParams.get('projectApplied') || 'all'
   },
   freelancer: {
     availability: searchParams.get('freelancerAvailability') || 'all',
@@ -235,6 +237,9 @@ const ListingTabs = () => {
     if (projectFilters.budget !== 'all') nextParams.set('projectBudget', projectFilters.budget)
     else nextParams.delete('projectBudget')
 
+    if (projectFilters.applied !== 'all') nextParams.set('projectApplied', projectFilters.applied)
+    else nextParams.delete('projectApplied')
+
     if (freelancerFilters.availability !== 'all') nextParams.set('freelancerAvailability', freelancerFilters.availability)
     else nextParams.delete('freelancerAvailability')
 
@@ -288,7 +293,10 @@ const ListingTabs = () => {
       const matchesPriority = projectFilters.priority === 'all' || (project.priority || 'low') === projectFilters.priority
       const matchesBudget = matchesBudgetRange(project.budget, projectFilters.budget)
 
-      return matchesSearch && matchesCategory && matchesPriority && matchesBudget
+      const isApplied = appliedProjectIds.has(project._id)
+      const matchesApplied = projectFilters.applied === 'all' || (projectFilters.applied === 'not-applied' && !isApplied) || (projectFilters.applied === 'applied' && isApplied)
+
+      return matchesSearch && matchesCategory && matchesPriority && matchesBudget && matchesApplied
     })
   }
 
@@ -503,7 +511,7 @@ const ListingTabs = () => {
               </div>
 
               {activeTab === 'projects' ? (
-                <div className='grid grid-cols-1 gap-4 p-5 md:grid-cols-3 md:p-6'>
+                <div className='grid grid-cols-1 gap-4 p-5 md:grid-cols-2 xl:grid-cols-4 md:p-6'>
                   <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
                     <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Category</span>
                     <span className='mt-1 block text-sm theme-text-secondary'>Match projects by discipline</span>
@@ -546,6 +554,19 @@ const ListingTabs = () => {
                       <option value='500-2000'>500-2000 EUR</option>
                       <option value='2000-5000'>2000-5000 EUR</option>
                       <option value='5000-plus'>5000+ EUR</option>
+                    </select>
+                  </label>
+
+                  <label className='group rounded-2xl border dark:border-light/10 border-primary/10 bg-white/70 dark:bg-light/[0.03] px-4 py-4 transition-all hover:border-accent/40 hover:bg-white/90 dark:hover:bg-light/[0.05]'>
+                    <span className='block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Application status</span>
+                    <span className='mt-1 block text-sm theme-text-secondary'>Hide projects you have already applied to</span>
+                    <select
+                      value={projectFilters.applied}
+                      onChange={(event) => setProjectFilters((current) => ({ ...current, applied: event.target.value }))}
+                      className='theme-select mt-4 w-full rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.06] px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
+                      <option value='all'>All projects</option>
+                      <option value='not-applied'>Hide applied projects</option>
+                      <option value='applied'>Applied only</option>
                     </select>
                   </label>
                 </div>
