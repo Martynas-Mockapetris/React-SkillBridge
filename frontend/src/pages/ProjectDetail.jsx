@@ -154,6 +154,12 @@ const ProjectDetail = () => {
   const assigneeDisplayName = getDisplayName(project?.assignee, 'No freelancer assigned yet')
   const projectBrief = project?.projectBrief || {}
   const deliverables = Array.isArray(projectBrief.deliverables) ? projectBrief.deliverables : []
+  const normalizedSkills = Array.isArray(project?.skills)
+    ? project.skills
+        .flatMap((skill) => String(skill).split(','))
+        .map((skill) => skill.trim())
+        .filter(Boolean)
+    : []
 
   const experienceLevelLabel = getProjectBriefLabel('experienceLevel', projectBrief.experienceLevel)
   const durationLabel = getProjectBriefLabel('duration', projectBrief.duration)
@@ -294,10 +300,11 @@ const ProjectDetail = () => {
 
                   <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Skills Required</p>
-                    {project.skills?.length > 0 ? (
-                      <div className='mt-2 flex flex-wrap gap-2'>
-                        {project.skills.map((skill, index) => (
-                          <span key={`${skill}-${index}`} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>
+
+                    {normalizedSkills.length > 0 ? (
+                      <div className='mt-3 flex flex-wrap gap-2'>
+                        {normalizedSkills.map((skill, index) => (
+                          <span key={`${skill}-${index}`} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent border border-accent/20'>
                             {skill}
                           </span>
                         ))}
