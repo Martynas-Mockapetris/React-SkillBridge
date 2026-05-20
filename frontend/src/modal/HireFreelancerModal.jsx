@@ -11,7 +11,18 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
     category: '',
     skills: '',
     budget: '',
-    deadline: ''
+    deadline: '',
+    projectBrief: {
+      objective: '',
+      deliverables: '',
+      scopeNotes: '',
+      experienceLevel: 'not_specified',
+      duration: 'not_specified',
+      workload: 'not_specified',
+      startPreference: 'not_specified',
+      budgetType: 'not_specified',
+      applicationInstructions: ''
+    }
   })
 
   const [loading, setLoading] = useState(false)
@@ -29,11 +40,25 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
     if (error) setError('')
   }
 
+  const handleBriefChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      projectBrief: {
+        ...prev.projectBrief,
+        [name]: value
+      }
+    }))
+    if (error) setError('')
+  }
+
   const validateForm = () => {
     if (!formData.title.trim()) return (setError('Title is required'), false)
     if (!formData.description.trim()) return (setError('Description is required'), false)
     if (!formData.category) return (setError('Category is required'), false)
     if (!formData.skills.trim()) return (setError('At least one skill is required'), false)
+    if (!formData.projectBrief.objective.trim()) return (setError('Project objective is required'), false)
+    if (!formData.projectBrief.deliverables.trim()) return (setError('At least one deliverable is required'), false)
     if (!formData.budget || Number(formData.budget) <= 0) return (setError('Budget must be greater than 0'), false)
     if (!formData.deadline) return (setError('Deadline is required'), false)
     return true
@@ -51,6 +76,20 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
       budget: Number(formData.budget),
       deadline: formData.deadline,
       assigneeId: freelancer._id,
+      projectBrief: {
+        objective: formData.projectBrief.objective.trim(),
+        deliverables: formData.projectBrief.deliverables
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean),
+        scopeNotes: formData.projectBrief.scopeNotes.trim(),
+        experienceLevel: formData.projectBrief.experienceLevel,
+        duration: formData.projectBrief.duration,
+        workload: formData.projectBrief.workload,
+        startPreference: formData.projectBrief.startPreference,
+        budgetType: formData.projectBrief.budgetType,
+        applicationInstructions: formData.projectBrief.applicationInstructions.trim()
+      },
       rateNegotiation: {
         status: 'proposed',
         currentOffer: {
@@ -69,6 +108,7 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
         ]
       }
     }
+
     return payload
   }
 
@@ -140,8 +180,44 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
                 </div>
 
                 <div>
+                  <label className='block text-sm font-medium theme-text mb-1'>Project Objective</label>
+                  <textarea
+                    name='objective'
+                    value={formData.projectBrief.objective}
+                    onChange={handleBriefChange}
+                    rows='3'
+                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
+                    placeholder='What should this project achieve?'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium theme-text mb-1'>Deliverables (comma separated)</label>
+                  <input
+                    type='text'
+                    name='deliverables'
+                    value={formData.projectBrief.deliverables}
+                    onChange={handleBriefChange}
+                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
+                    placeholder='Landing page, checkout flow, dashboard widgets'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium theme-text mb-1'>Scope Notes</label>
+                  <textarea
+                    name='scopeNotes'
+                    value={formData.projectBrief.scopeNotes}
+                    onChange={handleBriefChange}
+                    rows='3'
+                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
+                    placeholder='Constraints, exclusions, technical notes, or expectations'
+                  />
+                </div>
+
+                <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Category</label>
-                  <select name='category' value={formData.category} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                  <select name='category' value={formData.category} onChange={handleInputChange} className='theme-select w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
                     <option value=''>Select category</option>
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -156,6 +232,85 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
                   <input type='text' name='skills' value={formData.skills} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
                 </div>
 
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div>
+                    <label className='block text-sm font-medium theme-text mb-1'>Experience Level</label>
+                    <select
+                      name='experienceLevel'
+                      value={formData.projectBrief.experienceLevel}
+                      onChange={handleBriefChange}
+                      className='theme-select w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                      <option value='not_specified'>Not specified</option>
+                      <option value='junior'>Junior</option>
+                      <option value='mid'>Mid</option>
+                      <option value='senior'>Senior</option>
+                      <option value='expert'>Expert</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className='block text-sm font-medium theme-text mb-1'>Budget Type</label>
+                    <select
+                      name='budgetType'
+                      value={formData.projectBrief.budgetType}
+                      onChange={handleBriefChange}
+                      className='theme-select w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                      <option value='not_specified'>Not specified</option>
+                      <option value='fixed'>Fixed</option>
+                      <option value='hourly'>Hourly</option>
+                      <option value='negotiable'>Negotiable</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className='block text-sm font-medium theme-text mb-1'>Start Preference</label>
+                    <select
+                      name='startPreference'
+                      value={formData.projectBrief.startPreference}
+                      onChange={handleBriefChange}
+                      className='theme-select w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                      <option value='not_specified'>Not specified</option>
+                      <option value='immediately'>Immediately</option>
+                      <option value='this_week'>This week</option>
+                      <option value='within_2_weeks'>Within 2 weeks</option>
+                      <option value='flexible'>Flexible</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className='block text-sm font-medium theme-text mb-1'>Estimated Duration</label>
+                    <select
+                      name='duration'
+                      value={formData.projectBrief.duration}
+                      onChange={handleBriefChange}
+                      className='theme-select w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                      <option value='not_specified'>Not specified</option>
+                      <option value='less_than_1_week'>Less than 1 week</option>
+                      <option value='1_to_2_weeks'>1 to 2 weeks</option>
+                      <option value='2_to_4_weeks'>2 to 4 weeks</option>
+                      <option value='1_to_3_months'>1 to 3 months</option>
+                      <option value='3_plus_months'>3+ months</option>
+                      <option value='ongoing'>Ongoing</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className='block text-sm font-medium theme-text mb-1'>Workload</label>
+                    <select
+                      name='workload'
+                      value={formData.projectBrief.workload}
+                      onChange={handleBriefChange}
+                      className='theme-select w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                      <option value='not_specified'>Not specified</option>
+                      <option value='under_10_hours'>Under 10 hrs/week</option>
+                      <option value='10_to_20_hours'>10 to 20 hrs/week</option>
+                      <option value='20_to_30_hours'>20 to 30 hrs/week</option>
+                      <option value='30_plus_hours'>30+ hrs/week</option>
+                      <option value='full_time'>Full time</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Budget (EUR)</label>
                   <input type='number' name='budget' value={formData.budget} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
@@ -163,7 +318,7 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
 
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Rate Type</label>
-                  <select value={rateType} onChange={(e) => setRateType(e.target.value)} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
+                  <select value={rateType} onChange={(e) => setRateType(e.target.value)} className='theme-select w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'>
                     <option value='hourly'>Hourly Rate</option>
                     <option value='fixed'>Fixed Price</option>
                   </select>
@@ -172,6 +327,18 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
                 <div>
                   <label className='block text-sm font-medium theme-text mb-1'>Deadline</label>
                   <input type='date' name='deadline' value={formData.deadline} onChange={handleInputChange} className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text' />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium theme-text mb-1'>Application Instructions</label>
+                  <textarea
+                    name='applicationInstructions'
+                    value={formData.projectBrief.applicationInstructions}
+                    onChange={handleBriefChange}
+                    rows='3'
+                    className='w-full p-3 rounded border dark:border-light/10 border-primary/10 theme-bg theme-text'
+                    placeholder='What should the freelancer prepare or know before starting?'
+                  />
                 </div>
               </form>
 
