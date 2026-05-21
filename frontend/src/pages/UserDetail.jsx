@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaStar, FaArrowLeft, FaHeart, FaRegHeart, FaPhone, FaEnvelope, FaBriefcase, FaClock, FaEuroSign, FaMapMarkerAlt, FaGlobe, FaTools, FaCheckCircle } from 'react-icons/fa'
+import { FaStar, FaArrowLeft, FaPhone, FaEnvelope, FaBriefcase, FaClock, FaEuroSign, FaMapMarkerAlt, FaGlobe, FaTools, FaCheckCircle, FaUserPlus } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
-import { getUserById, addFreelancerToFavorites, removeFreelancerFromFavorites, getUserProfile } from '../services/userService'
+import { getUserById, getMyConnections, sendConnectionRequest, acceptConnectionRequest } from '../services/userService'
 import { getAllAnnouncements } from '../services/announcementService'
 import RatingsSection from '../components/Profile/RatingsSection'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
@@ -94,6 +94,31 @@ const parseCommaSeparatedList = (value) => {
     .filter(Boolean)
 }
 
+const resolveConnectionState = (connectionData, userId) => {
+  if (!connectionData || !userId) {
+    return { status: 'none', connection: null }
+  }
+
+  const findMatch = (items = []) => items.find((item) => item.otherUser?._id === userId)
+
+  const accepted = findMatch(connectionData.acceptedConnections)
+  if (accepted) {
+    return { status: 'accepted', connection: accepted }
+  }
+
+  const incoming = findMatch(connectionData.incomingRequests)
+  if (incoming) {
+    return { status: 'incoming', connection: incoming }
+  }
+
+  const outgoing = findMatch(connectionData.outgoingRequests)
+  if (outgoing) {
+    return { status: 'pending', connection: outgoing }
+  }
+
+  return { status: 'none', connection: null }
+}
+
 const UserDetail = () => {
   const { freelancerId } = useParams()
   const navigate = useNavigate()
@@ -106,7 +131,9 @@ const UserDetail = () => {
   const [ratings, setRatings] = useState(null)
   const [ratingStats, setRatingStats] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [isFavorited, setIsFavorited] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState('none')
+  const [connectionRecord, setConnectionRecord] = useState(null)
+  const [connectionLoading, setConnectionLoading] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [showHireModal, setShowHireModal] = useState(false)
 
@@ -120,12 +147,18 @@ const UserDetail = () => {
         // Check if current user has this freelancer favorited by fetching fresh profile data
         if (currentUser) {
           try {
-            const userProfile = await getUserProfile()
-            setIsFavorited(userProfile.favoriteFreelancers?.includes(freelancerId) || false)
+            const connectionData = await getMyConnections()
+            const nextConnectionState = resolveConnectionState(connectionData, freelancerId)
+            setConnectionStatus(nextConnectionState.status)
+            setConnectionRecord(nextConnectionState.connection)
           } catch (error) {
-            console.error('Error checking favorite status:', error)
-            setIsFavorited(false)
+            console.error('Error checking connection status:', error)
+            setConnectionStatus('none')
+            setConnectionRecord(null)
           }
+        } else {
+          setConnectionStatus('none')
+          setConnectionRecord(null)
         }
 
         // Fetch announcements
@@ -173,23 +206,32 @@ const UserDetail = () => {
     )
   }
 
-  const handleToggleFavorite = async () => {
+  const handleConnectionAction = async () => {
     if (!currentUser) {
-      alert('Please login to add favorites')
+      alert('Please login to manage connections')
       return
     }
 
     try {
-      if (isFavorited) {
-        await removeFreelancerFromFavorites(freelancerId)
-        setIsFavorited(false)
+      setConnectionLoading(true)
+
+      if (connectionStatus === 'incoming' && connectionRecord?._id) {
+        await acceptConnectionRequest(connectionRecord._id)
+      } else if (connectionStatus === 'none') {
+        await sendConnectionRequest(freelancerId)
       } else {
-        await addFreelancerToFavorites(freelancerId)
-        setIsFavorited(true)
+        return
       }
+
+      const connectionData = await getMyConnections()
+      const nextConnectionState = resolveConnectionState(connectionData, freelancerId)
+      setConnectionStatus(nextConnectionState.status)
+      setConnectionRecord(nextConnectionState.connection)
     } catch (error) {
-      console.error('Error toggling favorite:', error)
-      alert('Failed to update favorites')
+      console.error('Error updating connection:', error)
+      alert(error.response?.data?.message || 'Failed to update connection')
+    } finally {
+      setConnectionLoading(false)
     }
   }
 
@@ -282,11 +324,32 @@ const UserDetail = () => {
                 <div className='px-6 py-2 rounded-lg bg-gray-100 dark:bg-light/10 theme-text-secondary text-sm border dark:border-light/10 border-primary/10'>Project invites disabled</div>
               )}
 
-              <motion.button onClick={handleToggleFavorite} className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all' whileHover={{ scale: 1.05 }}>
-                {isFavorited ? <FaHeart /> : <FaRegHeart />}
-              </motion.button>
+              {currentUser?._id !== freelancerId && (
+                <motion.button
+                  onClick={handleConnectionAction}
+                  disabled={connectionLoading || connectionStatus === 'pending' || connectionStatus === 'accepted'}
+                  className={`inline-flex items-center gap-2 px-6 py-2 rounded-lg transition-all ${
+                    connectionStatus === 'accepted'
+                      ? 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/40 cursor-default'
+                      : connectionStatus === 'pending'
+                        ? 'bg-primary/10 text-primary/60 dark:bg-light/10 dark:text-light/60 cursor-not-allowed'
+                        : connectionStatus === 'incoming'
+                          ? 'bg-green-600 text-white hover:bg-green-500'
+                          : 'bg-accent/10 text-accent hover:bg-accent hover:text-white'
+                  }`}
+                  whileHover={connectionStatus === 'pending' || connectionStatus === 'accepted' ? {} : { scale: 1.05 }}>
+                  <FaUserPlus />
+                  <span>{connectionStatus === 'accepted' ? 'Connected' : connectionStatus === 'pending' ? 'Request Sent' : connectionStatus === 'incoming' ? 'Accept Connection' : 'Connect'}</span>
+                </motion.button>
+              )}
             </div>
-            {(!canDirectMessage || !canInviteToProjects) && <p className='mt-3 text-sm theme-text-secondary'>This freelancer has limited contact preferences enabled in their profile settings.</p>}
+            <div className='mt-3 space-y-2'>
+              {(!canDirectMessage || !canInviteToProjects) && <p className='text-sm theme-text-secondary'>This freelancer has limited contact preferences enabled in their profile settings.</p>}
+
+              {connectionStatus === 'pending' && <p className='text-sm theme-text-secondary'>Your connection request has been sent and is waiting for approval.</p>}
+              {connectionStatus === 'incoming' && <p className='text-sm theme-text-secondary'>This freelancer already sent you a connection request. You can accept it here.</p>}
+              {connectionStatus === 'accepted' && <p className='text-sm text-green-700 dark:text-green-300'>You are connected in the network. Use direct messages or project invites to keep the relationship active.</p>}
+            </div>
           </div>
         </motion.div>
 
