@@ -2,9 +2,31 @@ import User from '../models/User.js'
 import Project from '../models/Project.js'
 import Announcement from '../models/Announcement.js'
 import AdminActionLog from '../models/AdminActionLog.js'
+import Connection from '../models/Connection.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 import { sendVerificationEmail } from '../utils/emailVerificationService.js'
+
+const CONNECTION_USER_FIELDS = 'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate'
+
+const mapConnectionRecord = (connection, currentUserId) => {
+  const requesterId = connection.requester?._id ? connection.requester._id.toString() : connection.requester.toString()
+  const recipientId = connection.recipient?._id ? connection.recipient._id.toString() : connection.recipient.toString()
+  const normalizedCurrentUserId = currentUserId.toString()
+  const isRequester = requesterId === normalizedCurrentUserId
+  const otherUser = isRequester ? connection.recipient : connection.requester
+
+  return {
+    _id: connection._id,
+    status: connection.status,
+    requestedAt: connection.requestedAt,
+    respondedAt: connection.respondedAt,
+    requester: connection.requester,
+    recipient: connection.recipient,
+    otherUser,
+    direction: connection.status === 'accepted' ? 'connected' : isRequester ? 'outgoing' : 'incoming'
+  }
+}
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -1430,6 +1452,198 @@ export const addFreelancerToFavorites = async (req, res) => {
     res.json({ message: 'Added to favorites', favoriteFreelancers: user.favoriteFreelancers })
   } catch (error) {
     console.error('Error adding freelancer to favorites:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Get current user's connection inbox and network
+// @route   GET /api/users/connections
+// @access  Private
+export const getMyConnections = async (req, res) => {
+  try {
+    const connections = await Connection.find({
+      $or: [{ requester: req.user._id }, { recipient: req.user._id }],
+      status: { $in: ['pending', 'accepted'] }
+    })
+      .populate('requester', CONNECTION_USER_FIELDS)
+      .populate('recipient', CONNECTION_USER_FIELDS)
+      .sort({ updatedAt: -1, requestedAt: -1 })
+
+    const mappedConnections = connections.map((connection) => mapConnectionRecord(connection, req.user._id))
+
+    const incomingRequests = mappedConnections.filter((connection) => connection.direction === 'incoming')
+    const outgoingRequests = mappedConnections.filter((connection) => connection.direction === 'outgoing')
+    const acceptedConnections = mappedConnections.filter((connection) => connection.status === 'accepted')
+
+    res.json({
+      incomingRequests,
+      outgoingRequests,
+      acceptedConnections,
+      summary: {
+        incomingCount: incomingRequests.length,
+        outgoingCount: outgoingRequests.length,
+        connectionsCount: acceptedConnections.length
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching connections:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Send a connection request to a freelancer profile
+// @route   POST /api/users/connections/:userId
+// @access  Private
+export const sendConnectionRequest = async (req, res) => {
+  try {
+    const targetUserId = req.params.userId
+
+    if (targetUserId === req.user._id.toString()) {
+      return res.status(400).json({ message: 'You cannot connect with yourself.' })
+    }
+
+    const targetUser = await User.findById(targetUserId).select('_id userType')
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (!['freelancer', 'both'].includes(targetUser.userType)) {
+      return res.status(400).json({ message: 'Connections are available only for freelancer profiles.' })
+    }
+
+    let connection = await Connection.findOne({
+      $or: [
+        { requester: req.user._id, recipient: targetUserId },
+        { requester: targetUserId, recipient: req.user._id }
+      ]
+    })
+
+    if (connection?.status === 'accepted') {
+      return res.status(400).json({ message: 'You are already connected.' })
+    }
+
+    if (connection?.status === 'pending' && connection.requester.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Connection request already sent.' })
+    }
+
+    if (connection?.status === 'pending' && connection.recipient.toString() === req.user._id.toString()) {
+      connection.status = 'accepted'
+      connection.respondedAt = new Date()
+      await connection.save()
+      await connection.populate('requester', CONNECTION_USER_FIELDS)
+      await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+      return res.json({
+        message: 'Connection request accepted.',
+        connection: mapConnectionRecord(connection, req.user._id)
+      })
+    }
+
+    if (!connection) {
+      connection = new Connection({
+        requester: req.user._id,
+        recipient: targetUserId,
+        status: 'pending'
+      })
+    } else {
+      connection.requester = req.user._id
+      connection.recipient = targetUserId
+      connection.status = 'pending'
+      connection.requestedAt = new Date()
+      connection.respondedAt = null
+    }
+
+    await connection.save()
+    await connection.populate('requester', CONNECTION_USER_FIELDS)
+    await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+    res.status(201).json({
+      message: 'Connection request sent.',
+      connection: mapConnectionRecord(connection, req.user._id)
+    })
+  } catch (error) {
+    console.error('Error sending connection request:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Accept an incoming connection request
+// @route   PATCH /api/users/connections/:connectionId/accept
+// @access  Private
+export const acceptConnectionRequest = async (req, res) => {
+  try {
+    const connection = await Connection.findOne({
+      _id: req.params.connectionId,
+      recipient: req.user._id,
+      status: 'pending'
+    })
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Connection request not found.' })
+    }
+
+    connection.status = 'accepted'
+    connection.respondedAt = new Date()
+    await connection.save()
+    await connection.populate('requester', CONNECTION_USER_FIELDS)
+    await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+    res.json({
+      message: 'Connection request accepted.',
+      connection: mapConnectionRecord(connection, req.user._id)
+    })
+  } catch (error) {
+    console.error('Error accepting connection request:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Decline an incoming connection request
+// @route   PATCH /api/users/connections/:connectionId/decline
+// @access  Private
+export const declineConnectionRequest = async (req, res) => {
+  try {
+    const connection = await Connection.findOne({
+      _id: req.params.connectionId,
+      recipient: req.user._id,
+      status: 'pending'
+    })
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Connection request not found.' })
+    }
+
+    connection.status = 'declined'
+    connection.respondedAt = new Date()
+    await connection.save()
+
+    res.json({ message: 'Connection request declined.' })
+  } catch (error) {
+    console.error('Error declining connection request:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove an accepted connection or cancel a pending one
+// @route   DELETE /api/users/connections/:connectionId
+// @access  Private
+export const removeConnection = async (req, res) => {
+  try {
+    const connection = await Connection.findOne({
+      _id: req.params.connectionId,
+      $or: [{ requester: req.user._id }, { recipient: req.user._id }]
+    })
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Connection not found.' })
+    }
+
+    const message = connection.status === 'accepted' ? 'Connection removed.' : 'Connection request removed.'
+    await connection.deleteOne()
+
+    res.json({ message })
+  } catch (error) {
+    console.error('Error removing connection:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }

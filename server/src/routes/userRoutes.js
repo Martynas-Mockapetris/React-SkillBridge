@@ -10,6 +10,11 @@ import {
   getFavoriteProjects,
   getFreelancers,
   getUserById,
+  getMyConnections,
+  sendConnectionRequest,
+  acceptConnectionRequest,
+  declineConnectionRequest,
+  removeConnection,
   addFreelancerToFavorites,
   removeFreelancerFromFavorites,
   getAdminDashboardStats,
@@ -64,6 +69,13 @@ router.post('/admin/:userId/verify-email', protect, requirePermission(PERMISSION
 router.patch('/admin/:userId/reactivate', protect, requirePermission(PERMISSIONS.USERS_UPDATE), reactivateAdminUser)
 router.patch('/admin/:userId/verify-email/direct', protect, requirePermission(PERMISSIONS.USERS_UPDATE), verifyAdminUserDirect)
 router.delete('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_DELETE), deleteAdminUser)
+
+// Connections routes
+router.get('/connections', protect, getMyConnections)
+router.post('/connections/:userId', protect, sendConnectionRequest)
+router.patch('/connections/:connectionId/accept', protect, acceptConnectionRequest)
+router.patch('/connections/:connectionId/decline', protect, declineConnectionRequest)
+router.delete('/connections/:connectionId', protect, removeConnection)
 
 // Favorites routes - specific routes first!
 router.get('/favorites', protect, getFavoriteProjects)

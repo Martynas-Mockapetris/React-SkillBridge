@@ -258,6 +258,56 @@ export const removeFreelancerFromFavorites = async (freelancerId) => {
   }
 }
 
+export const getMyConnections = async () => {
+  try {
+    const response = await authAxios.get('/api/users/connections')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch connections:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const sendConnectionRequest = async (userId) => {
+  try {
+    const response = await authAxios.post(`/api/users/connections/${userId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to send connection request:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const acceptConnectionRequest = async (connectionId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/connections/${connectionId}/accept`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to accept connection request:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const declineConnectionRequest = async (connectionId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/connections/${connectionId}/decline`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to decline connection request:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const removeConnection = async (connectionId) => {
+  try {
+    const response = await authAxios.delete(`/api/users/connections/${connectionId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove connection:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Updates the user's profile with new data
 export const updateUserProfile = async (profileData) => {
   try {
