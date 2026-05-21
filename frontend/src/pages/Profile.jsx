@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaSyncAlt, FaTimes } from 'react-icons/fa'
+import { FaUser, FaUserFriends, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaSyncAlt, FaTimes } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
