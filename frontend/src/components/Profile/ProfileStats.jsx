@@ -4,6 +4,7 @@ import { FaProjectDiagram, FaCheckCircle, FaClock, FaStar, FaWallet, FaBullhorn,
 import { getUserStats } from '../../services/userService'
 import { getUserAnnouncements } from '../../services/announcementService'
 import { getUserMessages } from '../../services/messageService'
+import { getUserStats, getMyConnections } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProjects, onOpenMessages, onOpenFreelance }) => {
@@ -18,14 +19,15 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       try {
         setLoading(true)
 
-        const [stats, announcements, messages] = await Promise.all([getUserStats(), getUserAnnouncements().catch(() => []), getUserMessages().catch(() => [])])
+        const [stats, announcements, messages, connections] = await Promise.all([getUserStats(), getUserAnnouncements().catch(() => []), getUserMessages().catch(() => []), getMyConnections().catch(() => null)])
 
         const currentUserId = user?._id
         const extractId = (value) => (typeof value === 'string' ? value : value?._id)
 
         const announcementCount = Array.isArray(announcements) ? announcements.length : 0
         const unreadMessages = Array.isArray(messages) ? messages.filter((message) => !message.isRead && extractId(message.receiver) === currentUserId).length : 0
-        const connectionsCount = Array.isArray(user?.favoriteFreelancers) ? user.favoriteFreelancers.length : 0
+        const connectionsCount = connections?.summary?.connectionsCount || 0
+        const incomingConnectionsCount = connections?.summary?.incomingCount || 0
 
         const normalizedAnnouncements = Array.isArray(announcements) ? announcements : []
         const normalizedMessages = Array.isArray(messages) ? messages : []
@@ -80,7 +82,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
             icon: <FaUserFriends />,
             label: 'Connections',
             value: connectionsCount.toString(),
-            trend: 'Favorites network'
+            trend: incomingConnectionsCount > 0 ? `${incomingConnectionsCount} pending` : 'Network active'
           }
         ]
 
@@ -94,7 +96,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
     }
 
     fetchStats()
-  }, [user?._id, user?.favoriteFreelancers])
+  }, [user?._id])
 
   if (loading) {
     return (

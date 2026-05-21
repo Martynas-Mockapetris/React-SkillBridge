@@ -9,6 +9,7 @@ import SecuritySettings from '../components/Profile/SecuritySettings'
 import FreelanceTab from '../components/Profile/FreelanceTab'
 import RatingsSection from '../components/Profile/RatingsSection'
 import MessagesList from '../components/Profile/MessagesList'
+import ConnectionsTab from '../components/Profile/ConnectionsTab'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getUserMessages } from '../services/messageService'
@@ -169,6 +170,7 @@ const Profile = () => {
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     // Projects tab - not visible to admins
     ...(!hasAdminPanelAccess(currentUser) ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
+    { id: 'connections', label: 'Connections', icon: <FaUserFriends /> },
     { id: 'messages', label: 'Messages', icon: <FaEnvelope />, badge: unreadMessageCount > 0 ? unreadMessageCount : null },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
@@ -448,6 +450,7 @@ const Profile = () => {
                 onOpenFreelance={currentUser?.userType === 'freelancer' || currentUser?.userType === 'both' ? handleOpenFreelance : undefined}
               />
             )}
+            {activeTab === 'connections' && <ConnectionsTab />}
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
             {activeTab === 'messages' && (
               <div className='space-y-4'>
