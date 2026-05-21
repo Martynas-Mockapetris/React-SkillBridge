@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaProjectDiagram, FaCheckCircle, FaClock, FaStar, FaWallet, FaBullhorn, FaEnvelopeOpenText, FaUserFriends, FaHistory } from 'react-icons/fa'
-import { getUserStats } from '../../services/userService'
+import { getUserStats, getMyConnections } from '../../services/userService'
 import { getUserAnnouncements } from '../../services/announcementService'
 import { getUserMessages } from '../../services/messageService'
-import { getUserStats, getMyConnections } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProjects, onOpenMessages, onOpenFreelance }) => {
