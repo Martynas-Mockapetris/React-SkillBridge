@@ -15,8 +15,6 @@ import {
   acceptConnectionRequest,
   declineConnectionRequest,
   removeConnection,
-  addFreelancerToFavorites,
-  removeFreelancerFromFavorites,
   getAdminDashboardStats,
   getAdminAuditLogs,
   getAdminUserDetail,
@@ -81,10 +79,6 @@ router.delete('/connections/:connectionId', protect, removeConnection)
 router.get('/favorites', protect, getFavoriteProjects)
 router.post('/favorites/:projectId', protect, addToFavorites)
 router.delete('/favorites/:projectId', protect, removeFromFavorites)
-
-// Legacy freelancer bookmark routes kept temporarily for compatibility
-router.post('/favorites/freelancer/:freelancerId', protect, addFreelancerToFavorites)
-router.delete('/favorites/freelancer/:freelancerId', protect, removeFreelancerFromFavorites)
 
 // Freelancers route
 router.get('/freelancers', getFreelancers)
