@@ -236,28 +236,6 @@ export const removeFromFavorites = async (projectId) => {
   }
 }
 
-// Legacy freelancer bookmark endpoint kept for compatibility during networking rollout
-export const addFreelancerToFavorites = async (freelancerId) => {
-  try {
-    const response = await authAxios.post(`/api/users/favorites/freelancer/${freelancerId}`)
-    return response.data
-  } catch (error) {
-    console.error('Failed to add freelancer to favorites:', error.response?.data || error.message)
-    throw error
-  }
-}
-
-// Legacy freelancer bookmark endpoint kept for compatibility during networking rollout
-export const removeFreelancerFromFavorites = async (freelancerId) => {
-  try {
-    const response = await authAxios.delete(`/api/users/favorites/freelancer/${freelancerId}`)
-    return response.data
-  } catch (error) {
-    console.error('Failed to remove freelancer from favorites:', error.response?.data || error.message)
-    throw error
-  }
-}
-
 export const getMyConnections = async () => {
   try {
     const response = await authAxios.get('/api/users/connections')
