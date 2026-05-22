@@ -266,7 +266,7 @@ const UserSchema = new mongoose.Schema({
     default: []
   },
 
-  // Favorite freelancers
+  // Legacy freelancer bookmarks kept temporarily for compatibility with older flows
   favoriteFreelancers: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'User',

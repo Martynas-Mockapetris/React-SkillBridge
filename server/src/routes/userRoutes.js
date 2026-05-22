@@ -77,12 +77,14 @@ router.patch('/connections/:connectionId/accept', protect, acceptConnectionReque
 router.patch('/connections/:connectionId/decline', protect, declineConnectionRequest)
 router.delete('/connections/:connectionId', protect, removeConnection)
 
-// Favorites routes - specific routes first!
+// Project favorites routes
 router.get('/favorites', protect, getFavoriteProjects)
-router.post('/favorites/freelancer/:freelancerId', protect, addFreelancerToFavorites)
-router.delete('/favorites/freelancer/:freelancerId', protect, removeFreelancerFromFavorites)
 router.post('/favorites/:projectId', protect, addToFavorites)
 router.delete('/favorites/:projectId', protect, removeFromFavorites)
+
+// Legacy freelancer bookmark routes kept temporarily for compatibility
+router.post('/favorites/freelancer/:freelancerId', protect, addFreelancerToFavorites)
+router.delete('/favorites/freelancer/:freelancerId', protect, removeFreelancerFromFavorites)
 
 // Freelancers route
 router.get('/freelancers', getFreelancers)

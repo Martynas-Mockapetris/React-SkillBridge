@@ -144,7 +144,7 @@ const UserDetail = () => {
         const freelancerData = await getUserById(freelancerId)
         setFreelancer(freelancerData)
 
-        // Check if current user has this freelancer favorited by fetching fresh profile data
+        // Load the current connection state for this freelancer profile
         if (currentUser) {
           try {
             const connectionData = await getMyConnections()

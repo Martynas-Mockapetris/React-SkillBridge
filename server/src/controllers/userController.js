@@ -1433,7 +1433,7 @@ export const getUserById = async (req, res) => {
   }
 }
 
-// @desc    Add freelancer to favorites
+// @desc    Legacy freelancer bookmark endpoint kept for compatibility
 // @route   POST /api/users/favorites/freelancer/:freelancerId
 // @access  Private
 export const addFreelancerToFavorites = async (req, res) => {
@@ -1441,7 +1441,7 @@ export const addFreelancerToFavorites = async (req, res) => {
     const user = await User.findById(req.user._id)
     const freelancerId = req.params.freelancerId
 
-    // Check if already favorited
+    // Legacy bookmark guard
     if (user.favoriteFreelancers.includes(freelancerId)) {
       return res.status(400).json({ message: 'Freelancer already in favorites' })
     }
@@ -1648,7 +1648,7 @@ export const removeConnection = async (req, res) => {
   }
 }
 
-// @desc    Remove freelancer from favorites
+// @desc    Legacy freelancer bookmark endpoint kept for compatibility
 // @route   DELETE /api/users/favorites/freelancer/:freelancerId
 // @access  Private
 export const removeFreelancerFromFavorites = async (req, res) => {

@@ -236,7 +236,7 @@ export const removeFromFavorites = async (projectId) => {
   }
 }
 
-// Add freelancer to favorites
+// Legacy freelancer bookmark endpoint kept for compatibility during networking rollout
 export const addFreelancerToFavorites = async (freelancerId) => {
   try {
     const response = await authAxios.post(`/api/users/favorites/freelancer/${freelancerId}`)
@@ -247,7 +247,7 @@ export const addFreelancerToFavorites = async (freelancerId) => {
   }
 }
 
-// Remove freelancer from favorites
+// Legacy freelancer bookmark endpoint kept for compatibility during networking rollout
 export const removeFreelancerFromFavorites = async (freelancerId) => {
   try {
     const response = await authAxios.delete(`/api/users/favorites/freelancer/${freelancerId}`)
