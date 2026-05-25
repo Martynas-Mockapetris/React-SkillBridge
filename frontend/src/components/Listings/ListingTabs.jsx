@@ -211,7 +211,7 @@ const ListingTabs = () => {
   const [appliedProjectIds, setAppliedProjectIds] = useState(new Set())
   const [favoriteProjectIds, setFavoriteProjectIds] = useState(new Set())
   const [favoritingProjectIds, setFavoritingProjectIds] = useState(new Set())
-  const [connectionStatusMap, setConnectionStatusMap] = useState(new Map())
+  const [connectionStatusByFreelancerId, setConnectionStatusByFreelancerId] = useState(new Map())
 
   useEffect(() => {
     const nextTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
@@ -796,12 +796,7 @@ const ListingTabs = () => {
                         />
                       ))
                     : currentItems.map((freelancer, index) => (
-                        <FreelancerCard
-                          key={freelancer._id}
-                          freelancer={freelancer}
-                          index={index}
-                          connectionStatus={connectionStatusMap.get(freelancer._id)}
-                        />
+                        <FreelancerCard key={freelancer._id} freelancer={freelancer} index={index} connectionStatus={connectionStatusByFreelancerId.get(freelancer.freelancer?._id) || 'none'} />
                       ))}
               </div>
             ) : null}

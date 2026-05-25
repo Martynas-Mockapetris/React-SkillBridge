@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import VerificationBadge from '../shared/VerificationBadge'
 
-const FreelancerCard = ({ freelancer, index, connectionStatus: _connectionStatus = 'none' }) => {
+const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { currentUser } = useAuth()
@@ -19,7 +19,24 @@ const FreelancerCard = ({ freelancer, index, connectionStatus: _connectionStatus
   }
 
   const roleLabel = freelancerInfo.userType === 'both' ? 'Client & Freelancer' : 'Freelancer'
-  const currentConnectionStatus = connectionStatus
+
+  const connectionBadge =
+    connectionStatus === 'accepted'
+      ? {
+          label: 'Connected',
+          className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+        }
+      : connectionStatus === 'pending'
+        ? {
+            label: 'Request Sent',
+            className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+          }
+        : connectionStatus === 'incoming'
+          ? {
+              label: 'Incoming Request',
+              className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+            }
+          : null
 
   const quickFacts = [
     {
@@ -85,6 +102,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus: _connectionStatus
 
             <div className='flex flex-col items-end gap-2 shrink-0'>
               <span className='inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-accent/20 text-accent whitespace-nowrap'>{roleLabel}</span>
+              {connectionBadge && <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap ${connectionBadge.className}`}>{connectionBadge.label}</span>}
               <VerificationBadge isVerified={freelancerInfo.isEmailVerified} className='whitespace-nowrap px-2.5 py-1' />
             </div>
           </div>
