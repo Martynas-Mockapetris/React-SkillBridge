@@ -8,7 +8,7 @@ import FreelancerCard from './FreelancerCard'
 import CardLoader from './CardLoader'
 import { getAllProjects, getInterestedProjects } from '../../services/projectService'
 import { getAllAnnouncements } from '../../services/announcementService'
-import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
+import { getFavoriteProjects, addToFavorites, removeFromFavorites, getMyConnections } from '../../services/userService'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { useAuth } from '../../context/AuthContext'
 
@@ -158,6 +158,35 @@ const matchesRateRange = (rate, range) => {
   }
 }
 
+const buildConnectionStatusMap = (connectionsData) => {
+  const nextMap = new Map()
+
+  if (!connectionsData) return nextMap
+
+  connectionsData.acceptedConnections?.forEach((connection) => {
+    const userId = connection.otherUser?._id
+    if (userId) {
+      nextMap.set(userId, 'accepted')
+    }
+  })
+
+  connectionsData.incomingRequests?.forEach((connection) => {
+    const userId = connection.otherUser?._id
+    if (userId && !nextMap.has(userId)) {
+      nextMap.set(userId, 'incoming')
+    }
+  })
+
+  connectionsData.outgoingRequests?.forEach((connection) => {
+    const userId = connection.otherUser?._id
+    if (userId && !nextMap.has(userId)) {
+      nextMap.set(userId, 'pending')
+    }
+  })
+
+  return nextMap
+}
+
 const ListingTabs = () => {
   const location = useLocation()
   const { currentUser } = useAuth()
@@ -182,6 +211,7 @@ const ListingTabs = () => {
   const [appliedProjectIds, setAppliedProjectIds] = useState(new Set())
   const [favoriteProjectIds, setFavoriteProjectIds] = useState(new Set())
   const [favoritingProjectIds, setFavoritingProjectIds] = useState(new Set())
+  const [connectionStatusMap, setConnectionStatusMap] = useState(new Map())
 
   useEffect(() => {
     const nextTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
@@ -320,6 +350,25 @@ const ListingTabs = () => {
     }
 
     loadFavoriteProjects()
+  }, [currentUser?._id])
+
+  useEffect(() => {
+    const loadConnections = async () => {
+      if (!currentUser) {
+        setConnectionStatusByFreelancerId(new Map())
+        return
+      }
+
+      try {
+        const connectionsData = await getMyConnections()
+        setConnectionStatusByFreelancerId(buildConnectionStatusMap(connectionsData))
+      } catch (error) {
+        console.error('Error loading connection states for listings:', error)
+        setConnectionStatusByFreelancerId(new Map())
+      }
+    }
+
+    loadConnections()
   }, [currentUser?._id])
 
   // Function to filter freelancers by search term and freelancer-specific filters
@@ -746,7 +795,14 @@ const ListingTabs = () => {
                           onToggleFavorite={handleToggleFavoriteProject}
                         />
                       ))
-                    : currentItems.map((freelancer, index) => <FreelancerCard key={freelancer._id} freelancer={freelancer} index={index} />)}
+                    : currentItems.map((freelancer, index) => (
+                        <FreelancerCard
+                          key={freelancer._id}
+                          freelancer={freelancer}
+                          index={index}
+                          connectionStatus={connectionStatusMap.get(freelancer._id)}
+                        />
+                      ))}
               </div>
             ) : null}
 

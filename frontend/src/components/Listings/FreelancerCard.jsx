@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import VerificationBadge from '../shared/VerificationBadge'
 
-const FreelancerCard = ({ freelancer, index }) => {
+const FreelancerCard = ({ freelancer, index, connectionStatus: _connectionStatus = 'none' }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { currentUser } = useAuth()
@@ -19,6 +19,7 @@ const FreelancerCard = ({ freelancer, index }) => {
   }
 
   const roleLabel = freelancerInfo.userType === 'both' ? 'Client & Freelancer' : 'Freelancer'
+  const currentConnectionStatus = connectionStatus
 
   const quickFacts = [
     {
