@@ -13,6 +13,7 @@ import ConnectionsTab from '../components/Profile/ConnectionsTab'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { getUserMessages } from '../services/messageService'
+import { getMyConnections } from '../services/userService'
 import { calculateProfileCompleteness } from '../utils/profileCompleteness'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { requestEmailVerification as requestEmailVerificationService } from '../services/authService'
@@ -25,6 +26,8 @@ const Profile = () => {
   const [messages, setMessages] = useState([])
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [hasLoadedMessages, setHasLoadedMessages] = useState(false)
+  const [incomingConnectionCount, setIncomingConnectionCount] = useState(0)
+  const [hasLoadedConnections, setHasLoadedConnections] = useState(false)
   const { currentUser, getUserProfile } = useAuth()
   const [ratings, setRatings] = useState(null)
   const [ratingStats, setRatingStats] = useState(null)
@@ -60,6 +63,23 @@ const Profile = () => {
 
     fetchMessages()
   }, [currentUser, hasLoadedMessages])
+
+  useEffect(() => {
+    const fetchConnections = async () => {
+      if (!currentUser || hasLoadedConnections) return
+
+      try {
+        const data = await getMyConnections()
+        setIncomingConnectionCount(data?.summary?.incomingCount || 0)
+        setHasLoadedConnections(true)
+      } catch (error) {
+        console.error('Error fetching connections:', error)
+        setIncomingConnectionCount(0)
+      }
+    }
+
+    fetchConnections()
+  }, [currentUser, hasLoadedConnections])
 
   useEffect(() => {
     if (!currentUser?._id) return
@@ -170,7 +190,7 @@ const Profile = () => {
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     // Projects tab - not visible to admins
     ...(!hasAdminPanelAccess(currentUser) ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
-    { id: 'connections', label: 'Connections', icon: <FaUserFriends /> },
+    { id: 'connections', label: 'Connections', icon: <FaUserFriends />, badge: incomingConnectionCount > 0 ? incomingConnectionCount : null },
     { id: 'messages', label: 'Messages', icon: <FaEnvelope />, badge: unreadMessageCount > 0 ? unreadMessageCount : null },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
