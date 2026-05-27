@@ -227,6 +227,10 @@ const Profile = () => {
     setActiveTab('projects')
   }
 
+  const handleOpenConnections = () => {
+    setActiveTab('connections')
+  }
+
   const handleOpenMessages = () => {
     setActiveTab('messages')
   }
@@ -466,6 +470,7 @@ const Profile = () => {
                 profileCompleteness={profileCompleteness}
                 onOpenSettings={handleOpenSettings}
                 onOpenProjects={!hasAdminPanelAccess(currentUser) ? handleOpenProjects : undefined}
+                onOpenConnections={handleOpenConnections}
                 onOpenMessages={handleOpenMessages}
                 onOpenFreelance={currentUser?.userType === 'freelancer' || currentUser?.userType === 'both' ? handleOpenFreelance : undefined}
               />

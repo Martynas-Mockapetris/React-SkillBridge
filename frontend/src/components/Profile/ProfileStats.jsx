@@ -6,7 +6,7 @@ import { getUserAnnouncements } from '../../services/announcementService'
 import { getUserMessages } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
-const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProjects, onOpenMessages, onOpenFreelance }) => {
+const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProjects, onOpenMessages, onOpenFreelance, onOpenConnections }) => {
   const [statsData, setStatsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -133,6 +133,14 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
           label: 'View Projects',
           description: 'Open your projects tab',
           onClick: onOpenProjects
+        }
+      : null,
+    onOpenConnections
+      ? {
+          key: 'connections',
+          label: 'Open Connections',
+          description: 'Review your network and pending requests',
+          onClick: onOpenConnections
         }
       : null,
     onOpenMessages
