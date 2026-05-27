@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { FaArrowRight, FaCheck, FaClock, FaEnvelope, FaTimes, FaUserFriends } from 'react-icons/fa'
+import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import VerificationBadge from '../shared/VerificationBadge'
 import DirectContactModal from '../../modal/DirectContactModal'
+import HireFreelancerModal from '../../modal/HireFreelancerModal'
 
 const ConnectionsTab = () => {
   const navigate = useNavigate()
@@ -23,6 +24,7 @@ const ConnectionsTab = () => {
   const [actionId, setActionId] = useState('')
   const [showContactModal, setShowContactModal] = useState(false)
   const [selectedConnectionUser, setSelectedConnectionUser] = useState(null)
+  const [showHireModal, setShowHireModal] = useState(false)
 
   const loadConnections = async () => {
     try {
@@ -64,6 +66,11 @@ const ConnectionsTab = () => {
   const handleOpenDirectMessage = (user) => {
     setSelectedConnectionUser(user)
     setShowContactModal(true)
+  }
+
+  const handleOpenProjectInvite = (user) => {
+    setSelectedConnectionUser(user)
+    setShowHireModal(true)
   }
 
   const sections = [
@@ -132,6 +139,7 @@ const ConnectionsTab = () => {
                 const hourlyRateLabel = otherUser.showHourlyRate && otherUser.hourlyRate ? `€${otherUser.hourlyRate}/hr` : 'Rate on request'
                 const locationLabel = otherUser.showLocationPublic && otherUser.location ? otherUser.location : ''
                 const canDirectMessage = otherUser.allowDirectMessages !== false
+                const canInviteToProjects = otherUser.allowProjectInvites !== false
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -195,6 +203,16 @@ const ConnectionsTab = () => {
                           </button>
                         )}
 
+                        {section.key === 'accepted' && canInviteToProjects && (
+                          <button
+                            type='button'
+                            onClick={() => handleOpenProjectInvite(otherUser)}
+                            className='inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90'>
+                            <FaBriefcase />
+                            <span>Invite to Project</span>
+                          </button>
+                        )}
+
                         {section.key === 'accepted' && canOpenFreelancerProfile ? (
                           <button
                             type='button'
@@ -225,6 +243,7 @@ const ConnectionsTab = () => {
         </div>
       ))}
       <DirectContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} freelancer={selectedConnectionUser} />
+      <HireFreelancerModal isOpen={showHireModal} onClose={() => setShowHireModal(false)} freelancer={selectedConnectionUser} />
     </div>
   )
 }
