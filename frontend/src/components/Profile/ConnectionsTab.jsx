@@ -8,6 +8,28 @@ import VerificationBadge from '../shared/VerificationBadge'
 import DirectContactModal from '../../modal/DirectContactModal'
 import HireFreelancerModal from '../../modal/HireFreelancerModal'
 
+const parseCommaSeparatedList = (value) => {
+  if (!value || typeof value !== 'string') return []
+
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+const formatExperienceLevelLabel = (value) => {
+  switch (value) {
+    case 'entry':
+      return 'Entry level'
+    case 'intermediate':
+      return 'Intermediate'
+    case 'expert':
+      return 'Expert'
+    default:
+      return ''
+  }
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -140,6 +162,10 @@ const ConnectionsTab = () => {
                 const locationLabel = otherUser.showLocationPublic && otherUser.location ? otherUser.location : ''
                 const canDirectMessage = otherUser.allowDirectMessages !== false
                 const canInviteToProjects = otherUser.allowProjectInvites !== false
+                const topSkills = parseCommaSeparatedList(otherUser.skills).slice(0, 4)
+                const topServices = parseCommaSeparatedList(otherUser.servicesOffered).slice(0, 3)
+                const experienceLevelLabel = formatExperienceLevelLabel(otherUser.experienceLevel)
+                const yearsExperienceLabel = otherUser.yearsOfExperience > 0 ? `${otherUser.yearsOfExperience}+ yrs experience` : ''
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -157,6 +183,43 @@ const ConnectionsTab = () => {
                             <span className='rounded-full bg-primary/5 px-3 py-1 dark:bg-light/5'>{hourlyRateLabel}</span>
                             {locationLabel ? <span className='rounded-full bg-primary/5 px-3 py-1 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
+
+                          {section.key === 'accepted' && (experienceLevelLabel || yearsExperienceLabel || topServices.length > 0 || topSkills.length > 0) && (
+                            <div className='mt-4 space-y-3'>
+                              {(experienceLevelLabel || yearsExperienceLabel) && (
+                                <div className='flex flex-wrap gap-2 text-xs'>
+                                  {experienceLevelLabel ? <span className='rounded-full bg-accent/10 px-3 py-1 font-medium text-accent'>{experienceLevelLabel}</span> : null}
+                                  {yearsExperienceLabel ? <span className='rounded-full bg-primary/5 px-3 py-1 theme-text-secondary dark:bg-light/5'>{yearsExperienceLabel}</span> : null}
+                                </div>
+                              )}
+
+                              {topServices.length > 0 && (
+                                <div>
+                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Services</p>
+                                  <div className='flex flex-wrap gap-2'>
+                                    {topServices.map((service) => (
+                                      <span key={service} className='rounded-full border border-primary/10 px-3 py-1 text-xs theme-text-secondary dark:border-light/10'>
+                                        {service}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {topSkills.length > 0 && (
+                                <div>
+                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Top Skills</p>
+                                  <div className='flex flex-wrap gap-2'>
+                                    {topSkills.map((skill) => (
+                                      <span key={skill} className='rounded-full bg-primary/5 px-3 py-1 text-xs theme-text-secondary dark:bg-light/5'>
+                                        {skill}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 
