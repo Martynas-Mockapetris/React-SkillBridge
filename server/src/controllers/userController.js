@@ -1449,9 +1449,58 @@ export const getMyConnections = async (req, res) => {
 
     const mappedConnections = connections.map((connection) => mapConnectionRecord(connection, req.user._id))
 
-    const incomingRequests = mappedConnections.filter((connection) => connection.direction === 'incoming')
-    const outgoingRequests = mappedConnections.filter((connection) => connection.direction === 'outgoing')
-    const acceptedConnections = mappedConnections.filter((connection) => connection.status === 'accepted')
+    const connectionUserIds = [
+      ...new Map(
+        mappedConnections
+          .map((connection) => connection.otherUser?._id)
+          .filter(Boolean)
+          .map((userId) => [userId.toString(), userId])
+      ).values()
+    ]
+
+    let completedProjectsCountByUserId = new Map()
+
+    if (connectionUserIds.length > 0) {
+      const completedProjectStats = await Project.aggregate([
+        {
+          $match: {
+            status: 'completed',
+            $or: [{ user: { $in: connectionUserIds } }, { assignee: { $in: connectionUserIds } }]
+          }
+        },
+        {
+          $project: {
+            participants: {
+              $setUnion: [['$user'], { $cond: [{ $ifNull: ['$assignee', false] }, ['$assignee'], []] }]
+            }
+          }
+        },
+        { $unwind: '$participants' },
+        { $match: { participants: { $in: connectionUserIds } } },
+        {
+          $group: {
+            _id: '$participants',
+            completedProjectsCount: { $sum: 1 }
+          }
+        }
+      ])
+
+      completedProjectsCountByUserId = new Map(completedProjectStats.map((item) => [item._id.toString(), item.completedProjectsCount]))
+    }
+
+    const enrichedConnections = mappedConnections.map((connection) => ({
+      ...connection,
+      otherUser: connection.otherUser?._id
+        ? {
+            ...(connection.otherUser.toObject ? connection.otherUser.toObject() : connection.otherUser),
+            completedProjectsCount: completedProjectsCountByUserId.get(connection.otherUser._id.toString()) || 0
+          }
+        : connection.otherUser
+    }))
+
+    const incomingRequests = enrichedConnections.filter((connection) => connection.direction === 'incoming')
+    const outgoingRequests = enrichedConnections.filter((connection) => connection.direction === 'outgoing')
+    const acceptedConnections = enrichedConnections.filter((connection) => connection.status === 'accepted')
 
     res.json({
       incomingRequests,

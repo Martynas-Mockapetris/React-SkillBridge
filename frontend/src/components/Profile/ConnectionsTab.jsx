@@ -169,6 +169,8 @@ const ConnectionsTab = () => {
                 const ratingValue = typeof otherUser.averageRating === 'number' ? otherUser.averageRating : 0
                 const totalRatings = typeof otherUser.totalRatings === 'number' ? otherUser.totalRatings : 0
                 const hasRatings = totalRatings > 0
+                const completedProjectsCount = typeof otherUser.completedProjectsCount === 'number' ? otherUser.completedProjectsCount : 0
+                const hasCompletedProjects = completedProjectsCount > 0
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -187,7 +189,7 @@ const ConnectionsTab = () => {
                             {locationLabel ? <span className='rounded-full bg-primary/5 px-3 py-1 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
 
-                          {section.key === 'accepted' && (experienceLevelLabel || yearsExperienceLabel || topServices.length > 0 || topSkills.length > 0) && (
+                          {section.key === 'accepted' && (experienceLevelLabel || yearsExperienceLabel || topServices.length > 0 || hasRatings || hasCompletedProjects || topSkills.length > 0) && (
                             <div className='mt-4 space-y-3'>
                               {(experienceLevelLabel || yearsExperienceLabel) && (
                                 <div className='flex flex-wrap gap-2 text-xs'>
@@ -223,6 +225,17 @@ const ConnectionsTab = () => {
                                     </div>
                                     <span className='text-xs theme-text-secondary'>
                                       {totalRatings} {totalRatings === 1 ? 'review' : 'reviews'}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {hasCompletedProjects && (
+                                <div>
+                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Delivery</p>
+                                  <div className='flex flex-wrap items-center gap-2'>
+                                    <span className='rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                                      {completedProjectsCount} completed {completedProjectsCount === 1 ? 'project' : 'projects'}
                                     </span>
                                   </div>
                                 </div>
