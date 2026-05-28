@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaTimes, FaUserFriends } from 'react-icons/fa'
+import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaStar, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import VerificationBadge from '../shared/VerificationBadge'
@@ -166,6 +166,9 @@ const ConnectionsTab = () => {
                 const topServices = parseCommaSeparatedList(otherUser.servicesOffered).slice(0, 3)
                 const experienceLevelLabel = formatExperienceLevelLabel(otherUser.experienceLevel)
                 const yearsExperienceLabel = otherUser.yearsOfExperience > 0 ? `${otherUser.yearsOfExperience}+ yrs experience` : ''
+                const ratingValue = typeof otherUser.averageRating === 'number' ? otherUser.averageRating : 0
+                const totalRatings = typeof otherUser.totalRatings === 'number' ? otherUser.totalRatings : 0
+                const hasRatings = totalRatings > 0
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -202,6 +205,25 @@ const ConnectionsTab = () => {
                                         {service}
                                       </span>
                                     ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {hasRatings && (
+                                <div>
+                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Reputation</p>
+                                  <div className='flex flex-wrap items-center gap-3'>
+                                    <div className='flex items-center gap-2'>
+                                      <span className='text-sm font-semibold text-accent'>{ratingValue.toFixed(1)}</span>
+                                      <div className='flex items-center gap-1'>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <FaStar key={star} className={star <= Math.round(ratingValue) ? 'text-accent' : 'theme-text-muted'} size={12} />
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <span className='text-xs theme-text-secondary'>
+                                      {totalRatings} {totalRatings === 1 ? 'review' : 'reviews'}
+                                    </span>
                                   </div>
                                 </div>
                               )}
