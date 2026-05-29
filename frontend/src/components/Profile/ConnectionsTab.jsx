@@ -30,6 +30,12 @@ const formatExperienceLevelLabel = (value) => {
   }
 }
 
+const truncateText = (value, maxLength = 160) => {
+  if (!value || typeof value !== 'string') return ''
+  if (value.length <= maxLength) return value
+  return `${value.slice(0, maxLength).trimEnd()}...`
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -171,6 +177,8 @@ const ConnectionsTab = () => {
                 const hasRatings = totalRatings > 0
                 const completedProjectsCount = typeof otherUser.completedProjectsCount === 'number' ? otherUser.completedProjectsCount : 0
                 const hasCompletedProjects = completedProjectsCount > 0
+                const recentReview = otherUser.recentReview || null
+                const hasRecentReview = Boolean(recentReview?.feedback)
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -189,7 +197,7 @@ const ConnectionsTab = () => {
                             {locationLabel ? <span className='rounded-full bg-primary/5 px-3 py-1 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
 
-                          {section.key === 'accepted' && (experienceLevelLabel || yearsExperienceLabel || topServices.length > 0 || hasRatings || hasCompletedProjects || topSkills.length > 0) && (
+                          {section.key === 'accepted' && (experienceLevelLabel || yearsExperienceLabel || topServices.length > 0 || hasRatings || hasCompletedProjects || hasRecentReview || topSkills.length > 0) && (
                             <div className='mt-4 space-y-3'>
                               {(experienceLevelLabel || yearsExperienceLabel) && (
                                 <div className='flex flex-wrap gap-2 text-xs'>
@@ -237,6 +245,24 @@ const ConnectionsTab = () => {
                                     <span className='rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300'>
                                       {completedProjectsCount} completed {completedProjectsCount === 1 ? 'project' : 'projects'}
                                     </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {hasRecentReview && (
+                                <div>
+                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Recent Review</p>
+                                  <div className='rounded-2xl border border-primary/10 bg-primary/5 p-4 dark:border-light/10 dark:bg-light/5'>
+                                    <p className='text-sm italic theme-text'>"${truncateText(recentReview.feedback)}"</p>
+                                    <div className='mt-3 flex flex-wrap items-center gap-3 text-xs theme-text-secondary'>
+                                      {typeof recentReview.score === 'number' ? (
+                                        <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1 font-medium text-accent'>
+                                          <FaStar size={10} />
+                                          {recentReview.score}/5
+                                        </span>
+                                      ) : null}
+                                      {recentReview.createdAt ? <span>{new Date(recentReview.createdAt).toLocaleDateString()}</span> : null}
+                                    </div>
                                   </div>
                                 </div>
                               )}

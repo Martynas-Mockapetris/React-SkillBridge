@@ -8,7 +8,7 @@ import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 import { sendVerificationEmail } from '../utils/emailVerificationService.js'
 
 const CONNECTION_USER_FIELDS =
-  'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate allowDirectMessages allowProjectInvites skills servicesOffered experienceLevel averageRating totalRatings'
+  'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate allowDirectMessages allowProjectInvites skills servicesOffered experienceLevel averageRating totalRatings ratings.feedback ratings.score ratings.createdAt'
 
 const mapConnectionRecord = (connection, currentUserId) => {
   const requesterId = connection.requester?._id ? connection.requester._id.toString() : connection.requester.toString()
@@ -1488,15 +1488,32 @@ export const getMyConnections = async (req, res) => {
       completedProjectsCountByUserId = new Map(completedProjectStats.map((item) => [item._id.toString(), item.completedProjectsCount]))
     }
 
-    const enrichedConnections = mappedConnections.map((connection) => ({
-      ...connection,
-      otherUser: connection.otherUser?._id
-        ? {
-            ...(connection.otherUser.toObject ? connection.otherUser.toObject() : connection.otherUser),
-            completedProjectsCount: completedProjectsCountByUserId.get(connection.otherUser._id.toString()) || 0
-          }
-        : connection.otherUser
-    }))
+    const enrichedConnections = mappedConnections.map((connection) => {
+      if (!connection.otherUser?._id) {
+        return connection
+      }
+
+      const otherUserData = connection.otherUser.toObject ? connection.otherUser.toObject() : connection.otherUser
+      const ratings = Array.isArray(otherUserData.ratings) ? otherUserData.ratings : []
+
+      const latestReview = ratings.filter((rating) => typeof rating.feedback === 'string' && rating.feedback.trim()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]
+
+      return {
+        ...connection,
+        otherUser: {
+          ...otherUserData,
+          completedProjectsCount: completedProjectsCountByUserId.get(connection.otherUser._id.toString()) || 0,
+          recentReview: latestReview
+            ? {
+                feedback: latestReview.feedback.trim(),
+                score: latestReview.score,
+                createdAt: latestReview.createdAt
+              }
+            : null,
+          ratings: undefined
+        }
+      }
+    })
 
     const incomingRequests = enrichedConnections.filter((connection) => connection.direction === 'incoming')
     const outgoingRequests = enrichedConnections.filter((connection) => connection.direction === 'outgoing')
