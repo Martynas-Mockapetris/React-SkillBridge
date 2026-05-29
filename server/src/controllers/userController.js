@@ -8,7 +8,7 @@ import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 import { sendVerificationEmail } from '../utils/emailVerificationService.js'
 
 const CONNECTION_USER_FIELDS =
-  'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate allowDirectMessages allowProjectInvites skills servicesOffered experienceLevel averageRating totalRatings ratings.feedback ratings.score ratings.createdAt'
+  'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate allowDirectMessages allowProjectInvites skills servicesOffered experienceLevel averageRating totalRatings ratings.feedback ratings.score ratings.createdAt website github linkedin'
 
 const mapConnectionRecord = (connection, currentUserId) => {
   const requesterId = connection.requester?._id ? connection.requester._id.toString() : connection.requester.toString()

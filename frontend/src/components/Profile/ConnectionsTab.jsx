@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaStar, FaTimes, FaUserFriends } from 'react-icons/fa'
+import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaGithub, FaGlobe, FaLinkedin, FaStar, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import VerificationBadge from '../shared/VerificationBadge'
@@ -179,6 +179,32 @@ const ConnectionsTab = () => {
                 const hasCompletedProjects = completedProjectsCount > 0
                 const recentReview = otherUser.recentReview || null
                 const hasRecentReview = Boolean(recentReview?.feedback)
+                const publicLinks = [
+                  otherUser.website
+                    ? {
+                        key: 'website',
+                        label: 'Website',
+                        href: otherUser.website.startsWith('http') ? otherUser.website : `https://${otherUser.website}`,
+                        icon: FaGlobe
+                      }
+                    : null,
+                  otherUser.github
+                    ? {
+                        key: 'github',
+                        label: 'GitHub',
+                        href: otherUser.github.startsWith('http') ? otherUser.github : `https://${otherUser.github}`,
+                        icon: FaGithub
+                      }
+                    : null,
+                  otherUser.linkedin
+                    ? {
+                        key: 'linkedin',
+                        label: 'LinkedIn',
+                        href: otherUser.linkedin.startsWith('http') ? otherUser.linkedin : `https://${otherUser.linkedin}`,
+                        icon: FaLinkedin
+                      }
+                    : null
+                ].filter(Boolean)
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -197,90 +223,114 @@ const ConnectionsTab = () => {
                             {locationLabel ? <span className='rounded-full bg-primary/5 px-3 py-1 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
 
-                          {section.key === 'accepted' && (experienceLevelLabel || yearsExperienceLabel || topServices.length > 0 || hasRatings || hasCompletedProjects || hasRecentReview || topSkills.length > 0) && (
-                            <div className='mt-4 space-y-3'>
-                              {(experienceLevelLabel || yearsExperienceLabel) && (
-                                <div className='flex flex-wrap gap-2 text-xs'>
-                                  {experienceLevelLabel ? <span className='rounded-full bg-accent/10 px-3 py-1 font-medium text-accent'>{experienceLevelLabel}</span> : null}
-                                  {yearsExperienceLabel ? <span className='rounded-full bg-primary/5 px-3 py-1 theme-text-secondary dark:bg-light/5'>{yearsExperienceLabel}</span> : null}
-                                </div>
-                              )}
-
-                              {topServices.length > 0 && (
-                                <div>
-                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Services</p>
-                                  <div className='flex flex-wrap gap-2'>
-                                    {topServices.map((service) => (
-                                      <span key={service} className='rounded-full border border-primary/10 px-3 py-1 text-xs theme-text-secondary dark:border-light/10'>
-                                        {service}
-                                      </span>
-                                    ))}
+                          {section.key === 'accepted' &&
+                            (experienceLevelLabel || yearsExperienceLabel || topServices.length > 0 || hasRatings || hasCompletedProjects || hasRecentReview || topSkills.length > 0 || publicLinks.length > 0) && (
+                              <div className='mt-4 space-y-3'>
+                                {(experienceLevelLabel || yearsExperienceLabel) && (
+                                  <div className='flex flex-wrap gap-2 text-xs'>
+                                    {experienceLevelLabel ? <span className='rounded-full bg-accent/10 px-3 py-1 font-medium text-accent'>{experienceLevelLabel}</span> : null}
+                                    {yearsExperienceLabel ? <span className='rounded-full bg-primary/5 px-3 py-1 theme-text-secondary dark:bg-light/5'>{yearsExperienceLabel}</span> : null}
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {hasRatings && (
-                                <div>
-                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Reputation</p>
-                                  <div className='flex flex-wrap items-center gap-3'>
-                                    <div className='flex items-center gap-2'>
-                                      <span className='text-sm font-semibold text-accent'>{ratingValue.toFixed(1)}</span>
-                                      <div className='flex items-center gap-1'>
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                          <FaStar key={star} className={star <= Math.round(ratingValue) ? 'text-accent' : 'theme-text-muted'} size={12} />
-                                        ))}
+                                {topServices.length > 0 && (
+                                  <div>
+                                    <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Services</p>
+                                    <div className='flex flex-wrap gap-2'>
+                                      {topServices.map((service) => (
+                                        <span key={service} className='rounded-full border border-primary/10 px-3 py-1 text-xs theme-text-secondary dark:border-light/10'>
+                                          {service}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {hasRatings && (
+                                  <div>
+                                    <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Reputation</p>
+                                    <div className='flex flex-wrap items-center gap-3'>
+                                      <div className='flex items-center gap-2'>
+                                        <span className='text-sm font-semibold text-accent'>{ratingValue.toFixed(1)}</span>
+                                        <div className='flex items-center gap-1'>
+                                          {[1, 2, 3, 4, 5].map((star) => (
+                                            <FaStar key={star} className={star <= Math.round(ratingValue) ? 'text-accent' : 'theme-text-muted'} size={12} />
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <span className='text-xs theme-text-secondary'>
+                                        {totalRatings} {totalRatings === 1 ? 'review' : 'reviews'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {hasCompletedProjects && (
+                                  <div>
+                                    <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Delivery</p>
+                                    <div className='flex flex-wrap items-center gap-2'>
+                                      <span className='rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                                        {completedProjectsCount} completed {completedProjectsCount === 1 ? 'project' : 'projects'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {hasRecentReview && (
+                                  <div>
+                                    <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Recent Review</p>
+                                    <div className='rounded-2xl border border-primary/10 bg-primary/5 p-4 dark:border-light/10 dark:bg-light/5'>
+                                      <p className='text-sm italic theme-text'>"${truncateText(recentReview.feedback)}"</p>
+                                      <div className='mt-3 flex flex-wrap items-center gap-3 text-xs theme-text-secondary'>
+                                        {typeof recentReview.score === 'number' ? (
+                                          <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1 font-medium text-accent'>
+                                            <FaStar size={10} />
+                                            {recentReview.score}/5
+                                          </span>
+                                        ) : null}
+                                        {recentReview.createdAt ? <span>{new Date(recentReview.createdAt).toLocaleDateString()}</span> : null}
                                       </div>
                                     </div>
-                                    <span className='text-xs theme-text-secondary'>
-                                      {totalRatings} {totalRatings === 1 ? 'review' : 'reviews'}
-                                    </span>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {hasCompletedProjects && (
-                                <div>
-                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Delivery</p>
-                                  <div className='flex flex-wrap items-center gap-2'>
-                                    <span className='rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300'>
-                                      {completedProjectsCount} completed {completedProjectsCount === 1 ? 'project' : 'projects'}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
+                                {publicLinks.length > 0 && (
+                                  <div>
+                                    <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Profile Links</p>
+                                    <div className='flex flex-wrap gap-2'>
+                                      {publicLinks.map((link) => {
+                                        const Icon = link.icon
 
-                              {hasRecentReview && (
-                                <div>
-                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Recent Review</p>
-                                  <div className='rounded-2xl border border-primary/10 bg-primary/5 p-4 dark:border-light/10 dark:bg-light/5'>
-                                    <p className='text-sm italic theme-text'>"${truncateText(recentReview.feedback)}"</p>
-                                    <div className='mt-3 flex flex-wrap items-center gap-3 text-xs theme-text-secondary'>
-                                      {typeof recentReview.score === 'number' ? (
-                                        <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1 font-medium text-accent'>
-                                          <FaStar size={10} />
-                                          {recentReview.score}/5
-                                        </span>
-                                      ) : null}
-                                      {recentReview.createdAt ? <span>{new Date(recentReview.createdAt).toLocaleDateString()}</span> : null}
+                                        return (
+                                          <a
+                                            key={link.key}
+                                            href={link.href}
+                                            target='_blank'
+                                            rel='noreferrer'
+                                            className='inline-flex items-center gap-2 rounded-full border border-primary/10 px-3 py-1 text-xs theme-text-secondary transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
+                                            <Icon size={12} />
+                                            <span>{link.label}</span>
+                                          </a>
+                                        )
+                                      })}
                                     </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {topSkills.length > 0 && (
-                                <div>
-                                  <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Top Skills</p>
-                                  <div className='flex flex-wrap gap-2'>
-                                    {topSkills.map((skill) => (
-                                      <span key={skill} className='rounded-full bg-primary/5 px-3 py-1 text-xs theme-text-secondary dark:bg-light/5'>
-                                        {skill}
-                                      </span>
-                                    ))}
+                                {topSkills.length > 0 && (
+                                  <div>
+                                    <p className='mb-2 text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Top Skills</p>
+                                    <div className='flex flex-wrap gap-2'>
+                                      {topSkills.map((skill) => (
+                                        <span key={skill} className='rounded-full bg-primary/5 px-3 py-1 text-xs theme-text-secondary dark:bg-light/5'>
+                                          {skill}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                                )}
+                              </div>
+                            )}
                         </div>
                       </div>
 
