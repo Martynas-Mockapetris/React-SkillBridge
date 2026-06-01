@@ -214,6 +214,7 @@ const ConnectionsTab = () => {
                       }
                     : null
                 ].filter(Boolean)
+                const hasOpportunities = topServices.length > 0
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -403,6 +404,16 @@ const ConnectionsTab = () => {
                             className='inline-flex items-center gap-2 rounded-lg bg-primary/5 px-4 py-2 text-sm font-medium theme-text transition-colors hover:bg-primary hover:text-white dark:bg-light/5'>
                             <FaStar />
                             <span>View Reviews</span>
+                          </button>
+                        )}
+
+                        {section.key === 'accepted' && hasOpportunities && canOpenFreelancerProfile && (
+                          <button
+                            type='button'
+                            onClick={() => handleOpenFreelancerSection(otherUser._id, 'announcements')}
+                            className='inline-flex items-center gap-2 rounded-lg bg-primary/5 px-4 py-2 text-sm font-medium theme-text transition-colors hover:bg-primary hover:text-white dark:bg-light/5'>
+                            <FaBriefcase />
+                            <span>View Opportunities</span>
                           </button>
                         )}
 

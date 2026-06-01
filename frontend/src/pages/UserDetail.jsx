@@ -137,6 +137,7 @@ const UserDetail = () => {
   const [showContactModal, setShowContactModal] = useState(false)
   const [showHireModal, setShowHireModal] = useState(false)
   const reviewsSectionRef = useRef(null)
+  const announcementsSectionRef = useRef(null)
 
   // Fetch freelancer data, announcements, and ratings
   useEffect(() => {
@@ -192,6 +193,11 @@ const UserDetail = () => {
 
     if (location.state?.focusSection === 'reviews' && reviewsSectionRef.current) {
       reviewsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+
+    if (location.state?.focusSection === 'announcements' && announcementsSectionRef.current) {
+      announcementsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [loading, location.state])
 
@@ -466,7 +472,7 @@ const UserDetail = () => {
 
         {/* Announcements Section */}
         {announcements.length > 0 && (
-          <motion.div className='mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
+          <motion.div ref={announcementsSectionRef} className='mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
             <h2 className='text-2xl font-bold theme-text mb-6'>Active Announcements</h2>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               {announcements.map((announcement) => (
