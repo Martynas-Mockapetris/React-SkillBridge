@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaStar, FaArrowLeft, FaPhone, FaEnvelope, FaBriefcase, FaClock, FaEuroSign, FaMapMarkerAlt, FaGlobe, FaTools, FaCheckCircle, FaUserPlus } from 'react-icons/fa'
@@ -136,6 +136,7 @@ const UserDetail = () => {
   const [connectionLoading, setConnectionLoading] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [showHireModal, setShowHireModal] = useState(false)
+  const reviewsSectionRef = useRef(null)
 
   // Fetch freelancer data, announcements, and ratings
   useEffect(() => {
@@ -185,6 +186,14 @@ const UserDetail = () => {
   if (loading) {
     return <LoadingSpinner fullScreen />
   }
+
+  useEffect(() => {
+    if (loading) return
+
+    if (location.state?.focusSection === 'reviews' && reviewsSectionRef.current) {
+      reviewsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [loading, location.state])
 
   const handleBack = () => {
     if (location.state?.returnTo) {
@@ -528,7 +537,7 @@ const UserDetail = () => {
 
         {/* Ratings Section */}
         {ratings && ratingStats && (
-          <motion.div className='mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
+          <motion.div ref={reviewsSectionRef} className='mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
             <h2 className='text-2xl font-bold theme-text mb-6'>Reviews & Ratings</h2>
             <RatingsSection ratings={ratings} stats={ratingStats} loading={false} />
           </motion.div>

@@ -101,6 +101,15 @@ const ConnectionsTab = () => {
     setShowHireModal(true)
   }
 
+  const handleOpenFreelancerSection = (userId, focusSection) => {
+    navigate(`/freelancer/${userId}`, {
+      state: {
+        returnTo: '/profile',
+        focusSection
+      }
+    })
+  }
+
   const sections = [
     {
       key: 'incoming',
@@ -384,6 +393,16 @@ const ConnectionsTab = () => {
                             className='inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90'>
                             <FaBriefcase />
                             <span>Invite to Project</span>
+                          </button>
+                        )}
+
+                        {section.key === 'accepted' && hasRatings && canOpenFreelancerProfile && (
+                          <button
+                            type='button'
+                            onClick={() => handleOpenFreelancerSection(otherUser._id, 'reviews')}
+                            className='inline-flex items-center gap-2 rounded-lg bg-primary/5 px-4 py-2 text-sm font-medium theme-text transition-colors hover:bg-primary hover:text-white dark:bg-light/5'>
+                            <FaStar />
+                            <span>View Reviews</span>
                           </button>
                         )}
 
