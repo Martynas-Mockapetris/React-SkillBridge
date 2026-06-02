@@ -101,6 +101,22 @@ const sortConnections = (items = [], sectionKey) => {
   })
 }
 
+const filterAcceptedConnections = (items = [], filter) => {
+  if (filter === 'available') {
+    return items.filter((connection) => connection.otherUser?.availabilityStatus === 'available')
+  }
+
+  if (filter === 'strongest') {
+    return items.filter((connection) => {
+      const totalRatings = connection.otherUser?.totalRatings || 0
+      const completedProjectsCount = connection.otherUser?.completedProjectsCount || 0
+      return totalRatings > 0 || completedProjectsCount > 0
+    })
+  }
+
+  return items
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -118,6 +134,7 @@ const ConnectionsTab = () => {
   const [showContactModal, setShowContactModal] = useState(false)
   const [selectedConnectionUser, setSelectedConnectionUser] = useState(null)
   const [showHireModal, setShowHireModal] = useState(false)
+  const [acceptedFilter, setAcceptedFilter] = useState('all')
 
   const loadConnections = async () => {
     try {
@@ -194,8 +211,8 @@ const ConnectionsTab = () => {
       key: 'accepted',
       title: 'Your Network',
       description: 'People you are already connected with.',
-      items: sortConnections(connections.acceptedConnections, 'accepted'),
-      emptyMessage: 'No accepted connections yet.'
+      items: sortConnections(filterAcceptedConnections(connections.acceptedConnections, acceptedFilter), 'accepted'),
+      emptyMessage: acceptedFilter === 'all' ? 'No accepted connections yet.' : 'No connections match this filter right now.'
     }
   ]
 
@@ -206,6 +223,12 @@ const ConnectionsTab = () => {
       </div>
     )
   }
+
+  const acceptedFilterOptions = [
+    { key: 'all', label: 'All' },
+    { key: 'available', label: 'Available Now' },
+    { key: 'strongest', label: 'Strongest Profiles' }
+  ]
 
   return (
     <div className='space-y-8'>
@@ -226,9 +249,27 @@ const ConnectionsTab = () => {
 
       {sections.map((section) => (
         <div key={section.key} className='space-y-4'>
-          <div>
-            <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
-            <p className='text-sm theme-text-secondary'>{section.description}</p>
+          <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
+            <div>
+              <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
+              <p className='text-sm theme-text-secondary'>{section.description}</p>
+            </div>
+
+            {section.key === 'accepted' && (
+              <div className='flex flex-wrap gap-2'>
+                {acceptedFilterOptions.map((option) => (
+                  <button
+                    key={option.key}
+                    type='button'
+                    onClick={() => setAcceptedFilter(option.key)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      acceptedFilter === option.key ? 'bg-accent text-white' : 'bg-primary/5 theme-text-secondary hover:bg-primary/10 dark:bg-light/5'
+                    }`}>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {section.items.length === 0 ? (
