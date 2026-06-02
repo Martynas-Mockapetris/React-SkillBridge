@@ -59,6 +59,48 @@ const formatConnectionActivity = (connection, sectionKey) => {
   return ''
 }
 
+const getConnectionSortTimestamp = (connection, sectionKey) => {
+  if (sectionKey === 'accepted' && connection.respondedAt) {
+    return new Date(connection.respondedAt).getTime()
+  }
+
+  if (connection.requestedAt) {
+    return new Date(connection.requestedAt).getTime()
+  }
+
+  return 0
+}
+
+const sortConnections = (items = [], sectionKey) => {
+  return [...items].sort((left, right) => {
+    const rightTimestamp = getConnectionSortTimestamp(right, sectionKey)
+    const leftTimestamp = getConnectionSortTimestamp(left, sectionKey)
+
+    if (rightTimestamp !== leftTimestamp) {
+      return rightTimestamp - leftTimestamp
+    }
+
+    const rightRatings = right.otherUser?.totalRatings || 0
+    const leftRatings = left.otherUser?.totalRatings || 0
+
+    if (rightRatings !== leftRatings) {
+      return rightRatings - leftRatings
+    }
+
+    const rightCompletedProjects = right.otherUser?.completedProjectsCount || 0
+    const leftCompletedProjects = left.otherUser?.completedProjectsCount || 0
+
+    if (rightCompletedProjects !== leftCompletedProjects) {
+      return rightCompletedProjects - leftCompletedProjects
+    }
+
+    const rightName = `${right.otherUser?.firstName || ''} ${right.otherUser?.lastName || ''}`.trim()
+    const leftName = `${left.otherUser?.firstName || ''} ${left.otherUser?.lastName || ''}`.trim()
+
+    return rightName.localeCompare(leftName)
+  })
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -138,21 +180,21 @@ const ConnectionsTab = () => {
       key: 'incoming',
       title: 'Incoming Requests',
       description: 'People who want to add you to their professional network.',
-      items: connections.incomingRequests,
+      items: sortConnections(connections.incomingRequests, 'incoming'),
       emptyMessage: 'No incoming requests right now.'
     },
     {
       key: 'outgoing',
       title: 'Pending Requests',
       description: 'Requests you already sent and are waiting on.',
-      items: connections.outgoingRequests,
+      items: sortConnections(connections.outgoingRequests, 'outgoing'),
       emptyMessage: 'No pending requests.'
     },
     {
       key: 'accepted',
       title: 'Your Network',
       description: 'People you are already connected with.',
-      items: connections.acceptedConnections,
+      items: sortConnections(connections.acceptedConnections, 'accepted'),
       emptyMessage: 'No accepted connections yet.'
     }
   ]
