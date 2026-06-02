@@ -36,6 +36,29 @@ const truncateText = (value, maxLength = 160) => {
   return `${value.slice(0, maxLength).trimEnd()}...`
 }
 
+const formatConnectionActivity = (connection, sectionKey) => {
+  const requestedDate = connection.requestedAt ? new Date(connection.requestedAt) : null
+  const respondedDate = connection.respondedAt ? new Date(connection.respondedAt) : null
+
+  if (sectionKey === 'accepted' && respondedDate) {
+    return `Connected since ${respondedDate.toLocaleDateString()}`
+  }
+
+  if (sectionKey === 'incoming' && requestedDate) {
+    return `Requested on ${requestedDate.toLocaleDateString()}`
+  }
+
+  if (sectionKey === 'outgoing' && requestedDate) {
+    return `Sent on ${requestedDate.toLocaleDateString()}`
+  }
+
+  if (requestedDate) {
+    return `Updated on ${requestedDate.toLocaleDateString()}`
+  }
+
+  return ''
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -215,6 +238,7 @@ const ConnectionsTab = () => {
                     : null
                 ].filter(Boolean)
                 const hasOpportunities = topServices.length > 0
+                const activityLabel = formatConnectionActivity(connection, section.key)
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -227,6 +251,14 @@ const ConnectionsTab = () => {
                             <VerificationBadge isVerified={otherUser.isEmailVerified} />
                           </div>
                           <p className='text-sm theme-text-secondary'>{otherUser.headline || 'Professional profile'}</p>
+
+                          {activityLabel && (
+                            <div className='mt-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent'>
+                              <FaClock size={10} />
+                              <span>{activityLabel}</span>
+                            </div>
+                          )}
+
                           <div className='mt-2 flex flex-wrap gap-2 text-xs theme-text-secondary'>
                             {otherUser.availabilityStatus ? <span className='rounded-full bg-primary/5 px-3 py-1 dark:bg-light/5'>{otherUser.availabilityStatus.replace('_', ' ')}</span> : null}
                             <span className='rounded-full bg-primary/5 px-3 py-1 dark:bg-light/5'>{hourlyRateLabel}</span>
