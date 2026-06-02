@@ -211,7 +211,7 @@ const ConnectionsTab = () => {
       key: 'accepted',
       title: 'Your Network',
       description: 'People you are already connected with.',
-      items: sortConnections(filterAcceptedConnections(connections.acceptedConnections, acceptedFilter), 'accepted'),
+      items: sortConnections(filteredAcceptedConnections, 'accepted'),
       emptyMessage: acceptedFilter === 'all' ? 'No accepted connections yet.' : 'No connections match this filter right now.'
     }
   ]
@@ -229,6 +229,8 @@ const ConnectionsTab = () => {
     { key: 'available', label: 'Available Now' },
     { key: 'strongest', label: 'Strongest Profiles' }
   ]
+  const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
+  const filteredAcceptedCount = filteredAcceptedConnections.length
 
   return (
     <div className='space-y-8'>
@@ -250,9 +252,16 @@ const ConnectionsTab = () => {
       {sections.map((section) => (
         <div key={section.key} className='space-y-4'>
           <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
-            <div>
+            <div className='space-y-1'>
               <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
               <p className='text-sm theme-text-secondary'>{section.description}</p>
+
+              {section.key === 'accepted' && (
+                <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
+                  Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
+                  {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
+                </p>
+              )}
             </div>
 
             {section.key === 'accepted' && (
@@ -273,7 +282,17 @@ const ConnectionsTab = () => {
           </div>
 
           {section.items.length === 0 ? (
-            <div className='rounded-2xl border border-dashed dark:border-light/10 border-primary/10 px-6 py-8 text-center theme-text-secondary'>{section.emptyMessage}</div>
+            <div className='rounded-2xl border border-dashed dark:border-light/10 border-primary/10 px-6 py-8 text-center theme-text-secondary'>
+              <p>{section.emptyMessage}</p>
+              {section.key === 'accepted' && acceptedFilter !== 'all' && (
+                <button
+                  type='button'
+                  onClick={() => setAcceptedFilter('all')}
+                  className='mt-4 inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
+                  Clear Filter
+                </button>
+              )}
+            </div>
           ) : (
             <div className='grid gap-4'>
               {section.items.map((connection) => {
