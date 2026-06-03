@@ -136,6 +136,25 @@ const searchAcceptedConnections = (items = [], searchValue = '') => {
   })
 }
 
+const applyAcceptedPreset = (presetKey, setAcceptedFilter, setAcceptedSearch) => {
+  if (presetKey === 'availableStrongest') {
+    setAcceptedFilter('available')
+    setAcceptedSearch('')
+    return
+  }
+
+  if (presetKey === 'reviewedTalent') {
+    setAcceptedFilter('strongest')
+    setAcceptedSearch('review')
+    return
+  }
+
+  if (presetKey === 'clear') {
+    setAcceptedFilter('all')
+    setAcceptedSearch('')
+  }
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -249,6 +268,11 @@ const ConnectionsTab = () => {
     { key: 'available', label: 'Available Now' },
     { key: 'strongest', label: 'Strongest Profiles' }
   ]
+  const acceptedPresetOptions = [
+    { key: 'availableStrongest', label: 'Ready to Hire' },
+    { key: 'reviewedTalent', label: 'Reviewed Talent' },
+    { key: 'clear', label: 'Reset View' }
+  ]
   const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
@@ -295,6 +319,18 @@ const ConnectionsTab = () => {
                   placeholder='Search by name, skill, service, or location'
                   className='w-full rounded-full border border-primary/10 bg-transparent px-4 py-2 text-sm theme-text placeholder:theme-text-secondary dark:border-light/10 md:w-[320px]'
                 />
+
+                <div className='flex flex-wrap gap-2 md:justify-end'>
+                  {acceptedPresetOptions.map((preset) => (
+                    <button
+                      key={preset.key}
+                      type='button'
+                      onClick={() => applyAcceptedPreset(preset.key, setAcceptedFilter, setAcceptedSearch)}
+                      className='rounded-full border border-primary/10 px-3 py-1.5 text-xs font-medium theme-text-secondary transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
 
                 <div className='flex flex-wrap gap-2 md:justify-end'>
                   {acceptedFilterOptions.map((option) => (
