@@ -117,6 +117,25 @@ const filterAcceptedConnections = (items = [], filter) => {
   return items
 }
 
+const searchAcceptedConnections = (items = [], searchValue = '') => {
+  const normalizedQuery = searchValue.trim().toLowerCase()
+
+  if (!normalizedQuery) {
+    return items
+  }
+
+  return items.filter((connection) => {
+    const otherUser = connection.otherUser || {}
+    const fullName = `${otherUser.firstName || ''} ${otherUser.lastName || ''}`.trim().toLowerCase()
+    const headline = (otherUser.headline || '').toLowerCase()
+    const skills = (otherUser.skills || '').toLowerCase()
+    const services = (otherUser.servicesOffered || '').toLowerCase()
+    const location = (otherUser.location || '').toLowerCase()
+
+    return fullName.includes(normalizedQuery) || headline.includes(normalizedQuery) || skills.includes(normalizedQuery) || services.includes(normalizedQuery) || location.includes(normalizedQuery)
+  })
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -135,6 +154,7 @@ const ConnectionsTab = () => {
   const [selectedConnectionUser, setSelectedConnectionUser] = useState(null)
   const [showHireModal, setShowHireModal] = useState(false)
   const [acceptedFilter, setAcceptedFilter] = useState('all')
+  const [acceptedSearch, setAcceptedSearch] = useState('')
 
   const loadConnections = async () => {
     try {
@@ -211,8 +231,8 @@ const ConnectionsTab = () => {
       key: 'accepted',
       title: 'Your Network',
       description: 'People you are already connected with.',
-      items: sortConnections(filteredAcceptedConnections, 'accepted'),
-      emptyMessage: acceptedFilter === 'all' ? 'No accepted connections yet.' : 'No connections match this filter right now.'
+      items: sortConnections(searchedAcceptedConnections, 'accepted'),
+      emptyMessage: acceptedSearch.trim() ? 'No connections match your search right now.' : acceptedFilter === 'all' ? 'No accepted connections yet.' : 'No connections match this filter right now.'
     }
   ]
 
@@ -230,7 +250,8 @@ const ConnectionsTab = () => {
     { key: 'strongest', label: 'Strongest Profiles' }
   ]
   const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
-  const filteredAcceptedCount = filteredAcceptedConnections.length
+  const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
+  const filteredAcceptedCount = searchedAcceptedConnections.length
 
   return (
     <div className='space-y-8'>
@@ -260,23 +281,34 @@ const ConnectionsTab = () => {
                 <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
                   Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
                   {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
+                  {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
                 </p>
               )}
             </div>
 
             {section.key === 'accepted' && (
-              <div className='flex flex-wrap gap-2'>
-                {acceptedFilterOptions.map((option) => (
-                  <button
-                    key={option.key}
-                    type='button'
-                    onClick={() => setAcceptedFilter(option.key)}
-                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                      acceptedFilter === option.key ? 'bg-accent text-white' : 'bg-primary/5 theme-text-secondary hover:bg-primary/10 dark:bg-light/5'
-                    }`}>
-                    {option.label}
-                  </button>
-                ))}
+              <div className='flex w-full flex-col gap-3 md:w-auto md:items-end'>
+                <input
+                  type='text'
+                  value={acceptedSearch}
+                  onChange={(event) => setAcceptedSearch(event.target.value)}
+                  placeholder='Search by name, skill, service, or location'
+                  className='w-full rounded-full border border-primary/10 bg-transparent px-4 py-2 text-sm theme-text placeholder:theme-text-secondary dark:border-light/10 md:w-[320px]'
+                />
+
+                <div className='flex flex-wrap gap-2 md:justify-end'>
+                  {acceptedFilterOptions.map((option) => (
+                    <button
+                      key={option.key}
+                      type='button'
+                      onClick={() => setAcceptedFilter(option.key)}
+                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                        acceptedFilter === option.key ? 'bg-accent text-white' : 'bg-primary/5 theme-text-secondary hover:bg-primary/10 dark:bg-light/5'
+                      }`}>
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -284,12 +316,15 @@ const ConnectionsTab = () => {
           {section.items.length === 0 ? (
             <div className='rounded-2xl border border-dashed dark:border-light/10 border-primary/10 px-6 py-8 text-center theme-text-secondary'>
               <p>{section.emptyMessage}</p>
-              {section.key === 'accepted' && acceptedFilter !== 'all' && (
+              {section.key === 'accepted' && (acceptedFilter !== 'all' || acceptedSearch.trim()) && (
                 <button
                   type='button'
-                  onClick={() => setAcceptedFilter('all')}
+                  onClick={() => {
+                    setAcceptedFilter('all')
+                    setAcceptedSearch('')
+                  }}
                   className='mt-4 inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
-                  Clear Filter
+                  Clear Search & Filter
                 </button>
               )}
             </div>
