@@ -155,6 +155,61 @@ const applyAcceptedPreset = (presetKey, setAcceptedFilter, setAcceptedSearch) =>
   }
 }
 
+const getNetworkSpotlights = (items = []) => {
+  const availableNow = items.find((connection) => connection.otherUser?.availabilityStatus === 'available') || null
+
+  const mostReviewed =
+    [...items].sort((left, right) => {
+      const rightRatings = right.otherUser?.totalRatings || 0
+      const leftRatings = left.otherUser?.totalRatings || 0
+
+      if (rightRatings !== leftRatings) {
+        return rightRatings - leftRatings
+      }
+
+      const rightAverage = right.otherUser?.averageRating || 0
+      const leftAverage = left.otherUser?.averageRating || 0
+
+      return rightAverage - leftAverage
+    })[0] || null
+
+  const mostExperienced =
+    [...items].sort((left, right) => {
+      const rightExperience = right.otherUser?.yearsOfExperience || 0
+      const leftExperience = left.otherUser?.yearsOfExperience || 0
+
+      if (rightExperience !== leftExperience) {
+        return rightExperience - leftExperience
+      }
+
+      const rightCompletedProjects = right.otherUser?.completedProjectsCount || 0
+      const leftCompletedProjects = left.otherUser?.completedProjectsCount || 0
+
+      return rightCompletedProjects - leftCompletedProjects
+    })[0] || null
+
+  return [
+    {
+      key: 'availableNow',
+      label: 'Available Now',
+      description: 'Ready to respond quickly',
+      connection: availableNow
+    },
+    {
+      key: 'mostReviewed',
+      label: 'Most Reviewed',
+      description: 'Strongest social proof',
+      connection: mostReviewed
+    },
+    {
+      key: 'mostExperienced',
+      label: 'Most Experienced',
+      description: 'Deepest track record',
+      connection: mostExperienced
+    }
+  ].filter((item) => item.connection)
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -276,6 +331,7 @@ const ConnectionsTab = () => {
   const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
+  const acceptedSpotlights = getNetworkSpotlights(searchedAcceptedConnections)
 
   return (
     <div className='space-y-8'>
@@ -307,6 +363,31 @@ const ConnectionsTab = () => {
                   {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
                   {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
                 </p>
+              )}
+
+              {section.key === 'accepted' && acceptedSpotlights.length > 0 && (
+                <div className='mt-4 grid gap-3 md:grid-cols-3'>
+                  {acceptedSpotlights.map((spotlight) => {
+                    const spotlightUser = spotlight.connection.otherUser || {}
+
+                    return (
+                      <button
+                        key={spotlight.key}
+                        type='button'
+                        onClick={() => navigate(`/freelancer/${spotlightUser._id}`, { state: { returnTo: '/profile' } })}
+                        className='rounded-2xl border border-primary/10 bg-primary/5 p-4 text-left transition-colors hover:border-accent hover:bg-accent/5 dark:border-light/10 dark:bg-light/5'>
+                        <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-accent'>{spotlight.label}</p>
+                        <p className='mt-2 text-sm font-semibold theme-text'>{[spotlightUser.firstName, spotlightUser.lastName].filter(Boolean).join(' ') || 'User'}</p>
+                        <p className='mt-1 text-sm theme-text-secondary'>{spotlight.description}</p>
+                        <div className='mt-3 flex flex-wrap gap-2 text-xs theme-text-secondary'>
+                          {spotlight.key === 'mostReviewed' ? <span className='rounded-full bg-primary/10 px-3 py-1 dark:bg-light/10'>{spotlightUser.totalRatings || 0} reviews</span> : null}
+                          {spotlight.key === 'mostExperienced' ? <span className='rounded-full bg-primary/10 px-3 py-1 dark:bg-light/10'>{spotlightUser.yearsOfExperience || 0}+ yrs</span> : null}
+                          {spotlight.key === 'availableNow' ? <span className='rounded-full bg-primary/10 px-3 py-1 dark:bg-light/10'>Available</span> : null}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
               )}
             </div>
 
