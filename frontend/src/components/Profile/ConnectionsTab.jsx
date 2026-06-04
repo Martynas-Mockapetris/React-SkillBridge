@@ -116,6 +116,31 @@ const searchAcceptedConnections = (items = [], searchValue = '') => {
   })
 }
 
+const getConnectionSectionBadge = (sectionKey) => {
+  switch (sectionKey) {
+    case 'incoming':
+      return {
+        label: 'Incoming Request',
+        className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+      }
+    case 'outgoing':
+      return {
+        label: 'Pending Request',
+        className: 'bg-amber-500/10 text-amber-600 dark:text-amber-300'
+      }
+    case 'accepted':
+      return {
+        label: 'Connected',
+        className: 'bg-accent/10 text-accent'
+      }
+    default:
+      return {
+        label: 'Connection',
+        className: 'bg-primary/10 theme-text-secondary dark:bg-light/10'
+      }
+  }
+}
+
 const applyAcceptedPreset = (presetKey, setAcceptedFilter, setAcceptedSearch) => {
   if (presetKey === 'availableStrongest') {
     setAcceptedFilter('available')
@@ -388,7 +413,7 @@ const ConnectionsTab = () => {
               )}
             </div>
           ) : (
-            <div className={section.key === 'accepted' ? 'grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4' : 'grid gap-3'}>
+            <div className='grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
               {section.items.map((connection) => {
                 const otherUser = connection.otherUser || {}
                 const canOpenFreelancerProfile = ['freelancer', 'both'].includes(otherUser.userType)
@@ -398,42 +423,33 @@ const ConnectionsTab = () => {
                 const activityLabel = formatConnectionActivity(connection, section.key)
                 const isPinned = pinnedConnectionIds.includes(connection._id)
                 const isAcceptedCard = section.key === 'accepted'
+                const sectionBadge = getConnectionSectionBadge(section.key)
 
                 return (
                   <motion.div
                     key={connection._id}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`rounded-2xl border transition-all ${
-                      isAcceptedCard
-                        ? 'h-full border-accent/20 bg-gradient-to-br from-white via-white to-accent/5 p-4 shadow-[0_14px_30px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(0,0,0,0.1)] dark:border-accent/20 dark:from-light/[0.06] dark:via-light/[0.04] dark:to-accent/10'
-                        : 'theme-card border-primary/10 p-4 md:p-5 dark:border-light/10'
-                    }`}>
-                    <div className={section.key === 'accepted' ? 'flex h-full flex-col gap-3' : 'flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between'}>
-                      <div className={section.key === 'accepted' ? 'flex items-start gap-2.5' : 'flex items-start gap-3'}>
-                        <img
-                          src={otherUser.profilePicture || `https://i.pravatar.cc/150?u=${otherUser._id}`}
-                          alt={otherUser.firstName || 'User'}
-                          className={`${section.key === 'accepted' ? 'h-10 w-10' : 'h-12 w-12'} rounded-full object-cover border border-accent/20`}
-                        />
+                    className={`h-full rounded-2xl border border-accent/15 bg-gradient-to-br from-white via-white to-accent/5 p-4 shadow-[0_14px_30px_rgba(0,0,0,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(0,0,0,0.1)] dark:border-accent/20 dark:from-light/[0.06] dark:via-light/[0.04] dark:to-accent/10`}>
+                    <div className='flex h-full flex-col gap-3'>
+                      <div className='flex items-start gap-2.5'>
+                        <img src={otherUser.profilePicture || `https://i.pravatar.cc/150?u=${otherUser._id}`} alt={otherUser.firstName || 'User'} className='h-10 w-10 rounded-full object-cover border border-accent/20' />
                         <div className='min-w-0'>
-                          {isAcceptedCard && (
-                            <div className='mb-2 flex flex-wrap items-center gap-2'>
-                              <span className='inline-flex rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent'>Connected</span>
-                              {isPinned && (
-                                <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent'>
-                                  <FaThumbtack size={10} />
-                                  <span>Pinned</span>
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <div className='mb-2 flex flex-wrap items-center gap-2'>
+                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${sectionBadge.className}`}>{sectionBadge.label}</span>
+                            {isAcceptedCard && isPinned && (
+                              <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent'>
+                                <FaThumbtack size={10} />
+                                <span>Pinned</span>
+                              </span>
+                            )}
+                          </div>
 
                           <div className='flex flex-wrap items-center gap-2'>
-                            <h3 className={`${isAcceptedCard ? 'text-sm' : 'text-lg'} font-semibold theme-text`}>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
+                            <h3 className='text-sm font-semibold theme-text'>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
                             <VerificationBadge isVerified={otherUser.isEmailVerified} />
                           </div>
-                          <p className={`${isAcceptedCard ? 'mt-1 text-[11px] leading-5' : 'text-sm'} theme-text-secondary`}>{otherUser.headline || 'Professional profile'}</p>
+                          <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{otherUser.headline || 'Professional profile'}</p>
 
                           {activityLabel && (
                             <div className='mt-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent'>
@@ -449,17 +465,14 @@ const ConnectionsTab = () => {
                         </div>
                       </div>
 
-                      <div
-                        className={
-                          isAcceptedCard ? 'mt-auto flex flex-wrap items-center gap-1.5 border-t border-primary/10 pt-3 dark:border-light/10' : 'flex flex-wrap items-center gap-2.5 xl:max-w-[420px] xl:justify-end'
-                        }>
+                      <div className='mt-auto flex flex-wrap items-center gap-1.5 border-t border-primary/10 pt-3 dark:border-light/10'>
                         {section.key === 'incoming' && (
                           <>
                             <button
                               type='button'
                               onClick={() => handleAction(connection._id, 'accept')}
                               disabled={actionId === connection._id}
-                              className='inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-500 disabled:opacity-60'>
+                              className='inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-2.5 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-green-500 disabled:opacity-60'>
                               <FaCheck />
                               <span>Accept</span>
                             </button>
@@ -467,7 +480,7 @@ const ConnectionsTab = () => {
                               type='button'
                               onClick={() => handleAction(connection._id, 'decline')}
                               disabled={actionId === connection._id}
-                              className='inline-flex items-center gap-2 rounded-lg border border-primary/10 px-4 py-2 text-sm font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
+                              className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
                               <FaTimes />
                               <span>Decline</span>
                             </button>
@@ -479,7 +492,7 @@ const ConnectionsTab = () => {
                             type='button'
                             onClick={() => handleAction(connection._id, 'remove')}
                             disabled={actionId === connection._id}
-                            className='inline-flex items-center gap-2 rounded-lg border border-primary/10 px-4 py-2 text-sm font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
+                            className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
                             <FaClock />
                             <span>Cancel Request</span>
                           </button>
