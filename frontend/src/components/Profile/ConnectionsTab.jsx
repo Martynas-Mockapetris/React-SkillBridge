@@ -333,6 +333,22 @@ const ConnectionsTab = () => {
     setPinnedConnectionIds((currentIds) => (currentIds.includes(connectionId) ? currentIds.filter((id) => id !== connectionId) : [...currentIds, connectionId]))
   }
 
+  const acceptedFilterOptions = [
+    { key: 'all', label: 'All' },
+    { key: 'available', label: 'Available Now' },
+    { key: 'strongest', label: 'Strongest Profiles' }
+  ]
+  const acceptedPresetOptions = [
+    { key: 'availableStrongest', label: 'Ready to Hire' },
+    { key: 'reviewedTalent', label: 'Reviewed Talent' },
+    { key: 'clear', label: 'Reset View' }
+  ]
+  const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
+  const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
+  const filteredAcceptedCount = searchedAcceptedConnections.length
+  const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
+  const acceptedSpotlights = getNetworkSpotlights(searchedAcceptedConnections)
+
   const sections = [
     {
       key: 'incoming',
@@ -364,22 +380,6 @@ const ConnectionsTab = () => {
       </div>
     )
   }
-
-  const acceptedFilterOptions = [
-    { key: 'all', label: 'All' },
-    { key: 'available', label: 'Available Now' },
-    { key: 'strongest', label: 'Strongest Profiles' }
-  ]
-  const acceptedPresetOptions = [
-    { key: 'availableStrongest', label: 'Ready to Hire' },
-    { key: 'reviewedTalent', label: 'Reviewed Talent' },
-    { key: 'clear', label: 'Reset View' }
-  ]
-  const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
-  const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
-  const filteredAcceptedCount = searchedAcceptedConnections.length
-  const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
-  const acceptedSpotlights = getNetworkSpotlights(searchedAcceptedConnections)
 
   return (
     <div className='space-y-8'>
