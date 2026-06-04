@@ -294,7 +294,7 @@ const ConnectionsTab = () => {
 
   return (
     <div className='space-y-6'>
-      <div className='grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px_220px_220px] xl:items-stretch'>
+      <div className='grid gap-4 xl:grid-cols-[minmax(0,1fr)_180px_180px_180px] xl:items-stretch'>
         <div className='overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-white/80 via-white/60 to-accent/5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-light/10 dark:from-light/[0.06] dark:via-light/[0.03] dark:to-accent/10'>
           <div className='flex flex-col gap-4 px-5 py-5 md:px-6'>
             <div className='grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end'>
@@ -388,7 +388,7 @@ const ConnectionsTab = () => {
               )}
             </div>
           ) : (
-            <div className='grid gap-3'>
+            <div className={section.key === 'accepted' ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-4' : 'grid gap-3'}>
               {section.items.map((connection) => {
                 const otherUser = connection.otherUser || {}
                 const canOpenFreelancerProfile = ['freelancer', 'both'].includes(otherUser.userType)
@@ -399,13 +399,17 @@ const ConnectionsTab = () => {
                 const isPinned = pinnedConnectionIds.includes(connection._id)
 
                 return (
-                  <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-4 md:p-5'>
-                    <div className='flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between'>
-                      <div className='flex items-start gap-3'>
-                        <img src={otherUser.profilePicture || `https://i.pravatar.cc/150?u=${otherUser._id}`} alt={otherUser.firstName || 'User'} className='h-12 w-12 rounded-full object-cover border border-accent/20' />
+                  <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={`theme-card rounded-2xl ${section.key === 'accepted' ? 'h-full p-4' : 'p-4 md:p-5'}`}>
+                    <div className={section.key === 'accepted' ? 'flex h-full flex-col gap-4' : 'flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between'}>
+                      <div className={section.key === 'accepted' ? 'flex items-start gap-3' : 'flex items-start gap-3'}>
+                        <img
+                          src={otherUser.profilePicture || `https://i.pravatar.cc/150?u=${otherUser._id}`}
+                          alt={otherUser.firstName || 'User'}
+                          className={`${section.key === 'accepted' ? 'h-11 w-11' : 'h-12 w-12'} rounded-full object-cover border border-accent/20`}
+                        />
                         <div className='min-w-0'>
                           <div className='flex flex-wrap items-center gap-2'>
-                            <h3 className='text-lg font-semibold theme-text'>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
+                            <h3 className={`${section.key === 'accepted' ? 'text-base' : 'text-lg'} font-semibold theme-text`}>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
                             <VerificationBadge isVerified={otherUser.isEmailVerified} />
                             {section.key === 'accepted' && isPinned && (
                               <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent'>
@@ -414,7 +418,7 @@ const ConnectionsTab = () => {
                               </span>
                             )}
                           </div>
-                          <p className='text-sm theme-text-secondary'>{otherUser.headline || 'Professional profile'}</p>
+                          <p className={`${section.key === 'accepted' ? 'text-xs' : 'text-sm'} theme-text-secondary`}>{otherUser.headline || 'Professional profile'}</p>
 
                           {activityLabel && (
                             <div className='mt-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent'>
@@ -430,7 +434,7 @@ const ConnectionsTab = () => {
                         </div>
                       </div>
 
-                      <div className='flex flex-wrap items-center gap-2.5 xl:max-w-[420px] xl:justify-end'>
+                      <div className={section.key === 'accepted' ? 'mt-auto flex flex-wrap items-center gap-2' : 'flex flex-wrap items-center gap-2.5 xl:max-w-[420px] xl:justify-end'}>
                         {section.key === 'incoming' && (
                           <>
                             <button
@@ -467,7 +471,7 @@ const ConnectionsTab = () => {
                           <button
                             type='button'
                             onClick={() => handleOpenDirectMessage(otherUser)}
-                            className='inline-flex items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
+                            className='inline-flex items-center gap-2 rounded-lg bg-accent/10 px-2.5 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
                             <FaEnvelope />
                             <span>Message</span>
                           </button>
@@ -477,7 +481,7 @@ const ConnectionsTab = () => {
                           <button
                             type='button'
                             onClick={() => handleOpenProjectInvite(otherUser)}
-                            className='inline-flex items-center gap-2 rounded-lg bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
+                            className='inline-flex items-center gap-2 rounded-lg bg-accent/10 px-2.5 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
                             <FaBriefcase />
                             <span>Invite to Project</span>
                           </button>
@@ -487,7 +491,7 @@ const ConnectionsTab = () => {
                           <button
                             type='button'
                             onClick={() => handleTogglePinnedConnection(connection._id)}
-                            className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                            className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors ${
                               isPinned ? 'bg-accent text-white hover:bg-accent/90' : 'bg-primary/5 theme-text hover:bg-primary hover:text-white dark:bg-light/5'
                             }`}>
                             <FaThumbtack />
@@ -499,7 +503,7 @@ const ConnectionsTab = () => {
                           <button
                             type='button'
                             onClick={() => navigate(`/freelancer/${otherUser._id}`, { state: { returnTo: '/profile' } })}
-                            className='inline-flex items-center gap-2 rounded-lg border border-primary/10 px-3 py-2 text-xs font-medium theme-text transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
+                            className='inline-flex items-center gap-2 rounded-lg border border-primary/10 px-2.5 py-2 text-xs font-medium theme-text transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
                             <FaArrowRight />
                             <span>View Profile</span>
                           </button>
@@ -510,7 +514,7 @@ const ConnectionsTab = () => {
                             type='button'
                             onClick={() => handleAction(connection._id, 'remove')}
                             disabled={actionId === connection._id}
-                            className='inline-flex items-center gap-2 rounded-lg border border-primary/10 px-3 py-2 text-xs font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
+                            className='inline-flex items-center gap-2 rounded-lg border border-primary/10 px-2.5 py-2 text-xs font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
                             <FaUserFriends />
                             <span>Remove</span>
                           </button>
