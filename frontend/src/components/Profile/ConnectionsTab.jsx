@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaGithub, FaGlobe, FaLinkedin, FaStar, FaTimes, FaUserFriends } from 'react-icons/fa'
+import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaGithub, FaGlobe, FaLinkedin, FaStar, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import VerificationBadge from '../shared/VerificationBadge'
@@ -71,8 +71,16 @@ const getConnectionSortTimestamp = (connection, sectionKey) => {
   return 0
 }
 
-const sortConnections = (items = [], sectionKey) => {
+const sortConnections = (items = [], sectionKey, pinnedConnectionIds = []) => {
   return [...items].sort((left, right) => {
+    if (sectionKey === 'accepted') {
+      const leftPinned = pinnedConnectionIds.includes(left._id)
+      const rightPinned = pinnedConnectionIds.includes(right._id)
+
+      if (leftPinned !== rightPinned) {
+        return leftPinned ? -1 : 1
+      }
+    }
     const rightTimestamp = getConnectionSortTimestamp(right, sectionKey)
     const leftTimestamp = getConnectionSortTimestamp(left, sectionKey)
 
@@ -210,6 +218,32 @@ const getNetworkSpotlights = (items = []) => {
   ].filter((item) => item.connection)
 }
 
+const getPinnedConnectionsStorageKey = () => {
+  if (typeof window === 'undefined') {
+    return 'skillbridge:pinned-connections'
+  }
+
+  try {
+    const currentUser = JSON.parse(window.localStorage.getItem('user') || '{}')
+    return currentUser?._id ? `skillbridge:pinned-connections:${currentUser._id}` : 'skillbridge:pinned-connections'
+  } catch {
+    return 'skillbridge:pinned-connections'
+  }
+}
+
+const readPinnedConnectionIds = () => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(getPinnedConnectionsStorageKey()) || '[]')
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -229,6 +263,7 @@ const ConnectionsTab = () => {
   const [showHireModal, setShowHireModal] = useState(false)
   const [acceptedFilter, setAcceptedFilter] = useState('all')
   const [acceptedSearch, setAcceptedSearch] = useState('')
+  const [pinnedConnectionIds, setPinnedConnectionIds] = useState(() => readPinnedConnectionIds())
 
   const loadConnections = async () => {
     try {
@@ -245,6 +280,14 @@ const ConnectionsTab = () => {
   useEffect(() => {
     loadConnections()
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    window.localStorage.setItem(getPinnedConnectionsStorageKey(), JSON.stringify(pinnedConnectionIds))
+  }, [pinnedConnectionIds])
 
   const handleAction = async (connectionId, action) => {
     try {
@@ -286,26 +329,30 @@ const ConnectionsTab = () => {
     })
   }
 
+  const handleTogglePinnedConnection = (connectionId) => {
+    setPinnedConnectionIds((currentIds) => (currentIds.includes(connectionId) ? currentIds.filter((id) => id !== connectionId) : [...currentIds, connectionId]))
+  }
+
   const sections = [
     {
       key: 'incoming',
       title: 'Incoming Requests',
       description: 'People who want to add you to their professional network.',
-      items: sortConnections(connections.incomingRequests, 'incoming'),
+      items: sortConnections(connections.incomingRequests, 'incoming', pinnedConnectionIds),
       emptyMessage: 'No incoming requests right now.'
     },
     {
       key: 'outgoing',
       title: 'Pending Requests',
       description: 'Requests you already sent and are waiting on.',
-      items: sortConnections(connections.outgoingRequests, 'outgoing'),
+      items: sortConnections(connections.outgoingRequests, 'outgoing', pinnedConnectionIds),
       emptyMessage: 'No pending requests.'
     },
     {
       key: 'accepted',
       title: 'Your Network',
       description: 'People you are already connected with.',
-      items: sortConnections(searchedAcceptedConnections, 'accepted'),
+      items: sortConnections(searchedAcceptedConnections, 'accepted', pinnedConnectionIds),
       emptyMessage: acceptedSearch.trim() ? 'No connections match your search right now.' : acceptedFilter === 'all' ? 'No accepted connections yet.' : 'No connections match this filter right now.'
     }
   ]
@@ -331,6 +378,7 @@ const ConnectionsTab = () => {
   const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
+  const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
   const acceptedSpotlights = getNetworkSpotlights(searchedAcceptedConnections)
 
   return (
@@ -360,6 +408,7 @@ const ConnectionsTab = () => {
               {section.key === 'accepted' && (
                 <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
                   Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
+                  {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
                   {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
                   {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
                 </p>
@@ -493,6 +542,7 @@ const ConnectionsTab = () => {
                 ].filter(Boolean)
                 const hasOpportunities = topServices.length > 0
                 const activityLabel = formatConnectionActivity(connection, section.key)
+                const isPinned = pinnedConnectionIds.includes(connection._id)
 
                 return (
                   <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-5'>
@@ -503,6 +553,12 @@ const ConnectionsTab = () => {
                           <div className='flex flex-wrap items-center gap-2'>
                             <h3 className='text-lg font-semibold theme-text'>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
                             <VerificationBadge isVerified={otherUser.isEmailVerified} />
+                            {section.key === 'accepted' && isPinned && (
+                              <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent'>
+                                <FaThumbtack size={10} />
+                                <span>Pinned</span>
+                              </span>
+                            )}
                           </div>
                           <p className='text-sm theme-text-secondary'>{otherUser.headline || 'Professional profile'}</p>
 
@@ -700,6 +756,18 @@ const ConnectionsTab = () => {
                             className='inline-flex items-center gap-2 rounded-lg bg-primary/5 px-4 py-2 text-sm font-medium theme-text transition-colors hover:bg-primary hover:text-white dark:bg-light/5'>
                             <FaBriefcase />
                             <span>View Opportunities</span>
+                          </button>
+                        )}
+
+                        {section.key === 'accepted' && (
+                          <button
+                            type='button'
+                            onClick={() => handleTogglePinnedConnection(connection._id)}
+                            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                              isPinned ? 'bg-accent text-white hover:bg-accent/90' : 'bg-primary/5 theme-text hover:bg-primary hover:text-white dark:bg-light/5'
+                            }`}>
+                            <FaThumbtack />
+                            <span>{isPinned ? 'Unpin' : 'Pin'}</span>
                           </button>
                         )}
 
