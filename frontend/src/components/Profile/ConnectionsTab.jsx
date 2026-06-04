@@ -259,7 +259,6 @@ const ConnectionsTab = () => {
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
   const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
-  const activeAcceptedFilterCount = (acceptedFilter !== 'all' ? 1 : 0) + (acceptedSearch.trim() ? 1 : 0)
 
   const sections = [
     {
@@ -295,50 +294,10 @@ const ConnectionsTab = () => {
 
   return (
     <div className='space-y-6'>
-      <div className='grid gap-4 xl:grid-cols-[220px_220px_220px_minmax(0,1fr)] xl:items-stretch'>
-        <div className='theme-card rounded-2xl px-5 py-4'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
-          <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
-        </div>
-
-        <div className='theme-card rounded-2xl px-5 py-4'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
-          <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
-        </div>
-
-        <div className='theme-card rounded-2xl px-5 py-4'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
-          <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
-        </div>
-
+      <div className='grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px_220px_220px] xl:items-stretch'>
         <div className='overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-white/80 via-white/60 to-accent/5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-light/10 dark:from-light/[0.06] dark:via-light/[0.03] dark:to-accent/10'>
-          <div className='flex flex-col gap-5 px-5 py-5 md:px-6'>
-            <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <span className='inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent'>Network tools</span>
-                <span className='inline-flex items-center rounded-full bg-primary/5 px-3 py-1 text-xs font-medium theme-text-secondary dark:bg-light/10'>
-                  {filteredAcceptedCount} result{filteredAcceptedCount === 1 ? '' : 's'}
-                </span>
-                {pinnedAcceptedCount > 0 && <span className='inline-flex items-center rounded-full bg-primary/5 px-3 py-1 text-xs font-medium theme-text-secondary dark:bg-light/10'>{pinnedAcceptedCount} pinned</span>}
-                {activeAcceptedFilterCount > 0 && (
-                  <span className='inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300'>
-                    {activeAcceptedFilterCount} active tool{activeAcceptedFilterCount === 1 ? '' : 's'}
-                  </span>
-                )}
-              </div>
-
-              <button
-                type='button'
-                onClick={() => {
-                  setAcceptedFilter('all')
-                  setAcceptedSearch('')
-                }}
-                className='inline-flex items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10'>
-                Clear tools
-              </button>
-            </div>
-
-            <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
+          <div className='flex flex-col gap-4 px-5 py-5 md:px-6'>
+            <div className='grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end'>
               <label className='block'>
                 <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Search network</span>
                 <div className='relative'>
@@ -354,7 +313,7 @@ const ConnectionsTab = () => {
                 </div>
               </label>
 
-              <div className='flex flex-col gap-3 sm:flex-row'>
+              <div className='flex flex-wrap gap-2 xl:justify-end'>
                 {acceptedFilterOptions.map((option) => (
                   <button
                     key={option.key}
@@ -369,12 +328,40 @@ const ConnectionsTab = () => {
               </div>
             </div>
 
-            <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
-              Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
-              {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
-              {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
-            </p>
+            <div className='flex flex-col gap-3 border-t border-primary/10 pt-3 dark:border-light/10 lg:flex-row lg:items-center lg:justify-between'>
+              <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
+                Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
+                {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
+                {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
+                {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
+              </p>
+
+              <button
+                type='button'
+                onClick={() => {
+                  setAcceptedFilter('all')
+                  setAcceptedSearch('')
+                }}
+                className='inline-flex items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10'>
+                Clear tools
+              </button>
+            </div>
           </div>
+        </div>
+
+        <div className='theme-card rounded-2xl px-5 py-4'>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
+          <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
+        </div>
+
+        <div className='theme-card rounded-2xl px-5 py-4'>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
+          <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
+        </div>
+
+        <div className='theme-card rounded-2xl px-5 py-4'>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
+          <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
         </div>
       </div>
 
