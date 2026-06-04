@@ -397,9 +397,18 @@ const ConnectionsTab = () => {
                 const canInviteToProjects = otherUser.allowProjectInvites !== false
                 const activityLabel = formatConnectionActivity(connection, section.key)
                 const isPinned = pinnedConnectionIds.includes(connection._id)
+                const isAcceptedCard = section.key === 'accepted'
 
                 return (
-                  <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={`theme-card rounded-2xl ${section.key === 'accepted' ? 'h-full p-3.5' : 'p-4 md:p-5'}`}>
+                  <motion.div
+                    key={connection._id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`rounded-2xl border transition-all ${
+                      isAcceptedCard
+                        ? 'h-full border-accent/20 bg-gradient-to-br from-white via-white to-accent/5 p-4 shadow-[0_14px_30px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(0,0,0,0.1)] dark:border-accent/20 dark:from-light/[0.06] dark:via-light/[0.04] dark:to-accent/10'
+                        : 'theme-card border-primary/10 p-4 md:p-5 dark:border-light/10'
+                    }`}>
                     <div className={section.key === 'accepted' ? 'flex h-full flex-col gap-3' : 'flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between'}>
                       <div className={section.key === 'accepted' ? 'flex items-start gap-2.5' : 'flex items-start gap-3'}>
                         <img
@@ -408,17 +417,23 @@ const ConnectionsTab = () => {
                           className={`${section.key === 'accepted' ? 'h-10 w-10' : 'h-12 w-12'} rounded-full object-cover border border-accent/20`}
                         />
                         <div className='min-w-0'>
+                          {isAcceptedCard && (
+                            <div className='mb-2 flex flex-wrap items-center gap-2'>
+                              <span className='inline-flex rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent'>Connected</span>
+                              {isPinned && (
+                                <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent'>
+                                  <FaThumbtack size={10} />
+                                  <span>Pinned</span>
+                                </span>
+                              )}
+                            </div>
+                          )}
+
                           <div className='flex flex-wrap items-center gap-2'>
-                            <h3 className={`${section.key === 'accepted' ? 'text-sm' : 'text-lg'} font-semibold theme-text`}>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
+                            <h3 className={`${isAcceptedCard ? 'text-sm' : 'text-lg'} font-semibold theme-text`}>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
                             <VerificationBadge isVerified={otherUser.isEmailVerified} />
-                            {section.key === 'accepted' && isPinned && (
-                              <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent'>
-                                <FaThumbtack size={10} />
-                                <span>Pinned</span>
-                              </span>
-                            )}
                           </div>
-                          <p className={`${section.key === 'accepted' ? 'text-[11px] leading-5' : 'text-sm'} theme-text-secondary`}>{otherUser.headline || 'Professional profile'}</p>
+                          <p className={`${isAcceptedCard ? 'mt-1 text-[11px] leading-5' : 'text-sm'} theme-text-secondary`}>{otherUser.headline || 'Professional profile'}</p>
 
                           {activityLabel && (
                             <div className='mt-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent'>
@@ -427,14 +442,17 @@ const ConnectionsTab = () => {
                             </div>
                           )}
 
-                          <div className='mt-1.5 flex flex-wrap gap-1.5 text-[11px] theme-text-secondary'>
+                          <div className='mt-2 flex flex-wrap gap-1.5 text-[11px] theme-text-secondary'>
                             {otherUser.availabilityStatus ? <span className='rounded-full bg-primary/5 px-2 py-0.5 dark:bg-light/5'>{otherUser.availabilityStatus.replace('_', ' ')}</span> : null}
                             {locationLabel ? <span className='rounded-full bg-primary/5 px-2 py-0.5 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
                         </div>
                       </div>
 
-                      <div className={section.key === 'accepted' ? 'mt-auto flex flex-wrap items-center gap-1.5 pt-1' : 'flex flex-wrap items-center gap-2.5 xl:max-w-[420px] xl:justify-end'}>
+                      <div
+                        className={
+                          isAcceptedCard ? 'mt-auto flex flex-wrap items-center gap-1.5 border-t border-primary/10 pt-3 dark:border-light/10' : 'flex flex-wrap items-center gap-2.5 xl:max-w-[420px] xl:justify-end'
+                        }>
                         {section.key === 'incoming' && (
                           <>
                             <button
@@ -471,7 +489,7 @@ const ConnectionsTab = () => {
                           <button
                             type='button'
                             onClick={() => handleOpenDirectMessage(otherUser)}
-                            className='inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-2 py-1.5 text-[11px] font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
+                            className='inline-flex items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-accent/90'>
                             <FaEnvelope />
                             <span>Message</span>
                           </button>
@@ -481,7 +499,7 @@ const ConnectionsTab = () => {
                           <button
                             type='button'
                             onClick={() => handleOpenProjectInvite(otherUser)}
-                            className='inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-2 py-1.5 text-[11px] font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
+                            className='inline-flex items-center gap-1.5 rounded-lg bg-primary/5 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:bg-primary hover:text-white dark:bg-light/5'>
                             <FaBriefcase />
                             <span>Invite to Project</span>
                           </button>
@@ -503,7 +521,7 @@ const ConnectionsTab = () => {
                           <button
                             type='button'
                             onClick={() => navigate(`/freelancer/${otherUser._id}`, { state: { returnTo: '/profile' } })}
-                            className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2 py-1.5 text-[11px] font-medium theme-text transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
+                            className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
                             <FaArrowRight />
                             <span>View Profile</span>
                           </button>
