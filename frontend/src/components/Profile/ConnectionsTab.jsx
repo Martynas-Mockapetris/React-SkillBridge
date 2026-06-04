@@ -293,68 +293,89 @@ const ConnectionsTab = () => {
   }
 
   return (
-    <div className='space-y-8'>
-      <div className='grid gap-4 md:grid-cols-3'>
-        <div className='theme-card rounded-2xl p-5'>
+    <div className='space-y-6'>
+      <div className='grid gap-4 lg:grid-cols-12'>
+        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-2'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
         </div>
-        <div className='theme-card rounded-2xl p-5'>
+
+        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-2'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
         </div>
-        <div className='theme-card rounded-2xl p-5'>
+
+        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-2'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
+        </div>
+
+        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-6'>
+          <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-1'>
+              <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Network Tools</p>
+              <p className='text-sm theme-text-secondary'>Search and filter your accepted connections without opening full profiles.</p>
+            </div>
+
+            <div className='grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]'>
+              <div className='rounded-xl border border-primary/10 bg-primary/5 px-4 py-3 dark:border-light/10 dark:bg-light/5'>
+                <label htmlFor='accepted-network-search' className='mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] theme-text-secondary'>
+                  Search Network
+                </label>
+                <input
+                  id='accepted-network-search'
+                  type='text'
+                  value={acceptedSearch}
+                  onChange={(event) => setAcceptedSearch(event.target.value)}
+                  placeholder='Name, skill, service, headline, location'
+                  className='w-full bg-transparent text-sm theme-text placeholder:theme-text-secondary focus:outline-none'
+                />
+              </div>
+
+              <button
+                type='button'
+                onClick={() => {
+                  setAcceptedFilter('all')
+                  setAcceptedSearch('')
+                }}
+                className='rounded-xl border border-primary/10 px-4 py-3 text-sm font-medium theme-text transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
+                Reset
+              </button>
+            </div>
+
+            <div className='flex flex-wrap gap-2'>
+              {acceptedFilterOptions.map((option) => (
+                <button
+                  key={option.key}
+                  type='button'
+                  onClick={() => setAcceptedFilter(option.key)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    acceptedFilter === option.key ? 'bg-accent text-white' : 'bg-primary/5 theme-text-secondary hover:bg-primary/10 dark:bg-light/5'
+                  }`}>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
+              Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
+              {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
+              {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
+              {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
+            </p>
+          </div>
         </div>
       </div>
 
       {sections.map((section) => (
-        <div key={section.key} className='space-y-4'>
-          <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
-            <div className='space-y-1'>
-              <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
-              <p className='text-sm theme-text-secondary'>{section.description}</p>
-
-              {section.key === 'accepted' && (
-                <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
-                  Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
-                  {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
-                  {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
-                  {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
-                </p>
-              )}
-            </div>
-
-            {section.key === 'accepted' && (
-              <div className='flex w-full flex-col gap-3 md:w-auto md:items-end'>
-                <input
-                  type='text'
-                  value={acceptedSearch}
-                  onChange={(event) => setAcceptedSearch(event.target.value)}
-                  placeholder='Search by name, skill, service, or location'
-                  className='w-full rounded-full border border-primary/10 bg-transparent px-4 py-2 text-sm theme-text placeholder:theme-text-secondary dark:border-light/10 md:w-[320px]'
-                />
-
-                <div className='flex flex-wrap gap-2 md:justify-end'>
-                  {acceptedFilterOptions.map((option) => (
-                    <button
-                      key={option.key}
-                      type='button'
-                      onClick={() => setAcceptedFilter(option.key)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                        acceptedFilter === option.key ? 'bg-accent text-white' : 'bg-primary/5 theme-text-secondary hover:bg-primary/10 dark:bg-light/5'
-                      }`}>
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+        <div key={section.key} className='space-y-3'>
+          <div className='space-y-1'>
+            <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
+            <p className='text-sm theme-text-secondary'>{section.description}</p>
           </div>
 
           {section.items.length === 0 ? (
-            <div className='rounded-2xl border border-dashed dark:border-light/10 border-primary/10 px-6 py-8 text-center theme-text-secondary'>
+            <div className='rounded-2xl border border-dashed dark:border-light/10 border-primary/10 px-6 py-10 text-center theme-text-secondary'>
               <p>{section.emptyMessage}</p>
               {section.key === 'accepted' && (acceptedFilter !== 'all' || acceptedSearch.trim()) && (
                 <button
@@ -364,12 +385,12 @@ const ConnectionsTab = () => {
                     setAcceptedSearch('')
                   }}
                   className='mt-4 inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
-                  Clear Search & Filter
+                  Reset Network Tools
                 </button>
               )}
             </div>
           ) : (
-            <div className='grid gap-4'>
+            <div className='grid gap-3'>
               {section.items.map((connection) => {
                 const otherUser = connection.otherUser || {}
                 const canOpenFreelancerProfile = ['freelancer', 'both'].includes(otherUser.userType)
@@ -380,8 +401,8 @@ const ConnectionsTab = () => {
                 const isPinned = pinnedConnectionIds.includes(connection._id)
 
                 return (
-                  <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-xl p-4'>
-                    <div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
+                  <motion.div key={connection._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className='theme-card rounded-2xl p-4 md:p-5'>
+                    <div className='flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between'>
                       <div className='flex items-start gap-3'>
                         <img src={otherUser.profilePicture || `https://i.pravatar.cc/150?u=${otherUser._id}`} alt={otherUser.firstName || 'User'} className='h-12 w-12 rounded-full object-cover border border-accent/20' />
                         <div className='min-w-0'>
@@ -411,7 +432,7 @@ const ConnectionsTab = () => {
                         </div>
                       </div>
 
-                      <div className='flex flex-wrap items-center gap-2 xl:justify-end'>
+                      <div className='flex flex-wrap items-center gap-2.5 xl:max-w-[420px] xl:justify-end'>
                         {section.key === 'incoming' && (
                           <>
                             <button
