@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaGithub, FaGlobe, FaLinkedin, FaStar, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'
+import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaSearch, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import VerificationBadge from '../shared/VerificationBadge'
@@ -259,6 +259,7 @@ const ConnectionsTab = () => {
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
   const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
+  const activeAcceptedFilterCount = (acceptedFilter !== 'all' ? 1 : 0) + (acceptedSearch.trim() ? 1 : 0)
 
   const sections = [
     {
@@ -294,42 +295,36 @@ const ConnectionsTab = () => {
 
   return (
     <div className='space-y-6'>
-      <div className='grid gap-4 lg:grid-cols-12'>
-        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-2'>
+      <div className='grid gap-4 xl:grid-cols-[220px_220px_220px_minmax(0,1fr)] xl:items-stretch'>
+        <div className='theme-card rounded-2xl px-5 py-4'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
         </div>
 
-        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-2'>
+        <div className='theme-card rounded-2xl px-5 py-4'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
         </div>
 
-        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-2'>
+        <div className='theme-card rounded-2xl px-5 py-4'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
         </div>
 
-        <div className='theme-card rounded-2xl p-4 md:p-5 lg:col-span-6'>
-          <div className='flex flex-col gap-4'>
-            <div className='flex flex-col gap-1'>
-              <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Network Tools</p>
-              <p className='text-sm theme-text-secondary'>Search and filter your accepted connections without opening full profiles.</p>
-            </div>
-
-            <div className='grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]'>
-              <div className='rounded-xl border border-primary/10 bg-primary/5 px-4 py-3 dark:border-light/10 dark:bg-light/5'>
-                <label htmlFor='accepted-network-search' className='mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] theme-text-secondary'>
-                  Search Network
-                </label>
-                <input
-                  id='accepted-network-search'
-                  type='text'
-                  value={acceptedSearch}
-                  onChange={(event) => setAcceptedSearch(event.target.value)}
-                  placeholder='Name, skill, service, headline, location'
-                  className='w-full bg-transparent text-sm theme-text placeholder:theme-text-secondary focus:outline-none'
-                />
+        <div className='overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-white/80 via-white/60 to-accent/5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-light/10 dark:from-light/[0.06] dark:via-light/[0.03] dark:to-accent/10'>
+          <div className='flex flex-col gap-5 px-5 py-5 md:px-6'>
+            <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
+              <div className='flex flex-wrap items-center gap-2'>
+                <span className='inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent'>Network tools</span>
+                <span className='inline-flex items-center rounded-full bg-primary/5 px-3 py-1 text-xs font-medium theme-text-secondary dark:bg-light/10'>
+                  {filteredAcceptedCount} result{filteredAcceptedCount === 1 ? '' : 's'}
+                </span>
+                {pinnedAcceptedCount > 0 && <span className='inline-flex items-center rounded-full bg-primary/5 px-3 py-1 text-xs font-medium theme-text-secondary dark:bg-light/10'>{pinnedAcceptedCount} pinned</span>}
+                {activeAcceptedFilterCount > 0 && (
+                  <span className='inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300'>
+                    {activeAcceptedFilterCount} active tool{activeAcceptedFilterCount === 1 ? '' : 's'}
+                  </span>
+                )}
               </div>
 
               <button
@@ -338,28 +333,44 @@ const ConnectionsTab = () => {
                   setAcceptedFilter('all')
                   setAcceptedSearch('')
                 }}
-                className='rounded-xl border border-primary/10 px-4 py-3 text-sm font-medium theme-text transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
-                Reset
+                className='inline-flex items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10'>
+                Clear tools
               </button>
             </div>
 
-            <div className='flex flex-wrap gap-2'>
-              {acceptedFilterOptions.map((option) => (
-                <button
-                  key={option.key}
-                  type='button'
-                  onClick={() => setAcceptedFilter(option.key)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                    acceptedFilter === option.key ? 'bg-accent text-white' : 'bg-primary/5 theme-text-secondary hover:bg-primary/10 dark:bg-light/5'
-                  }`}>
-                  {option.label}
-                </button>
-              ))}
+            <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
+              <label className='block'>
+                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Search network</span>
+                <div className='relative'>
+                  <FaSearch className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-accent/80' size={16} />
+                  <input
+                    id='accepted-network-search'
+                    type='text'
+                    value={acceptedSearch}
+                    onChange={(event) => setAcceptedSearch(event.target.value)}
+                    placeholder='Search by name, skill, service, headline, or location'
+                    className='h-[50px] w-full rounded-lg border border-primary/10 bg-white/80 pl-11 pr-4 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-light/10 dark:bg-light/[0.06]'
+                  />
+                </div>
+              </label>
+
+              <div className='flex flex-col gap-3 sm:flex-row'>
+                {acceptedFilterOptions.map((option) => (
+                  <button
+                    key={option.key}
+                    type='button'
+                    onClick={() => setAcceptedFilter(option.key)}
+                    className={`inline-flex h-[50px] items-center justify-center rounded-lg px-5 text-sm font-medium transition-all ${
+                      acceptedFilter === option.key ? 'bg-accent text-white' : 'border border-primary/10 theme-text-secondary hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10'
+                    }`}>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
               Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
-              {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
               {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
               {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
             </p>
