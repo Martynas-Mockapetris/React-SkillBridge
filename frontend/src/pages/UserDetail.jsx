@@ -184,10 +184,6 @@ const UserDetail = () => {
     fetchData()
   }, [freelancerId, currentUser])
 
-  if (loading) {
-    return <LoadingSpinner fullScreen />
-  }
-
   useEffect(() => {
     if (loading) return
 
@@ -200,6 +196,10 @@ const UserDetail = () => {
       announcementsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [loading, location.state])
+
+  if (loading) {
+    return <LoadingSpinner fullScreen />
+  }
 
   const handleBack = () => {
     if (location.state?.returnTo) {
