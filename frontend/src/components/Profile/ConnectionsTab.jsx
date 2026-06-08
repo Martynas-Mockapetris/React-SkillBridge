@@ -186,6 +186,17 @@ const readPinnedConnectionIds = () => {
   }
 }
 
+const compactActionBaseClasses = 'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors'
+
+const compactActionClasses = {
+  success: `${compactActionBaseClasses} bg-green-600 text-white hover:bg-green-500`,
+  accent: `${compactActionBaseClasses} bg-accent text-white hover:bg-accent/90`,
+  accentSoft: `${compactActionBaseClasses} bg-accent/10 text-accent hover:bg-accent hover:text-white`,
+  neutral: `${compactActionBaseClasses} border border-primary/10 theme-text hover:border-accent hover:text-accent dark:border-light/10`,
+  subtle: `${compactActionBaseClasses} bg-primary/5 theme-text hover:bg-primary hover:text-white dark:bg-light/5`,
+  danger: `${compactActionBaseClasses} border border-primary/10 theme-text hover:border-red-300 hover:text-red-500 dark:border-light/10`
+}
+
 const ConnectionsTab = () => {
   const navigate = useNavigate()
   const [connections, setConnections] = useState({
@@ -393,12 +404,15 @@ const ConnectionsTab = () => {
       {sections.map((section) => (
         <div key={section.key} className='space-y-3'>
           <div className='space-y-1'>
-            <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
+            <div className='flex flex-wrap items-center gap-2'>
+              <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
+              <span className='inline-flex items-center rounded-full bg-primary/5 px-2.5 py-1 text-[11px] font-medium theme-text-secondary dark:bg-light/10'>{section.items.length}</span>
+            </div>
             <p className='text-sm theme-text-secondary'>{section.description}</p>
           </div>
 
           {section.items.length === 0 ? (
-            <div className='rounded-2xl border border-dashed dark:border-light/10 border-primary/10 px-6 py-10 text-center theme-text-secondary'>
+            <div className='rounded-2xl border border-dashed border-primary/10 bg-primary/[0.02] px-6 py-10 text-center theme-text-secondary dark:border-light/10 dark:bg-light/[0.02]'>
               <p>{section.emptyMessage}</p>
               {section.key === 'accepted' && (acceptedFilter !== 'all' || acceptedSearch.trim()) && (
                 <button
@@ -436,7 +450,9 @@ const ConnectionsTab = () => {
                         <img src={otherUser.profilePicture || `https://i.pravatar.cc/150?u=${otherUser._id}`} alt={otherUser.firstName || 'User'} className='h-10 w-10 rounded-full object-cover border border-accent/20' />
                         <div className='min-w-0'>
                           <div className='mb-2 flex flex-wrap items-center gap-2'>
-                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${sectionBadge.className}`}>{sectionBadge.label}</span>
+                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ring-1 ring-inset ring-current/10 ${sectionBadge.className}`}>
+                              {sectionBadge.label}
+                            </span>
                             {isAcceptedCard && isPinned && (
                               <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent'>
                                 <FaThumbtack size={10} />
@@ -452,7 +468,7 @@ const ConnectionsTab = () => {
                           <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{otherUser.headline || 'Professional profile'}</p>
 
                           {activityLabel && (
-                            <div className='mt-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent'>
+                            <div className='mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/15 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent'>
                               <FaClock size={10} />
                               <span>{activityLabel}</span>
                             </div>
@@ -460,7 +476,7 @@ const ConnectionsTab = () => {
 
                           <div className='mt-2 flex flex-wrap gap-1.5 text-[11px] theme-text-secondary'>
                             {otherUser.availabilityStatus ? <span className='rounded-full bg-primary/5 px-2 py-0.5 dark:bg-light/5'>{otherUser.availabilityStatus.replace('_', ' ')}</span> : null}
-                            {locationLabel ? <span className='rounded-full bg-primary/5 px-2 py-0.5 dark:bg-light/5'>{locationLabel}</span> : null}
+                            {locationLabel ? <span className='rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 dark:border-light/10 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
                         </div>
                       </div>
@@ -468,19 +484,11 @@ const ConnectionsTab = () => {
                       <div className='mt-auto flex flex-wrap items-center gap-1.5 border-t border-primary/10 pt-3 dark:border-light/10'>
                         {section.key === 'incoming' && (
                           <>
-                            <button
-                              type='button'
-                              onClick={() => handleAction(connection._id, 'accept')}
-                              disabled={actionId === connection._id}
-                              className='inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-2.5 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-green-500 disabled:opacity-60'>
+                            <button type='button' onClick={() => handleAction(connection._id, 'accept')} disabled={actionId === connection._id} className={`${compactActionClasses.success} disabled:opacity-60`}>
                               <FaCheck />
                               <span>Accept</span>
                             </button>
-                            <button
-                              type='button'
-                              onClick={() => handleAction(connection._id, 'decline')}
-                              disabled={actionId === connection._id}
-                              className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
+                            <button type='button' onClick={() => handleAction(connection._id, 'decline')} disabled={actionId === connection._id} className={`${compactActionClasses.danger} disabled:opacity-60`}>
                               <FaTimes />
                               <span>Decline</span>
                             </button>
@@ -488,11 +496,7 @@ const ConnectionsTab = () => {
                         )}
 
                         {section.key === 'outgoing' && (
-                          <button
-                            type='button'
-                            onClick={() => handleAction(connection._id, 'remove')}
-                            disabled={actionId === connection._id}
-                            className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
+                          <button type='button' onClick={() => handleAction(connection._id, 'remove')} disabled={actionId === connection._id} className={compactActionClasses.accent}>
                             <FaClock />
                             <span>Cancel Request</span>
                           </button>
@@ -509,43 +513,28 @@ const ConnectionsTab = () => {
                         )}
 
                         {section.key === 'accepted' && canInviteToProjects && (
-                          <button
-                            type='button'
-                            onClick={() => handleOpenProjectInvite(otherUser)}
-                            className='inline-flex items-center gap-1.5 rounded-lg bg-primary/5 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:bg-primary hover:text-white dark:bg-light/5'>
+                          <button type='button' onClick={() => handleOpenProjectInvite(otherUser)} className={compactActionClasses.accentSoft}>
                             <FaBriefcase />
                             <span>Invite to Project</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && (
-                          <button
-                            type='button'
-                            onClick={() => handleTogglePinnedConnection(connection._id)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium transition-colors ${
-                              isPinned ? 'bg-accent text-white hover:bg-accent/90' : 'bg-primary/5 theme-text hover:bg-primary hover:text-white dark:bg-light/5'
-                            }`}>
+                          <button type='button' onClick={() => handleTogglePinnedConnection(connection._id)} className={isPinned ? compactActionClasses.accent : compactActionClasses.subtle}>
                             <FaThumbtack />
                             <span>{isPinned ? 'Unpin' : 'Pin'}</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && canOpenFreelancerProfile ? (
-                          <button
-                            type='button'
-                            onClick={() => navigate(`/freelancer/${otherUser._id}`, { state: { returnTo: '/profile' } })}
-                            className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2.5 py-1.5 text-[11px] font-medium theme-text transition-colors hover:border-accent hover:text-accent dark:border-light/10'>
+                          <button type='button' onClick={() => navigate(`/freelancer/${otherUser._id}`, { state: { returnTo: '/profile' } })} className={compactActionClasses.neutral}>
                             <FaArrowRight />
                             <span>View Profile</span>
                           </button>
                         ) : null}
 
                         {section.key === 'accepted' && (
-                          <button
-                            type='button'
-                            onClick={() => handleAction(connection._id, 'remove')}
-                            disabled={actionId === connection._id}
-                            className='inline-flex items-center gap-1.5 rounded-lg border border-primary/10 px-2 py-1.5 text-[11px] font-medium theme-text transition-colors hover:text-red-500 disabled:opacity-60 dark:border-light/10'>
+                          <button type='button' onClick={() => handleAction(connection._id, 'remove')} disabled={actionId === connection._id} className={`${compactActionClasses.danger} disabled:opacity-60`}>
                             <FaUserFriends />
                             <span>Remove</span>
                           </button>
