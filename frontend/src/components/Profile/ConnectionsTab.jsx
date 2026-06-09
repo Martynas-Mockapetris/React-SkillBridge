@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaSearch, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'
+import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaRegStickyNote, FaSearch, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import VerificationBadge from '../shared/VerificationBadge'
@@ -190,6 +190,32 @@ const readPinnedConnectionIds = () => {
   }
 }
 
+const getConnectionNotesStorageKey = () => {
+  if (typeof window === 'undefined') {
+    return 'skillbridge:connection-notes'
+  }
+
+  try {
+    const currentUser = JSON.parse(window.localStorage.getItem('user') || '{}')
+    return currentUser?._id ? `skillbridge:connection-notes:${currentUser._id}` : 'skillbridge:connection-notes'
+  } catch {
+    return 'skillbridge:connection-notes'
+  }
+}
+
+const readConnectionNotes = () => {
+  if (typeof window === 'undefined') {
+    return {}
+  }
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(getConnectionNotesStorageKey()) || '{}')
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
 const compactActionBaseClasses = 'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors'
 
 const compactActionClasses = {
@@ -221,6 +247,7 @@ const ConnectionsTab = () => {
   const [acceptedFilter, setAcceptedFilter] = useState('all')
   const [acceptedSearch, setAcceptedSearch] = useState('')
   const [pinnedConnectionIds, setPinnedConnectionIds] = useState(() => readPinnedConnectionIds())
+  const [connectionNotes, setConnectionNotes] = useState(() => readConnectionNotes())
 
   const loadConnections = async () => {
     try {
@@ -245,6 +272,14 @@ const ConnectionsTab = () => {
 
     window.localStorage.setItem(getPinnedConnectionsStorageKey(), JSON.stringify(pinnedConnectionIds))
   }, [pinnedConnectionIds])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    window.localStorage.setItem(getConnectionNotesStorageKey(), JSON.stringify(connectionNotes))
+  }, [connectionNotes])
 
   const handleAction = async (connectionId, action) => {
     try {
@@ -288,6 +323,23 @@ const ConnectionsTab = () => {
 
   const handleTogglePinnedConnection = (connectionId) => {
     setPinnedConnectionIds((currentIds) => (currentIds.includes(connectionId) ? currentIds.filter((id) => id !== connectionId) : [...currentIds, connectionId]))
+  }
+
+  const handleSaveConnectionNote = (connectionId, noteValue) => {
+    const normalizedNote = noteValue.trim()
+
+    setConnectionNotes((currentNotes) => {
+      if (!normalizedNote) {
+        const nextNotes = { ...currentNotes }
+        delete nextNotes[connectionId]
+        return nextNotes
+      }
+
+      return {
+        ...currentNotes,
+        [connectionId]: normalizedNote
+      }
+    })
   }
 
   const acceptedFilterOptions = [
@@ -449,6 +501,7 @@ const ConnectionsTab = () => {
                 const isPinned = pinnedConnectionIds.includes(connection._id)
                 const isAcceptedCard = section.key === 'accepted'
                 const sectionBadge = getConnectionSectionBadge(section.key)
+                const connectionNote = connectionNotes[connection._id] || ''
 
                 return (
                   <motion.div
@@ -489,6 +542,16 @@ const ConnectionsTab = () => {
                             {otherUser.availabilityStatus ? <span className='rounded-full bg-primary/5 px-2 py-0.5 dark:bg-light/5'>{otherUser.availabilityStatus.replace('_', ' ')}</span> : null}
                             {locationLabel ? <span className='rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 dark:border-light/10 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
+
+                          {isAcceptedCard && connectionNote && (
+                            <div className='mt-2 rounded-xl border border-primary/10 bg-white/70 px-3 py-2 dark:border-light/10 dark:bg-light/[0.05]'>
+                              <div className='flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] theme-text-secondary'>
+                                <FaRegStickyNote size={10} />
+                                <span>Private Note</span>
+                              </div>
+                              <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{connectionNote}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -534,6 +597,23 @@ const ConnectionsTab = () => {
                           <button type='button' onClick={() => handleTogglePinnedConnection(connection._id)} className={isPinned ? compactActionClasses.accent : compactActionClasses.subtle}>
                             <FaThumbtack />
                             <span>{isPinned ? 'Unpin' : 'Pin'}</span>
+                          </button>
+                        )}
+
+                        {section.key === 'accepted' && isPinned && (
+                          <button
+                            type='button'
+                            onClick={() => {
+                              const nextNote = window.prompt('Add a private note for this connection', connectionNote)
+                              if (nextNote === null) {
+                                return
+                              }
+
+                              handleSaveConnectionNote(connection._id, nextNote)
+                            }}
+                            className={compactActionClasses.subtle}>
+                            <FaRegStickyNote />
+                            <span>{connectionNote ? 'Edit Note' : 'Add Note'}</span>
                           </button>
                         )}
 
