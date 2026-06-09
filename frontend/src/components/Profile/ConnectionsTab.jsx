@@ -329,11 +329,11 @@ const ConnectionsTab = () => {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='grid gap-4 xl:grid-cols-[minmax(0,1fr)_180px_180px_180px] xl:items-stretch'>
-        <div className='overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-white/80 via-white/60 to-accent/5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-light/10 dark:from-light/[0.06] dark:via-light/[0.03] dark:to-accent/10'>
-          <div className='flex flex-col gap-4 px-5 py-5 md:px-6'>
-            <div className='grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end'>
+    <div className='space-y-5 lg:space-y-6'>
+      <div className='grid gap-3 lg:gap-4 2xl:grid-cols-[minmax(0,1fr)_180px_180px_180px] 2xl:items-stretch'>
+        <div className='overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-white/80 via-white/60 to-accent/5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-light/10 dark:from-light/[0.06] dark:via-light/[0.03] dark:to-accent/10 2xl:col-span-1'>
+          <div className='flex flex-col gap-4 px-4 py-4 sm:px-5 sm:py-5 lg:gap-5 lg:px-6'>
+            <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
               <label className='block'>
                 <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Search network</span>
                 <div className='relative'>
@@ -349,13 +349,13 @@ const ConnectionsTab = () => {
                 </div>
               </label>
 
-              <div className='flex flex-wrap gap-2 xl:justify-end'>
+              <div className='flex flex-wrap gap-2 lg:justify-end'>
                 {acceptedFilterOptions.map((option) => (
                   <button
                     key={option.key}
                     type='button'
                     onClick={() => setAcceptedFilter(option.key)}
-                    className={`inline-flex h-[50px] items-center justify-center rounded-lg px-5 text-sm font-medium transition-all ${
+                    className={`inline-flex h-[46px] min-w-[140px] items-center justify-center rounded-lg px-4 text-sm font-medium transition-all sm:h-[50px] sm:min-w-0 sm:px-5 ${
                       acceptedFilter === option.key ? 'bg-accent text-white' : 'border border-primary/10 theme-text-secondary hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10'
                     }`}>
                     {option.label}
@@ -364,8 +364,8 @@ const ConnectionsTab = () => {
               </div>
             </div>
 
-            <div className='flex flex-col gap-3 border-t border-primary/10 pt-3 dark:border-light/10 lg:flex-row lg:items-center lg:justify-between'>
-              <p className='text-xs font-medium uppercase tracking-[0.14em] theme-text-secondary'>
+            <div className='flex flex-col gap-3 border-t border-primary/10 pt-3 dark:border-light/10 xl:flex-row xl:items-center xl:justify-between'>
+              <p className='text-[11px] font-medium uppercase leading-5 tracking-[0.14em] theme-text-secondary sm:text-xs'>
                 Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
                 {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
                 {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
@@ -378,31 +378,31 @@ const ConnectionsTab = () => {
                   setAcceptedFilter('all')
                   setAcceptedSearch('')
                 }}
-                className='inline-flex items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10'>
+                className='inline-flex w-full items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10 sm:w-auto'>
                 Clear tools
               </button>
             </div>
           </div>
         </div>
 
-        <div className='theme-card rounded-2xl px-5 py-4'>
+        <div className='theme-card flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
         </div>
 
-        <div className='theme-card rounded-2xl px-5 py-4'>
+        <div className='theme-card flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
         </div>
 
-        <div className='theme-card rounded-2xl px-5 py-4'>
+        <div className='theme-card flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
         </div>
       </div>
 
       {sections.map((section) => (
-        <div key={section.key} className='space-y-3'>
+        <div key={section.key} className='space-y-4'>
           <div className='space-y-1'>
             <div className='flex flex-wrap items-center gap-2'>
               <h2 className='text-xl font-semibold theme-text'>{section.title}</h2>
@@ -427,7 +427,7 @@ const ConnectionsTab = () => {
               )}
             </div>
           ) : (
-            <div className='grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+            <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
               {section.items.map((connection) => {
                 const otherUser = connection.otherUser || {}
                 const canOpenFreelancerProfile = ['freelancer', 'both'].includes(otherUser.userType)
@@ -444,8 +444,8 @@ const ConnectionsTab = () => {
                     key={connection._id}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`h-full rounded-2xl border border-accent/15 bg-gradient-to-br from-white via-white to-accent/5 p-4 shadow-[0_14px_30px_rgba(0,0,0,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(0,0,0,0.1)] dark:border-accent/20 dark:from-light/[0.06] dark:via-light/[0.04] dark:to-accent/10`}>
-                    <div className='flex h-full flex-col gap-3'>
+                    className={`h-full rounded-2xl border border-accent/15 bg-gradient-to-br from-white via-white to-accent/5 p-4 shadow-[0_14px_30px_rgba(0,0,0,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(0,0,0,0.1)] sm:p-[18px] dark:border-accent/20 dark:from-light/[0.06] dark:via-light/[0.04] dark:to-accent/10`}>
+                    <div className='flex h-full flex-col gap-3.5'>
                       <div className='flex items-start gap-2.5'>
                         <img src={otherUser.profilePicture || `https://i.pravatar.cc/150?u=${otherUser._id}`} alt={otherUser.firstName || 'User'} className='h-10 w-10 rounded-full object-cover border border-accent/20' />
                         <div className='min-w-0'>
