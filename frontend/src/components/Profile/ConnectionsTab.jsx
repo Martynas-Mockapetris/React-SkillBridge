@@ -81,7 +81,11 @@ const sortConnections = (items = [], sectionKey, pinnedConnectionIds = []) => {
   })
 }
 
-const filterAcceptedConnections = (items = [], filter) => {
+const filterAcceptedConnections = (items = [], filter, pinnedConnectionIds = []) => {
+  if (filter === 'pinned') {
+    return items.filter((connection) => pinnedConnectionIds.includes(connection._id))
+  }
+
   if (filter === 'available') {
     return items.filter((connection) => connection.otherUser?.availabilityStatus === 'available')
   }
@@ -288,10 +292,11 @@ const ConnectionsTab = () => {
 
   const acceptedFilterOptions = [
     { key: 'all', label: 'All' },
+    { key: 'pinned', label: 'Pinned' },
     { key: 'available', label: 'Available Now' },
     { key: 'strongest', label: 'Strongest Profiles' }
   ]
-  const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter)
+  const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter, pinnedConnectionIds)
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
   const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
@@ -316,7 +321,13 @@ const ConnectionsTab = () => {
       title: 'Your Network',
       description: 'People you are already connected with.',
       items: sortConnections(searchedAcceptedConnections, 'accepted', pinnedConnectionIds),
-      emptyMessage: acceptedSearch.trim() ? 'No connections match your search right now.' : acceptedFilter === 'all' ? 'No accepted connections yet.' : 'No connections match this filter right now.'
+      emptyMessage: acceptedSearch.trim()
+        ? 'No connections match your search right now.'
+        : acceptedFilter === 'all'
+          ? 'No accepted connections yet.'
+          : acceptedFilter === 'pinned'
+            ? 'No pinned connections yet.'
+            : 'No connections match this filter right now.'
     }
   ]
 
