@@ -248,6 +248,8 @@ const ConnectionsTab = () => {
   const [acceptedSearch, setAcceptedSearch] = useState('')
   const [pinnedConnectionIds, setPinnedConnectionIds] = useState(() => readPinnedConnectionIds())
   const [connectionNotes, setConnectionNotes] = useState(() => readConnectionNotes())
+  const [editingConnectionNoteId, setEditingConnectionNoteId] = useState('')
+  const [connectionNoteDraft, setConnectionNoteDraft] = useState('')
 
   const loadConnections = async () => {
     try {
@@ -340,6 +342,21 @@ const ConnectionsTab = () => {
         [connectionId]: normalizedNote
       }
     })
+  }
+
+  const handleStartEditingConnectionNote = (connectionId, currentNote = '') => {
+    setEditingConnectionNoteId(connectionId)
+    setConnectionNoteDraft(currentNote)
+  }
+
+  const handleCancelEditingConnectionNote = () => {
+    setEditingConnectionNoteId('')
+    setConnectionNoteDraft('')
+  }
+
+  const handleSubmitConnectionNote = (connectionId) => {
+    handleSaveConnectionNote(connectionId, connectionNoteDraft)
+    handleCancelEditingConnectionNote()
   }
 
   const acceptedFilterOptions = [
@@ -502,6 +519,7 @@ const ConnectionsTab = () => {
                 const isAcceptedCard = section.key === 'accepted'
                 const sectionBadge = getConnectionSectionBadge(section.key)
                 const connectionNote = connectionNotes[connection._id] || ''
+                const isEditingNote = editingConnectionNoteId === connection._id
 
                 return (
                   <motion.div
@@ -543,13 +561,34 @@ const ConnectionsTab = () => {
                             {locationLabel ? <span className='rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 dark:border-light/10 dark:bg-light/5'>{locationLabel}</span> : null}
                           </div>
 
-                          {isAcceptedCard && connectionNote && (
+                          {isAcceptedCard && (connectionNote || isEditingNote) && (
                             <div className='mt-2 rounded-xl border border-primary/10 bg-white/70 px-3 py-2 dark:border-light/10 dark:bg-light/[0.05]'>
                               <div className='flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] theme-text-secondary'>
                                 <FaRegStickyNote size={10} />
                                 <span>Private Note</span>
                               </div>
-                              <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{connectionNote}</p>
+
+                              {isEditingNote ? (
+                                <div className='mt-2 space-y-2'>
+                                  <textarea
+                                    value={connectionNoteDraft}
+                                    onChange={(event) => setConnectionNoteDraft(event.target.value)}
+                                    rows={3}
+                                    placeholder='Add a quick reminder about this connection'
+                                    className='w-full resize-none rounded-lg border border-primary/10 bg-white/90 px-3 py-2 text-[12px] leading-5 theme-text outline-none transition-colors focus:border-accent dark:border-light/10 dark:bg-light/[0.08]'
+                                  />
+                                  <div className='flex flex-wrap gap-2'>
+                                    <button type='button' onClick={() => handleSubmitConnectionNote(connection._id)} className={compactActionClasses.accent}>
+                                      Save Note
+                                    </button>
+                                    <button type='button' onClick={handleCancelEditingConnectionNote} className={compactActionClasses.neutral}>
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{connectionNote}</p>
+                              )}
                             </div>
                           )}
                         </div>
@@ -603,17 +642,10 @@ const ConnectionsTab = () => {
                         {section.key === 'accepted' && isPinned && (
                           <button
                             type='button'
-                            onClick={() => {
-                              const nextNote = window.prompt('Add a private note for this connection', connectionNote)
-                              if (nextNote === null) {
-                                return
-                              }
-
-                              handleSaveConnectionNote(connection._id, nextNote)
-                            }}
-                            className={compactActionClasses.subtle}>
+                            onClick={() => (isEditingNote ? handleCancelEditingConnectionNote() : handleStartEditingConnectionNote(connection._id, connectionNote))}
+                            className={isEditingNote ? compactActionClasses.neutral : compactActionClasses.subtle}>
                             <FaRegStickyNote />
-                            <span>{connectionNote ? 'Edit Note' : 'Add Note'}</span>
+                            <span>{isEditingNote ? 'Close Note' : connectionNote ? 'Edit Note' : 'Add Note'}</span>
                           </button>
                         )}
 
