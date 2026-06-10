@@ -145,23 +145,31 @@ const getConnectionSectionBadge = (sectionKey) => {
   }
 }
 
+const acceptedPresetOptions = [
+  { key: 'allContacts', label: 'All Contacts', filter: 'all', search: '' },
+  { key: 'pinnedFocus', label: 'Pinned Focus', filter: 'pinned', search: '' },
+  { key: 'availableNow', label: 'Available Now', filter: 'available', search: '' },
+  { key: 'trustedTalent', label: 'Trusted Talent', filter: 'strongest', search: '' }
+]
+
 const applyAcceptedPreset = (presetKey, setAcceptedFilter, setAcceptedSearch) => {
-  if (presetKey === 'availableStrongest') {
-    setAcceptedFilter('available')
-    setAcceptedSearch('')
+  const preset = acceptedPresetOptions.find((option) => option.key === presetKey)
+
+  if (!preset) {
     return
   }
 
-  if (presetKey === 'reviewedTalent') {
-    setAcceptedFilter('strongest')
-    setAcceptedSearch('review')
-    return
+  setAcceptedFilter(preset.filter)
+  setAcceptedSearch(preset.search)
+}
+
+const resolveAcceptedPresetKey = (filter, searchValue = '') => {
+  if (searchValue.trim()) {
+    return 'custom'
   }
 
-  if (presetKey === 'clear') {
-    setAcceptedFilter('all')
-    setAcceptedSearch('')
-  }
+  const matchedPreset = acceptedPresetOptions.find((option) => option.filter === filter && option.search === searchValue)
+  return matchedPreset?.key || 'custom'
 }
 
 const getPinnedConnectionsStorageKey = () => {
@@ -369,6 +377,8 @@ const ConnectionsTab = () => {
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
   const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
+  const activeAcceptedPresetKey = resolveAcceptedPresetKey(acceptedFilter, acceptedSearch)
+  const activeAcceptedPresetLabel = acceptedPresetOptions.find((option) => option.key === activeAcceptedPresetKey)?.label || 'Custom'
 
   const sections = [
     {
@@ -444,23 +454,41 @@ const ConnectionsTab = () => {
               </div>
             </div>
 
-            <div className='flex flex-col gap-3 border-t border-primary/10 pt-3 dark:border-light/10 xl:flex-row xl:items-center xl:justify-between'>
-              <p className='text-[11px] font-medium uppercase leading-5 tracking-[0.14em] theme-text-secondary sm:text-xs'>
-                Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
-                {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
-                {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
-                {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
-              </p>
+            <div className='space-y-3 border-t border-primary/10 pt-3 dark:border-light/10'>
+              <div className='flex flex-wrap items-center gap-2'>
+                <span className='text-[11px] font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Saved views</span>
+                {acceptedPresetOptions.map((preset) => (
+                  <button
+                    key={preset.key}
+                    type='button'
+                    onClick={() => applyAcceptedPreset(preset.key, setAcceptedFilter, setAcceptedSearch)}
+                    className={`inline-flex items-center rounded-full px-3 py-1.5 text-[11px] font-medium transition-all ${
+                      activeAcceptedPresetKey === preset.key ? 'bg-accent text-white' : 'bg-primary/5 theme-text-secondary hover:bg-accent/10 hover:text-accent dark:bg-light/5'
+                    }`}>
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
 
-              <button
-                type='button'
-                onClick={() => {
-                  setAcceptedFilter('all')
-                  setAcceptedSearch('')
-                }}
-                className='inline-flex w-full items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10 sm:w-auto'>
-                Clear tools
-              </button>
+              <div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
+                <p className='text-[11px] font-medium uppercase leading-5 tracking-[0.14em] theme-text-secondary sm:text-xs'>
+                  Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
+                  {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
+                  {activeAcceptedPresetKey !== 'custom' ? ` • View: ${activeAcceptedPresetLabel}` : ''}
+                  {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
+                  {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
+                </p>
+
+                <button
+                  type='button'
+                  onClick={() => {
+                    setAcceptedFilter('all')
+                    setAcceptedSearch('')
+                  }}
+                  className='inline-flex w-full items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10 sm:w-auto'>
+                  Clear tools
+                </button>
+              </div>
             </div>
           </div>
         </div>
