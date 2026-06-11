@@ -3,6 +3,7 @@ import Project from '../models/Project.js'
 import Announcement from '../models/Announcement.js'
 import AdminActionLog from '../models/AdminActionLog.js'
 import Connection from '../models/Connection.js'
+import Notification from '../models/Notification.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 import { sendVerificationEmail } from '../utils/emailVerificationService.js'
@@ -1532,6 +1533,104 @@ export const getMyConnections = async (req, res) => {
     })
   } catch (error) {
     console.error('Error fetching connections:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Get current user's notifications summary
+// @route   GET /api/users/notifications/unread-count
+// @access  Private
+export const getUnreadNotificationCount = async (req, res) => {
+  try {
+    const unreadCount = await Notification.countDocuments({
+      recipient: req.user._id,
+      isRead: false
+    })
+
+    res.json({ unreadCount })
+  } catch (error) {
+    console.error('Error fetching unread notification count:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Get current user's notifications
+// @route   GET /api/users/notifications
+// @access  Private
+export const getMyNotifications = async (req, res) => {
+  try {
+    const { limit = 20 } = req.query
+    const pageSize = Math.min(Math.max(Number(limit) || 20, 1), 100)
+
+    const notifications = await Notification.find({
+      recipient: req.user._id
+    })
+      .populate('actor', 'firstName lastName email profilePicture userType')
+      .sort({ createdAt: -1 })
+      .limit(pageSize)
+
+    res.json(notifications)
+  } catch (error) {
+    console.error('Error fetching notifications:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Mark one notification as read
+// @route   PATCH /api/users/notifications/:notificationId/read
+// @access  Private
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const notification = await Notification.findOne({
+      _id: req.params.notificationId,
+      recipient: req.user._id
+    })
+
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found.' })
+    }
+
+    if (!notification.isRead) {
+      notification.isRead = true
+      notification.readAt = new Date()
+      await notification.save()
+    }
+
+    const populatedNotification = await Notification.findById(notification._id).populate('actor', 'firstName lastName email profilePicture userType')
+
+    res.json(populatedNotification)
+  } catch (error) {
+    console.error('Error marking notification as read:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Mark all notifications as read
+// @route   PATCH /api/users/notifications/read-all
+// @access  Private
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const readAt = new Date()
+
+    const result = await Notification.updateMany(
+      {
+        recipient: req.user._id,
+        isRead: false
+      },
+      {
+        $set: {
+          isRead: true,
+          readAt
+        }
+      }
+    )
+
+    res.json({
+      message: 'Notifications marked as read.',
+      updatedCount: result.modifiedCount || 0
+    })
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
