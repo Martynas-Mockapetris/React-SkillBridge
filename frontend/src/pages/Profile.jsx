@@ -17,7 +17,7 @@ import { getMyConnections } from '../services/userService'
 import { calculateProfileCompleteness } from '../utils/profileCompleteness'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { requestEmailVerification as requestEmailVerificationService } from '../services/authService'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { hasAdminPanelAccess, getAdminRoleLabel, isFullAdmin } from '../utils/accessRoles'
 
@@ -33,6 +33,7 @@ const Profile = () => {
   const [ratingStats, setRatingStats] = useState(null)
   const [ratingsLoading, setRatingsLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const profileCompleteness = calculateProfileCompleteness(currentUser)
   const [isResendingVerification, setIsResendingVerification] = useState(false)
   const [dismissedBanners, setDismissedBanners] = useState({})
@@ -43,6 +44,16 @@ const Profile = () => {
       navigate('/login')
     }
   }, [currentUser, navigate])
+
+  useEffect(() => {
+    const requestedTab = location.state?.activeTab
+
+    if (!requestedTab) {
+      return
+    }
+
+    setActiveTab(requestedTab)
+  }, [location.state])
 
   // Fetch messages once so the unread badge and messages tab can share the same data
   useEffect(() => {

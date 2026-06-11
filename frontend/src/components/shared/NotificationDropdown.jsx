@@ -32,10 +32,32 @@ const formatRelativeTime = (value) => {
 
 const resolveNotificationLink = (notification) => {
   if (notification?.type === 'connection_accepted' && notification?.metadata?.userId) {
-    return `/freelancer/${notification.metadata.userId}`
+    return {
+      pathname: `/freelancer/${notification.metadata.userId}`
+    }
   }
 
-  return notification?.link || '/profile'
+  if (notification?.type === 'connection_requested') {
+    return {
+      pathname: '/profile',
+      state: {
+        activeTab: 'connections'
+      }
+    }
+  }
+
+  if (notification?.type === 'message_received') {
+    return {
+      pathname: '/profile',
+      state: {
+        activeTab: 'messages'
+      }
+    }
+  }
+
+  return {
+    pathname: notification?.link || '/profile'
+  }
 }
 
 const NotificationDropdown = ({ isOpen, onClose, unreadCount, onUnreadCountChange }) => {
