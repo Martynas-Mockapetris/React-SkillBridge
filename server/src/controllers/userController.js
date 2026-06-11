@@ -6,6 +6,7 @@ import Connection from '../models/Connection.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 import { sendVerificationEmail } from '../utils/emailVerificationService.js'
+import { notifyConnectionAccepted, notifyConnectionRequested } from '../utils/notificationService.js'
 
 const CONNECTION_USER_FIELDS =
   'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate allowDirectMessages allowProjectInvites skills servicesOffered experienceLevel averageRating totalRatings ratings.feedback ratings.score ratings.createdAt website github linkedin'
@@ -1541,6 +1542,7 @@ export const getMyConnections = async (req, res) => {
 export const sendConnectionRequest = async (req, res) => {
   try {
     const targetUserId = req.params.userId
+    const requesterName = `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone'
 
     if (targetUserId === req.user._id.toString()) {
       return res.status(400).json({ message: 'You cannot connect with yourself.' })
@@ -1576,6 +1578,13 @@ export const sendConnectionRequest = async (req, res) => {
       await connection.save()
       await connection.populate('requester', CONNECTION_USER_FIELDS)
       await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+      await notifyConnectionAccepted({
+        actor: req.user._id,
+        recipient: connection.requester._id,
+        connectionId: connection._id,
+        actorName: requesterName
+      })
 
       return res.json({
         message: 'Connection request accepted.',
@@ -1631,6 +1640,13 @@ export const acceptConnectionRequest = async (req, res) => {
     await connection.save()
     await connection.populate('requester', CONNECTION_USER_FIELDS)
     await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+    await notifyConnectionAccepted({
+      actor: req.user._id,
+      recipient: connection.requester._id,
+      connectionId: connection._id,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone'
+    })
 
     res.json({
       message: 'Connection request accepted.',
