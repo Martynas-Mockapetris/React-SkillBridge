@@ -11,6 +11,10 @@ import {
   getFreelancers,
   getUserById,
   getMyConnections,
+  getUnreadNotificationCount,
+  getMyNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
   sendConnectionRequest,
   acceptConnectionRequest,
   declineConnectionRequest,
@@ -67,6 +71,12 @@ router.post('/admin/:userId/verify-email', protect, requirePermission(PERMISSION
 router.patch('/admin/:userId/reactivate', protect, requirePermission(PERMISSIONS.USERS_UPDATE), reactivateAdminUser)
 router.patch('/admin/:userId/verify-email/direct', protect, requirePermission(PERMISSIONS.USERS_UPDATE), verifyAdminUserDirect)
 router.delete('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_DELETE), deleteAdminUser)
+
+// Notification routes
+router.get('/notifications/unread-count', protect, getUnreadNotificationCount)
+router.get('/notifications', protect, getMyNotifications)
+router.patch('/notifications/read-all', protect, markAllNotificationsAsRead)
+router.patch('/notifications/:notificationId/read', protect, markNotificationAsRead)
 
 // Connections routes
 router.get('/connections', protect, getMyConnections)
