@@ -286,6 +286,46 @@ export const removeConnection = async (connectionId) => {
   }
 }
 
+export const getUnreadNotificationCount = async () => {
+  try {
+    const response = await authAxios.get('/api/users/notifications/unread-count')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch unread notification count:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const getMyNotifications = async (limit = 20) => {
+  try {
+    const response = await authAxios.get(`/api/users/notifications?limit=${limit}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch notifications:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const markNotificationAsRead = async (notificationId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/notifications/${notificationId}/read`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to mark notification as read:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const markAllNotificationsAsRead = async () => {
+  try {
+    const response = await authAxios.patch('/api/users/notifications/read-all')
+    return response.data
+  } catch (error) {
+    console.error('Failed to mark all notifications as read:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Updates the user's profile with new data
 export const updateUserProfile = async (profileData) => {
   try {

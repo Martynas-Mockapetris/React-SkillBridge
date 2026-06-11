@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HiMenu, HiX } from 'react-icons/hi'
+import { FaBell } from 'react-icons/fa'
 import PageBackground from '../shared/PageBackground'
 import ThemeToggle from './ThemeToggle'
 import { useAuth } from '../../context/AuthContext'
 import { hasAdminPanelAccess } from '../../utils/accessRoles'
+import useNotificationCount from '../../hooks/useNotificationCount'
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { currentUser, logout } = useAuth()
+  const { unreadCount } = useNotificationCount(Boolean(currentUser))
 
   const canAccessAdmin = currentUser && hasAdminPanelAccess(currentUser)
 
@@ -16,6 +19,10 @@ const Navigation = () => {
     after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full theme-text`
 
   const mobileLinkStyles = 'text-2xl hover:text-accent transition-colors theme-text'
+  const notificationButtonStyles =
+    'relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors duration-300 hover:border-accent/40 hover:text-accent theme-text'
+
+  const notificationBadge = unreadCount > 99 ? '99+' : unreadCount
 
   return (
     <nav className='fixed w-full p-4 z-50 transition-all duration-300 theme-bg'>
@@ -63,6 +70,15 @@ const Navigation = () => {
           {canAccessAdmin && (
             <Link to='/admin' className={desktopLinkStyles}>
               Admin
+            </Link>
+          )}
+
+          {currentUser && (
+            <Link to='/profile' className={notificationButtonStyles} aria-label='Notifications'>
+              <FaBell className='text-sm' />
+              {unreadCount > 0 && (
+                <span className='absolute -right-1.5 -top-1.5 min-w-[1.2rem] rounded-full bg-accent px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none text-white'>{notificationBadge}</span>
+              )}
             </Link>
           )}
 
@@ -120,6 +136,14 @@ const Navigation = () => {
             {canAccessAdmin && (
               <Link to='/admin' className={mobileLinkStyles}>
                 Admin
+              </Link>
+            )}
+
+            {currentUser && (
+              <Link to='/profile' className='relative flex items-center gap-3 text-2xl hover:text-accent transition-colors theme-text'>
+                <FaBell />
+                <span>Notifications</span>
+                {unreadCount > 0 && <span className='min-w-[1.4rem] rounded-full bg-accent px-2 py-0.5 text-center text-xs font-semibold leading-none text-white'>{notificationBadge}</span>}
               </Link>
             )}
 
