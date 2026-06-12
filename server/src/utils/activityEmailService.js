@@ -99,3 +99,24 @@ export const sendConnectionAcceptedEmail = async ({ recipientId, actorName = 'So
     ctaUrl: buildProfileUrl(destination)
   })
 }
+
+export const sendProjectAssignedEmail = async ({ recipientId, ownerName = 'A client', projectId = '', projectTitle = 'New project opportunity', isReassignment = false }) => {
+  const recipient = await User.findById(recipientId).select('firstName email emailNotificationsEnabled emailNotificationsProjects')
+
+  if (!canReceiveEmailCategory(recipient, 'projects')) {
+    return { delivered: false, reason: 'recipient-email-preferences-disabled' }
+  }
+
+  const destination = projectId ? `/project/${projectId}` : '/profile'
+
+  return sendActivityEmail({
+    to: recipient.email,
+    subject: isReassignment ? 'SkillBridge project assignment updated' : 'You have been assigned to a SkillBridge project',
+    introLines: [
+      `Hi ${recipient.firstName || 'there'},`,
+      isReassignment ? `${ownerName} updated the assignment for "${projectTitle}" and selected you for the project.` : `${ownerName} assigned you to the project "${projectTitle}" on SkillBridge.`
+    ],
+    ctaLabel: 'View project',
+    ctaUrl: buildProfileUrl(destination)
+  })
+}

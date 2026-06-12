@@ -1,5 +1,7 @@
 import Project from '../models/Project.js'
+import User from '../models/User.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
+import { sendProjectAssignedEmail } from '../utils/activityEmailService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -240,6 +242,15 @@ const createProject = async (req, res) => {
 
     const createdProject = await project.save()
     console.log('Project saved successfully:', createdProject)
+
+    if (assigneeId) {
+      await sendProjectAssignedEmail({
+        recipientId: assigneeId,
+        ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+        projectId: createdProject._id.toString(),
+        projectTitle: createdProject.title
+      })
+    }
 
     res.status(201).json(createdProject)
   } catch (error) {
@@ -1099,6 +1110,13 @@ const assignUserToProject = async (req, res) => {
     const updatedProject = await project.save()
     const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
 
+    await sendProjectAssignedEmail({
+      recipientId: userId,
+      ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title
+    })
+
     res.json(populatedProject)
   } catch (error) {
     console.error('Error assigning user to project:', error)
@@ -1138,6 +1156,14 @@ const reassignProject = async (req, res) => {
 
     const updatedProject = await project.save()
     const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
+
+    await sendProjectAssignedEmail({
+      recipientId: userId,
+      ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title,
+      isReassignment: true
+    })
 
     res.json(populatedProject)
   } catch (error) {
