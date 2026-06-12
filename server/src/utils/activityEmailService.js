@@ -120,3 +120,21 @@ export const sendProjectAssignedEmail = async ({ recipientId, ownerName = 'A cli
     ctaUrl: buildProfileUrl(destination)
   })
 }
+
+export const sendProjectSubmittedEmail = async ({ recipientId, assigneeName = 'A freelancer', projectId = '', projectTitle = 'Project' }) => {
+  const recipient = await User.findById(recipientId).select('firstName email emailNotificationsEnabled emailNotificationsProjects')
+
+  if (!canReceiveEmailCategory(recipient, 'projects')) {
+    return { delivered: false, reason: 'recipient-email-preferences-disabled' }
+  }
+
+  const destination = projectId ? `/project/${projectId}` : '/profile'
+
+  return sendActivityEmail({
+    to: recipient.email,
+    subject: 'Project submission ready for review',
+    introLines: [`Hi ${recipient.firstName || 'there'},`, `${assigneeName} submitted work for "${projectTitle}" and it is now ready for your review.`],
+    ctaLabel: 'Review project',
+    ctaUrl: buildProfileUrl(destination)
+  })
+}

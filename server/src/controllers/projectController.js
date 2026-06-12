@@ -1,7 +1,7 @@
 import Project from '../models/Project.js'
 import User from '../models/User.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
-import { sendProjectAssignedEmail } from '../utils/activityEmailService.js'
+import { sendProjectAssignedEmail, sendProjectSubmittedEmail } from '../utils/activityEmailService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -1475,6 +1475,14 @@ const submitProject = async (req, res) => {
     project.status = 'under_review'
 
     const updatedProject = await project.save()
+
+    await sendProjectSubmittedEmail({
+      recipientId: project.user.toString(),
+      assigneeName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A freelancer',
+      projectId: updatedProject._id.toString(),
+      projectTitle: updatedProject.title
+    })
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error submitting project:', error)
