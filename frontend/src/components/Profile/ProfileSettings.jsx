@@ -52,6 +52,10 @@ const initialFormState = {
   showHourlyRate: true,
   allowDirectMessages: true,
   allowProjectInvites: true,
+  emailNotificationsEnabled: true,
+  emailNotificationsMessages: true,
+  emailNotificationsConnections: true,
+  emailNotificationsProjects: true,
   website: '',
   github: '',
   linkedin: '',
@@ -110,6 +114,10 @@ const ProfileSettings = () => {
       showHourlyRate: user.showHourlyRate ?? true,
       allowDirectMessages: user.allowDirectMessages ?? true,
       allowProjectInvites: user.allowProjectInvites ?? true,
+      emailNotificationsEnabled: user.emailNotificationsEnabled ?? true,
+      emailNotificationsMessages: user.emailNotificationsMessages ?? true,
+      emailNotificationsConnections: user.emailNotificationsConnections ?? true,
+      emailNotificationsProjects: user.emailNotificationsProjects ?? true,
       website: user.website || '',
       github: user.github || '',
       linkedin: user.linkedin || '',
@@ -262,6 +270,10 @@ const ProfileSettings = () => {
           showHourlyRate: formData.showHourlyRate,
           allowDirectMessages: formData.allowDirectMessages,
           allowProjectInvites: formData.allowProjectInvites,
+          emailNotificationsEnabled: formData.emailNotificationsEnabled,
+          emailNotificationsMessages: formData.emailNotificationsMessages,
+          emailNotificationsConnections: formData.emailNotificationsConnections,
+          emailNotificationsProjects: formData.emailNotificationsProjects,
           website: formData.website,
           github: formData.github,
           linkedin: formData.linkedin,
@@ -666,6 +678,72 @@ const ProfileSettings = () => {
                 </div>
               </motion.div>
             )}
+
+            <motion.div
+              className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.68 }}>
+              <h3 className='text-xl font-semibold theme-text mb-2'>Email Notification Preferences</h3>
+              <p className='text-sm theme-text-secondary mb-4'>Choose which platform activity should also reach your inbox.</p>
+
+              <div className='grid gap-4'>
+                <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                  <input type='checkbox' name='emailNotificationsEnabled' checked={formData.emailNotificationsEnabled} onChange={handleChange} className={toggleClasses} />
+                  <div>
+                    <p className='text-sm font-medium theme-text'>Enable email notifications</p>
+                    <p className='text-xs theme-text-muted mt-1'>Turn off all non-essential activity emails from SkillBridge.</p>
+                  </div>
+                </label>
+
+                <div className={`grid md:grid-cols-3 gap-4 ${formData.emailNotificationsEnabled ? '' : 'opacity-60'}`}>
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <input
+                      type='checkbox'
+                      name='emailNotificationsMessages'
+                      checked={formData.emailNotificationsMessages}
+                      onChange={handleChange}
+                      disabled={!formData.emailNotificationsEnabled}
+                      className={toggleClasses}
+                    />
+                    <div>
+                      <p className='text-sm font-medium theme-text'>Messages</p>
+                      <p className='text-xs theme-text-muted mt-1'>Email me when I receive new direct or project messages.</p>
+                    </div>
+                  </label>
+
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <input
+                      type='checkbox'
+                      name='emailNotificationsConnections'
+                      checked={formData.emailNotificationsConnections}
+                      onChange={handleChange}
+                      disabled={!formData.emailNotificationsEnabled}
+                      className={toggleClasses}
+                    />
+                    <div>
+                      <p className='text-sm font-medium theme-text'>Connections</p>
+                      <p className='text-xs theme-text-muted mt-1'>Email me about connection requests and accepted invitations.</p>
+                    </div>
+                  </label>
+
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <input
+                      type='checkbox'
+                      name='emailNotificationsProjects'
+                      checked={formData.emailNotificationsProjects}
+                      onChange={handleChange}
+                      disabled={!formData.emailNotificationsEnabled}
+                      className={toggleClasses}
+                    />
+                    <div>
+                      <p className='text-sm font-medium theme-text'>Projects</p>
+                      <p className='text-xs theme-text-muted mt-1'>Reserve project emails for invites, assignments, and key workflow updates.</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </motion.div>
 
             {showFreelancerSection && (
               <motion.div

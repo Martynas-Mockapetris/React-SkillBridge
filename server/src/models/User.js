@@ -210,7 +210,22 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-
+  emailNotificationsEnabled: {
+    type: Boolean,
+    default: true
+  },
+  emailNotificationsMessages: {
+    type: Boolean,
+    default: true
+  },
+  emailNotificationsConnections: {
+    type: Boolean,
+    default: true
+  },
+  emailNotificationsProjects: {
+    type: Boolean,
+    default: true
+  },
   // Social links
   website: {
     type: String,
