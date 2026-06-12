@@ -1720,6 +1720,18 @@ export const sendConnectionRequest = async (req, res) => {
     await connection.populate('requester', CONNECTION_USER_FIELDS)
     await connection.populate('recipient', CONNECTION_USER_FIELDS)
 
+    await notifyConnectionRequested({
+      requester: req.user._id,
+      recipient: targetUserId,
+      connectionId: connection._id,
+      requesterName
+    })
+
+    await sendConnectionRequestedEmail({
+      recipientId: targetUserId,
+      requesterName
+    })
+
     res.status(201).json({
       message: 'Connection request sent.',
       connection: mapConnectionRecord(connection, req.user._id)
