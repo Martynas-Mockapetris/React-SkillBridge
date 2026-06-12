@@ -152,10 +152,34 @@ const ProfileSettings = () => {
     const { name, value, type, checked } = e.target
     const nextValue = type === 'checkbox' ? checked : value
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: nextValue
-    }))
+    setFormData((prev) => {
+      if (name === 'emailNotificationsEnabled') {
+        if (!checked) {
+          return {
+            ...prev,
+            emailNotificationsEnabled: false,
+            emailNotificationsMessages: false,
+            emailNotificationsConnections: false,
+            emailNotificationsProjects: false
+          }
+        }
+
+        const hasAnyEmailCategoryEnabled = prev.emailNotificationsMessages || prev.emailNotificationsConnections || prev.emailNotificationsProjects
+
+        return {
+          ...prev,
+          emailNotificationsEnabled: true,
+          emailNotificationsMessages: hasAnyEmailCategoryEnabled ? prev.emailNotificationsMessages : true,
+          emailNotificationsConnections: hasAnyEmailCategoryEnabled ? prev.emailNotificationsConnections : true,
+          emailNotificationsProjects: hasAnyEmailCategoryEnabled ? prev.emailNotificationsProjects : true
+        }
+      }
+
+      return {
+        ...prev,
+        [name]: nextValue
+      }
+    })
 
     setErrors((prev) => {
       if (!prev[name]) return prev
@@ -170,6 +194,7 @@ const ProfileSettings = () => {
   const currentAvatarUrl = formData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`
   const savedAvatarUrl = savedFormData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`
   const hasAvatarChanges = currentAvatarUrl !== savedAvatarUrl
+  const activeEmailPreferenceCount = [formData.emailNotificationsMessages, formData.emailNotificationsConnections, formData.emailNotificationsProjects].filter(Boolean).length
 
   // Validate all form fields and return if valid
   const validateForm = () => {
@@ -685,18 +710,24 @@ const ProfileSettings = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.68 }}>
               <h3 className='text-xl font-semibold theme-text mb-2'>Email Notification Preferences</h3>
-              <p className='text-sm theme-text-secondary mb-4'>Choose which platform activity should also reach your inbox.</p>
+              <p className='text-sm theme-text-secondary mb-4'>Choose which platform activity should also reach your inbox, beyond in-app notifications.</p>
 
               <div className='grid gap-4'>
                 <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
                   <input type='checkbox' name='emailNotificationsEnabled' checked={formData.emailNotificationsEnabled} onChange={handleChange} className={toggleClasses} />
                   <div>
                     <p className='text-sm font-medium theme-text'>Enable email notifications</p>
-                    <p className='text-xs theme-text-muted mt-1'>Turn off all non-essential activity emails from SkillBridge.</p>
+                    <p className='text-xs theme-text-muted mt-1'>
+                      {formData.emailNotificationsEnabled
+                        ? activeEmailPreferenceCount > 0
+                          ? `Email updates are active for ${activeEmailPreferenceCount} category${activeEmailPreferenceCount === 1 ? '' : 'ies'}.`
+                          : 'Email delivery is on, but no categories are currently selected.'
+                        : 'All non-essential SkillBridge activity emails are currently paused.'}
+                    </p>
                   </div>
                 </label>
 
-                <div className={`grid md:grid-cols-3 gap-4 ${formData.emailNotificationsEnabled ? '' : 'opacity-60'}`}>
+                <div className={`grid md:grid-cols-3 gap-4 transition-opacity duration-300 ${formData.emailNotificationsEnabled ? 'opacity-100' : 'opacity-60'}`}>
                   <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
                     <input
                       type='checkbox'
@@ -708,7 +739,7 @@ const ProfileSettings = () => {
                     />
                     <div>
                       <p className='text-sm font-medium theme-text'>Messages</p>
-                      <p className='text-xs theme-text-muted mt-1'>Email me when I receive new direct or project messages.</p>
+                      <p className='text-xs theme-text-muted mt-1'>Receive emails for new direct and project messages.</p>
                     </div>
                   </label>
 
@@ -723,7 +754,7 @@ const ProfileSettings = () => {
                     />
                     <div>
                       <p className='text-sm font-medium theme-text'>Connections</p>
-                      <p className='text-xs theme-text-muted mt-1'>Email me about connection requests and accepted invitations.</p>
+                      <p className='text-xs theme-text-muted mt-1'>Receive emails for connection requests and accepted invitations.</p>
                     </div>
                   </label>
 
@@ -738,10 +769,16 @@ const ProfileSettings = () => {
                     />
                     <div>
                       <p className='text-sm font-medium theme-text'>Projects</p>
-                      <p className='text-xs theme-text-muted mt-1'>Reserve project emails for invites, assignments, and key workflow updates.</p>
+                      <p className='text-xs theme-text-muted mt-1'>Reserve email delivery for invites, assignments, and important project workflow updates.</p>
                     </div>
                   </label>
                 </div>
+
+                <p className='text-xs theme-text-muted'>
+                  {formData.emailNotificationsEnabled
+                    ? 'In-app notifications remain available even if you reduce email categories here.'
+                    : 'Re-enable the master toggle at any time to restore category-based email delivery.'}
+                </p>
               </div>
             </motion.div>
 
