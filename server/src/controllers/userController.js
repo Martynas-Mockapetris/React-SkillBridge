@@ -8,6 +8,7 @@ import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js
 import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
 import { sendVerificationEmail } from '../utils/emailVerificationService.js'
 import { notifyConnectionAccepted, notifyConnectionRequested } from '../utils/notificationService.js'
+import { sendConnectionAcceptedEmail, sendConnectionRequestedEmail } from '../utils/activityEmailService.js'
 
 const CONNECTION_USER_FIELDS =
   'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate allowDirectMessages allowProjectInvites skills servicesOffered experienceLevel averageRating totalRatings ratings.feedback ratings.score ratings.createdAt website github linkedin'
@@ -1689,6 +1690,12 @@ export const sendConnectionRequest = async (req, res) => {
         actorName: requesterName
       })
 
+      await sendConnectionAcceptedEmail({
+        recipientId: connection.requester._id,
+        actorName: requesterName,
+        actorUserId: req.user._id.toString()
+      })
+
       return res.json({
         message: 'Connection request accepted.',
         connection: mapConnectionRecord(connection, req.user._id)
@@ -1749,6 +1756,12 @@ export const acceptConnectionRequest = async (req, res) => {
       recipient: connection.requester._id,
       connectionId: connection._id,
       actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone'
+    })
+
+    await sendConnectionAcceptedEmail({
+      recipientId: connection.requester._id,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone',
+      actorUserId: req.user._id.toString()
     })
 
     res.json({

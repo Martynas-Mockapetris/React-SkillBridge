@@ -2,6 +2,7 @@ import Message from '../models/Message.js'
 import Project from '../models/Project.js'
 import User from '../models/User.js'
 import { notifyMessageReceived } from '../utils/notificationService.js'
+import { sendNewMessageEmail } from '../utils/activityEmailService.js'
 
 // @desc    Send a message (project-based or direct to freelancer)
 // @route   POST /api/messages
@@ -82,6 +83,13 @@ export const sendMessage = async (req, res) => {
       recipient: receiverId,
       messageId: savedMessage._id,
       projectId,
+      senderName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone',
+      subject
+    })
+
+    // Send email notification to receiver
+    await sendNewMessageEmail({
+      recipientId: receiverId,
       senderName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone',
       subject
     })
