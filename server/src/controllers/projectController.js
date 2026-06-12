@@ -1,7 +1,7 @@
 import Project from '../models/Project.js'
 import User from '../models/User.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
-import { sendProjectAssignedEmail, sendProjectSubmittedEmail } from '../utils/activityEmailService.js'
+import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -1531,6 +1531,18 @@ const reviewProject = async (req, res) => {
     project.status = decision === 'accepted' ? 'completed' : 'in_progress'
 
     const updatedProject = await project.save()
+
+    if (project.assignee) {
+      await sendProjectReviewDecisionEmail({
+        recipientId: project.assignee.toString(),
+        ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+        projectId: updatedProject._id.toString(),
+        projectTitle: updatedProject.title,
+        decision,
+        feedback
+      })
+    }
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error reviewing project:', error)

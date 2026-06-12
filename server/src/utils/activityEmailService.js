@@ -138,3 +138,26 @@ export const sendProjectSubmittedEmail = async ({ recipientId, assigneeName = 'A
     ctaUrl: buildProfileUrl(destination)
   })
 }
+
+export const sendProjectReviewDecisionEmail = async ({ recipientId, ownerName = 'A client', projectId = '', projectTitle = 'Project', decision = 'accepted', feedback = '' }) => {
+  const recipient = await User.findById(recipientId).select('firstName email emailNotificationsEnabled emailNotificationsProjects')
+
+  if (!canReceiveEmailCategory(recipient, 'projects')) {
+    return { delivered: false, reason: 'recipient-email-preferences-disabled' }
+  }
+
+  const destination = projectId ? `/project/${projectId}` : '/profile'
+  const normalizedFeedback = String(feedback || '').trim()
+
+  const decisionLine = decision === 'accepted' ? `${ownerName} approved your submission for "${projectTitle}".` : `${ownerName} requested changes for "${projectTitle}" and moved it back to in progress.`
+
+  const feedbackLine = normalizedFeedback ? `Feedback: ${normalizedFeedback}` : decision === 'accepted' ? 'No additional feedback was included.' : 'Review the project to see the latest status and any requested updates.'
+
+  return sendActivityEmail({
+    to: recipient.email,
+    subject: decision === 'accepted' ? 'Your SkillBridge project submission was approved' : 'Changes requested for your SkillBridge project submission',
+    introLines: [`Hi ${recipient.firstName || 'there'},`, decisionLine, feedbackLine],
+    ctaLabel: 'View project',
+    ctaUrl: buildProfileUrl(destination)
+  })
+}
