@@ -3,6 +3,15 @@ import { motion } from 'framer-motion'
 import { FaTimes } from 'react-icons/fa'
 import { assignUserToProject } from '../services/projectService'
 
+const formatContactedAt = (value) => {
+  if (!value) return 'Recently applied'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Recently applied'
+
+  return `Applied ${date.toLocaleDateString()}`
+}
+
 const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [assigning, setAssigning] = useState(false)
@@ -32,7 +41,7 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className='bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto'>
+        className='bg-white dark:bg-gray-900 rounded-lg p-6 max-w-xl w-full mx-4 max-h-[80vh] overflow-y-auto'>
         {/* Header */}
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-2xl font-bold theme-text'>Assign Project</h2>
@@ -62,13 +71,27 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
                   className={`w-full p-3 rounded-lg text-left transition-all ${selectedUserId === interested.userId._id ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-800 theme-text hover:bg-accent/10'}`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}>
-                  <div className='flex items-center gap-3'>
-                    <img src={interested.userId.profilePicture || `https://i.pravatar.cc/150?u=${interested.userId._id}`} alt={interested.userId.firstName} className='w-10 h-10 rounded-full object-cover' />
-                    <div>
-                      <p className='font-semibold'>
-                        {interested.userId.firstName} {interested.userId.lastName}
+                  <div className='flex items-start gap-3'>
+                    <img src={interested.userId.profilePicture || `https://i.pravatar.cc/150?u=${interested.userId._id}`} alt={interested.userId.firstName} className='w-10 h-10 rounded-full object-cover mt-0.5' />
+
+                    <div className='min-w-0 flex-1'>
+                      <div className='flex items-start justify-between gap-3'>
+                        <div>
+                          <p className='font-semibold'>
+                            {interested.userId.firstName} {interested.userId.lastName}
+                          </p>
+                          <p className='text-xs opacity-75 break-all'>{interested.userId.email}</p>
+                        </div>
+
+                        <span
+                          className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${selectedUserId === interested.userId._id ? 'bg-white/20 text-white' : 'bg-accent/10 text-accent'}`}>
+                          {formatContactedAt(interested.contactedAt)}
+                        </span>
+                      </div>
+
+                      <p className={`mt-3 text-sm leading-6 ${selectedUserId === interested.userId._id ? 'text-white/90' : 'theme-text-secondary'}`}>
+                        {interested.proposalPreview || 'No proposal preview available yet. Open the project conversation to review the full message.'}
                       </p>
-                      <p className='text-xs opacity-75'>{interested.userId.email}</p>
                     </div>
                   </div>
                 </motion.button>
