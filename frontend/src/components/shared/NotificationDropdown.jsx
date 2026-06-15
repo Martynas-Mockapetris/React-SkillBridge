@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaBell, FaCheckCircle, FaUserFriends, FaEnvelope, FaCheckDouble } from 'react-icons/fa'
+import { FaBell, FaCheckCircle, FaUserFriends, FaEnvelope, FaCheckDouble, FaBriefcase, FaClipboardCheck, FaTasks } from 'react-icons/fa'
 import { getMyNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../../services/userService'
 
 const typeIconMap = {
   message_received: <FaEnvelope className='text-[11px]' />,
   connection_requested: <FaUserFriends className='text-[11px]' />,
-  connection_accepted: <FaCheckCircle className='text-[11px]' />
+  connection_accepted: <FaCheckCircle className='text-[11px]' />,
+  project_assigned: <FaBriefcase className='text-[11px]' />,
+  project_submitted: <FaClipboardCheck className='text-[11px]' />,
+  project_reviewed: <FaTasks className='text-[11px]' />
 }
 
 const formatRelativeTime = (value) => {
@@ -156,7 +159,7 @@ const NotificationDropdown = ({ isOpen, onClose, unreadCount, onUnreadCountChang
             </div>
             <div>
               <p className='text-sm font-medium text-white'>No notifications yet</p>
-              <p className='mt-1 text-xs text-white/60'>New messages and network activity will appear here.</p>
+              <p className='mt-1 text-xs text-white/60'>New messages, project updates, and network activity will appear here.</p>
             </div>
           </div>
         ) : (
