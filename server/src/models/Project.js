@@ -182,6 +182,12 @@ const projectSchema = mongoose.Schema(
           enum: ['pending', 'accepted', 'rejected'],
           default: 'pending'
         },
+        proposalPreview: {
+          type: String,
+          default: '',
+          trim: true,
+          maxlength: 280
+        },
         contactedAt: {
           type: Date,
           default: Date.now

@@ -14,9 +14,10 @@ export const sendMessage = async (req, res) => {
       return res.status(403).json({ message: 'Your account is locked. You cannot send messages.' })
     }
     const { projectId, receiverId, content, subject } = req.body
+    const normalizedContent = typeof content === 'string' ? content.trim() : ''
 
     // Validate required fields
-    if (!receiverId || !content) {
+    if (!receiverId || !normalizedContent) {
       return res.status(400).json({ message: 'Receiver ID and content are required' })
     }
 
@@ -43,7 +44,7 @@ export const sendMessage = async (req, res) => {
     const messageData = {
       sender: req.user._id,
       receiver: receiverId,
-      content
+      content: normalizedContent
     }
 
     // Add optional fields
@@ -58,12 +59,13 @@ export const sendMessage = async (req, res) => {
     if (projectId) {
       const project = await Project.findById(projectId)
       const isProjectOwner = project.user.toString() === req.user._id.toString()
-      const alreadyInterested = project.interestedUsers.some((user) => user.userId.toString() === req.user._id.toString())
+      const existingInterest = project.interestedUsers.find((user) => user.userId.toString() === req.user._id.toString())
 
-      if (!isProjectOwner && !alreadyInterested) {
+      if (!isProjectOwner && !existingInterest) {
         project.interestedUsers.push({
           userId: req.user._id,
           status: 'pending',
+          proposalPreview: normalizedContent.replace(/\s+/g, ' ').slice(0, 280),
           contactedAt: new Date()
         })
         await project.save()
