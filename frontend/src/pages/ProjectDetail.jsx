@@ -558,7 +558,7 @@ const ProjectDetail = () => {
       {project && <ProjectModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} mode='edit' initialData={project} onProjectUpdated={loadProject} />}
 
       {/* Contact Modal */}
-      {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
+      {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} hasApplied={hasApplied} />}
 
       {/* Submit and Review Modals */}
       {project && <SubmitProjectModal isOpen={isSubmitModalOpen} onClose={() => setIsSubmitModalOpen(false)} project={project} onSubmitSuccess={loadProject} />}

@@ -4,9 +4,16 @@ import { FaTimes, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
 import { toast } from 'react-toastify'
 
-const ContactModal = ({ isOpen, onClose, project }) => {
+const ContactModal = ({ isOpen, onClose, project, hasApplied = false }) => {
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const hasApplied =
+    Array.isArray(project?.interestedUsers) &&
+    project.interestedUsers.some((entry) => {
+      const userId = entry?.userId?._id || entry?.userId
+      return userId?.toString() === project?.currentViewerId?.toString()
+    })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -19,7 +26,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
     try {
       setIsSubmitting(true)
       await sendMessage(project.user._id, content, null, project._id)
-      toast.success('Application sent successfully!')
+      toast.success(hasApplied ? 'Proposal preview updated successfully!' : 'Application sent successfully!')
       setContent('')
       onClose()
     } catch (error) {
@@ -57,13 +64,13 @@ const ContactModal = ({ isOpen, onClose, project }) => {
 
             {/* Header */}
             <div className='mb-6'>
-              <h2 className='text-2xl font-bold theme-text mb-2'>Apply for This Project</h2>
+              <h2 className='text-2xl font-bold theme-text mb-2'>{hasApplied ? 'Send a Follow-up Message' : 'Apply for This Project'}</h2>
               <p className='theme-text-secondary'>
-                Send your introduction and project interest to{' '}
+                {hasApplied ? 'Send an updated note to' : 'Send your introduction and project interest to'}{' '}
                 <span className='font-semibold text-accent'>
                   {project.user?.firstName} {project.user?.lastName}
                 </span>{' '}
-                for "{project.title}"
+                {hasApplied ? `about "${project.title}". Your latest message will refresh the proposal preview shown during assignment.` : `for "${project.title}"`}
               </p>
             </div>
 
@@ -72,7 +79,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
               {/* Message textarea */}
               <div>
                 <label htmlFor='message' className='block mb-2 font-medium theme-text'>
-                  Your Introduction
+                  {hasApplied ? 'Your Updated Proposal Note' : 'Your Introduction'}
                 </label>
                 <textarea
                   id='message'
@@ -86,7 +93,9 @@ const ContactModal = ({ isOpen, onClose, project }) => {
                   disabled={isSubmitting}
                 />
                 <p className='text-sm theme-text-secondary mt-1'>{content.length} / 500 characters</p>
-                <p className='text-xs theme-text-muted mt-2'>Sending this message also registers your interest in the project for the client.</p>
+                <p className='text-xs theme-text-muted mt-2'>
+                  {hasApplied ? 'Sending this message updates the proposal preview the client sees when reviewing applicants.' : 'Sending this message also registers your interest in the project for the client.'}
+                </p>
               </div>
 
               {/* Buttons */}
@@ -113,7 +122,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
                   ) : (
                     <>
                       <FaPaperPlane />
-                      Send Application
+                      {hasApplied ? 'Update Application' : 'Send Application'}
                     </>
                   )}
                 </button>
