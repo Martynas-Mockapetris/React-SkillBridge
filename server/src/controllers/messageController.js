@@ -55,19 +55,24 @@ export const sendMessage = async (req, res) => {
     const message = new Message(messageData)
     const savedMessage = await message.save()
 
-    // If project-based, add sender to interestedUsers
+    // If project-based, add sender to interestedUsers or refresh their proposal preview
     if (projectId) {
       const project = await Project.findById(projectId)
       const isProjectOwner = project.user.toString() === req.user._id.toString()
+      const normalizedPreview = normalizedContent.replace(/\s+/g, ' ').slice(0, 280)
       const existingInterest = project.interestedUsers.find((user) => user.userId.toString() === req.user._id.toString())
 
       if (!isProjectOwner && !existingInterest) {
         project.interestedUsers.push({
           userId: req.user._id,
           status: 'pending',
-          proposalPreview: normalizedContent.replace(/\s+/g, ' ').slice(0, 280),
+          proposalPreview: normalizedPreview,
           contactedAt: new Date()
         })
+        await project.save()
+      } else if (!isProjectOwner && existingInterest) {
+        existingInterest.proposalPreview = normalizedPreview
+        existingInterest.contactedAt = new Date()
         await project.save()
       }
     }
