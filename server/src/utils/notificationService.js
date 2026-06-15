@@ -82,3 +82,52 @@ export const notifyMessageReceived = async ({ sender, recipient, messageId, proj
     }
   })
 }
+
+export const notifyProjectAssigned = async ({ actor, recipient, projectId, projectTitle = 'Project', actorName = 'A client', isReassignment = false }) => {
+  return createNotification({
+    recipient,
+    actor,
+    type: 'project_assigned',
+    title: isReassignment ? 'Project assignment updated' : 'You were assigned to a project',
+    body: isReassignment
+      ? `${truncateText(actorName, 80)} updated the assignment for "${truncateText(projectTitle, 90)}" and selected you.`
+      : `${truncateText(actorName, 80)} assigned you to "${truncateText(projectTitle, 90)}".`,
+    link: `/project/${projectId}`,
+    metadata: {
+      projectId,
+      isReassignment
+    }
+  })
+}
+
+export const notifyProjectSubmitted = async ({ actor, recipient, projectId, projectTitle = 'Project', actorName = 'A freelancer' }) => {
+  return createNotification({
+    recipient,
+    actor,
+    type: 'project_submitted',
+    title: 'Project ready for review',
+    body: `${truncateText(actorName, 80)} submitted work for "${truncateText(projectTitle, 90)}".`,
+    link: `/project/${projectId}`,
+    metadata: {
+      projectId
+    }
+  })
+}
+
+export const notifyProjectReviewed = async ({ actor, recipient, projectId, projectTitle = 'Project', actorName = 'A client', decision = 'accepted' }) => {
+  return createNotification({
+    recipient,
+    actor,
+    type: 'project_reviewed',
+    title: decision === 'accepted' ? 'Project submission approved' : 'Changes requested on project',
+    body:
+      decision === 'accepted'
+        ? `${truncateText(actorName, 80)} approved your submission for "${truncateText(projectTitle, 90)}".`
+        : `${truncateText(actorName, 80)} requested changes for "${truncateText(projectTitle, 90)}".`,
+    link: `/project/${projectId}`,
+    metadata: {
+      projectId,
+      decision
+    }
+  })
+}

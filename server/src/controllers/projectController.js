@@ -2,6 +2,7 @@ import Project from '../models/Project.js'
 import User from '../models/User.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
+import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -249,6 +250,16 @@ const createProject = async (req, res) => {
         ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
         projectId: createdProject._id.toString(),
         projectTitle: createdProject.title
+      })
+    }
+
+    if (assigneeId) {
+      await notifyProjectAssigned({
+        actor: req.user._id,
+        recipient: assigneeId,
+        projectId: createdProject._id.toString(),
+        projectTitle: createdProject.title,
+        actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client'
       })
     }
 
@@ -1117,6 +1128,14 @@ const assignUserToProject = async (req, res) => {
       projectTitle: populatedProject.title
     })
 
+    await notifyProjectAssigned({
+      actor: req.user._id,
+      recipient: userId,
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client'
+    })
+
     res.json(populatedProject)
   } catch (error) {
     console.error('Error assigning user to project:', error)
@@ -1162,6 +1181,15 @@ const reassignProject = async (req, res) => {
       ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
       projectId: populatedProject._id.toString(),
       projectTitle: populatedProject.title,
+      isReassignment: true
+    })
+
+    await notifyProjectAssigned({
+      actor: req.user._id,
+      recipient: userId,
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
       isReassignment: true
     })
 
@@ -1483,6 +1511,14 @@ const submitProject = async (req, res) => {
       projectTitle: updatedProject.title
     })
 
+    await notifyProjectSubmitted({
+      actor: req.user._id,
+      recipient: project.user.toString(),
+      projectId: updatedProject._id.toString(),
+      projectTitle: updatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A freelancer'
+    })
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error submitting project:', error)
@@ -1542,6 +1578,15 @@ const reviewProject = async (req, res) => {
         feedback
       })
     }
+
+    await notifyProjectReviewed({
+      actor: req.user._id,
+      recipient: project.assignee.toString(),
+      projectId: updatedProject._id.toString(),
+      projectTitle: updatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+      decision
+    })
 
     res.json(updatedProject)
   } catch (error) {
