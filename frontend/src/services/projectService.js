@@ -238,6 +238,20 @@ export const toggleShortlistApplicant = async (projectId, userId, isShortlisted)
   }
 }
 
+// Verify or unverify an applicant's skills
+export const toggleSkillsVerified = async (projectId, userId, isVerified) => {
+  try {
+    const response = await authAxios.patch(
+      `/api/projects/${projectId}/applicants/${userId}/verify-skills`,
+      { skillsVerified: isVerified }
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error toggling skills verification:', error)
+    throw error
+  }
+}
+
 // Remove assignee from project
 export const removeAssignee = async (projectId) => {
   try {

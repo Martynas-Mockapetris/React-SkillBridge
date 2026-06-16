@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaTimes, FaStar } from 'react-icons/fa'
-import { assignUserToProject, toggleShortlistApplicant } from '../services/projectService'
+import { assignUserToProject, toggleShortlistApplicant, toggleSkillsVerified } from '../services/projectService'
 
 const formatContactedAt = (value) => {
   if (!value) return 'Recently applied'
@@ -35,6 +35,19 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
       onAssignSuccess?.() // Refresh project data
     } catch (error) {
       console.error('Failed to toggle shortlist:', error)
+    } finally {
+      setTogglingUserId(null)
+    }
+  }
+
+  const handleToggleSkillsVerified = async (userId) => {
+    try {
+      setTogglingUserId(userId)
+      const interested = interestedUsers.find((u) => u.userId._id === userId)
+      await toggleSkillsVerified(project._id, userId, !interested?.skillsVerified)
+      onAssignSuccess?.() // Refresh project data
+    } catch (error) {
+      console.error('Failed to toggle skills verification:', error)
     } finally {
       setTogglingUserId(null)
     }
@@ -118,6 +131,17 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
                             title={interested.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'}>
                             {interested.isShortlisted ? '★' : '☆'}
                           </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleToggleSkillsVerified(interested.userId._id)
+                            }}
+                            disabled={togglingUserId === interested.userId._id}
+                            className={`text-lg p-1 transition-all ${interested.skillsVerified ? 'text-green-500' : 'text-gray-400 hover:text-green-400'} disabled:opacity-50`}
+                            title={interested.skillsVerified ? 'Remove skills verification' : 'Verify skills'}>
+                            {interested.skillsVerified ? '✓' : '○'}
+                          </button>
                         </div>
                       </div>
 
@@ -127,6 +151,10 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
 
                       {interested.isShortlisted && (
                         <div className={`mt-2 inline-block px-2 py-1 rounded text-xs font-semibold ${selectedUserId === interested.userId._id ? 'bg-white/20' : 'bg-yellow-100'}`}>★ Shortlisted</div>
+                      )}
+
+                      {interested.skillsVerified && (
+                        <div className={`mt-2 ml-2 inline-block px-2 py-1 rounded text-xs font-semibold ${selectedUserId === interested.userId._id ? 'bg-white/20' : 'bg-green-100'}`}>✓ Skills Verified</div>
                       )}
                     </div>
                   </div>
