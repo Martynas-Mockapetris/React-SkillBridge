@@ -192,6 +192,10 @@ const projectSchema = mongoose.Schema(
           type: Boolean,
           default: false
         },
+        skillsVerified: {
+          type: Boolean,
+          default: false
+        },
         contactedAt: {
           type: Date,
           default: Date.now

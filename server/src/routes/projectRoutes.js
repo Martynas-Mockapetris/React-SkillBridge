@@ -1,4 +1,5 @@
 import express from 'express'
+import express from 'express'
 import {
   createProject,
   publishProject,
@@ -14,6 +15,8 @@ import {
   bulkRenewProjectDeadlinesAsAdmin,
   toggleProjectLockAsAdmin,
   removeAssigneeAsAdmin,
+  toggleApplicantShortlist,
+  toggleApplicantSkillsVerified,
   assignUserToProject,
   reassignProject,
   proposeRate,
@@ -57,8 +60,8 @@ router.put('/:id', protect, upload.array('attachments', 5), updateProject)
 router.delete('/:id', protect, deleteProject)
 
 // Assignment routes
-// Assignment routes
 router.patch('/:id/applicants/:userId/shortlist', protect, toggleApplicantShortlist)
+router.patch('/:id/applicants/:userId/verify-skills', protect, toggleApplicantSkillsVerified)
 router.post('/:id/assign', protect, assignUserToProject)
 router.put('/:id/reassign', protect, reassignProject)
 router.delete('/:id/assignee', protect, removeAssignee)
