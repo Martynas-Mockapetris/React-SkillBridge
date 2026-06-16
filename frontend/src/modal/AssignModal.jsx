@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaTimes } from 'react-icons/fa'
-import { assignUserToProject } from '../services/projectService'
+import { FaTimes, FaStar } from 'react-icons/fa'
+import { assignUserToProject, toggleShortlistApplicant } from '../services/projectService'
 
 const formatContactedAt = (value) => {
   if (!value) return 'Recently applied'
@@ -15,10 +15,30 @@ const formatContactedAt = (value) => {
 const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [assigning, setAssigning] = useState(false)
+  const [togglingUserId, setTogglingUserId] = useState(null)
 
   if (!isOpen || !project) return null
 
   const interestedUsers = project.interestedUsers || []
+
+  // Sort with shortlisted applicants first
+  const sortedApplicants = [...interestedUsers].sort((a, b) => b.isShortlisted - a.isShortlisted)
+
+  // Use sortedApplicants in render
+  const displayedApplicants = sortedApplicants
+
+  const handleToggleShortlist = async (userId) => {
+    try {
+      setTogglingUserId(userId)
+      const interested = interestedUsers.find((u) => u.userId._id === userId)
+      await toggleShortlistApplicant(project._id, userId, !interested?.isShortlisted)
+      onAssignSuccess?.() // Refresh project data
+    } catch (error) {
+      console.error('Failed to toggle shortlist:', error)
+    } finally {
+      setTogglingUserId(null)
+    }
+  }
 
   const handleAssign = async () => {
     if (!selectedUserId) return
@@ -60,11 +80,11 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
         <div className='mb-6'>
           <p className='text-sm theme-text-secondary mb-3'>Select a freelancer:</p>
 
-          {interestedUsers.length === 0 ? (
+          {displayedApplicants.length === 0 ? (
             <p className='text-sm theme-text-secondary text-center py-4'>No interested freelancers yet</p>
           ) : (
             <div className='space-y-2'>
-              {interestedUsers.map((interested) => (
+              {displayedApplicants.map((interested) => (
                 <motion.button
                   key={interested.userId._id}
                   onClick={() => setSelectedUserId(interested.userId._id)}
@@ -83,15 +103,31 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
                           <p className='text-xs opacity-75 break-all'>{interested.userId.email}</p>
                         </div>
 
-                        <span
-                          className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${selectedUserId === interested.userId._id ? 'bg-white/20 text-white' : 'bg-accent/10 text-accent'}`}>
-                          {formatContactedAt(interested.contactedAt)}
-                        </span>
+                        <div className='flex gap-2 items-center'>
+                          <span
+                            className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${selectedUserId === interested.userId._id ? 'bg-white/20 text-white' : 'bg-accent/10 text-accent'}`}>
+                            {formatContactedAt(interested.contactedAt)}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleToggleShortlist(interested.userId._id)
+                            }}
+                            disabled={togglingUserId === interested.userId._id}
+                            className={`text-lg p-1 transition-all ${interested.isShortlisted ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-300'} disabled:opacity-50`}
+                            title={interested.isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'}>
+                            {interested.isShortlisted ? '★' : '☆'}
+                          </button>
+                        </div>
                       </div>
 
                       <p className={`mt-3 text-sm leading-6 ${selectedUserId === interested.userId._id ? 'text-white/90' : 'theme-text-secondary'}`}>
                         {interested.proposalPreview || 'No proposal preview available yet. Open the project conversation to review the full message.'}
                       </p>
+
+                      {interested.isShortlisted && (
+                        <div className={`mt-2 inline-block px-2 py-1 rounded text-xs font-semibold ${selectedUserId === interested.userId._id ? 'bg-white/20' : 'bg-yellow-100'}`}>★ Shortlisted</div>
+                      )}
                     </div>
                   </div>
                 </motion.button>
@@ -99,8 +135,6 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
             </div>
           )}
         </div>
-
-        {/* Action buttons */}
         <div className='flex gap-3'>
           <motion.button onClick={onClose} className='flex-1 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-all' whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             Cancel
