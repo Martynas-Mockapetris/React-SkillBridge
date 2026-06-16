@@ -188,6 +188,10 @@ const projectSchema = mongoose.Schema(
           trim: true,
           maxlength: 280
         },
+        isShortlisted: {
+          type: Boolean,
+          default: false
+        },
         contactedAt: {
           type: Date,
           default: Date.now

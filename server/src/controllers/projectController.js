@@ -1080,6 +1080,51 @@ const deleteProject = async (req, res) => {
   }
 }
 
+// @desc    Shortlist or unshortlist a project applicant
+// @route   PATCH /api/projects/:id/applicants/:userId/shortlist
+// @access  Private (project creator only)
+const toggleApplicantShortlist = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const applicantId = req.params.userId
+    const { isShortlisted } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized to manage applicants for this project' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
+    const applicant = project.interestedUsers.find((entry) => entry.userId.toString() === applicantId)
+
+    if (!applicant) {
+      return res.status(404).json({ message: 'Applicant not found for this project' })
+    }
+
+    applicant.isShortlisted = Boolean(isShortlisted)
+
+    await project.save()
+
+    const populatedProject = await Project.findById(projectId)
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+
+    res.json(populatedProject)
+  } catch (error) {
+    console.error('Error updating applicant shortlist state:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Assign a user to a project
 // @route   POST /api/projects/:id/assign
 // @access  Private (project creator only)
@@ -1645,6 +1690,7 @@ export {
   bulkRenewProjectDeadlinesAsAdmin,
   toggleProjectLockAsAdmin,
   removeAssigneeAsAdmin,
+  toggleApplicantShortlist,
   assignUserToProject,
   reassignProject,
   proposeRate,

@@ -225,6 +225,19 @@ export const assignUserToProject = async (projectId, userId) => {
   }
 }
 
+// Shortlist or unshortlist an applicant
+export const toggleShortlistApplicant = async (projectId, userId, isShortlisted) => {
+  try {
+    const response = await authAxios.patch(`/api/projects/${projectId}/applicants/${userId}/shortlist`, {
+      isShortlisted
+    })
+    return response.data
+  } catch (error) {
+    console.error('Failed to update applicant shortlist state:', error.response?.data || error.message)
+    throw error
+  }
+}
+
 // Remove assignee from project
 export const removeAssignee = async (projectId) => {
   try {
