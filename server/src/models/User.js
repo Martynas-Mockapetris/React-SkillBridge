@@ -339,7 +339,25 @@ const UserSchema = new mongoose.Schema({
   totalRatings: {
     type: Number,
     default: 0
-  }
+  },
+
+  // Profile view tracking
+  profileViewCount: {
+    type: Number,
+    default: 0
+  },
+  profileViews: [
+    {
+      viewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      viewedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
 })
 
 // Hash password before saving
