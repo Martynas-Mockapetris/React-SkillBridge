@@ -27,6 +27,7 @@ import Blog from './pages/Blog'
 import BlogPostDetail from './pages/BlogPostDetail'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import Analytics from './pages/Analytics'
 
 function App() {
   return (
@@ -59,6 +60,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/analytics'
+                element={
+                  <ProtectedRoute>
+                    <Analytics />
                   </ProtectedRoute>
                 }
               />
