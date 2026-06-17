@@ -1,5 +1,4 @@
 import express from 'express'
-import express from 'express'
 import {
   createProject,
   publishProject,
@@ -31,6 +30,7 @@ import {
 import { protect, optionalProtect, requirePermission } from '../middleware/authMiddleware.js'
 import { PERMISSIONS } from '../utils/permissions.js'
 import upload from '../middleware/uploadMiddleware.js'
+import { getFreelancerAnalytics, recordProfileView } from '../controllers/analyticsController.js'
 
 const router = express.Router()
 
@@ -75,5 +75,9 @@ router.post('/:id/rate/accept', protect, acceptRate)
 // Submission & Review routes
 router.post('/:id/submit', protect, upload.array('submissionFiles', 5), submitProject)
 router.post('/:id/review', protect, reviewProject)
+
+// Analytics routes
+router.get('/freelancer', protect, getFreelancerAnalytics)
+router.post('/profile-view/:userId', protect, recordProfileView)
 
 export default router

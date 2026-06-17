@@ -87,6 +87,12 @@ const Navigation = () => {
             </Link>
           )}
 
+          {currentUser && (
+            <Link to='/analytics' className={desktopLinkStyles}>
+              Analytics
+            </Link>
+          )}
+
           {/* Only show Admin link if user is admin */}
           {canAccessAdmin && (
             <Link to='/admin' className={desktopLinkStyles}>
