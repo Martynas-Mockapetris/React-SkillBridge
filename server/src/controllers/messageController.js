@@ -51,6 +51,17 @@ export const sendMessage = async (req, res) => {
     if (projectId) messageData.project = projectId
     if (subject) messageData.subject = subject
 
+    // Handle file attachments if present
+    if (req.files && req.files.length > 0) {
+      messageData.attachments = req.files.map((file) => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        path: file.path,
+        mimetype: file.mimetype,
+        size: file.size
+      }))
+    }
+
     // Create and save message
     const message = new Message(messageData)
     const savedMessage = await message.save()
@@ -97,8 +108,7 @@ export const sendMessage = async (req, res) => {
     // Send email notification to receiver
     await sendNewMessageEmail({
       recipientId: receiverId,
-      senderName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone',
-      subject
+      senderName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone'
     })
 
     res.status(201).json(savedMessage)
