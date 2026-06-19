@@ -3,6 +3,7 @@ import User from '../models/User.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
 import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
+import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability } from '../utils/availabilityCalendarService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -245,6 +246,9 @@ const createProject = async (req, res) => {
     console.log('Project saved successfully:', createdProject)
 
     if (assigneeId) {
+      // Auto-populate availability calendar
+      await populateAvailabilityOnProjectAssignment(assigneeId, createdProject)
+
       await sendProjectAssignedEmail({
         recipientId: assigneeId,
         ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
@@ -845,6 +849,8 @@ const removeAssigneeAsAdmin = async (req, res) => {
       return res.status(400).json({ message: 'Project has no assigned user' })
     }
 
+    const previousAssigneeId = project.assignee
+
     // Remove assignee only (owner is never touched)
     project.assignee = null
 
@@ -854,6 +860,10 @@ const removeAssigneeAsAdmin = async (req, res) => {
     }
 
     const updatedProject = await project.save()
+
+    // Remove from availability calendar
+    await removeProjectFromAvailability(previousAssigneeId, req.params.id)
+
     res.json({
       message: 'Assignee removed successfully',
       project: updatedProject
@@ -1209,6 +1219,10 @@ const assignUserToProject = async (req, res) => {
     project.status = 'in_progress'
 
     const updatedProject = await project.save()
+
+    // Auto-populate availability calendar
+    await populateAvailabilityOnProjectAssignment(userId, updatedProject)
+
     const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
 
     await sendProjectAssignedEmail({
@@ -1261,9 +1275,17 @@ const reassignProject = async (req, res) => {
       return res.status(400).json({ message: 'User has not contacted this project' })
     }
 
+    const previousAssigneeId = project.assignee
     project.assignee = userId
 
     const updatedProject = await project.save()
+
+    // Update availability calendars for reassignment
+    if (previousAssigneeId) {
+      await removeProjectFromAvailability(previousAssigneeId, projectId)
+    }
+    await populateAvailabilityOnProjectAssignment(userId, updatedProject)
+
     const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
 
     await sendProjectAssignedEmail({
@@ -1311,9 +1333,16 @@ const removeAssignee = async (req, res) => {
       return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
+    const previousAssigneeId = project.assignee
     project.assignee = null
 
     const updatedProject = await project.save()
+
+    // Remove from availability calendar if there was an assignee
+    if (previousAssigneeId) {
+      await removeProjectFromAvailability(previousAssigneeId, projectId)
+    }
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error removing assignee:', error)
