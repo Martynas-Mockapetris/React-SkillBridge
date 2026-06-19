@@ -231,11 +231,7 @@ export const toggleCalendarVisibility = async (req, res) => {
       return res.status(403).json({ message: 'You can only update your own calendar' })
     }
 
-    const calendar = await AvailabilityCalendar.findOneAndUpdate(
-      { freelancer: freelancerId, year, month },
-      { isPublic: { $not: '$isPublic' } },
-      { new: true }
-    )
+    const calendar = await AvailabilityCalendar.findOneAndUpdate({ freelancer: freelancerId, year, month }, { isPublic: { $not: '$isPublic' } }, { new: true })
 
     if (!calendar) {
       return res.status(404).json({ message: 'Calendar not found' })
@@ -249,5 +245,174 @@ export const toggleCalendarVisibility = async (req, res) => {
   } catch (error) {
     console.error('Error toggling visibility:', error)
     res.status(500).json({ message: 'Error updating visibility', error: error.message })
+  }
+}
+
+// Calculate freelancer capacity for project filtering
+export const calculateFreelancerCapacity = async (req, res) => {
+  try {
+    const { freelancerId } = req.params
+    const { startDate, endDate } = req.query
+
+    const start = startDate ? new Date(startDate) : new Date()
+    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
+
+    // Get all calendars needed for date range
+    const startMonth = start.getMonth() + 1
+    const startYear = start.getFullYear()
+    const endMonth = end.getMonth() + 1
+    const endYear = end.getFullYear()
+
+    const calendars = await AvailabilityCalendar.find({
+      freelancer: freelancerId,
+      $or: [
+        {
+          year: startYear,
+          month: { $gte: startMonth }
+        },
+        {
+          year: { $gt: startYear, $lt: endYear }
+        },
+        {
+          year: endYear,
+          month: { $lte: endMonth }
+        }
+      ]
+    }).populate('days.assignedProjects', 'priority')
+
+    // Collect all relevant days
+    const relevantDays = []
+    for (const calendar of calendars) {
+      for (const day of calendar.days) {
+        const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+        if (dayDate >= start && dayDate <= end) {
+          relevantDays.push({
+            date: dayDate,
+            capacity: day.capacity,
+            status: day.status,
+            projects: day.assignedProjects || []
+          })
+        }
+      }
+    }
+
+    // Calculate average capacity and find earliest available date for each priority
+    const avgCapacity = relevantDays.length > 0 ? relevantDays.reduce((sum, d) => sum + d.capacity, 0) / relevantDays.length : 100
+    const totalAvailableCapacity = Math.round(avgCapacity)
+
+    // Find earliest dates when specific projects can be taken
+    const getEarliestAvailableDate = (requiredCapacity) => {
+      const availableDay = relevantDays.find((d) => d.capacity >= requiredCapacity)
+      return availableDay ? availableDay.date : null
+    }
+
+    // Determine which project priorities can be accommodated
+    const capacityMatrix = {
+      low: {
+        required: 25,
+        canTake: totalAvailableCapacity >= 25,
+        earliestAvailable: getEarliestAvailableDate(25),
+        maxConcurrent: Math.floor(totalAvailableCapacity / 25)
+      },
+      medium: {
+        required: 50,
+        canTake: totalAvailableCapacity >= 50,
+        earliestAvailable: getEarliestAvailableDate(50),
+        maxConcurrent: Math.floor(totalAvailableCapacity / 50)
+      },
+      high: {
+        required: 100,
+        canTake: totalAvailableCapacity >= 100,
+        earliestAvailable: getEarliestAvailableDate(100),
+        maxConcurrent: Math.floor(totalAvailableCapacity / 100)
+      }
+    }
+
+    // Determine overall recommendation
+    let recommendation = 'unavailable'
+    if (capacityMatrix.high.canTake) recommendation = 'available_for_high'
+    else if (capacityMatrix.medium.canTake) recommendation = 'available_for_medium'
+    else if (capacityMatrix.low.canTake) recommendation = 'available_for_low'
+
+    res.status(200).json({
+      success: true,
+      data: {
+        freelancerId,
+        dateRange: { start, end },
+        averageCapacity: totalAvailableCapacity,
+        totalDaysAnalyzed: relevantDays.length,
+        capacityMatrix,
+        recommendation,
+        daysBreakdown: {
+          red: relevantDays.filter((d) => d.status === 'red').length,
+          orange: relevantDays.filter((d) => d.status === 'orange').length,
+          yellow: relevantDays.filter((d) => d.status === 'yellow').length,
+          green: relevantDays.filter((d) => d.status === 'green').length
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Error calculating capacity:', error)
+    res.status(500).json({ message: 'Error calculating capacity', error: error.message })
+  }
+}
+
+// Batch calculate capacity for multiple freelancers (for project filtering UI)
+export const batchCalculateCapacity = async (req, res) => {
+  try {
+    const { freelancerIds, startDate, endDate } = req.body
+
+    if (!Array.isArray(freelancerIds) || freelancerIds.length === 0) {
+      return res.status(400).json({ message: 'freelancerIds array is required' })
+    }
+
+    const start = startDate ? new Date(startDate) : new Date()
+    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000)
+
+    const results = []
+
+    for (const freelancerId of freelancerIds) {
+      try {
+        const calendars = await AvailabilityCalendar.find({
+          freelancer: freelancerId
+        }).populate('days.assignedProjects', 'priority')
+
+        const relevantDays = []
+        for (const calendar of calendars) {
+          for (const day of calendar.days) {
+            const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+            if (dayDate >= start && dayDate <= end) {
+              relevantDays.push({ capacity: day.capacity, status: day.status })
+            }
+          }
+        }
+
+        const avgCapacity = relevantDays.length > 0 ? Math.round(relevantDays.reduce((sum, d) => sum + d.capacity, 0) / relevantDays.length) : 100
+
+        let recommendation = 'unavailable'
+        if (avgCapacity >= 100) recommendation = 'available_for_high'
+        else if (avgCapacity >= 50) recommendation = 'available_for_medium'
+        else if (avgCapacity > 0) recommendation = 'available_for_low'
+
+        results.push({
+          freelancerId,
+          averageCapacity: avgCapacity,
+          recommendation
+        })
+      } catch (err) {
+        results.push({
+          freelancerId,
+          error: err.message
+        })
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: results
+    })
+  } catch (error) {
+    console.error('Error in batch calculation:', error)
+    res.status(500).json({ message: 'Error in batch calculation', error: error.message })
   }
 }

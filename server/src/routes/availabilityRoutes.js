@@ -5,7 +5,9 @@ import {
   updateDayAvailability,
   getFreelancerAllCalendars,
   getPublicFreelancerCalendar,
-  toggleCalendarVisibility
+  toggleCalendarVisibility,
+  calculateFreelancerCapacity,
+  batchCalculateCapacity
 } from '../controllers/availabilityController.js'
 import { protect } from '../middleware/authMiddleware.js'
 
@@ -13,6 +15,10 @@ const router = express.Router()
 
 // Public routes (no auth required)
 router.get('/public/:freelancerId/:year/:month', getPublicFreelancerCalendar)
+
+// Capacity calculation routes
+router.get('/:freelancerId/capacity', protect, calculateFreelancerCapacity)
+router.post('/batch/capacity', protect, batchCalculateCapacity)
 
 // Protected routes (auth required)
 router.get('/:freelancerId/current', protect, getFreelancerCalendar)
