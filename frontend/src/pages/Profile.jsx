@@ -20,6 +20,7 @@ import { requestEmailVerification as requestEmailVerificationService } from '../
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { hasAdminPanelAccess, getAdminRoleLabel, isFullAdmin } from '../utils/accessRoles'
+import AvailabilityCalendar from '../components/shared/AvailabilityCalendar'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
@@ -510,6 +511,18 @@ const Profile = () => {
               </div>
             )}
             {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
+
+            {/* Availability Calendar - Freelance Tab */}
+            {(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both') && activeTab === 'freelance' && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className='mt-12'>
+                <div className='mb-6'>
+                  <h3 className='text-2xl font-bold theme-text mb-2'>Project Timeline & Availability</h3>
+                  <p className='theme-text-secondary'>Manage your availability and let clients see when you're available for new projects</p>
+                </div>
+                <AvailabilityCalendar freelancerId={currentUser._id} isOwnProfile={true} isPublicView={false} />
+              </motion.div>
+            )}
+
             {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
             {activeTab === 'settings' && (
               <div className='space-y-4'>

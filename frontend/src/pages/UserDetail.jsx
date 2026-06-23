@@ -11,6 +11,7 @@ import LoadingSpinner from '../components/shared/LoadingSpinner'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import DirectContactModal from '../modal/DirectContactModal'
 import HireFreelancerModal from '../modal/HireFreelancerModal'
+import AvailabilityCalendar from '../components/shared/AvailabilityCalendar'
 
 const formatAvailabilityLabel = (value) => {
   switch (value) {
@@ -540,6 +541,13 @@ const UserDetail = () => {
             </div>
           </motion.div>
         )}
+
+        {/* Public Availability Calendar */}
+        <motion.div className='mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
+          <h2 className='text-2xl font-bold theme-text mb-6'>Project Availability</h2>
+          <p className='theme-text-secondary mb-6'>View {freelancer.firstName}'s current availability and project timeline. This helps you understand their capacity before sending a project invitation.</p>
+          <AvailabilityCalendar freelancerId={freelancer._id} isOwnProfile={false} isPublicView={true} />
+        </motion.div>
 
         {/* Ratings Section */}
         {ratings && ratingStats && (
