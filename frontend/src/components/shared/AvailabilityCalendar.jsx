@@ -66,6 +66,33 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     return labelMap[status] || 'Unknown'
   }
 
+  const VALID_STATUSES = ['green', 'yellow', 'orange', 'red']
+
+  const isValidStatus = (status) => {
+    return VALID_STATUSES.includes(status)
+  }
+
+  const isValidDateKey = (dateKey) => {
+    const [year, month, date] = dateKey.split('-').map(Number)
+    if (!year || !month || !date) return false
+    if (month < 1 || month > 12) return false
+    if (date < 1 || date > 31) return false
+
+    const selectedDate = new Date(year, month - 1, date)
+    const isValidDate = selectedDate.getFullYear() === year && selectedDate.getMonth() === month - 1 && selectedDate.getDate() === date
+
+    return isValidDate
+  }
+
+  const canModifyDate = (dateKey) => {
+    const [year, month, date] = dateKey.split('-').map(Number)
+    const selectedDate = new Date(year, month - 1, date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    return selectedDate >= today
+  }
+
   const getDayCapacityLabel = (capacity) => {
     if (capacity === 100) return 'Fully Available'
     if (capacity >= 50) return `${capacity}% Available`
@@ -86,8 +113,13 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
 
     const dateKey = `${calendarData.year}-${calendarData.month}-${day.date}`
 
+    if (!canModifyDate(dateKey)) {
+      toast.error('Cannot modify past dates')
+      return
+    }
+
+    const { [dateKey]: _, ...rest } = selectedDays
     if (selectedDays[dateKey]) {
-      const { [dateKey]: _, ...rest } = selectedDays
       setSelectedDays(rest)
     } else {
       setSelectedDays({
@@ -98,6 +130,18 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   }
 
   const handleStatusChange = (dateKey, newStatus) => {
+    if (!isValidStatus(newStatus)) {
+      toast.error('Invalid status selected')
+      console.error(`Invalid status: ${newStatus}`)
+      return
+    }
+
+    if (!isValidDateKey(dateKey)) {
+      toast.error('Invalid date key')
+      console.error(`Invalid date key: ${dateKey}`)
+      return
+    }
+
     setSelectedDays({
       ...selectedDays,
       [dateKey]: newStatus
@@ -110,21 +154,76 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       return
     }
 
+    // Validate all selected days before saving
+    const invalidDays = Object.entries(selectedDays).filter(([dateKey, status]) => {
+      if (!isValidDateKey(dateKey)) {
+        console.error(`Invalid date key format: ${dateKey}`)
+        return true
+      }
+      if (!isValidStatus(status)) {
+        console.error(`Invalid status: ${status}`)
+        return true
+      }
+      if (!canModifyDate(dateKey)) {
+        console.error(`Cannot modify past date: ${dateKey}`)
+        return true
+      }
+      return false
+    })
+
+    if (invalidDays.length > 0) {
+      toast.error(`Cannot modify ${invalidDays.length} day(s). Check console for details.`)
+      return
+    }
+
     setSaving(true)
+    const failedUpdates = []
+
     try {
       for (const [dateKey, status] of Object.entries(selectedDays)) {
         const [year, month, date] = dateKey.split('-')
 
-        const response = await fetch(`/api/availability/${freelancerId}/${year}/${month}/${date}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ manualStatus: status })
-        })
+        try {
+          const response = await fetch(`/api/availability/${freelancerId}/${year}/${month}/${date}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ manualStatus: status })
+          })
 
-        if (!response.ok) throw new Error(`Failed to update ${dateKey}`)
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            const errorMessage = errorData.message || `HTTP ${response.status}`
+            throw new Error(errorMessage)
+          }
+        } catch (dayError) {
+          failedUpdates.push({ date: dateKey, error: dayError.message })
+          console.error(`Failed to update ${dateKey}:`, dayError)
+        }
       }
 
-      toast.success('Availability updated successfully')
+      if (failedUpdates.length > 0) {
+        toast.error(`Failed to update ${failedUpdates.length} day(s). Retrying...`)
+        // Retry failed updates once
+        for (const { date: dateKey } of failedUpdates) {
+          try {
+            const [year, month, date] = dateKey.split('-')
+            const status = selectedDays[dateKey]
+
+            const response = await fetch(`/api/availability/${freelancerId}/${year}/${month}/${date}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ manualStatus: status })
+            })
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`)
+          } catch (retryError) {
+            console.error(`Retry failed for ${dateKey}:`, retryError)
+          }
+        }
+      } else {
+        toast.success('Availability updated successfully')
+      }
+
       setEditMode(false)
       setSelectedDays({})
       fetchCalendarData()
