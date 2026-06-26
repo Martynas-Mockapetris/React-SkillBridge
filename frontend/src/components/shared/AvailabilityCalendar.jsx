@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes } from 'react-icons/fa'
+import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
@@ -12,6 +12,8 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   const [editMode, setEditMode] = useState(false)
   const [selectedDays, setSelectedDays] = useState({})
   const [saving, setSaving] = useState(false)
+  const [isPublic, setIsPublic] = useState(calendarData?.isPublic || false)
+  const [togglingVisibility, setTogglingVisibility] = useState(false)
 
   // Fetch calendar data when component mounts or freelancerId changes
   React.useEffect(() => {
@@ -138,6 +140,27 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     setSelectedDays({})
   }
 
+  const handleToggleVisibility = async () => {
+    setTogglingVisibility(true)
+    try {
+      const response = await fetch(`/api/availability/${freelancerId}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublic: !isPublic })
+      })
+
+      if (!response.ok) throw new Error('Failed to update visibility')
+
+      setIsPublic(!isPublic)
+      toast.success(`Calendar is now ${!isPublic ? 'public' : 'private'}`)
+    } catch (err) {
+      toast.error(`Error updating visibility: ${err.message}`)
+      console.error('Error toggling visibility:', err)
+    } finally {
+      setTogglingVisibility(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className='flex items-center justify-center p-8'>
@@ -169,7 +192,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       {/* Header */}
       <div className='flex items-center justify-between mb-6'>
         <h3 className='text-lg font-semibold theme-text'>{monthName}</h3>
-        <div className='flex gap-2'>
+        <div className='flex gap-2 items-center'>
           <motion.button onClick={previousMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200' aria-label='Previous month'>
             <FaChevronLeft className='theme-text' />
           </motion.button>
@@ -177,14 +200,26 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
             <FaChevronRight className='theme-text' />
           </motion.button>
           {isOwnProfile && !editMode && (
-            <motion.button
-              onClick={() => setEditMode(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200 ml-2 text-accent'
-              aria-label='Edit availability'>
-              <FaEdit />
-            </motion.button>
+            <>
+              <motion.button
+                onClick={() => setEditMode(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200 text-accent'
+                aria-label='Edit availability'>
+                <FaEdit />
+              </motion.button>
+              <motion.button
+                onClick={handleToggleVisibility}
+                disabled={togglingVisibility}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200 text-accent disabled:opacity-50'
+                title={isPublic ? 'Make calendar private' : 'Make calendar public'}
+                aria-label='Toggle calendar visibility'>
+                {isPublic ? <FaEye /> : <FaEyeSlash />}
+              </motion.button>
+            </>
           )}
         </div>
       </div>
