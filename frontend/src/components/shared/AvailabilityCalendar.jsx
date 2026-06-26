@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import AvailabilityEditPanel from './AvailabilityEditPanel'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -328,26 +329,6 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
         </AnimatePresence>
       </div>
 
-      {/* Status Editor - only in edit mode */}
-      {editMode && Object.keys(selectedDays).length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='mt-6 pt-6 border-t dark:border-light/10 border-primary/10'>
-          <h4 className='text-sm font-semibold theme-text mb-3'>Update Status for Selected Days:</h4>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mb-4'>
-            {['green', 'yellow', 'orange', 'red'].map((status) => (
-              <motion.button
-                key={status}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => Object.keys(selectedDays).forEach((key) => handleStatusChange(key, status))}
-                className='p-3 rounded-lg border-2 border-transparent hover:border-accent transition-colors duration-200'
-                style={{ backgroundColor: getStatusColor(status) }}>
-                <div className={`text-xs font-semibold ${['red', 'orange'].includes(status) ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{getStatusLabel(status)}</div>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
       {/* Summary Stats - only for own profile, hidden in edit mode */}
       {!isPublicView && !editMode && (
         <div className='mt-6 pt-6 border-t dark:border-light/10 border-primary/10 grid grid-cols-4 gap-4'>
@@ -365,29 +346,8 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
         </div>
       )}
 
-      {/* Action Buttons - only in edit mode */}
-      {editMode && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='mt-6 flex gap-3'>
-          <motion.button
-            onClick={handleSaveChanges}
-            disabled={saving || Object.keys(selectedDays).length === 0}
-            whileHover={{ scale: saving ? 1 : 1.05 }}
-            whileTap={{ scale: saving ? 1 : 0.95 }}
-            className='flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-accent text-white rounded-lg font-semibold hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'>
-            <FaCheck />
-            {saving ? 'Saving...' : 'Save Changes'}
-          </motion.button>
-          <motion.button
-            onClick={handleCancel}
-            disabled={saving}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className='flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-400 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'>
-            <FaTimes />
-            Cancel
-          </motion.button>
-        </motion.div>
-      )}
+      {/* Edit Panel - only in edit mode */}
+      {editMode && <AvailabilityEditPanel selectedDays={selectedDays} onStatusChange={handleStatusChange} onSave={handleSaveChanges} onCancel={handleCancel} saving={saving} />}
     </motion.div>
   )
 }
