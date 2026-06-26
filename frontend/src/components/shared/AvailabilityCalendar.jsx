@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import AvailabilityEditPanel from './AvailabilityEditPanel'
+import AvailabilityCalendarSkeleton from './AvailabilityCalendarSkeleton'
 import useAvailability from '../../hooks/useAvailability'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
@@ -13,7 +14,10 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   const [saving, setSaving] = useState(false)
   const [togglingVisibility, setTogglingVisibility] = useState(false)
 
-  const { calendarData, loading, error, isPublic, fetchCalendarData, updateMultipleDays, toggleVisibility } = useAvailability(freelancerId, isPublicView)
+  const { calendarData, loading, error, isPublic, optimisticUpdates, fetchCalendarData, updateMultipleDays, toggleVisibility, applyOptimisticUpdate, rollbackOptimisticUpdate, clearOptimisticUpdates } = useAvailability(
+    freelancerId,
+    isPublicView
+  )
 
   // Fetch calendar data when component mounts or freelancerId changes
   React.useEffect(() => {
@@ -161,6 +165,11 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     setSaving(true)
 
     try {
+      // Apply optimistic updates
+      Object.entries(selectedDays).forEach(([dateKey, status]) => {
+        applyOptimisticUpdate(dateKey, status)
+      })
+
       // Convert selectedDays to updates format for the hook
       const updates = Object.entries(selectedDays).map(([dateKey, status]) => {
         const [year, month, date] = dateKey.split('-')
@@ -170,9 +179,15 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       const { failures } = await updateMultipleDays(updates)
 
       if (failures.length > 0) {
+        // Rollback failed updates
+        failures.forEach(({ year, month, date }) => {
+          const dateKey = `${year}-${month}-${date}`
+          rollbackOptimisticUpdate(dateKey)
+        })
         toast.error(`Failed to update ${failures.length} day(s)`)
       } else {
         toast.success('Availability updated successfully')
+        clearOptimisticUpdates()
       }
 
       setEditMode(false)
@@ -183,6 +198,8 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       const month = currentDate.getMonth() + 1
       await fetchCalendarData(year, month)
     } catch (err) {
+      // Rollback all optimistic updates on critical error
+      clearOptimisticUpdates()
       toast.error(`Error updating availability: ${err.message}`)
       console.error('Error saving changes:', err)
     } finally {
@@ -209,13 +226,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   }
 
   if (loading) {
-    return (
-      <div className='flex items-center justify-center p-8'>
-        <div className='animate-spin'>
-          <div className='w-8 h-8 border-4 border-accent border-t-transparent rounded-full'></div>
-        </div>
-      </div>
-    )
+    return <AvailabilityCalendarSkeleton />
   }
 
   if (error) {
@@ -264,7 +275,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
                 className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200 text-accent disabled:opacity-50'
                 title={isPublic ? 'Make calendar private' : 'Make calendar public'}
                 aria-label='Toggle calendar visibility'>
-                {isPublic ? <FaEye /> : <FaEyeSlash />}
+                {togglingVisibility ? <FaSpinner className='animate-spin' /> : isPublic ? <FaEye /> : <FaEyeSlash />}
               </motion.button>
             </>
           )}
@@ -310,7 +321,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
             const isToday = !isEmpty && new Date(calendarData.year, calendarData.month - 1, day.date).toDateString() === new Date().toDateString()
             const dateKey = `${calendarData.year}-${calendarData.month}-${day.date}`
             const isSelected = selectedDays[dateKey]
-            const currentStatus = isSelected || day.status
+            const currentStatus = optimisticUpdates[dateKey] || isSelected || day.status
 
             return (
               <motion.div

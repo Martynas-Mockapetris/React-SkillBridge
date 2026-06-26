@@ -5,6 +5,25 @@ const useAvailability = (freelancerId, isPublicView = true) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [isPublic, setIsPublic] = useState(false)
+  const [optimisticUpdates, setOptimisticUpdates] = useState({})
+
+  const applyOptimisticUpdate = useCallback((dateKey, newStatus) => {
+    setOptimisticUpdates((prev) => ({
+      ...prev,
+      [dateKey]: newStatus
+    }))
+  }, [])
+
+  const rollbackOptimisticUpdate = useCallback((dateKey) => {
+    setOptimisticUpdates((prev) => {
+      const { [dateKey]: _, ...rest } = prev
+      return rest
+    })
+  }, [])
+
+  const clearOptimisticUpdates = useCallback(() => {
+    setOptimisticUpdates({})
+  }, [])
 
   const fetchCalendarData = useCallback(
     async (year, month) => {
@@ -113,10 +132,14 @@ const useAvailability = (freelancerId, isPublicView = true) => {
     loading,
     error,
     isPublic,
+    optimisticUpdates,
     fetchCalendarData,
     updateDayAvailability,
     updateMultipleDays,
     toggleVisibility,
+    applyOptimisticUpdate,
+    rollbackOptimisticUpdate,
+    clearOptimisticUpdates,
     setCalendarData,
     setError
   }
