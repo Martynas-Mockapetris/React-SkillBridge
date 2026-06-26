@@ -3,48 +3,30 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import AvailabilityEditPanel from './AvailabilityEditPanel'
+import useAvailability from '../../hooks/useAvailability'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [hoveredDay, setHoveredDay] = useState(null)
-  const [calendarData, setCalendarData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
   const [editMode, setEditMode] = useState(false)
   const [selectedDays, setSelectedDays] = useState({})
   const [saving, setSaving] = useState(false)
-  const [isPublic, setIsPublic] = useState(calendarData?.isPublic || false)
   const [togglingVisibility, setTogglingVisibility] = useState(false)
+
+  const { calendarData, loading, error, isPublic, fetchCalendarData, updateMultipleDays, toggleVisibility } = useAvailability(freelancerId, isPublicView)
 
   // Fetch calendar data when component mounts or freelancerId changes
   React.useEffect(() => {
     fetchCalendarData()
   }, [currentDate, freelancerId])
 
-  const fetchCalendarData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const year = currentDate.getFullYear()
-      const month = currentDate.getMonth() + 1
-
-      const endpoint = isPublicView ? `/api/availability/public/${freelancerId}/${year}/${month}` : `/api/availability/${freelancerId}/current?year=${year}&month=${month}`
-
-      const response = await fetch(endpoint)
-      if (!response.ok) throw new Error('Failed to fetch calendar')
-
-      const result = await response.json()
-      setCalendarData(result.data)
-      setEditMode(false)
-      setSelectedDays({})
-    } catch (err) {
-      setError(err.message)
-      console.error('Error fetching calendar:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  React.useEffect(() => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth() + 1
+    fetchCalendarData(year, month).catch((err) => {
+      console.error('Failed to fetch calendar on mount:', err)
+    })
+  }, [currentDate, freelancerId, fetchCalendarData])
 
   const getStatusColor = (status) => {
     const colorMap = {
@@ -177,56 +159,29 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     }
 
     setSaving(true)
-    const failedUpdates = []
 
     try {
-      for (const [dateKey, status] of Object.entries(selectedDays)) {
+      // Convert selectedDays to updates format for the hook
+      const updates = Object.entries(selectedDays).map(([dateKey, status]) => {
         const [year, month, date] = dateKey.split('-')
+        return { year: parseInt(year), month: parseInt(month), date: parseInt(date), status }
+      })
 
-        try {
-          const response = await fetch(`/api/availability/${freelancerId}/${year}/${month}/${date}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ manualStatus: status })
-          })
+      const { failures } = await updateMultipleDays(updates)
 
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}))
-            const errorMessage = errorData.message || `HTTP ${response.status}`
-            throw new Error(errorMessage)
-          }
-        } catch (dayError) {
-          failedUpdates.push({ date: dateKey, error: dayError.message })
-          console.error(`Failed to update ${dateKey}:`, dayError)
-        }
-      }
-
-      if (failedUpdates.length > 0) {
-        toast.error(`Failed to update ${failedUpdates.length} day(s). Retrying...`)
-        // Retry failed updates once
-        for (const { date: dateKey } of failedUpdates) {
-          try {
-            const [year, month, date] = dateKey.split('-')
-            const status = selectedDays[dateKey]
-
-            const response = await fetch(`/api/availability/${freelancerId}/${year}/${month}/${date}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ manualStatus: status })
-            })
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`)
-          } catch (retryError) {
-            console.error(`Retry failed for ${dateKey}:`, retryError)
-          }
-        }
+      if (failures.length > 0) {
+        toast.error(`Failed to update ${failures.length} day(s)`)
       } else {
         toast.success('Availability updated successfully')
       }
 
       setEditMode(false)
       setSelectedDays({})
-      fetchCalendarData()
+
+      // Refresh calendar
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth() + 1
+      await fetchCalendarData(year, month)
     } catch (err) {
       toast.error(`Error updating availability: ${err.message}`)
       console.error('Error saving changes:', err)
@@ -243,16 +198,8 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   const handleToggleVisibility = async () => {
     setTogglingVisibility(true)
     try {
-      const response = await fetch(`/api/availability/${freelancerId}/visibility`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPublic: !isPublic })
-      })
-
-      if (!response.ok) throw new Error('Failed to update visibility')
-
-      setIsPublic(!isPublic)
-      toast.success(`Calendar is now ${!isPublic ? 'public' : 'private'}`)
+      const newVisibility = await toggleVisibility()
+      toast.success(`Calendar is now ${newVisibility ? 'public' : 'private'}`)
     } catch (err) {
       toast.error(`Error updating visibility: ${err.message}`)
       console.error('Error toggling visibility:', err)
