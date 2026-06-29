@@ -4,6 +4,7 @@ import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js
 import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
 import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
 import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability } from '../utils/availabilityCalendarService.js'
+import { completeProjectPhase } from '../utils/projectPhaseService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -1749,6 +1750,110 @@ const archiveProject = async (req, res) => {
   }
 }
 
+// @desc    Mark a project as complete (owner or assignee)
+// @route   PATCH /api/projects/:id/complete
+// @access  Private
+const markProjectComplete = async (req, res) => {
+  try {
+    const { projectId } = req.params
+    const userId = req.user._id
+
+    // Find project
+    const project = await Project.findById(projectId)
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Check authorization - only owner or assignee can mark complete
+    const isOwner = project.owner.toString() === userId.toString()
+    const isAssignee = project.assignee && project.assignee.toString() === userId.toString()
+
+    if (!isOwner && !isAssignee) {
+      return res.status(403).json({ message: 'Not authorized to complete this project' })
+    }
+
+    // Check if already completed
+    if (project.status === 'completed') {
+      return res.status(400).json({ message: 'Project is already completed' })
+    }
+
+    // Update project status and completion timestamp
+    project.status = 'completed'
+    project.completedAt = new Date()
+    project.completedBy = userId
+    project.lastUpdateReason = 'Project marked as complete'
+
+    // Update availability if assignee exists
+    if (project.assignee) {
+      try {
+        await removeProjectFromAvailability(project.assignee, projectId)
+      } catch (availErr) {
+        console.error('Error removing project from availability:', availErr)
+        // Don't fail the completion if availability update fails
+      }
+    }
+
+    await project.save()
+
+    // Populate for response
+    await project.populate([
+      { path: 'owner', select: 'firstName lastName email profileImage' },
+      { path: 'assignee', select: 'firstName lastName email profileImage' },
+      { path: 'category', select: 'name' }
+    ])
+
+    res.status(200).json({
+      message: 'Project marked as complete',
+      data: project
+    })
+  } catch (err) {
+    console.error('Error marking project complete:', err)
+    res.status(500).json({ message: 'Error marking project complete', error: err.message })
+  }
+}
+
+// @desc    Get project completion stats for current user
+// @route   GET /api/projects/completion-stats
+// @access  Private
+const getProjectCompletionStats = async (req, res) => {
+  try {
+    const userId = req.user._id
+
+    // Get stats for projects owned by user
+    const ownedStats = await Project.aggregate([
+      { $match: { owner: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ])
+
+    // Get stats for projects assigned to user
+    const assignedStats = await Project.aggregate([
+      { $match: { assignee: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ])
+
+    res.status(200).json({
+      message: 'Project completion stats retrieved',
+      data: {
+        owned: ownedStats,
+        assigned: assignedStats
+      }
+    })
+  } catch (err) {
+    console.error('Error fetching completion stats:', err)
+    res.status(500).json({ message: 'Error fetching stats', error: err.message })
+  }
+}
+
 export {
   createProject,
   publishProject,
@@ -1776,5 +1881,7 @@ export {
   removeFromInterested,
   submitProject,
   reviewProject,
-  archiveProject
+  archiveProject,
+  markProjectComplete,
+  getProjectCompletionStats
 }

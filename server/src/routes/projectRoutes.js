@@ -80,4 +80,8 @@ router.post('/:id/review', protect, reviewProject)
 router.get('/freelancer', protect, getFreelancerAnalytics)
 router.post('/profile-view/:userId', protect, recordProfileView)
 
+// Project completion endpoints
+router.patch('/:projectId/complete', protect, markProjectComplete)
+router.get('/stats/completion', protect, getProjectCompletionStats)
+
 export default router
