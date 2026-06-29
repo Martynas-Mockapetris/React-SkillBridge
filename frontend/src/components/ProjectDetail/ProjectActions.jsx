@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { archiveProject } from '../../services/projectService'
+import ProjectCompletionButton from '../shared/ProjectCompletionButton'
 
 const ProjectActions = ({
   project,
@@ -96,6 +97,9 @@ const ProjectActions = ({
           Review Submission
         </button>
       )}
+
+      {/* Mark Complete Button - for owner or assignee under review/in progress */}
+      {(isOwner || isAssignee) && ['in_progress', 'under_review'].includes(project.status) && <ProjectCompletionButton project={project} onComplete={loadProject} variant='button' size='md' />}
 
       {/* Archive Project Button - for owner when completed */}
       {isOwner && project.status === 'completed' && (
