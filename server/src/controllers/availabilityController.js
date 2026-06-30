@@ -416,3 +416,67 @@ export const batchCalculateCapacity = async (req, res) => {
     res.status(500).json({ message: 'Error in batch calculation', error: error.message })
   }
 }
+
+export const getFilteredAvailability = async (req, res) => {
+  try {
+    const { freelancerId } = req.params
+    const { year, month, status } = req.query
+    const userId = req.user._id
+
+    // Check authorization - can only view own or public calendars
+    const isOwnCalendar = freelancerId === userId.toString()
+    if (!isOwnCalendar) {
+      return res.status(403).json({ message: 'Not authorized to view this calendar' })
+    }
+
+    // Validate filters
+    const validStatuses = ['draft', 'active', 'assigned', 'in_progress', 'under_review', 'completed', 'cancelled']
+    const statusFilter = status && validStatuses.includes(status) ? status : null
+
+    const calendar = await AvailabilityCalendar.findOne({
+      freelancer: freelancerId,
+      year: parseInt(year),
+      month: parseInt(month)
+    })
+
+    if (!calendar) {
+      return res.status(404).json({ message: 'Calendar not found' })
+    }
+
+    // Filter days based on project status
+    let filteredDays = calendar.days
+
+    if (statusFilter) {
+      filteredDays = calendar.days
+        .map((day) => {
+          if (!day.assignedProjects || day.assignedProjects.length === 0) {
+            return day
+          }
+
+          const filteredProjects = day.assignedProjects.filter((p) => p.status === statusFilter)
+
+          return {
+            ...day.toObject(),
+            assignedProjects: filteredProjects,
+            projectsCount: filteredProjects.length,
+            capacity: filteredProjects.length > 0 ? Math.round((filteredProjects.length / calendar.days.length) * 100) : 0
+          }
+        })
+        .filter((day) => day.projectsCount > 0)
+    }
+
+    res.status(200).json({
+      message: 'Filtered availability retrieved',
+      data: {
+        ...calendar.toObject(),
+        days: filteredDays,
+        appliedFilters: {
+          status: statusFilter
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error fetching filtered availability:', err)
+    res.status(500).json({ message: 'Error fetching availability', error: err.message })
+  }
+}

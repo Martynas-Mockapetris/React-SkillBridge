@@ -7,7 +7,8 @@ import {
   getPublicFreelancerCalendar,
   toggleCalendarVisibility,
   calculateFreelancerCapacity,
-  batchCalculateCapacity
+  batchCalculateCapacity,
+  getFilteredAvailability
 } from '../controllers/availabilityController.js'
 import { protect } from '../middleware/authMiddleware.js'
 
@@ -26,5 +27,8 @@ router.get('/:freelancerId/availability', protect, getFreelancerAvailability)
 router.get('/:freelancerId/all', protect, getFreelancerAllCalendars)
 router.put('/:freelancerId/:year/:month/:date', protect, updateDayAvailability)
 router.patch('/:freelancerId/visibility', protect, toggleCalendarVisibility)
+
+// Filtered availability endpoint
+router.get('/:freelancerId/filtered', protect, getFilteredAvailability)
 
 export default router
