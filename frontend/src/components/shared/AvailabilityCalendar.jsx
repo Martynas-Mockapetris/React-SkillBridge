@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import AvailabilityEditPanel from './AvailabilityEditPanel'
 import AvailabilityCalendarSkeleton from './AvailabilityCalendarSkeleton'
 import useAvailability from '../../hooks/useAvailability'
+import StatusFilterChips from './StatusFilterChips'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -13,11 +14,23 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   const [selectedDays, setSelectedDays] = useState({})
   const [saving, setSaving] = useState(false)
   const [togglingVisibility, setTogglingVisibility] = useState(false)
+  const [statusFilter, setStatusFilter] = useState(null)
+  const [filterLoading, setFilterLoading] = useState(false)
 
-  const { calendarData, loading, error, isPublic, optimisticUpdates, fetchCalendarData, updateMultipleDays, toggleVisibility, applyOptimisticUpdate, rollbackOptimisticUpdate, clearOptimisticUpdates } = useAvailability(
-    freelancerId,
-    isPublicView
-  )
+  const {
+    calendarData,
+    loading,
+    error,
+    isPublic,
+    optimisticUpdates,
+    fetchCalendarData,
+    fetchFilteredCalendarData,
+    updateMultipleDays,
+    toggleVisibility,
+    applyOptimisticUpdate,
+    rollbackOptimisticUpdate,
+    clearOptimisticUpdates
+  } = useAvailability(freelancerId, isPublicView)
 
   // Fetch calendar data when component mounts or freelancerId changes
   React.useEffect(() => {
@@ -225,6 +238,37 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     }
   }
 
+  const handleStatusFilterChange = async (status) => {
+    setStatusFilter(status)
+    setFilterLoading(true)
+
+    try {
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth() + 1
+      await fetchFilteredCalendarData(year, month, status)
+    } catch (err) {
+      console.error('Error applying filter:', err)
+      toast.error('Error applying filter')
+    } finally {
+      setFilterLoading(false)
+    }
+  }
+
+  const handleClearFilter = async () => {
+    setStatusFilter(null)
+    setFilterLoading(true)
+
+    try {
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth() + 1
+      await fetchCalendarData(year, month)
+    } catch (err) {
+      console.error('Error clearing filter:', err)
+    } finally {
+      setFilterLoading(false)
+    }
+  }
+
   if (loading) {
     return <AvailabilityCalendarSkeleton />
   }
@@ -303,6 +347,21 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
           </div>
         ))}
       </div>
+
+      {/* Status Filter - only for own profile */}
+      {isOwnProfile && !editMode && (
+        <div className='mb-6 pb-6 border-b dark:border-light/10 border-primary/10'>
+          <StatusFilterChips selectedStatus={statusFilter} onStatusChange={handleStatusFilterChange} onClear={handleClearFilter} />
+          {filterLoading && (
+            <div className='mt-3 flex items-center gap-2 text-sm theme-text-secondary'>
+              <div className='animate-spin'>
+                <div className='w-4 h-4 border-2 border-accent border-t-transparent rounded-full'></div>
+              </div>
+              <span>Filtering calendar...</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Day headers */}
       <div className='grid grid-cols-7 gap-2 mb-2'>

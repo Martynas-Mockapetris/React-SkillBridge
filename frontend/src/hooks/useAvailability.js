@@ -127,6 +127,36 @@ const useAvailability = (freelancerId, isPublicView = true) => {
     [updateDayAvailability]
   )
 
+  const fetchFilteredCalendarData = useCallback(
+    async (year, month, status) => {
+      if (!freelancerId) return
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        const statusParam = status ? `&status=${status}` : ''
+        const endpoint = `/api/availability/${freelancerId}/filtered?year=${year}&month=${month}${statusParam}`
+
+        const response = await fetch(endpoint)
+        if (!response.ok) {
+          throw new Error('Failed to fetch filtered calendar')
+        }
+
+        const result = await response.json()
+        setCalendarData(result.data)
+        return result.data
+      } catch (err) {
+        setError(err.message)
+        console.error('Error fetching filtered calendar:', err)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    [freelancerId]
+  )
+
   return {
     calendarData,
     loading,
@@ -136,6 +166,7 @@ const useAvailability = (freelancerId, isPublicView = true) => {
     fetchCalendarData,
     updateDayAvailability,
     updateMultipleDays,
+    fetchFilteredCalendarData,
     toggleVisibility,
     applyOptimisticUpdate,
     rollbackOptimisticUpdate,
