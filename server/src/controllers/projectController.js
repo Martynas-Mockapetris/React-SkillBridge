@@ -1854,6 +1854,85 @@ const getProjectCompletionStats = async (req, res) => {
   }
 }
 
+// @desc    Bulk complete projects (owner or assignee)
+// @route   POST /api/projects/bulk-complete
+// @access  Private
+const bulkCompleteProjects = async (req, res) => {
+  try {
+    const { projectIds } = req.body
+    const userId = req.user._id
+
+    // Validate input
+    if (!Array.isArray(projectIds) || projectIds.length === 0) {
+      return res.status(400).json({ message: 'projectIds must be a non-empty array' })
+    }
+
+    if (projectIds.length > 50) {
+      return res.status(400).json({ message: 'Cannot complete more than 50 projects at once' })
+    }
+
+    // Find all projects
+    const projects = await Project.find({
+      _id: { $in: projectIds }
+    })
+
+    // Validate authorization and status
+    const validProjects = projects.filter((project) => {
+      const isOwner = project.owner.toString() === userId.toString()
+      const isAssignee = project.assignee && project.assignee.toString() === userId.toString()
+      const canComplete = ['in_progress', 'under_review'].includes(project.status)
+
+      return (isOwner || isAssignee) && canComplete && project.status !== 'completed'
+    })
+
+    if (validProjects.length === 0) {
+      return res.status(400).json({ message: 'No valid projects to complete' })
+    }
+
+    const completionTime = new Date()
+    const completedProjects = []
+    const failedIds = []
+
+    // Update each project
+    for (const project of validProjects) {
+      try {
+        project.status = 'completed'
+        project.completedAt = completionTime
+        project.completedBy = userId
+        project.lastUpdateReason = 'Bulk completed by user'
+
+        // Remove from assignee availability
+        if (project.assignee) {
+          try {
+            await removeProjectFromAvailability(project.assignee, project._id)
+          } catch (availErr) {
+            console.error('Error removing from availability:', availErr)
+          }
+        }
+
+        await project.save()
+        completedProjects.push(project)
+      } catch (err) {
+        console.error(`Error completing project ${project._id}:`, err)
+        failedIds.push(project._id)
+      }
+    }
+
+    res.status(200).json({
+      message: `${completedProjects.length} project(s) completed successfully`,
+      data: {
+        completed: completedProjects.length,
+        failed: failedIds.length,
+        projects: completedProjects,
+        failedIds
+      }
+    })
+  } catch (err) {
+    console.error('Error bulk completing projects:', err)
+    res.status(500).json({ message: 'Error completing projects', error: err.message })
+  }
+}
+
 export {
   createProject,
   publishProject,
@@ -1883,5 +1962,6 @@ export {
   reviewProject,
   archiveProject,
   markProjectComplete,
-  getProjectCompletionStats
+  getProjectCompletionStats,
+  bulkCompleteProjects
 }
