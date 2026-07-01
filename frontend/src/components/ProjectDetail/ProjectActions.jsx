@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { archiveProject } from '../../services/projectService'
 import ProjectCompletionButton from '../shared/ProjectCompletionButton'
+import RescheduleModal from '../../modal/RescheduleModal'
 
 const ProjectActions = ({
   project,
@@ -100,6 +101,16 @@ const ProjectActions = ({
 
       {/* Mark Complete Button - for owner or assignee under review/in progress */}
       {(isOwner || isAssignee) && ['in_progress', 'under_review'].includes(project.status) && <ProjectCompletionButton project={project} onComplete={loadProject} variant='button' size='md' />}
+
+      {/* Reschedule Project Button - for owner */}
+      {isOwner && !['completed', 'archived', 'cancelled', 'deleted_by_owner'].includes(project.status) && (
+        <button onClick={() => setIsRescheduleModalOpen(true)} className='w-full py-3 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-lg transition-all'>
+          Reschedule Project
+        </button>
+      )}
+
+      {/* Reschedule Modal */}
+      <RescheduleModal isOpen={isRescheduleModalOpen} project={project} onClose={() => setIsRescheduleModalOpen(false)} onReschedule={loadProject} />
 
       {/* Archive Project Button - for owner when completed */}
       {isOwner && project.status === 'completed' && (
