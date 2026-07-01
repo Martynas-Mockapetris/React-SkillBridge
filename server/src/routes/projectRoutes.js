@@ -26,7 +26,8 @@ import {
   removeFromInterested,
   submitProject,
   reviewProject,
-  bulkCompleteProjects
+  bulkCompleteProjects,
+  rescheduleProject
 } from '../controllers/projectController.js'
 import { protect, optionalProtect, requirePermission } from '../middleware/authMiddleware.js'
 import { PERMISSIONS } from '../utils/permissions.js'
@@ -85,5 +86,6 @@ router.post('/profile-view/:userId', protect, recordProfileView)
 router.patch('/:projectId/complete', protect, markProjectComplete)
 router.post('/bulk-complete', protect, bulkCompleteProjects)
 router.get('/stats/completion', protect, getProjectCompletionStats)
+router.patch('/:id/reschedule', protect, rescheduleProject)
 
 export default router

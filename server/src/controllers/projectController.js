@@ -1933,6 +1933,86 @@ const bulkCompleteProjects = async (req, res) => {
   }
 }
 
+// @desc    Reschedule a project (owner only)
+// @route   PATCH /api/projects/:id/reschedule
+// @access  Private
+ const rescheduleProject = async (req, res) => {
+  try {
+    const { projectId } = req.params
+    const { newDeadline } = req.body
+    const userId = req.user._id
+
+    // Validate input
+    if (!newDeadline) {
+      return res.status(400).json({ message: 'newDeadline is required' })
+    }
+
+    const newDate = new Date(newDeadline)
+    if (isNaN(newDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid deadline date' })
+    }
+
+    if (newDate <= new Date()) {
+      return res.status(400).json({ message: 'New deadline must be in the future' })
+    }
+
+    // Find project
+    const project = await Project.findById(projectId)
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Check authorization - only owner can reschedule
+    if (project.owner.toString() !== userId.toString()) {
+      return res.status(403).json({ message: 'Only project owner can reschedule' })
+    }
+
+    // Can't reschedule completed or cancelled projects
+    if (['completed', 'cancelled', 'archived', 'deleted_by_owner'].includes(project.status)) {
+      return res.status(400).json({ message: `Cannot reschedule ${project.status} project` })
+    }
+
+    const oldDeadline = project.deadline
+    project.deadline = newDate
+    project.lastUpdateReason = `Rescheduled from ${oldDeadline.toISOString()} to ${newDate.toISOString()}`
+
+    // Update availability if assignee exists
+    if (project.assignee) {
+      try {
+        // Remove from old date range
+        await removeProjectFromAvailability(project.assignee, projectId)
+        
+        // Add to new date range
+        await populateAvailabilityOnProjectAssignment(project.assignee, projectId, project.deadline, project.priority)
+      } catch (availErr) {
+        console.error('Error updating availability on reschedule:', availErr)
+        // Don't fail the reschedule if availability update fails
+      }
+    }
+
+    await project.save()
+
+    // Populate for response
+    await project.populate([
+      { path: 'owner', select: 'firstName lastName email' },
+      { path: 'assignee', select: 'firstName lastName email' },
+      { path: 'category', select: 'name' }
+    ])
+
+    res.status(200).json({
+      message: 'Project rescheduled successfully',
+      data: {
+        project,
+        oldDeadline,
+        newDeadline: project.deadline
+      }
+    })
+  } catch (err) {
+    console.error('Error rescheduling project:', err)
+    res.status(500).json({ message: 'Error rescheduling project', error: err.message })
+  }
+}
+
 export {
   createProject,
   publishProject,
@@ -1963,5 +2043,6 @@ export {
   archiveProject,
   markProjectComplete,
   getProjectCompletionStats,
-  bulkCompleteProjects
+  bulkCompleteProjects,
+  rescheduleProject
 }
