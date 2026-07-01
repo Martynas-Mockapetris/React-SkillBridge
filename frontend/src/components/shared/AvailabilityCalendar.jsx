@@ -334,7 +334,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       )}
 
       {/* Legend */}
-      <div className='grid grid-cols-4 gap-2 mb-6 text-sm'>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 text-sm'>
         {[
           { status: 'green', label: 'Available' },
           { status: 'yellow', label: 'Partially Busy' },
@@ -342,8 +342,8 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
           { status: 'red', label: '100% Busy' }
         ].map((item) => (
           <div key={item.status} className='flex items-center gap-2'>
-            <div className='w-3 h-3 rounded flex-shrink-0' style={{ backgroundColor: getStatusColor(item.status) }}></div>
-            <span className='theme-text-secondary text-xs'>{item.label}</span>
+            <div className='w-2 h-2 md:w-3 md:h-3 rounded flex-shrink-0' style={{ backgroundColor: getStatusColor(item.status) }}></div>
+            <span className='theme-text-secondary text-xs md:text-sm'>{item.label}</span>
           </div>
         ))}
       </div>
@@ -364,16 +364,17 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       )}
 
       {/* Day headers */}
-      <div className='grid grid-cols-7 gap-2 mb-2'>
+      <div className='grid grid-cols-7 gap-1 md:gap-2 mb-2'>
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className='text-center text-xs font-semibold theme-text-secondary py-2'>
-            {day}
+          <div key={day} className='text-center text-xs md:text-sm font-semibold theme-text-secondary py-1 md:py-2'>
+            <span className='hidden sm:inline'>{day}</span>
+            <span className='sm:hidden'>{day.slice(0, 1)}</span>
           </div>
         ))}
       </div>
 
-      {/* Calendar Grid */}
-      <div className='grid grid-cols-7 gap-2'>
+      {/* Calendar Grid - Responsive */}
+      <div className='grid grid-cols-7 gap-1 md:gap-2'>
         <AnimatePresence>
           {calendarGrid.map((day, idx) => {
             const isEmpty = !day.date
@@ -391,47 +392,38 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
                 onMouseEnter={() => !isEmpty && setHoveredDay(idx)}
                 onMouseLeave={() => setHoveredDay(null)}
                 onClick={() => handleDayClick(day)}
-                className={`relative aspect-square rounded-lg flex flex-col items-center justify-center transition-all duration-200 cursor-pointer ${!isEmpty && editMode ? 'hover:shadow-lg hover:scale-110 ring-2' : !isEmpty ? 'hover:shadow-lg hover:scale-105' : ''} ${isSelected ? 'ring-4 ring-blue-500' : editMode && !isEmpty ? 'ring-2 ring-gray-300 dark:ring-gray-600' : ''}`}
+                className={`relative aspect-square rounded-lg flex flex-col items-center justify-center transition-all duration-200 cursor-pointer text-xs md:text-sm ${!isEmpty && editMode ? 'hover:shadow-lg hover:scale-110 ring-2' : !isEmpty ? 'hover:shadow-lg hover:scale-105' : ''} ${isSelected ? 'ring-4 ring-blue-500' : editMode && !isEmpty ? 'ring-2 ring-gray-300 dark:ring-gray-600' : ''}`}
                 style={{
                   backgroundColor: isEmpty ? 'transparent' : getStatusColor(currentStatus)
                 }}>
                 {!isEmpty && (
                   <>
                     {/* Day number */}
-                    <span className={`text-sm font-semibold ${['red', 'orange'].includes(currentStatus) ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{day.date}</span>
+                    <span className={`font-semibold ${['red', 'orange'].includes(currentStatus) ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{day.date}</span>
 
                     {/* Today indicator */}
                     {isToday && <div className='absolute inset-0 rounded-lg border-2 border-white dark:border-gray-900 opacity-60'></div>}
 
                     {/* Selected indicator */}
                     {isSelected && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center'>
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='absolute top-1 right-1 w-3 h-3 md:w-4 md:h-4 bg-blue-500 rounded-full flex items-center justify-center'>
                         <FaCheck className='text-white text-xs' />
                       </motion.div>
                     )}
 
-                    {/* Hover tooltip */}
+                    {/* Hover tooltip - hidden on mobile */}
                     <AnimatePresence>
                       {hoveredDay === idx && (
                         <motion.div
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-xs whitespace-nowrap z-50 pointer-events-none shadow-lg'>
+                          className='hidden md:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-xs whitespace-nowrap z-50 pointer-events-none shadow-lg'>
                           <div className='font-semibold'>{getStatusLabel(currentStatus)}</div>
                           <div className='text-xs opacity-90'>{getDayCapacityLabel(day.capacity)}</div>
                           {day.projectsCount > 0 && (
                             <div className='text-xs opacity-90 mt-1'>
                               {day.projectsCount} project{day.projectsCount !== 1 ? 's' : ''}
-                            </div>
-                          )}
-                          {day.projectTitles && day.projectTitles.length > 0 && (
-                            <div className='text-xs opacity-75 mt-1 max-w-xs'>
-                              {day.projectTitles
-                                .slice(0, 2)
-                                .map((p) => `${p.title} (${p.priority})`)
-                                .join(', ')}
-                              {day.projectTitles.length > 2 && ` +${day.projectTitles.length - 2} more`}
                             </div>
                           )}
                         </motion.div>
@@ -447,16 +439,16 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
 
       {/* Summary Stats - only for own profile, hidden in edit mode */}
       {!isPublicView && !editMode && (
-        <div className='mt-6 pt-6 border-t dark:border-light/10 border-primary/10 grid grid-cols-4 gap-4'>
+        <div className='mt-6 pt-6 border-t dark:border-light/10 border-primary/10 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4'>
           {[
             { label: 'Available', value: calendarData.daysBreakdown?.green || 0, color: 'bg-green-100 dark:bg-green-900/30' },
             { label: 'Partially Busy', value: calendarData.daysBreakdown?.yellow || 0, color: 'bg-yellow-100 dark:bg-yellow-900/30' },
             { label: 'Busy', value: calendarData.daysBreakdown?.orange || 0, color: 'bg-orange-100 dark:bg-orange-900/30' },
             { label: 'Fully Busy', value: calendarData.daysBreakdown?.red || 0, color: 'bg-red-100 dark:bg-red-900/30' }
           ].map((stat) => (
-            <div key={stat.label} className={`p-3 rounded-lg ${stat.color}`}>
+            <div key={stat.label} className={`p-2 md:p-3 rounded-lg ${stat.color}`}>
               <div className='text-xs theme-text-secondary'>{stat.label}</div>
-              <div className='text-lg font-bold theme-text'>{stat.value}</div>
+              <div className='text-lg md:text-xl font-bold theme-text'>{stat.value}</div>
             </div>
           ))}
         </div>
