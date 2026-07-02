@@ -398,6 +398,81 @@ const filterProjectsByBudget = async (req, res) => {
   }
 }
 
+// @desc    Filter projects by status
+// @route   GET /api/projects/filter-by-status
+// @access  Public
+const filterProjectsByStatus = async (req, res) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query
+
+    if (!status) {
+      return res.status(400).json({ message: 'Status parameter is required' })
+    }
+
+    // Parse comma-separated statuses
+    const statusArray = status
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+
+    if (statusArray.length === 0) {
+      return res.status(400).json({ message: 'At least one valid status is required' })
+    }
+
+    // Validate statuses
+    const validStatuses = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
+    const invalidStatuses = statusArray.filter((s) => !validStatuses.includes(s))
+
+    if (invalidStatuses.length > 0) {
+      return res.status(400).json({
+        message: `Invalid statuses: ${invalidStatuses.join(', ')}`,
+        validStatuses
+      })
+    }
+
+    // Build query
+    const query = {
+      status: { $in: statusArray }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by status successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          statuses: statusArray
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by status:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
 // @desc    Get all projects for admin (all statuses)
 // @route   GET /api/projects/admin/all
 // @access  Admin
@@ -2096,6 +2171,7 @@ export {
   deleteProject,
   getAllProjects,
   filterProjectsByBudget,
+  filterProjectsByStatus,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
