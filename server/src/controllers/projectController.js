@@ -550,6 +550,84 @@ const filterProjectsBySkills = async (req, res) => {
   }
 }
 
+// @desc    Filter projects by priority
+// @route   GET /api/projects/filter-by-priority
+// @access  Public
+const filterProjectsByPriority = async (req, res) => {
+  try {
+    const { priority, page = 1, limit = 10 } = req.query
+
+    if (!priority) {
+      return res.status(400).json({ message: 'Priority parameter is required (comma-separated)' })
+    }
+
+    // Parse comma-separated priorities
+    const priorityArray = priority
+      .split(',')
+      .map((p) => p.trim().toLowerCase())
+      .filter((p) => p.length > 0)
+
+    if (priorityArray.length === 0) {
+      return res.status(400).json({ message: 'At least one valid priority is required' })
+    }
+
+    // Validate priorities
+    const allowedPriorities = ['low', 'medium', 'high', 'urgent']
+    const invalidPriorities = priorityArray.filter((p) => !allowedPriorities.includes(p))
+
+    if (invalidPriorities.length > 0) {
+      return res.status(400).json({
+        message: 'Invalid priority values',
+        invalid: invalidPriorities,
+        allowed: allowedPriorities
+      })
+    }
+
+    // Build query
+    const query = {
+      status: 'active',
+      priority: { $in: priorityArray }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by priority successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          priority: priorityArray,
+          allowed: allowedPriorities
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by priority:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
 // @desc    Get all projects for admin (all statuses)
 // @route   GET /api/projects/admin/all
 // @access  Admin
@@ -2250,6 +2328,7 @@ export {
   filterProjectsByBudget,
   filterProjectsByStatus,
   filterProjectsBySkills,
+  filterProjectesByPriority,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,

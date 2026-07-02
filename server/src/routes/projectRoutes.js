@@ -11,6 +11,7 @@ import {
   filterProjectsByBudget,
   filterProjectsByStatus,
   filterProjectsBySkills,
+  filterProjectsByPriority,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
@@ -53,6 +54,7 @@ router.get('/all', getAllProjects)
 router.get('/filter/budget', filterProjectsByBudget)
 router.get('/filter/status', filterProjectsByStatus)
 router.get('/filter/skills', filterProjectsBySkills)
+router.get('/filter/priority', filterProjectsByPriority)
 router.get('/interested', protect, getInterestedProjects)
 
 router.get('/admin/all', protect, requirePermission(PERMISSIONS.PROJECTS_READ_ADMIN), getAdminAllProjects)
