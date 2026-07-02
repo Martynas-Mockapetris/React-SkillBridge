@@ -628,6 +628,145 @@ const filterProjectsByPriority = async (req, res) => {
   }
 }
 
+// @desc    Filter projects by multiple criteria (budget, status, skills, priority)
+// @route   GET /api/projects/filter
+// @access  Public
+const filterProjects = async (req, res) => {
+  try {
+    const {
+      minBudget,
+      maxBudget,
+      status,
+      skills,
+      priority,
+      matchType = 'any',
+      sort = 'newest',
+      page = 1,
+      limit = 10
+    } = req.query
+
+    // Build query object
+    const query = { status: 'active' }
+
+    // Add budget filter
+    if (minBudget || maxBudget) {
+      query.budget = {}
+      if (minBudget) query.budget.$gte = Math.max(0, parseInt(minBudget) || 0)
+      if (maxBudget) query.budget.$lte = Math.max(0, parseInt(maxBudget) || 0)
+      
+      if (query.budget.$gte > query.budget.$lte) {
+        return res.status(400).json({ message: 'minBudget cannot be greater than maxBudget' })
+      }
+    }
+
+    // Add status filter
+    if (status) {
+      const statusArray = status
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (statusArray.length > 0) {
+        const allowedStatuses = ['draft', 'active', 'assigned', 'in_progress', 'under_review', 'completed', 'cancelled', 'negotiating']
+        const invalidStatuses = statusArray.filter((s) => !allowedStatuses.includes(s))
+
+        if (invalidStatuses.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid status values',
+            invalid: invalidStatuses,
+            allowed: allowedStatuses
+          })
+        }
+
+        query.status = { $in: statusArray }
+      }
+    }
+
+    // Add skills filter
+    if (skills) {
+      const skillsArray = skills
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (skillsArray.length > 0) {
+        query.skills = {
+          [matchType === 'all' ? '$all' : '$in']: skillsArray
+        }
+      }
+    }
+
+    // Add priority filter
+    if (priority) {
+      const priorityArray = priority
+        .split(',')
+        .map((p) => p.trim().toLowerCase())
+        .filter((p) => p.length > 0)
+
+      if (priorityArray.length > 0) {
+        const allowedPriorities = ['low', 'medium', 'high', 'urgent']
+        const invalidPriorities = priorityArray.filter((p) => !allowedPriorities.includes(p))
+
+        if (invalidPriorities.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid priority values',
+            invalid: invalidPriorities,
+            allowed: allowedPriorities
+          })
+        }
+
+        query.priority = { $in: priorityArray }
+      }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Determine sort order
+    let sortOrder = { createdAt: -1 }
+    if (sort === 'oldest') sortOrder = { createdAt: 1 }
+    else if (sort === 'budget-asc') sortOrder = { budget: 1 }
+    else if (sort === 'budget-desc') sortOrder = { budget: -1 }
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort(sortOrder)
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        appliedFilters: {
+          ...(minBudget || maxBudget) && { budget: { min: minBudget || 0, max: maxBudget || Infinity } },
+          ...(status && query.status.$in) && { status: query.status.$in },
+          ...(skills && query.skills) && { skills: skills.split(',').map((s) => s.trim().toLowerCase()) },
+          ...(priority && query.priority.$in) && { priority: query.priority.$in }
+        },
+        sortOrder: sort
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
 // @desc    Get all projects for admin (all statuses)
 // @route   GET /api/projects/admin/all
 // @access  Admin
@@ -2329,6 +2468,7 @@ export {
   filterProjectsByStatus,
   filterProjectsBySkills,
   filterProjectesByPriority,
+  filterProjects,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
