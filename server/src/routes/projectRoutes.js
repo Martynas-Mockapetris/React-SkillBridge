@@ -8,6 +8,7 @@ import {
   updateProject,
   deleteProject,
   getAllProjects,
+  filterProjectsByBudget,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
@@ -47,6 +48,7 @@ router.post('/', protect, upload.array('attachments', 5), createProject)
 router.put('/:id/publish', protect, publishProject)
 router.get('/', protect, getUserProjects)
 router.get('/all', getAllProjects)
+router.get('/filter/budget', filterProjectsByBudget)
 router.get('/interested', protect, getInterestedProjects)
 
 router.get('/admin/all', protect, requirePermission(PERMISSIONS.PROJECTS_READ_ADMIN), getAdminAllProjects)

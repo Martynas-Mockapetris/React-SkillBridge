@@ -325,6 +325,79 @@ const getAllProjects = async (req, res) => {
   }
 }
 
+// @desc    Filter projects by budget range
+// @route   GET /api/projects/filter-by-budget
+// @access  Public
+const filterProjectsByBudget = async (req, res) => {
+  try {
+    const { minBudget, maxBudget, page = 1, limit = 10 } = req.query
+
+    // Validate budget parameters
+    if (!minBudget && !maxBudget) {
+      return res.status(400).json({ message: 'At least minBudget or maxBudget is required' })
+    }
+
+    const min = minBudget ? parseFloat(minBudget) : 0
+    const max = maxBudget ? parseFloat(maxBudget) : Number.MAX_SAFE_INTEGER
+
+    // Validate budget values
+    if (isNaN(min) || isNaN(max)) {
+      return res.status(400).json({ message: 'Budget values must be valid numbers' })
+    }
+
+    if (min < 0 || max < 0) {
+      return res.status(400).json({ message: 'Budget values cannot be negative' })
+    }
+
+    if (min > max) {
+      return res.status(400).json({ message: 'minBudget cannot be greater than maxBudget' })
+    }
+
+    // Build query
+    const query = {
+      status: 'active',
+      budget: { $gte: min, $lte: max }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count for pagination
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects with pagination
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by budget successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          minBudget: min,
+          maxBudget: max
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by budget:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
 // @desc    Get all projects for admin (all statuses)
 // @route   GET /api/projects/admin/all
 // @access  Admin
@@ -2022,6 +2095,7 @@ export {
   updateProject,
   deleteProject,
   getAllProjects,
+  filterProjectsByBudget,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
