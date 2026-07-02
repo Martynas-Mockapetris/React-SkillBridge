@@ -473,6 +473,83 @@ const filterProjectsByStatus = async (req, res) => {
   }
 }
 
+// @desc    Filter projects by skills
+// @route   GET /api/projects/filter-by-skills
+// @access  Public
+const filterProjectsBySkills = async (req, res) => {
+  try {
+    const { skills, matchType = 'any', page = 1, limit = 10 } = req.query
+
+    if (!skills) {
+      return res.status(400).json({ message: 'Skills parameter is required (comma-separated)' })
+    }
+
+    // Parse comma-separated skills
+    const skillsArray = skills
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length > 0)
+
+    if (skillsArray.length === 0) {
+      return res.status(400).json({ message: 'At least one valid skill is required' })
+    }
+
+    // Validate matchType
+    const validMatchTypes = ['any', 'all']
+    if (!validMatchTypes.includes(matchType)) {
+      return res.status(400).json({
+        message: 'matchType must be "any" or "all"',
+        validMatchTypes
+      })
+    }
+
+    // Build query based on matchType
+    const query = {
+      status: 'active',
+      skills: {
+        [matchType === 'all' ? '$all' : '$in']: skillsArray
+      }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by skills successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          skills: skillsArray,
+          matchType
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by skills:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
 // @desc    Get all projects for admin (all statuses)
 // @route   GET /api/projects/admin/all
 // @access  Admin
@@ -2084,7 +2161,7 @@ const bulkCompleteProjects = async (req, res) => {
 // @desc    Reschedule a project (owner only)
 // @route   PATCH /api/projects/:id/reschedule
 // @access  Private
- const rescheduleProject = async (req, res) => {
+const rescheduleProject = async (req, res) => {
   try {
     const { projectId } = req.params
     const { newDeadline } = req.body
@@ -2129,7 +2206,7 @@ const bulkCompleteProjects = async (req, res) => {
       try {
         // Remove from old date range
         await removeProjectFromAvailability(project.assignee, projectId)
-        
+
         // Add to new date range
         await populateAvailabilityOnProjectAssignment(project.assignee, projectId, project.deadline, project.priority)
       } catch (availErr) {
@@ -2172,6 +2249,7 @@ export {
   getAllProjects,
   filterProjectsByBudget,
   filterProjectsByStatus,
+  filterProjectsBySkills,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
