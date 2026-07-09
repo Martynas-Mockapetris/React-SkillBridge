@@ -3,6 +3,7 @@ import { useProjectFilters } from '../hooks/useProjectFilters'
 import { ProjectFilterPanel } from '../components/shared/ProjectFilterPanel'
 import { ActiveFilterChips } from '../components/shared/ActiveFilterChips'
 import { SortResultsHeader } from '../components/shared/SortResultsHeader'
+import { SortIndicatorBadge } from '../components/shared/SortIndicatorBadge'
 import ListingTabs from '../components/Listings/ListingTabs'
 import { useEffect } from 'react'
 
@@ -60,6 +61,20 @@ const Listings = () => {
 
           {hasActiveFilters() ? (
             <div className='mb-6'>
+              <div className='flex items-center justify-between mb-4 p-4 bg-gradient-to-r from-blue-50 to-transparent rounded-lg border border-blue-100'>
+                <div className='flex items-center gap-3'>
+                  <div>
+                    <p className='text-xs font-medium text-gray-600 uppercase tracking-wide'>Sorting</p>
+                    <SortIndicatorBadge currentSort={filters.sort} onSortChange={handleSortChange} />
+                  </div>
+                </div>
+                <div className='text-right'>
+                  <p className='text-xs font-medium text-gray-600 uppercase tracking-wide'>Results</p>
+                  <motion.span key={results.pagination?.total} initial={{ scale: 0.8 }} animate={{ scale: 1 }} className='inline-block text-2xl font-bold text-blue-600'>
+                    {results.pagination?.total || 0}
+                  </motion.span>
+                </div>
+              </div>
               <SortResultsHeader totalResults={results.pagination?.total || 0} currentSort={filters.sort} onSortChange={handleSortChange} />
               <ListingTabs filteredProjects={results.projects} isFiltered={true} />
             </div>

@@ -174,33 +174,28 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
         </AnimatePresence>
       </div>
 
-      {/* Sort Options */}
-      <div>
-        <button onClick={() => toggleSection('sort')} className='w-full flex items-center justify-between py-2 text-left font-medium text-gray-700 hover:text-gray-900'>
-          <span>Sort By</span>
-          <span className={`transform transition-transform ${expandedSections.sort ? 'rotate-180' : ''}`}>▼</span>
-        </button>
-        <AnimatePresence>
-          {expandedSections.sort && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className='overflow-hidden'>
-              <div className='mt-3 flex flex-col gap-2'>
-                {sortOptions.map((option) => (
-                  <label key={option.value} className='flex items-center cursor-pointer'>
-                    <input
-                      type='radio'
-                      name='sort'
-                      value={option.value}
-                      checked={filters.sort === option.value}
-                      onChange={(e) => onFilterChange('sort', e.target.value)}
-                      className='w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500'
-                    />
-                    <span className='ml-2 text-sm text-gray-700'>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Sort Options - Always Visible */}
+      <div className='pt-4 border-t border-gray-200 mt-4'>
+        <div className='flex items-center justify-between mb-3'>
+          <h4 className='font-medium text-gray-700'>Sort Results</h4>
+          <div className='flex-1 ml-3 h-0.5 bg-gradient-to-r from-blue-400 to-transparent'></div>
+        </div>
+        <div className='flex flex-col gap-2'>
+          {sortOptions.map((option) => (
+            <motion.label key={option.value} whileHover={{ x: 4 }} className='flex items-center cursor-pointer group'>
+              <input
+                type='radio'
+                name='sort'
+                value={option.value}
+                checked={filters.sort === option.value}
+                onChange={(e) => onFilterChange('sort', e.target.value)}
+                className='w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500'
+              />
+              <span className='ml-2 text-sm text-gray-700 group-hover:text-blue-600 transition-colors'>{option.label}</span>
+              {filters.sort === option.value && <motion.div layoutId='activeSort' className='ml-auto w-2 h-2 bg-blue-500 rounded-full' initial={{ scale: 0 }} animate={{ scale: 1 }} />}
+            </motion.label>
+          ))}
+        </div>
       </div>
     </div>
   )
