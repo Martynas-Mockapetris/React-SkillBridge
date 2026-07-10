@@ -633,17 +633,7 @@ const filterProjectsByPriority = async (req, res) => {
 // @access  Public
 const filterProjects = async (req, res) => {
   try {
-    const {
-      minBudget,
-      maxBudget,
-      status,
-      skills,
-      priority,
-      matchType = 'any',
-      sort = 'newest',
-      page = 1,
-      limit = 10
-    } = req.query
+    const { minBudget, maxBudget, status, skills, priority, matchType = 'any', sort = 'newest', page = 1, limit = 10 } = req.query
 
     // Build query object
     const query = { status: 'active' }
@@ -653,7 +643,7 @@ const filterProjects = async (req, res) => {
       query.budget = {}
       if (minBudget) query.budget.$gte = Math.max(0, parseInt(minBudget) || 0)
       if (maxBudget) query.budget.$lte = Math.max(0, parseInt(maxBudget) || 0)
-      
+
       if (query.budget.$gte > query.budget.$lte) {
         return res.status(400).json({ message: 'minBudget cannot be greater than maxBudget' })
       }
@@ -753,10 +743,10 @@ const filterProjects = async (req, res) => {
           pages: Math.ceil(total / limitNum)
         },
         appliedFilters: {
-          ...(minBudget || maxBudget) && { budget: { min: minBudget || 0, max: maxBudget || Infinity } },
-          ...(status && query.status.$in) && { status: query.status.$in },
-          ...(skills && query.skills) && { skills: skills.split(',').map((s) => s.trim().toLowerCase()) },
-          ...(priority && query.priority.$in) && { priority: query.priority.$in }
+          ...((minBudget || maxBudget) && { budget: { min: minBudget || 0, max: maxBudget || Infinity } }),
+          ...(status && query.status.$in && { status: query.status.$in }),
+          ...(skills && query.skills && { skills: skills.split(',').map((s) => s.trim().toLowerCase()) }),
+          ...(priority && query.priority.$in && { priority: query.priority.$in })
         },
         sortOrder: sort
       }
@@ -764,6 +754,144 @@ const filterProjects = async (req, res) => {
   } catch (err) {
     console.error('Error filtering projects:', err)
     res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
+// @desc    Search projects by keyword with optional filters
+// @route   GET /api/projects/search
+// @access  Public
+const filterProjectsByKeyword = async (req, res) => {
+  try {
+    const { q, minBudget, maxBudget, status, skills, priority, page = 1, limit = 10 } = req.query
+
+    if (!q || q.trim().length === 0) {
+      return res.status(400).json({ message: 'Search keyword (q) is required' })
+    }
+
+    const searchKeyword = q.trim().toLowerCase()
+
+    // Build query object with keyword search
+    const query = {
+      status: 'active',
+      $or: [
+        { title: { $regex: searchKeyword, $options: 'i' } },
+        { description: { $regex: searchKeyword, $options: 'i' } },
+        { skills: { $elemMatch: { $regex: searchKeyword, $options: 'i' } } },
+        { 'category.name': { $regex: searchKeyword, $options: 'i' } }
+      ]
+    }
+
+    // Add optional budget filter
+    if (minBudget || maxBudget) {
+      query.budget = {}
+      if (minBudget) query.budget.$gte = Math.max(0, parseInt(minBudget) || 0)
+      if (maxBudget) query.budget.$lte = Math.max(0, parseInt(maxBudget) || 0)
+
+      if (query.budget.$gte && query.budget.$lte && query.budget.$gte > query.budget.$lte) {
+        return res.status(400).json({ message: 'minBudget cannot be greater than maxBudget' })
+      }
+    }
+
+    // Add optional status filter
+    if (status) {
+      const statusArray = status
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (statusArray.length > 0) {
+        const allowedStatuses = ['draft', 'active', 'assigned', 'in_progress', 'under_review', 'completed', 'cancelled', 'negotiating']
+        const invalidStatuses = statusArray.filter((s) => !allowedStatuses.includes(s))
+
+        if (invalidStatuses.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid status values',
+            invalid: invalidStatuses,
+            allowed: allowedStatuses
+          })
+        }
+
+        query.status = { $in: statusArray }
+      }
+    }
+
+    // Add optional skills filter
+    if (skills) {
+      const skillsArray = skills
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (skillsArray.length > 0) {
+        query.skills = { $in: skillsArray }
+      }
+    }
+
+    // Add optional priority filter
+    if (priority) {
+      const priorityArray = priority
+        .split(',')
+        .map((p) => p.trim().toLowerCase())
+        .filter((p) => p.length > 0)
+
+      if (priorityArray.length > 0) {
+        const allowedPriorities = ['low', 'medium', 'high', 'urgent']
+        const invalidPriorities = priorityArray.filter((p) => !allowedPriorities.includes(p))
+
+        if (invalidPriorities.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid priority values',
+            invalid: invalidPriorities,
+            allowed: allowedPriorities
+          })
+        }
+
+        query.priority = { $in: priorityArray }
+      }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects searched successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        search: {
+          keyword: searchKeyword,
+          searchFields: ['title', 'description', 'skills', 'category']
+        },
+        appliedFilters: {
+          ...((minBudget || maxBudget) && { budget: { min: minBudget || 0, max: maxBudget || Infinity } }),
+          ...(status && query.status?.$in && { status: query.status.$in }),
+          ...(skills && query.skills?.$in && { skills: skills.split(',').map((s) => s.trim().toLowerCase()) }),
+          ...(priority && query.priority?.$in && { priority: query.priority.$in })
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error searching projects:', err)
+    res.status(500).json({ message: 'Error searching projects', error: err.message })
   }
 }
 
@@ -2469,6 +2597,7 @@ export {
   filterProjectsBySkills,
   filterProjectesByPriority,
   filterProjects,
+  filterProjectsByKeyword,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
