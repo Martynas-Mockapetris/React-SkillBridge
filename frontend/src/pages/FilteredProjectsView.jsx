@@ -4,6 +4,7 @@ import { ProjectFilterPanel } from '../components/shared/ProjectFilterPanel'
 import { ActiveFilterChips } from '../components/shared/ActiveFilterChips'
 import { SortResultsHeader } from '../components/shared/SortResultsHeader'
 import { SortIndicatorBadge } from '../components/shared/SortIndicatorBadge'
+import FilterSidebar from '../components/shared/FilterSidebar'
 import ProjectCard from '../components/Listings/ProjectCard'
 import CardLoader from '../components/Listings/CardLoader'
 import { useEffect, useState } from 'react'
@@ -74,18 +75,21 @@ const FilteredProjectsView = () => {
       </div>
 
       {/* Main content with sidebar */}
-      <div className={`grid grid-cols-1 md:grid-cols-4 gap-6 p-4 md:p-8`}>
-        {/* Sidebar */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <motion.aside initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className='md:col-span-1'>
-              <ProjectFilterPanel filters={filters} onFilterChange={handleFilterChange} onClearAll={clearAllFilters} hasActiveFilters={hasActiveFilters()} />
-            </motion.aside>
-          )}
-        </AnimatePresence>
+      <div className={`flex`}>
+        {/* Mobile-responsive FilterSidebar */}
+        <FilterSidebar
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+          onClose={() => setSidebarOpen(false)}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearAll={clearAllFilters}
+          hasActiveFilters={hasActiveFilters()}
+          isDarkMode={isDarkMode}
+        />
 
         {/* Main content */}
-        <div className='md:col-span-3'>
+        <div className='flex-1 w-full p-4 md:p-8'>
           {/* No filters message */}
           {!hasActiveFilters() && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`p-8 rounded-lg border-2 border-dashed text-center ${isDarkMode ? 'border-gray-700 bg-gray-900/50' : 'border-gray-300 bg-gray-50'}`}>
