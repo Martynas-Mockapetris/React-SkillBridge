@@ -5,6 +5,7 @@ import { ActiveFilterChips } from '../components/shared/ActiveFilterChips'
 import { SortResultsHeader } from '../components/shared/SortResultsHeader'
 import { SortIndicatorBadge } from '../components/shared/SortIndicatorBadge'
 import FilterSidebar from '../components/shared/FilterSidebar'
+import EmptyFilterState from '../components/shared/EmptyFilterState'
 import ProjectCard from '../components/Listings/ProjectCard'
 import CardLoader from '../components/Listings/CardLoader'
 import { useEffect, useState } from 'react'
@@ -91,12 +92,7 @@ const FilteredProjectsView = () => {
         {/* Main content */}
         <div className='flex-1 w-full p-4 md:p-8'>
           {/* No filters message */}
-          {!hasActiveFilters() && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`p-8 rounded-lg border-2 border-dashed text-center ${isDarkMode ? 'border-gray-700 bg-gray-900/50' : 'border-gray-300 bg-gray-50'}`}>
-              <h2 className='text-2xl font-bold mb-2'>No filters applied</h2>
-              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Use the filter panel to search and filter projects</p>
-            </motion.div>
-          )}
+          {!hasActiveFilters() && <EmptyFilterState isDarkMode={isDarkMode} onApplyFilter={() => setSidebarOpen(true)} />}
 
           {/* Active filters display */}
           {hasActiveFilters() && (
