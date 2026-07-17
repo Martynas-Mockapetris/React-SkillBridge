@@ -6,12 +6,14 @@ import { SortResultsHeader } from '../components/shared/SortResultsHeader'
 import { SortIndicatorBadge } from '../components/shared/SortIndicatorBadge'
 import FilterSidebar from '../components/shared/FilterSidebar'
 import EmptyFilterState from '../components/shared/EmptyFilterState'
+import ExportResultsButton from '../components/shared/ExportResultsButton'
 import ProjectCard from '../components/Listings/ProjectCard'
 import CardLoader from '../components/Listings/CardLoader'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaFilter, FaChevronLeft } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
+import { trackFilterSearch, trackFilterToggle, trackExport } from '../utils/filterAnalytics'
 
 const FilteredProjectsView = () => {
   const { isDarkMode } = useTheme()
@@ -23,8 +25,21 @@ const FilteredProjectsView = () => {
   useEffect(() => {
     if (hasActiveFilters()) {
       fetchFilteredProjects()
+      // Track filter search analytics
+      trackFilterSearch(filters, results.pagination?.total || 0)
     }
   }, [filters])
+
+  // Track sidebar toggle
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen)
+    trackFilterToggle('sidebar')
+  }
+
+  // Track export action
+  const handleExport = (format) => {
+    trackExport(format, results.projects.length)
+  }
 
   const handleFilterChange = (filterName, value) => {
     if (filterName === 'addStatus') {
@@ -80,7 +95,7 @@ const FilteredProjectsView = () => {
         {/* Mobile-responsive FilterSidebar */}
         <FilterSidebar
           isOpen={sidebarOpen}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
+          onToggle={handleSidebarToggle}
           onClose={() => setSidebarOpen(false)}
           filters={filters}
           onFilterChange={handleFilterChange}
@@ -116,7 +131,10 @@ const FilteredProjectsView = () => {
               </div>
 
               {/* Results header */}
-              <SortResultsHeader totalResults={results.pagination?.total || 0} currentSort={filters.sort} onSortChange={handleSortChange} />
+              <div className='flex items-center justify-between flex-wrap gap-4 mb-6'>
+                <SortResultsHeader totalResults={results.pagination?.total || 0} currentSort={filters.sort} onSortChange={handleSortChange} />
+                <ExportResultsButton projects={results.projects} filters={filters} isDarkMode={isDarkMode} />
+              </div>
 
               {/* Loading state */}
               {loading && (
