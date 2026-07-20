@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { authAxios } from '../utils/axiosConfig'
 
 const useAvailability = (freelancerId, isPublicView = true) => {
   const [calendarData, setCalendarData] = useState(null)
@@ -35,12 +36,8 @@ const useAvailability = (freelancerId, isPublicView = true) => {
 
         const endpoint = isPublicView ? `/api/availability/public/${freelancerId}/${year}/${month}` : `/api/availability/${freelancerId}/current?year=${year}&month=${month}`
 
-        const response = await fetch(endpoint)
-        if (!response.ok) {
-          throw new Error('Failed to fetch calendar')
-        }
-
-        const result = await response.json()
+        const response = await authAxios.get(endpoint)
+        const result = response.data
         setCalendarData(result.data)
         setIsPublic(result.data?.isPublic || false)
         return result.data
@@ -60,19 +57,8 @@ const useAvailability = (freelancerId, isPublicView = true) => {
       if (!freelancerId) return
 
       try {
-        const response = await fetch(`/api/availability/${freelancerId}/${year}/${month}/${date}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ manualStatus })
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          const errorMessage = errorData.message || `HTTP ${response.status}`
-          throw new Error(errorMessage)
-        }
-
-        const result = await response.json()
+        const response = await authAxios.put(`/api/availability/${freelancerId}/${year}/${month}/${date}`, { manualStatus })
+        const result = response.data
         return result.data
       } catch (err) {
         console.error(`Error updating ${year}-${month}-${date}:`, err)
@@ -86,16 +72,7 @@ const useAvailability = (freelancerId, isPublicView = true) => {
     if (!freelancerId) return
 
     try {
-      const response = await fetch(`/api/availability/${freelancerId}/visibility`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPublic: !isPublic })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update visibility')
-      }
-
+      await authAxios.patch(`/api/availability/${freelancerId}/visibility`, { isPublic: !isPublic })
       setIsPublic(!isPublic)
       return !isPublic
     } catch (err) {
@@ -138,12 +115,8 @@ const useAvailability = (freelancerId, isPublicView = true) => {
         const statusParam = status ? `&status=${status}` : ''
         const endpoint = `/api/availability/${freelancerId}/filtered?year=${year}&month=${month}${statusParam}`
 
-        const response = await fetch(endpoint)
-        if (!response.ok) {
-          throw new Error('Failed to fetch filtered calendar')
-        }
-
-        const result = await response.json()
+        const response = await authAxios.get(endpoint)
+        const result = response.data
         setCalendarData(result.data)
         return result.data
       } catch (err) {

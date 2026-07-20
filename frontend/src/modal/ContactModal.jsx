@@ -4,7 +4,7 @@ import { FaTimes, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
 import { toast } from 'react-toastify'
 
-const ContactModal = ({ isOpen, onClose, project, hasApplied = false }) => {
+const ContactModal = ({ isOpen, onClose, project }) => {
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 

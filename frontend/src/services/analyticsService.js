@@ -1,4 +1,4 @@
-import authAxios from './axiosConfig'
+import { authAxios } from '../utils/axiosConfig'
 
 export const getFreelancerAnalytics = async () => {
   try {

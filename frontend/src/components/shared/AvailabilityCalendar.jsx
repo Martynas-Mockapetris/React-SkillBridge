@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
 import { toast } from 'react-toastify'
@@ -32,12 +32,13 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     clearOptimisticUpdates
   } = useAvailability(freelancerId, isPublicView)
 
-  // Fetch calendar data when component mounts or freelancerId changes
-  React.useEffect(() => {
-    fetchCalendarData()
-  }, [currentDate, freelancerId])
+  // Guard: Don't render if no freelancerId
+  if (!freelancerId) {
+    return <div className='p-4 text-center theme-text-secondary'>No freelancer ID provided</div>
+  }
 
-  React.useEffect(() => {
+  // Fetch calendar data when component mounts or freelancerId changes
+  useEffect(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth() + 1
     fetchCalendarData(year, month).catch((err) => {
@@ -108,9 +109,9 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   }
 
   const handleDayClick = (day) => {
-    if (!editMode || !day.date) return
+    if (!editMode || !day?.date) return
 
-    const dateKey = `${calendarData.year}-${calendarData.month}-${day.date}`
+    const dateKey = `${calendarData.year}-${calendarData.month}-${day?.date}`
 
     if (!canModifyDate(dateKey)) {
       toast.error('Cannot modify past dates')
@@ -123,7 +124,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     } else {
       setSelectedDays({
         ...selectedDays,
-        [dateKey]: day.status
+        [dateKey]: day?.status
       })
     }
   }
@@ -281,7 +282,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     )
   }
 
-  if (!calendarData) {
+  if (!calendarData || !calendarData.days) {
     return <div className='p-4 text-center theme-text-secondary'>No calendar data available</div>
   }
 
@@ -376,12 +377,12 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       {/* Calendar Grid - Responsive */}
       <div className='grid grid-cols-7 gap-1 md:gap-2'>
         <AnimatePresence>
-          {calendarGrid.map((day, idx) => {
-            const isEmpty = !day.date
-            const isToday = !isEmpty && new Date(calendarData.year, calendarData.month - 1, day.date).toDateString() === new Date().toDateString()
-            const dateKey = `${calendarData.year}-${calendarData.month}-${day.date}`
+          {calendarGrid?.map((day, idx) => {
+            const isEmpty = !day?.date
+            const isToday = !isEmpty && new Date(calendarData.year, calendarData.month - 1, day?.date).toDateString() === new Date().toDateString()
+            const dateKey = `${calendarData.year}-${calendarData.month}-${day?.date}`
             const isSelected = selectedDays[dateKey]
-            const currentStatus = optimisticUpdates[dateKey] || isSelected || day.status
+            const currentStatus = optimisticUpdates[dateKey] || isSelected || day?.status
 
             return (
               <motion.div

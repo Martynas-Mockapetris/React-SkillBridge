@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaBriefcase, FaPlus, FaEdit, FaTrash, FaPlay, FaPause } from 'react-icons/fa'
+import { FaBriefcase, FaPlus, FaEdit, FaTrash, FaPlay, FaPause, FaCalendar } from 'react-icons/fa'
 import CreateAnnouncementModal from '../../modal/CreateAnnouncementModal'
 import { getUserAnnouncements, deleteAnnouncement, toggleAnnouncementStatus } from '../../services/announcementService'
 import LoadingSpinner from '../shared/LoadingSpinner'
+import AvailabilityCalendar from '../shared/AvailabilityCalendar'
 
 const FreelanceTab = ({ user }) => {
   const isVerified = Boolean(user?.isEmailVerified)
@@ -215,6 +216,17 @@ const FreelanceTab = ({ user }) => {
           }
         }}
       />
+
+      {/* Availability Calendar Section */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className='space-y-4'>
+        <div className='flex items-center gap-3'>
+          <FaCalendar className='text-accent text-xl' />
+          <h2 className='text-2xl font-bold theme-text'>My Availability</h2>
+        </div>
+        <div className='theme-card rounded-lg overflow-hidden'>
+          <AvailabilityCalendar freelancerId={user?._id} isOwnProfile={true} isPublicView={false} />
+        </div>
+      </motion.div>
     </motion.div>
   )
 }

@@ -32,6 +32,8 @@ import {
   removeFromInterested,
   submitProject,
   reviewProject,
+  markProjectComplete,
+  getProjectCompletionStats,
   bulkCompleteProjects,
   rescheduleProject
 } from '../controllers/projectController.js'

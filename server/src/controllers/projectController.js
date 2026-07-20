@@ -4,7 +4,6 @@ import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js
 import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
 import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
 import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability } from '../utils/availabilityCalendarService.js'
-import { completeProjectPhase } from '../utils/projectPhaseService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -2595,7 +2594,7 @@ export {
   filterProjectsByBudget,
   filterProjectsByStatus,
   filterProjectsBySkills,
-  filterProjectesByPriority,
+  filterProjectsByPriority,
   filterProjects,
   filterProjectsByKeyword,
   getAdminAllProjects,
