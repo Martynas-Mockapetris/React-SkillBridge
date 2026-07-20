@@ -17,57 +17,83 @@ import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import VerifyEmail from './pages/VerifyEmail'
 import ProjectDetail from './pages/ProjectDetail'
 import UserDetail from './pages/UserDetail'
 import AdminUserDetail from './pages/AdminUserDetail'
 import Blog from './pages/Blog'
 import BlogPostDetail from './pages/BlogPostDetail'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import Analytics from './pages/Analytics'
 
 function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <ToastContainer theme='colored' />
-        <Navigation />
-        <Routes>
-          {/* Public routes - accessible to everyone */}
-          <Route path='/' element={<Home />} />
-          <Route path='/listings' element={<Listings />} />
-          <Route path='/blog' element={<Blog />} />
-          <Route path='/blog/:slug' element={<BlogPostDetail />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
-          <Route path='/project/:id' element={<ProjectDetail />} />
-          <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
-          {/* Protected routes - require authentication */}
-          <Route
-            path='/profile'
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
+        <div className='min-h-screen flex flex-col theme-bg transition-colors duration-300'>
+          <ToastContainer theme='colored' />
+          <Navigation />
 
-          {/* Admin routes - require admin role */}
-          <Route
-            path='/admin'
-            element={
-              <AdminRoute>
-                <Admin />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path='/admin/users/:id'
-            element={
-              <AdminRoute>
-                <AdminUserDetail />
-              </AdminRoute>
-            }
-          />
-        </Routes>
-        <Footer />
+          <main className='flex-1 theme-bg'>
+            <Routes>
+              {/* Public routes - accessible to everyone */}
+              <Route path='/' element={<Home />} />
+              <Route path='/about' element={<About />} />
+              <Route path='/listings' element={<Listings />} />
+              <Route path='/blog' element={<Blog />} />
+              <Route path='/blog/:slug' element={<BlogPostDetail />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/register' element={<Register />} />
+              <Route path='/forgot-password' element={<ForgotPassword />} />
+              <Route path='/reset-password' element={<ResetPassword />} />
+              <Route path='/verify-email' element={<VerifyEmail />} />
+              <Route path='/project/:id' element={<ProjectDetail />} />
+              <Route path='/freelancer/:freelancerId' element={<UserDetail />} />
+              <Route path='/contact' element={<Contact />} />
+
+              {/* Protected routes - require authentication */}
+              <Route
+                path='/profile'
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/analytics'
+                element={
+                  <ProtectedRoute>
+                    <Analytics />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin routes - require admin role */}
+              <Route
+                path='/admin'
+                element={
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path='/admin/users/:id'
+                element={
+                  <AdminRoute>
+                    <AdminUserDetail />
+                  </AdminRoute>
+                }
+              />
+            </Routes>
+          </main>
+
+          <Footer />
+        </div>
       </ThemeProvider>
     </AuthProvider>
   )

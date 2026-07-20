@@ -6,6 +6,7 @@ import { getUserAnnouncements, deleteAnnouncement, toggleAnnouncementStatus } fr
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const FreelanceTab = ({ user }) => {
+  const isVerified = Boolean(user?.isEmailVerified)
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -70,14 +71,25 @@ const FreelanceTab = ({ user }) => {
           <h2 className='text-2xl font-bold theme-text'>My Freelance Announcements</h2>
         </div>
         <motion.button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            if (!isVerified) return
+            setIsModalOpen(true)
+          }}
+          disabled={!isVerified}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors'>
+          className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'>
           <FaPlus />
           <span>Create Announcement</span>
         </motion.button>
       </div>
+
+      {!isVerified && (
+        <div className='rounded-lg border border-amber-300/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300'>
+          Verify your email to publish freelance announcements. You can still edit your profile, but announcement publishing stays locked until verification is complete.
+        </div>
+      )}
+
       {/* Announcements List or Empty State */}
       <div className='theme-card p-8 rounded-lg text-center'>
         {loading ? (
@@ -91,12 +103,16 @@ const FreelanceTab = ({ user }) => {
             <FaBriefcase className='text-5xl text-gray-300 dark:text-gray-600 mx-auto' />
             <p className='theme-text-secondary text-lg'>No announcements yet. Create your first freelance announcement to get started!</p>
             <motion.button
-              onClick={() => setIsModalOpen(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className='inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent/90 transition-colors'>
+              onClick={() => {
+                if (!isVerified) return
+                setIsModalOpen(true)
+              }}
+              disabled={!isVerified}
+              whileHover={isVerified ? { scale: 1.05 } : {}}
+              whileTap={isVerified ? { scale: 0.95 } : {}}
+              className='inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'>
               <FaPlus />
-              <span>Create Your First Announcement</span>
+              <span>{isVerified ? 'Create Your First Announcement' : 'Verify Email to Create Announcement'}</span>
             </motion.button>
           </div>
         ) : (
@@ -187,6 +203,7 @@ const FreelanceTab = ({ user }) => {
           setEditingAnnouncement(null)
         }}
         editingAnnouncement={editingAnnouncement}
+        isVerified={isVerified}
         onAnnouncementCreated={(updatedAnnouncement) => {
           if (editingAnnouncement) {
             // Update existing announcement

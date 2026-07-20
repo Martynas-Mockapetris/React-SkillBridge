@@ -18,7 +18,18 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
     deadline: '',
     type: 'created',
     status: 'draft',
-    attachments: []
+    attachments: [],
+    projectBrief: {
+      objective: '',
+      deliverables: [],
+      scopeNotes: '',
+      experienceLevel: 'not_specified',
+      duration: 'not_specified',
+      workload: 'not_specified',
+      startPreference: 'not_specified',
+      budgetType: 'not_specified',
+      applicationInstructions: ''
+    }
   }
 
   const isEditMode = mode === 'edit'
@@ -34,13 +45,15 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
     setFormData(initialFormState)
     setCurrentStep(1)
     setSkillInput('')
+    setDeliverableInput('')
   }
 
   const [currentStep, setCurrentStep] = useState(1)
-  const totalSteps = 4
+  const totalSteps = 5
 
   // Skill input state
   const [skillInput, setSkillInput] = useState('')
+  const [deliverableInput, setDeliverableInput] = useState('')
 
   // Categories for dropdown
   const categories = ['Web Development', 'Mobile Development', 'UI/UX Design', 'Data Science', 'Machine Learning', 'DevOps', 'Blockchain', 'Content Writing', 'Digital Marketing', 'Other']
@@ -61,18 +74,29 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
     }))
   }
 
+  const handleBriefChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      projectBrief: {
+        ...prev.projectBrief,
+        [name]: value
+      }
+    }))
+  }
+
   // Add validation for current step
   const validateCurrentStep = () => {
     if (isDeadlineOnly) {
-      if (currentStep === 3 && !formData.deadline) {
+      if (currentStep === 4 && !formData.deadline) {
         toast.error('Please select a deadline')
         return false
       }
       return true
     }
 
+    // Step-specific validation
     if (currentStep === 1) {
-      // Validate basic information
       if (!formData.title.trim()) {
         toast.error('Please enter a project title')
         return false
@@ -86,13 +110,20 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         return false
       }
     } else if (currentStep === 2) {
-      // Validate skills
+      if (!formData.projectBrief.objective.trim()) {
+        toast.error('Please describe the project objective')
+        return false
+      }
+      if (formData.projectBrief.deliverables.length === 0) {
+        toast.error('Please add at least one deliverable')
+        return false
+      }
+    } else if (currentStep === 3) {
       if (formData.skills.length === 0) {
         toast.error('Please add at least one skill')
         return false
       }
-    } else if (currentStep === 3) {
-      // Validate budget and timeline
+    } else if (currentStep === 4) {
       if (!formData.budget) {
         toast.error('Please enter a budget')
         return false
@@ -102,6 +133,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         return false
       }
     }
+
     return true
   }
 
@@ -109,45 +141,57 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
   const validateAllSteps = () => {
     if (isDeadlineOnly) {
       if (!formData.deadline) {
-        setCurrentStep(3)
+        setCurrentStep(4)
         toast.error('Please select a deadline')
         return false
       }
       return true
     }
 
-    // Check basic information
     if (!formData.title.trim()) {
       setCurrentStep(1)
       toast.error('Please enter a project title')
       return false
     }
+
     if (!formData.description.trim()) {
       setCurrentStep(1)
       toast.error('Please enter a project description')
       return false
     }
+
     if (!formData.category) {
       setCurrentStep(1)
       toast.error('Please select a category')
       return false
     }
 
-    // Check skills
-    if (formData.skills.length === 0) {
+    if (!formData.projectBrief.objective.trim()) {
       setCurrentStep(2)
+      toast.error('Please describe the project objective')
+      return false
+    }
+
+    if (formData.projectBrief.deliverables.length === 0) {
+      setCurrentStep(2)
+      toast.error('Please add at least one deliverable')
+      return false
+    }
+
+    if (formData.skills.length === 0) {
+      setCurrentStep(3)
       toast.error('Please add at least one skill')
       return false
     }
 
-    // Check budget and timeline
     if (!formData.budget) {
-      setCurrentStep(3)
+      setCurrentStep(4)
       toast.error('Please enter a budget')
       return false
     }
+
     if (!formData.deadline) {
-      setCurrentStep(3)
+      setCurrentStep(4)
       toast.error('Please select a deadline')
       return false
     }
@@ -191,6 +235,36 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
     }
   }
 
+  const handleAddDeliverable = () => {
+    if (deliverableInput.trim() && !formData.projectBrief.deliverables.includes(deliverableInput.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        projectBrief: {
+          ...prev.projectBrief,
+          deliverables: [...prev.projectBrief.deliverables, deliverableInput.trim()]
+        }
+      }))
+      setDeliverableInput('')
+    }
+  }
+
+  const handleRemoveDeliverable = (deliverableToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      projectBrief: {
+        ...prev.projectBrief,
+        deliverables: prev.projectBrief.deliverables.filter((deliverable) => deliverable !== deliverableToRemove)
+      }
+    }))
+  }
+
+  const handleDeliverableKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleAddDeliverable()
+    }
+  }
+
   // Handle file selection
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files)
@@ -218,32 +292,35 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
     try {
       setSubmitting(true)
-      // Prepare the project data
+
       const projectData = {
-        title: formData.title,
-        description: formData.description,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         category: formData.category,
         priority: formData.priority,
         skills: formData.skills,
         budget: parseFloat(formData.budget),
         deadline: formData.deadline,
         status: 'active',
-        progress: 0 // Add initial progress
+        attachments: formData.attachments,
+        projectBrief: formData.projectBrief
       }
 
       console.log('Sending project data:', projectData)
 
-      // Create the project
       if (isEditMode && initialData) {
         const updatePayload = isDeadlineOnly
           ? { deadline: formData.deadline }
           : {
-              title: formData.title,
-              description: formData.description,
+              title: formData.title.trim(),
+              description: formData.description.trim(),
               category: formData.category,
               skills: formData.skills,
               budget: parseFloat(formData.budget),
-              deadline: formData.deadline
+              priority: formData.priority,
+              deadline: formData.deadline,
+              attachments: formData.attachments,
+              projectBrief: formData.projectBrief
             }
 
         await updateProject(initialData._id, updatePayload)
@@ -257,11 +334,9 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
       const createdProject = await createProject(projectData)
       console.log('Project created:', createdProject)
 
-      // Reset form and close modal
       resetForm()
       onClose()
 
-      // Call the onProjectCreated callback to refresh the projects list
       if (onProjectCreated) {
         onProjectCreated()
       }
@@ -276,7 +351,6 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
   }
 
   const handleSaveDraft = async () => {
-    // For drafts, we can be more lenient, but at minimum require a title
     if (!formData.title.trim()) {
       setCurrentStep(1)
       toast.error('Please enter a project title')
@@ -285,35 +359,32 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
     try {
       setSubmitting(true)
-      // Prepare the project data
+
       const projectData = {
-        title: formData.title,
-        description: formData.description || '',
+        title: formData.title.trim(),
+        description: formData.description.trim() || '',
         category: formData.category || '',
         skills: formData.skills,
         priority: formData.priority,
         budget: formData.budget ? parseFloat(formData.budget) : 0,
         deadline: formData.deadline || new Date().toISOString().split('T')[0],
         status: 'draft',
-        progress: 0
+        attachments: formData.attachments,
+        projectBrief: formData.projectBrief
       }
 
       console.log('Saving draft:', projectData)
 
-      // Use the service function instead of direct axios call
       const savedDraft = await saveProjectDraft(projectData)
       console.log('Draft saved:', savedDraft)
 
-      // Reset form and close modal
       resetForm()
       onClose()
 
-      // Call the onProjectCreated callback to refresh the projects list
       if (onProjectCreated) {
         onProjectCreated()
       }
 
-      // Show success message
       toast.success('Draft saved successfully!')
     } catch (err) {
       console.error('Error saving draft:', err)
@@ -337,10 +408,22 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
         type: initialData.type || 'created',
         status: initialData.status || 'draft',
-        attachments: []
+        attachments: [],
+        projectBrief: {
+          objective: initialData.projectBrief?.objective || '',
+          deliverables: Array.isArray(initialData.projectBrief?.deliverables) ? initialData.projectBrief.deliverables : [],
+          scopeNotes: initialData.projectBrief?.scopeNotes || '',
+          experienceLevel: initialData.projectBrief?.experienceLevel || 'not_specified',
+          duration: initialData.projectBrief?.duration || 'not_specified',
+          workload: initialData.projectBrief?.workload || 'not_specified',
+          startPreference: initialData.projectBrief?.startPreference || 'not_specified',
+          budgetType: initialData.projectBrief?.budgetType || 'not_specified',
+          applicationInstructions: initialData.projectBrief?.applicationInstructions || ''
+        }
       })
-      setCurrentStep(isDeadlineOnly ? 3 : 1)
+      setCurrentStep(isDeadlineOnly ? 4 : 1)
       setSkillInput('')
+      setDeliverableInput('')
     } else {
       resetForm()
     }
@@ -401,8 +484,9 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
                     </div>
                     <div className='flex justify-between mt-2 text-sm theme-text-secondary'>
                       <span>Basics</span>
-                      <span>Skills</span>
-                      <span>Budget</span>
+                      <span>Scope</span>
+                      <span>Requirements</span>
+                      <span>Timeline</span>
                       <span>Files</span>
                     </div>
                   </div>
@@ -499,53 +583,166 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
                     )}
 
                     {currentStep === 2 && (
-                      <div className='space-y-4'>
-                        {/* Skills Section */}
-                        <h3 className='text-lg font-medium theme-text mb-4'>Required Skills</h3>
-                        {/* Skills Input */}
-                        <div className='flex gap-2'>
-                          <div className='flex-1'>
-                            <input
-                              type='text'
-                              id='skillInput'
-                              value={skillInput}
-                              onChange={(e) => setSkillInput(e.target.value)}
-                              onKeyPress={handleSkillKeyPress}
-                              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
-                              placeholder='E.g., React, Node.js, UI Design'
-                              disabled={isDeadlineOnly}
-                            />
-                          </div>
-                          <motion.button type='button' onClick={handleAddSkill} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            Add
-                          </motion.button>
+                      <div className='space-y-5'>
+                        <h3 className='text-lg font-medium theme-text mb-4'>Project Scope</h3>
+
+                        <div>
+                          <label htmlFor='objective' className='block text-sm font-medium theme-text mb-1'>
+                            Project Objective*
+                          </label>
+                          <textarea
+                            id='objective'
+                            name='objective'
+                            value={formData.projectBrief.objective}
+                            onChange={handleBriefChange}
+                            rows={3}
+                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                            placeholder='What should this project achieve for the client or users?'
+                            disabled={isDeadlineOnly}
+                          />
                         </div>
 
-                        {/* Skills Tags */}
-                        <div className='flex flex-wrap gap-2 min-h-[100px]'>
-                          {formData.skills.map((skill, index) => (
-                            <div key={index} className='flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full'>
-                              <FaTag className='text-xs' />
-                              <span>{skill}</span>
-                              {!isDeadlineOnly && (
-                                <button type='button' onClick={() => handleRemoveSkill(skill)} className='text-accent hover:text-accent/80'>
-                                  <FaTimes size={12} />
-                                </button>
-                              )}
+                        <div>
+                          <label htmlFor='deliverableInput' className='block text-sm font-medium theme-text mb-1'>
+                            Deliverables*
+                          </label>
+                          <div className='flex gap-2'>
+                            <div className='flex-1'>
+                              <input
+                                type='text'
+                                id='deliverableInput'
+                                value={deliverableInput}
+                                onChange={(e) => setDeliverableInput(e.target.value)}
+                                onKeyDown={handleDeliverableKeyPress}
+                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                                placeholder='E.g., responsive landing page, admin dashboard, payment integration'
+                                disabled={isDeadlineOnly}
+                              />
                             </div>
-                          ))}
-                          {formData.skills.length === 0 && <p className='text-sm theme-text-secondary italic'>No skills added yet</p>}
+                            <motion.button type='button' onClick={handleAddDeliverable} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              Add
+                            </motion.button>
+                          </div>
+
+                          <div className='flex flex-wrap gap-2 min-h-[80px] mt-3'>
+                            {formData.projectBrief.deliverables.map((deliverable, index) => (
+                              <div key={index} className='flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full'>
+                                <span>{deliverable}</span>
+                                {!isDeadlineOnly && (
+                                  <button type='button' onClick={() => handleRemoveDeliverable(deliverable)} className='text-accent hover:text-accent/80'>
+                                    <FaTimes size={12} />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {formData.projectBrief.deliverables.length === 0 && <p className='text-sm theme-text-secondary italic'>No deliverables added yet</p>}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label htmlFor='scopeNotes' className='block text-sm font-medium theme-text mb-1'>
+                            Scope Notes
+                          </label>
+                          <textarea
+                            id='scopeNotes'
+                            name='scopeNotes'
+                            value={formData.projectBrief.scopeNotes}
+                            onChange={handleBriefChange}
+                            rows={4}
+                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                            placeholder='Clarify constraints, exclusions, priorities, or reference expectations'
+                            disabled={isDeadlineOnly}
+                          />
                         </div>
                       </div>
                     )}
 
                     {currentStep === 3 && (
-                      <div className='space-y-4'>
-                        {/* Budget and Timeline Section */}
-                        <h3 className='text-lg font-medium theme-text mb-4'>Budget & Timeline</h3>
+                      <div className='space-y-5'>
+                        <h3 className='text-lg font-medium theme-text mb-4'>Requirements</h3>
+
+                        <div>
+                          <label htmlFor='skillInput' className='block text-sm font-medium theme-text mb-1'>
+                            Required Skills*
+                          </label>
+                          <div className='flex gap-2'>
+                            <div className='flex-1'>
+                              <input
+                                type='text'
+                                id='skillInput'
+                                value={skillInput}
+                                onChange={(e) => setSkillInput(e.target.value)}
+                                onKeyDown={handleSkillKeyPress}
+                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                                placeholder='E.g., React, Node.js, UI Design'
+                                disabled={isDeadlineOnly}
+                              />
+                            </div>
+                            <motion.button type='button' onClick={handleAddSkill} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90' whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              Add
+                            </motion.button>
+                          </div>
+
+                          <div className='flex flex-wrap gap-2 min-h-[80px] mt-3'>
+                            {formData.skills.map((skill, index) => (
+                              <div key={index} className='flex items-center gap-2 px-3 py-1 bg-accent/10 text-accent rounded-full'>
+                                <FaTag className='text-xs' />
+                                <span>{skill}</span>
+                                {!isDeadlineOnly && (
+                                  <button type='button' onClick={() => handleRemoveSkill(skill)} className='text-accent hover:text-accent/80'>
+                                    <FaTimes size={12} />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {formData.skills.length === 0 && <p className='text-sm theme-text-secondary italic'>No skills added yet</p>}
+                          </div>
+                        </div>
 
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                          {/* Budget */}
+                          <div>
+                            <label htmlFor='experienceLevel' className='block text-sm font-medium theme-text mb-1'>
+                              Experience Level
+                            </label>
+                            <select
+                              id='experienceLevel'
+                              name='experienceLevel'
+                              value={formData.projectBrief.experienceLevel}
+                              onChange={handleBriefChange}
+                              className='theme-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              disabled={isDeadlineOnly}>
+                              <option value='not_specified'>Not specified</option>
+                              <option value='junior'>Junior</option>
+                              <option value='mid'>Mid</option>
+                              <option value='senior'>Senior</option>
+                              <option value='expert'>Expert</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label htmlFor='applicationInstructions' className='block text-sm font-medium theme-text mb-1'>
+                              Application Instructions
+                            </label>
+                            <textarea
+                              id='applicationInstructions'
+                              name='applicationInstructions'
+                              value={formData.projectBrief.applicationInstructions}
+                              onChange={handleBriefChange}
+                              rows={3}
+                              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              placeholder='Ask for portfolio links, relevant examples, or a short intro'
+                              disabled={isDeadlineOnly}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {currentStep === 4 && (
+                      <div className='space-y-5'>
+                        <h3 className='text-lg font-medium theme-text mb-4'>Timeline & Budget</h3>
+
+                        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                           <div>
                             <label htmlFor='budget' className='block text-sm font-medium theme-text mb-1'>
                               Budget (EUR)*
@@ -569,7 +766,6 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
                             </div>
                           </div>
 
-                          {/* Deadline */}
                           <div>
                             <label htmlFor='deadline' className='block text-sm font-medium theme-text mb-1'>
                               Deadline*
@@ -589,16 +785,92 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
                               />
                             </div>
                           </div>
+
+                          <div>
+                            <label htmlFor='budgetType' className='block text-sm font-medium theme-text mb-1'>
+                              Budget Type
+                            </label>
+                            <select
+                              id='budgetType'
+                              name='budgetType'
+                              value={formData.projectBrief.budgetType}
+                              onChange={handleBriefChange}
+                              className='theme-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              disabled={isDeadlineOnly}>
+                              <option value='not_specified'>Not specified</option>
+                              <option value='fixed'>Fixed</option>
+                              <option value='hourly'>Hourly</option>
+                              <option value='negotiable'>Negotiable</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label htmlFor='startPreference' className='block text-sm font-medium theme-text mb-1'>
+                              Start Preference
+                            </label>
+                            <select
+                              id='startPreference'
+                              name='startPreference'
+                              value={formData.projectBrief.startPreference}
+                              onChange={handleBriefChange}
+                              className='theme-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              disabled={isDeadlineOnly}>
+                              <option value='not_specified'>Not specified</option>
+                              <option value='immediately'>Immediately</option>
+                              <option value='this_week'>This week</option>
+                              <option value='within_2_weeks'>Within 2 weeks</option>
+                              <option value='flexible'>Flexible</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label htmlFor='duration' className='block text-sm font-medium theme-text mb-1'>
+                              Estimated Duration
+                            </label>
+                            <select
+                              id='duration'
+                              name='duration'
+                              value={formData.projectBrief.duration}
+                              onChange={handleBriefChange}
+                              className='theme-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              disabled={isDeadlineOnly}>
+                              <option value='not_specified'>Not specified</option>
+                              <option value='less_than_1_week'>Less than 1 week</option>
+                              <option value='1_to_2_weeks'>1 to 2 weeks</option>
+                              <option value='2_to_4_weeks'>2 to 4 weeks</option>
+                              <option value='1_to_3_months'>1 to 3 months</option>
+                              <option value='3_plus_months'>3+ months</option>
+                              <option value='ongoing'>Ongoing</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label htmlFor='workload' className='block text-sm font-medium theme-text mb-1'>
+                              Workload
+                            </label>
+                            <select
+                              id='workload'
+                              name='workload'
+                              value={formData.projectBrief.workload}
+                              onChange={handleBriefChange}
+                              className='theme-select w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+                              disabled={isDeadlineOnly}>
+                              <option value='not_specified'>Not specified</option>
+                              <option value='under_10_hours'>Under 10 hrs/week</option>
+                              <option value='10_to_20_hours'>10 to 20 hrs/week</option>
+                              <option value='20_to_30_hours'>20 to 30 hrs/week</option>
+                              <option value='30_plus_hours'>30+ hrs/week</option>
+                              <option value='full_time'>Full time</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
                     )}
 
-                    {currentStep === 4 && (
+                    {currentStep === 5 && (
                       <div className='space-y-4'>
-                        {/* Attachments Section */}
                         <h3 className='text-lg font-medium theme-text mb-4'>Attachments</h3>
 
-                        {/* File Upload */}
                         {!isDeadlineOnly && (
                           <div className='border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center'>
                             <input type='file' id='attachments' multiple onChange={handleFileChange} className='hidden' />
@@ -610,7 +882,6 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
                           </div>
                         )}
 
-                        {/* Attachments List */}
                         {formData.attachments.length > 0 && (
                           <div className='mt-4 space-y-2'>
                             <h4 className='text-sm font-medium theme-text'>Uploaded Files:</h4>

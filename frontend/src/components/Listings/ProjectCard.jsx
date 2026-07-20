@@ -1,75 +1,43 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
-import { useAuth } from '../../context/AuthContext'
-import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
+import VerificationBadge from '../shared/VerificationBadge'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
+import { normalizeSkills } from '../../utils/skillUtils'
 
-const ProjectCard = ({ project, index }) => {
-  const { currentUser } = useAuth()
-  const [favorites, setFavorites] = useState([])
-  const [isFavoriting, setIsFavoriting] = useState(false)
-
-  // Load favorites on mount
-  useEffect(() => {
-    if (!currentUser) return
-
-    const loadFavorites = async () => {
-      try {
-        const favProjects = await getFavoriteProjects()
-        const favoriteIds = favProjects.map((fav) => fav._id)
-        setFavorites(favoriteIds)
-      } catch (error) {
-        console.error('Error loading favorites:', error)
-      }
-    }
-
-    loadFavorites()
-  }, [currentUser?._id])
-
-  const isFavorited = (projectId) => {
-    return favorites.includes(projectId)
-  }
+const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
+  const location = useLocation()
+  const returnTo = `${location.pathname}${location.search}`
+  const normalizedSkills = normalizeSkills(project.skills)
 
   const handleFavoriteClick = async (e) => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (!currentUser) {
-      alert('Please login to favorite projects')
-      return
-    }
-
-    setIsFavoriting(true)
-
-    try {
-      if (isFavorited(project._id)) {
-        await removeFromFavorites(project._id)
-        setFavorites(favorites.filter((id) => id !== project._id))
-      } else {
-        await addToFavorites(project._id)
-        setFavorites([...favorites, project._id])
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error)
-    } finally {
-      setIsFavoriting(false)
+    if (onToggleFavorite) {
+      await onToggleFavorite(project._id)
     }
   }
 
   return (
-    <Link to={`/project/${project._id}`}>
+    <Link to={`/project/${project._id}`} state={{ returnTo }}>
       <motion.div
         // ... (keep all existing motion div props)
         className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 relative'>
         {/* Favorite button - top right corner */}
         <motion.button onClick={handleFavoriteClick} disabled={isFavoriting} className='absolute top-4 right-4 z-10' whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-          <FaHeart className={`text-2xl ${isFavorited(project._id) ? 'text-red-500' : 'text-gray-400'}`} />
+          <FaHeart className={`text-2xl ${isFavorited ? 'text-red-500' : 'text-gray-400'}`} />
         </motion.button>
 
         {/* Project title */}
-        <h3 className='text-xl font-bold mb-2 theme-text line-clamp-1 pr-8'>{project.title}</h3>
+        <div className='mb-2 pr-8 flex items-start gap-2'>
+          <h3 className='text-xl font-bold theme-text line-clamp-2 min-w-0'>{project.title}</h3>
+          {isApplied && (
+            <span className='shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-semibold bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/40'>
+              Applied
+            </span>
+          )}
+        </div>
 
         {/* Category + Status + Priority badges */}
         <div className='flex items-center gap-2 mb-4 flex-wrap'>
@@ -82,14 +50,14 @@ const ProjectCard = ({ project, index }) => {
         <p className='theme-text-secondary text-sm mb-4 line-clamp-2'>{project.description}</p>
 
         {/* Skills */}
-        {project.skills && project.skills.length > 0 && (
+        {normalizedSkills.length > 0 && (
           <div className='flex flex-wrap gap-2 mb-4'>
-            {project.skills.slice(0, 3).map((skill, idx) => (
-              <span key={idx} className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>
+            {normalizedSkills.slice(0, 3).map((skill, idx) => (
+              <span key={`${skill}-${idx}`} className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>
                 {skill}
               </span>
             ))}
-            {project.skills.length > 3 && <span className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>+{project.skills.length - 3}</span>}
+            {normalizedSkills.length > 3 && <span className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>+{normalizedSkills.length - 3}</span>}
           </div>
         )}
 
@@ -98,9 +66,12 @@ const ProjectCard = ({ project, index }) => {
           <div className='flex items-center gap-3 mb-4 pb-4 border-b dark:border-light/10 border-primary/10'>
             <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-10 h-10 rounded-full object-cover' />
             <div>
-              <p className='font-medium theme-text text-sm'>
-                {project.user.firstName} {project.user.lastName}
-              </p>
+              <div className='flex items-center gap-2 flex-wrap'>
+                <p className='font-medium theme-text text-sm'>
+                  {project.user.firstName} {project.user.lastName}
+                </p>
+                <VerificationBadge isVerified={project.user.isEmailVerified} />
+              </div>
               <p className='text-xs theme-text-secondary'>{project.user.email}</p>
             </div>
           </div>

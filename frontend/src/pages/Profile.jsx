@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt } from 'react-icons/fa'
+import { FaUser, FaUserFriends, FaProjectDiagram, FaCog, FaLock, FaEnvelope, FaBriefcase, FaStar, FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaSyncAlt, FaTimes } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 import ProfileStats from '../components/Profile/ProfileStats'
 import ProjectsList from '../components/Profile/ProjectsList'
 import ProfileSettings from '../components/Profile/ProfileSettings'
@@ -8,12 +9,16 @@ import SecuritySettings from '../components/Profile/SecuritySettings'
 import FreelanceTab from '../components/Profile/FreelanceTab'
 import RatingsSection from '../components/Profile/RatingsSection'
 import MessagesList from '../components/Profile/MessagesList'
+import ConnectionsTab from '../components/Profile/ConnectionsTab'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
+import AvailabilityCalendar from '../components/shared/AvailabilityCalendar'
 import { getUserMessages } from '../services/messageService'
+import { getMyConnections } from '../services/userService'
 import { calculateProfileCompleteness } from '../utils/profileCompleteness'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
-import { useNavigate } from 'react-router-dom'
+import { requestEmailVerification as requestEmailVerificationService } from '../services/authService'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { hasAdminPanelAccess, getAdminRoleLabel, isFullAdmin } from '../utils/accessRoles'
 
@@ -21,12 +26,18 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
   const [messages, setMessages] = useState([])
   const [messagesLoading, setMessagesLoading] = useState(false)
-  const { currentUser } = useAuth()
+  const [hasLoadedMessages, setHasLoadedMessages] = useState(false)
+  const [incomingConnectionCount, setIncomingConnectionCount] = useState(0)
+  const [hasLoadedConnections, setHasLoadedConnections] = useState(false)
+  const { currentUser, getUserProfile } = useAuth()
   const [ratings, setRatings] = useState(null)
   const [ratingStats, setRatingStats] = useState(null)
   const [ratingsLoading, setRatingsLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const profileCompleteness = calculateProfileCompleteness(currentUser)
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const [dismissedBanners, setDismissedBanners] = useState({})
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -35,24 +46,72 @@ const Profile = () => {
     }
   }, [currentUser, navigate])
 
-  // Fetch messages when Messages tab is active
+  useEffect(() => {
+    const requestedTab = location.state?.activeTab
+
+    if (!requestedTab) {
+      return
+    }
+
+    setActiveTab(requestedTab)
+  }, [location.state])
+
+  // Fetch messages once so the unread badge and messages tab can share the same data
   useEffect(() => {
     const fetchMessages = async () => {
-      if (activeTab === 'messages') {
-        try {
-          setMessagesLoading(true)
-          const data = await getUserMessages()
-          setMessages(data)
-        } catch (error) {
-          console.error('Error fetching messages:', error)
-        } finally {
-          setMessagesLoading(false)
-        }
+      if (!currentUser || hasLoadedMessages) return
+
+      try {
+        setMessagesLoading(true)
+        const data = await getUserMessages()
+        setMessages(data)
+        setHasLoadedMessages(true)
+      } catch (error) {
+        console.error('Error fetching messages:', error)
+      } finally {
+        setMessagesLoading(false)
       }
     }
 
     fetchMessages()
-  }, [activeTab])
+  }, [currentUser, hasLoadedMessages])
+
+  useEffect(() => {
+    const fetchConnections = async () => {
+      if (!currentUser || hasLoadedConnections) return
+
+      try {
+        const data = await getMyConnections()
+        setIncomingConnectionCount(data?.summary?.incomingCount || 0)
+        setHasLoadedConnections(true)
+      } catch (error) {
+        console.error('Error fetching connections:', error)
+        setIncomingConnectionCount(0)
+      }
+    }
+
+    fetchConnections()
+  }, [currentUser, hasLoadedConnections])
+
+  useEffect(() => {
+    if (!currentUser?._id) return
+
+    const nextDismissed = {}
+    const lockBannerId = getLockBannerId()
+    const emailBannerId = getEmailBannerId()
+
+    if (lockBannerId) {
+      nextDismissed[lockBannerId] = localStorage.getItem(getBannerStorageKey(lockBannerId)) === 'true'
+    }
+
+    if (emailBannerId) {
+      nextDismissed[emailBannerId] = localStorage.getItem(getBannerStorageKey(emailBannerId)) === 'true'
+    }
+
+    setDismissedBanners(nextDismissed)
+  }, [currentUser?._id, currentUser?.isLocked, currentUser?.lockReason, currentUser?.lockDurationDays, currentUser?.lockExpiresAt, currentUser?.isEmailVerified, currentUser?.emailVerifiedAt])
+
+  const unreadMessageCount = Array.isArray(messages) ? messages.filter((message) => !message.isRead && (message.receiver?._id || message.receiver) === currentUser?._id).length : 0
 
   // Fetch ratings for freelancers
   useEffect(() => {
@@ -107,11 +166,44 @@ const Profile = () => {
     return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} remaining`
   }
 
+  const getBannerStorageKey = (bannerId) => {
+    if (!currentUser?._id) return ''
+    return `profile-banner-dismissed:${currentUser._id}:${bannerId}`
+  }
+
+  const getLockBannerId = () => {
+    if (!currentUser?.isLocked) return ''
+    return ['locked', currentUser.lockReason || 'no-reason', currentUser.lockDurationDays || 'manual', currentUser.lockExpiresAt || 'no-expiry'].join(':')
+  }
+
+  const getEmailBannerId = () => {
+    if (!currentUser) return ''
+    return currentUser.isEmailVerified ? `email-verified:${currentUser.emailVerifiedAt || 'no-date'}` : 'email-unverified'
+  }
+
+  const dismissBanner = (bannerId) => {
+    const storageKey = getBannerStorageKey(bannerId)
+    if (storageKey) {
+      localStorage.setItem(storageKey, 'true')
+    }
+
+    setDismissedBanners((prev) => ({
+      ...prev,
+      [bannerId]: true
+    }))
+  }
+
+  const isBannerDismissed = (bannerId) => {
+    if (!bannerId) return false
+    return Boolean(dismissedBanners[bannerId])
+  }
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaUser /> },
     // Projects tab - not visible to admins
     ...(!hasAdminPanelAccess(currentUser) ? [{ id: 'projects', label: 'Projects', icon: <FaProjectDiagram /> }] : []),
-    { id: 'messages', label: 'Messages', icon: <FaEnvelope /> },
+    { id: 'connections', label: 'Connections', icon: <FaUserFriends />, badge: incomingConnectionCount > 0 ? incomingConnectionCount : null },
+    { id: 'messages', label: 'Messages', icon: <FaEnvelope />, badge: unreadMessageCount > 0 ? unreadMessageCount : null },
     // Freelance tab - only visible to freelancers
     ...(currentUser?.userType === 'freelancer' || currentUser?.userType === 'both'
       ? [
@@ -147,6 +239,10 @@ const Profile = () => {
     setActiveTab('projects')
   }
 
+  const handleOpenConnections = () => {
+    setActiveTab('connections')
+  }
+
   const handleOpenMessages = () => {
     setActiveTab('messages')
   }
@@ -155,19 +251,72 @@ const Profile = () => {
     setActiveTab('freelance')
   }
 
+  const handleRefreshMessages = async () => {
+    if (!currentUser) return
+
+    try {
+      setMessagesLoading(true)
+      const data = await getUserMessages()
+      setMessages(data)
+      setHasLoadedMessages(true)
+    } catch (error) {
+      console.error('Error refreshing messages:', error)
+    } finally {
+      setMessagesLoading(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    try {
+      setIsResendingVerification(true)
+      const response = await requestEmailVerificationService()
+      toast.success(response.message || 'Verification email sent.')
+
+      try {
+        await getUserProfile()
+      } catch (profileError) {
+        console.warn('Failed to refresh profile after resending verification email:', profileError)
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to resend verification email.'
+      toast.error(message)
+    } finally {
+      setIsResendingVerification(false)
+    }
+  }
+
+  const lockBannerId = getLockBannerId()
+  const emailBannerId = getEmailBannerId()
+  const isEmailVerified = Boolean(currentUser?.isEmailVerified)
+  const isLocked = Boolean(currentUser?.isLocked)
+
   return (
     <section className='w-full theme-bg relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         {/* Locked Account Banner */}
-        {currentUser?.isLocked && (
+        {currentUser?.isLocked && !isBannerDismissed(lockBannerId) && (
           <motion.div className='mb-6 p-5 rounded-lg border border-red-200 bg-red-50 dark:border-red-800/60 dark:bg-red-900/20'>
             <div className='flex items-start gap-3'>
-              <FaLock className='text-red-600 dark:text-red-300 mt-1' />
+              <FaLock className='text-red-600 dark:text-red-300 mt-1 shrink-0' />
+
               <div className='flex-1'>
-                <p className='font-semibold text-red-700 dark:text-red-200 mb-1'>Account Locked</p>
-                <p className='text-sm text-red-600 dark:text-red-300 mb-4'>You can finish ongoing work, but new projects, proposals, and outbound messages stay disabled until the lock lifts.</p>
+                <div className='flex items-start justify-between gap-4'>
+                  <div>
+                    <p className='font-semibold text-red-700 dark:text-red-200 mb-1'>Account Locked</p>
+                    <p className='text-sm text-red-600 dark:text-red-300 mb-4'>You can finish ongoing work, but new projects, proposals, and outbound messages stay disabled until the lock lifts.</p>
+                  </div>
+
+                  <button
+                    type='button'
+                    onClick={() => dismissBanner(lockBannerId)}
+                    className='inline-flex items-center justify-center rounded-full p-2 text-red-600 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-900/40 transition-colors'
+                    aria-label='Dismiss account locked message'>
+                    <FaTimes />
+                  </button>
+                </div>
+
                 <dl className='text-sm text-red-700 dark:text-red-200 space-y-1'>
                   <div className='flex flex-wrap gap-1'>
                     <dt className='font-semibold mr-1'>Reason:</dt>
@@ -186,6 +335,75 @@ const Profile = () => {
             </div>
           </motion.div>
         )}
+        {/* Email Verification Banner */}
+        {currentUser?.isEmailVerified
+          ? !isBannerDismissed(emailBannerId) && (
+              <motion.div className='mb-6 p-5 rounded-lg border border-green-200 bg-green-50 dark:border-green-800/60 dark:bg-green-900/20'>
+                <div className='flex items-start gap-3'>
+                  <FaCheckCircle className='text-green-600 dark:text-green-300 mt-1 shrink-0' />
+
+                  <div className='flex-1'>
+                    <div className='flex items-start justify-between gap-4'>
+                      <div>
+                        <p className='font-semibold text-green-700 dark:text-green-200 mb-1'>Email Verified</p>
+                        <p className='text-sm text-green-600 dark:text-green-300'>
+                          Your account email has been verified{currentUser.emailVerifiedAt ? ` on ${new Date(currentUser.emailVerifiedAt).toLocaleString()}` : ''}.
+                        </p>
+                      </div>
+
+                      <button
+                        type='button'
+                        onClick={() => dismissBanner(emailBannerId)}
+                        className='inline-flex items-center justify-center rounded-full p-2 text-green-600 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-900/40 transition-colors'
+                        aria-label='Dismiss email verified message'>
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          : !isBannerDismissed(emailBannerId) && (
+              <motion.div className='mb-6 p-5 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-900/20'>
+                <div className='flex items-start gap-3'>
+                  <FaExclamationTriangle className='text-amber-600 dark:text-amber-300 mt-1 shrink-0' />
+
+                  <div className='flex-1'>
+                    <div className='flex items-start justify-between gap-4'>
+                      <div>
+                        <p className='font-semibold text-amber-700 dark:text-amber-200 mb-1'>Email Not Verified</p>
+                        <p className='text-sm text-amber-700 dark:text-amber-300 mb-4'>Verify your email address to complete account verification and make account recovery more reliable.</p>
+                      </div>
+
+                      <button
+                        type='button'
+                        onClick={() => dismissBanner(emailBannerId)}
+                        className='inline-flex items-center justify-center rounded-full p-2 text-amber-600 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors'
+                        aria-label='Dismiss email verification message'>
+                        <FaTimes />
+                      </button>
+                    </div>
+
+                    <div className='flex flex-wrap gap-3'>
+                      <button
+                        type='button'
+                        onClick={handleResendVerification}
+                        disabled={isResendingVerification}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isResendingVerification ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'}`}>
+                        {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
+                      </button>
+
+                      <button
+                        type='button'
+                        onClick={() => navigate('/verify-email')}
+                        className='px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors'>
+                        Open Verification Page
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
         {/* Profile Header */}
         <motion.div className='flex items-center gap-6 mb-12' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <motion.div className='w-24 h-24 rounded-full overflow-hidden border-4 border-accent' whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
@@ -195,9 +413,27 @@ const Profile = () => {
             <h1 className='text-3xl font-bold theme-text'>
               {currentUser?.firstName} {currentUser?.lastName}
             </h1>
-            <p className='theme-text-secondary'>{getRoleLabel()}</p>
+
+            <div className='mt-1 flex flex-wrap items-center gap-2'>
+              <p className='theme-text-secondary'>{getRoleLabel()}</p>
+
+              {isEmailVerified && (
+                <span className='inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                  <FaCheckCircle className='w-4 h-4' />
+                  <span>Verified</span>
+                </span>
+              )}
+
+              {isLocked && (
+                <span className='inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300'>
+                  <FaLock className='w-4 h-4' />
+                  <span>Locked</span>
+                </span>
+              )}
+            </div>
+
             {!hasAdminPanelAccess(currentUser) && (
-              <div className='flex items-center gap-2'>
+              <div className='flex items-center gap-2 mt-3'>
                 {ratingStats?.totalRatings > 0 ? (
                   <>
                     <div className='flex items-center gap-1'>
@@ -213,13 +449,12 @@ const Profile = () => {
                     </span>
                   </>
                 ) : (
-                  <p className='text-sm theme-text-secondary'>No ratings yet</p>
+                  <p className='text-sm theme-text-secondary mt-3'>No ratings yet</p>
                 )}
               </div>
             )}
           </div>
         </motion.div>
-
         {/* Navigation Tabs */}
         <motion.div className='flex flex-wrap gap-2 border-b dark:border-light/10 border-primary/10 mb-8' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
           {tabs.map((tab, index) => (
@@ -234,10 +469,10 @@ const Profile = () => {
               transition={{ duration: 0.3, delay: index * 0.1 }}>
               {tab.icon}
               <span>{tab.label}</span>
+              {tab.badge ? <span className='min-w-[1.5rem] h-6 px-2 rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center'>{tab.badge}</span> : null}
             </motion.button>
           ))}
         </motion.div>
-
         {/* Content Area */}
         <AnimatePresence mode='wait'>
           <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
@@ -247,16 +482,70 @@ const Profile = () => {
                 profileCompleteness={profileCompleteness}
                 onOpenSettings={handleOpenSettings}
                 onOpenProjects={!hasAdminPanelAccess(currentUser) ? handleOpenProjects : undefined}
+                onOpenConnections={handleOpenConnections}
                 onOpenMessages={handleOpenMessages}
                 onOpenFreelance={currentUser?.userType === 'freelancer' || currentUser?.userType === 'both' ? handleOpenFreelance : undefined}
               />
             )}
+            {activeTab === 'connections' && <ConnectionsTab />}
             {activeTab === 'projects' && <ProjectsList user={currentUser} />}
-            {activeTab === 'messages' && <MessagesList messages={messages} loading={messagesLoading} />}
-            {activeTab === 'freelance' && <FreelanceTab user={currentUser} />}
+            {activeTab === 'messages' && (
+              <div className='space-y-4'>
+                <div className='flex items-center justify-between gap-3'>
+                  <div>
+                    <h2 className='text-xl font-semibold theme-text'>Messages</h2>
+                    <p className='text-sm theme-text-secondary'>Review recent conversations and refresh when you want the latest state.</p>
+                  </div>
+
+                  <button
+                    type='button'
+                    onClick={handleRefreshMessages}
+                    disabled={messagesLoading}
+                    className='inline-flex items-center gap-2 px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-60'>
+                    <FaSyncAlt className={messagesLoading ? 'animate-spin' : ''} />
+                    <span>{messagesLoading ? 'Refreshing...' : 'Refresh'}</span>
+                  </button>
+                </div>
+
+                <MessagesList messages={messages} loading={messagesLoading} onReplySent={handleRefreshMessages} />
+              </div>
+            )}
+            {activeTab === 'freelance' && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
+                <FreelanceTab onOpenProjects={handleOpenProjects} />
+
+                {/* Availability Calendar - Freelance Tab */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }} className='mt-12'>
+                  <div className='mb-6'>
+                    <h3 className='text-2xl font-bold theme-text mb-2'>Project Timeline & Availability</h3>
+                    <p className='theme-text-secondary'>Manage your availability and let clients see when you're available for new projects</p>
+                  </div>
+                  <AvailabilityCalendar freelancerId={currentUser._id} isOwnProfile={true} isPublicView={false} />
+                </motion.div>
+              </motion.div>
+            )}
+
             {activeTab === 'ratings' && <RatingsSection ratings={ratings} stats={ratingStats} loading={ratingsLoading} />}
-            {activeTab === 'settings' && <ProfileSettings user={currentUser} />}
-            {activeTab === 'security' && <SecuritySettings user={currentUser} />}
+            {activeTab === 'settings' && (
+              <div className='space-y-4'>
+                <div>
+                  <h2 className='text-xl font-semibold theme-text'>Profile Settings</h2>
+                  <p className='text-sm theme-text-secondary'>Update your personal details, public profile information, and freelancer presence.</p>
+                </div>
+
+                <ProfileSettings user={currentUser} />
+              </div>
+            )}
+            {activeTab === 'security' && (
+              <div className='space-y-4'>
+                <div>
+                  <h2 className='text-xl font-semibold theme-text'>Security Settings</h2>
+                  <p className='text-sm theme-text-secondary'>Manage your password and keep your account protected.</p>
+                </div>
+
+                <SecuritySettings user={currentUser} />
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

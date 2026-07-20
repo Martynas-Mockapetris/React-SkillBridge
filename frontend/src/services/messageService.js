@@ -62,3 +62,44 @@ export const markMessageAsRead = async (messageId) => {
     throw error
   }
 }
+
+// Send a message with file attachments
+export const sendMessageWithAttachments = async (receiverId, content, files = [], subject = null, projectId = null) => {
+  try {
+    const formData = new FormData()
+    formData.append('receiverId', receiverId)
+    formData.append('content', content)
+
+    if (subject) formData.append('subject', subject)
+    if (projectId) formData.append('projectId', projectId)
+
+    // Add files to FormData
+    if (files && files.length > 0) {
+      files.forEach((file) => {
+        formData.append('attachments', file)
+      })
+    }
+
+    const response = await authAxios.post('/api/messages', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Failed to send message with attachments:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Download attachment
+export const downloadMessageAttachment = (attachmentPath) => {
+  try {
+    const link = document.createElement('a')
+    link.href = `/${attachmentPath}`
+    link.click()
+  } catch (error) {
+    console.error('Failed to download attachment:', error)
+    throw error
+  }
+}

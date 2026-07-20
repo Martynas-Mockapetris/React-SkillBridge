@@ -19,7 +19,12 @@ const systemConfigSchema = new mongoose.Schema(
     about: { type: sectionSchema, default: () => ({}) },
     contact: { type: sectionSchema, default: () => ({}) },
     mail: { type: sectionSchema, default: () => ({}) },
-    system: { type: sectionSchema, default: () => ({}) }
+    system: { type: sectionSchema, default: () => ({}) },
+
+    siteBuilder: { type: sectionSchema, default: () => ({}) },
+    sharedBlocks: { type: sectionSchema, default: () => ({}) },
+    designSystem: { type: sectionSchema, default: () => ({}) },
+    navigation: { type: sectionSchema, default: () => ({}) }
   },
   { timestamps: true }
 )

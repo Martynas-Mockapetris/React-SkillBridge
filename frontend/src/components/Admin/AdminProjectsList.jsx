@@ -1,5 +1,5 @@
-import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye } from 'react-icons/fa'
-import { useState, useEffect } from 'react'
+import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye, FaCalendarAlt } from 'react-icons/fa'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import ProjectModal from '../../modal/ProjectModal'
 import AdminProjectCancelModal from '../../modal/AdminProjectCancelModal'
@@ -7,7 +7,7 @@ import AdminProjectEditModal from '../../modal/AdminProjectEditModal'
 import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
 import AdminLockProjectModal from '../../modal/AdminLockProjectModal'
 import PaginationControls from '../shared/PaginationControls'
-import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
+import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, bulkRenewProjectDeadlinesAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 import { useAuth } from '../../context/AuthContext'
 import { ADMIN_PERMISSIONS, hasAdminPermission, isFullAdmin } from '../../utils/accessRoles'
@@ -31,7 +31,7 @@ const TeamAvatars = ({ team }) => (
   </div>
 )
 
-const AdminProjectsList = () => {
+const AdminProjectsList = ({ navigationRequest }) => {
   // State
   const [selectedStatus, setSelectedStatus] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
@@ -41,6 +41,14 @@ const AdminProjectsList = () => {
     start: '',
     end: ''
   })
+  const [stalledOnly, setStalledOnly] = useState(false)
+  const latestProjectsFetchRef = useRef(0)
+  const [activePresetLabel, setActivePresetLabel] = useState('')
+  const [selectedProjects, setSelectedProjects] = useState([])
+  const [bulkRenewalDate, setBulkRenewalDate] = useState('')
+  const [quickRenewProjectId, setQuickRenewProjectId] = useState(null)
+  const [quickRenewalDate, setQuickRenewalDate] = useState('')
+
   const [sortBy, setSortBy] = useState('createdAt:desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(30)
@@ -111,6 +119,8 @@ const AdminProjectsList = () => {
   const canCreateProjects = isFullAdmin(currentUser)
 
   const fetchProjects = async () => {
+    const fetchId = ++latestProjectsFetchRef.current
+
     try {
       setLoading(true)
       setError(null)
@@ -122,14 +132,16 @@ const AdminProjectsList = () => {
         priority: selectedPriority === 'All' ? '' : selectedPriority,
         startDate: dateRange.start,
         endDate: dateRange.end,
+        stalled: stalledOnly ? 'true' : '',
         page: currentPage,
         limit: pageSize,
         sort: sortBy
       })
 
+      if (fetchId !== latestProjectsFetchRef.current) return
+
       const data = response.projects || []
 
-      // Map backend project shape to current card UI shape
       const mapped = data.map((project) => ({
         id: project._id,
         name: project.title || 'Untitled project',
@@ -169,10 +181,14 @@ const AdminProjectsList = () => {
       setSummaryCounts(response.summaryCounts || { total: 0, active: 0, in_progress: 0, under_review: 0, completed: 0, cancelled: 0 })
       setFilterOptions(response.filterOptions || { statuses: [], categories: [], priorities: [] })
     } catch (err) {
+      if (fetchId !== latestProjectsFetchRef.current) return
+
       console.error('Error fetching admin projects:', err)
       setError('Failed to load projects')
     } finally {
-      setLoading(false)
+      if (fetchId === latestProjectsFetchRef.current) {
+        setLoading(false)
+      }
     }
   }
 
@@ -381,13 +397,152 @@ const AdminProjectsList = () => {
   }
 
   const clearFilters = () => {
-    setSelectedStatus('All')
-    setSelectedCategory('All')
-    setPriority('All')
-    setDateRange({ start: '', end: '' })
-    setSearchQuery('')
-    setSortBy('createdAt:desc')
-    setCurrentPage(1)
+    clearAllFilters()
+  }
+
+  const isProjectEligibleForRenewal = (project) => !project.isLocked && !['completed', 'archived', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner'].includes(project.status)
+
+  const handleSelectAllProjects = (e) => {
+    if (e.target.checked) {
+      setSelectedProjects(projectsData.map((project) => project.id))
+      return
+    }
+
+    setSelectedProjects([])
+  }
+
+  const handleSelectProject = (projectId) => {
+    setSelectedProjects((prev) => {
+      if (prev.includes(projectId)) {
+        return prev.filter((id) => id !== projectId)
+      }
+
+      return [...prev, projectId]
+    })
+  }
+
+  const handleBulkRenewDeadlines = async () => {
+    const selectedProjectRecords = projectsData.filter((project) => selectedProjects.includes(project.id))
+    const eligibleProjects = selectedProjectRecords.filter(isProjectEligibleForRenewal)
+
+    if (!bulkRenewalDate) {
+      toast.warning('Please choose a renewal date first')
+      return
+    }
+
+    if (eligibleProjects.length === 0) {
+      toast.warning('No eligible selected projects can be renewed')
+      return
+    }
+
+    const confirmed = window.confirm(`Renew ${eligibleProjects.length} selected project deadline${eligibleProjects.length === 1 ? '' : 's'} to ${bulkRenewalDate}?`)
+    if (!confirmed) return
+
+    try {
+      const response = await bulkRenewProjectDeadlinesAsAdmin(
+        eligibleProjects.map((project) => project.id),
+        bulkRenewalDate
+      )
+
+      await fetchProjects()
+      setSelectedProjects([])
+      setBulkRenewalDate('')
+      toast.success(response?.message || 'Project deadlines renewed successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to renew selected project deadlines')
+    }
+  }
+
+  const openQuickRenewProject = (project) => {
+    const today = new Date().toISOString().split('T')[0]
+    const initialDate = project.deadline && project.deadline >= today ? project.deadline : today
+
+    setQuickRenewProjectId(project.id)
+    setQuickRenewalDate(initialDate)
+  }
+
+  const closeQuickRenewProject = () => {
+    setQuickRenewProjectId(null)
+    setQuickRenewalDate('')
+  }
+
+  const handleQuickRenewProject = async (project) => {
+    if (!isProjectEligibleForRenewal(project)) {
+      toast.warning('This project cannot be renewed')
+      return
+    }
+
+    if (!quickRenewalDate) {
+      toast.warning('Please choose a renewal date')
+      return
+    }
+
+    const confirmed = window.confirm(`Renew "${project.name}" to ${quickRenewalDate}?`)
+    if (!confirmed) return
+
+    try {
+      const response = await bulkRenewProjectDeadlinesAsAdmin([project.id], quickRenewalDate)
+      await fetchProjects()
+      closeQuickRenewProject()
+      toast.success(response?.message || 'Project deadline renewed successfully')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to renew project deadline')
+    }
+  }
+
+  const BulkProjectActions = () => {
+    if (selectedProjects.length === 0 || !canUpdateProjects) return null
+
+    const selectedProjectRecords = projectsData.filter((project) => selectedProjects.includes(project.id))
+    const eligibleRenewalProjects = selectedProjectRecords.filter(isProjectEligibleForRenewal)
+    const ineligibleRenewalCount = selectedProjectRecords.length - eligibleRenewalProjects.length
+
+    return (
+      <div className='bg-white dark:bg-gray-800 p-4 mb-4 rounded-lg shadow-sm space-y-3'>
+        <div className='text-sm text-gray-700 dark:text-gray-300'>
+          {selectedProjects.length} projects selected
+          {' • '}
+          {eligibleRenewalProjects.length} eligible for renewal
+          {ineligibleRenewalCount > 0 && ` • ${ineligibleRenewalCount} locked or finalized`}
+        </div>
+
+        <div className='flex flex-wrap items-end gap-3'>
+          <label className='flex flex-col gap-1 text-sm text-gray-600 dark:text-gray-300'>
+            <span>Renew selected projects to</span>
+            <input
+              type='date'
+              value={bulkRenewalDate}
+              min={new Date().toISOString().split('T')[0]}
+              onChange={(e) => setBulkRenewalDate(e.target.value)}
+              className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+            />
+          </label>
+
+          <button
+            type='button'
+            onClick={handleBulkRenewDeadlines}
+            disabled={eligibleRenewalProjects.length === 0 || !bulkRenewalDate}
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${
+              eligibleRenewalProjects.length === 0 || !bulkRenewalDate ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200'
+            }`}>
+            <FaCalendarAlt className='shrink-0' />
+            <span>Renew Selected ({eligibleRenewalProjects.length})</span>
+          </button>
+
+          <button
+            type='button'
+            onClick={() => {
+              setSelectedProjects([])
+              setBulkRenewalDate('')
+            }}
+            className='inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'>
+            Clear Selection
+          </button>
+        </div>
+
+        <div className='text-xs text-gray-500 dark:text-gray-400'>Single-project renewal is still available through Edit Project.</div>
+      </div>
+    )
   }
 
   const showingFrom = totalFilteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1
@@ -402,9 +557,42 @@ const AdminProjectsList = () => {
     { key: 'cancelled', label: 'Cancelled', className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' }
   ]
 
+  const buildProjectsPresetLabel = (filters = {}) => {
+    if (filters.stalled === 'true') return 'Queue preset: Stalled projects'
+    return ''
+  }
+
+  const clearAllFilters = () => {
+    setSelectedStatus('All')
+    setSelectedCategory('All')
+    setPriority('All')
+    setDateRange({ start: '', end: '' })
+    setStalledOnly(false)
+    setSearchQuery('')
+    setSortBy('createdAt:desc')
+    setCurrentPage(1)
+    setActivePresetLabel('')
+  }
+
   useEffect(() => {
     setCurrentPage(1)
-  }, [selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery, sortBy, pageSize])
+  }, [selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, stalledOnly, searchQuery, sortBy, pageSize])
+
+  useEffect(() => {
+    if (!navigationRequest || navigationRequest.section !== 'projects') return
+
+    const filters = navigationRequest.filters || {}
+
+    setSearchQuery(filters.search || '')
+    setSelectedStatus(filters.status || 'All')
+    setSelectedCategory(filters.category || 'All')
+    setPriority(filters.priority || 'All')
+    setDateRange({ start: '', end: '' })
+    setStalledOnly(filters.stalled === 'true')
+    setSortBy(filters.sort || 'createdAt:desc')
+    setCurrentPage(1)
+    setActivePresetLabel(buildProjectsPresetLabel(filters))
+  }, [navigationRequest?.requestId, navigationRequest?.section])
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -413,8 +601,12 @@ const AdminProjectsList = () => {
   }, [currentPage, totalPages])
 
   useEffect(() => {
+    setSelectedProjects((prev) => prev.filter((projectId) => projectsData.some((project) => project.id === projectId)))
+  }, [projectsData])
+
+  useEffect(() => {
     fetchProjects()
-  }, [currentPage, pageSize, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, searchQuery, sortBy])
+  }, [currentPage, pageSize, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, stalledOnly, searchQuery, sortBy])
 
   return (
     <div>
@@ -441,6 +633,21 @@ const AdminProjectsList = () => {
           </button>
         )}
       </div>
+
+      {activePresetLabel && (
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-gray-800 dark:text-gray-100'>
+          <div className='flex items-center gap-2'>
+            <span className='inline-flex rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-white'>Active Queue Preset</span>
+            <span>{activePresetLabel}</span>
+          </div>
+
+          <button type='button' onClick={clearAllFilters} className='rounded-lg border border-accent/30 bg-white px-3 py-2 text-sm font-medium text-accent hover:bg-accent/5 dark:bg-gray-800 dark:hover:bg-accent/10'>
+            Clear preset
+          </button>
+        </div>
+      )}
+
+      <BulkProjectActions />
 
       {canCreateProjects && <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />}
 
@@ -503,6 +710,10 @@ const AdminProjectsList = () => {
               onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
               className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
             />
+            <label className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-700'>
+              <input type='checkbox' checked={stalledOnly} onChange={(e) => setStalledOnly(e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+              <span className='text-sm text-gray-700 dark:text-gray-200'>Stalled only</span>
+            </label>
           </div>
           <button onClick={clearFilters} className='flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'>
             <FaFilter className='w-4 h-4' />
@@ -512,33 +723,53 @@ const AdminProjectsList = () => {
       </div>
 
       {/* Sort + Pagination Controls */}
-      <div className='flex flex-wrap justify-end items-center gap-3 mb-4'>
-        <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300'>
-          <span>Show</span>
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className='px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
-            title='Projects per page'>
-            <option value={30}>30</option>
-            <option value={60}>60</option>
-            <option value={90}>90</option>
-          </select>
+      <div className='flex flex-wrap justify-between items-center gap-3 mb-4'>
+        <div className='flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300'>
+          {canUpdateProjects && (
+            <>
+              <label className='inline-flex items-center gap-2'>
+                <input
+                  type='checkbox'
+                  onChange={handleSelectAllProjects}
+                  checked={projectsData.length > 0 && selectedProjects.length === projectsData.length}
+                  className='rounded border-gray-300 text-accent focus:ring-accent'
+                />
+                <span>Select all on page</span>
+              </label>
+
+              {selectedProjects.length > 0 && <span className='text-gray-500 dark:text-gray-400'>{selectedProjects.length} selected</span>}
+            </>
+          )}
         </div>
 
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
-          <option value='createdAt:desc'>Created (Newest first)</option>
-          <option value='createdAt:asc'>Created (Oldest first)</option>
-          <option value='deadline:asc'>Deadline (Oldest first)</option>
-          <option value='deadline:desc'>Deadline (Newest first)</option>
-          <option value='progress:asc'>Progress (Low to High)</option>
-          <option value='progress:desc'>Progress (High to Low)</option>
-          <option value='priority:asc'>Priority (Low to High)</option>
-          <option value='priority:desc'>Priority (High to Low)</option>
-        </select>
+        <div className='flex flex-wrap items-center gap-3'>
+          <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300'>
+            <span>Show</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className='px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'
+              title='Projects per page'>
+              <option value={30}>30</option>
+              <option value={60}>60</option>
+              <option value={90}>90</option>
+            </select>
+          </div>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className='px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent dark:bg-gray-700 dark:text-white'>
+            <option value='createdAt:desc'>Created (Newest first)</option>
+            <option value='createdAt:asc'>Created (Oldest first)</option>
+            <option value='deadline:asc'>Deadline (Oldest first)</option>
+            <option value='deadline:desc'>Deadline (Newest first)</option>
+            <option value='progress:asc'>Progress (Low to High)</option>
+            <option value='progress:desc'>Progress (High to Low)</option>
+            <option value='priority:asc'>Priority (Low to High)</option>
+            <option value='priority:desc'>Priority (High to Low)</option>
+          </select>
+        </div>
       </div>
 
       {loading && <div className='mb-4 rounded-lg bg-white dark:bg-gray-800 p-4 text-sm text-gray-500 dark:text-gray-300'>Loading projects...</div>}
@@ -551,10 +782,25 @@ const AdminProjectsList = () => {
           const isProjectLocked = Boolean(project.isLocked)
 
           return (
-            <div key={project.id} className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-4 h-full flex flex-col'>
-              <div className='flex justify-between items-start mb-4'>
-                <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
-                <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>{' '}
+            <div
+              key={project.id}
+              className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-4 h-full flex flex-col border-2 ${
+                selectedProjects.includes(project.id) ? 'border-accent/60 ring-1 ring-accent/20' : 'border-transparent'
+              }`}>
+              <div className='flex justify-between items-start gap-3 mb-4'>
+                <div className='flex items-start gap-3'>
+                  {canUpdateProjects && (
+                    <input
+                      type='checkbox'
+                      checked={selectedProjects.includes(project.id)}
+                      onChange={() => handleSelectProject(project.id)}
+                      className='mt-1 rounded border-gray-300 text-accent focus:ring-accent'
+                      title='Select project'
+                    />
+                  )}
+                  <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
+                </div>
+                <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
               </div>
 
               <p className='text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3'>{project.description?.length > 180 ? `${project.description.slice(0, 180)}...` : project.description}</p>
@@ -585,6 +831,16 @@ const AdminProjectsList = () => {
                   </button>
                 )}
 
+                {canUpdateProjects && (
+                  <button
+                    onClick={() => openQuickRenewProject(project)}
+                    disabled={!isProjectEligibleForRenewal(project)}
+                    title={!isProjectEligibleForRenewal(project) ? 'Locked or finalized projects cannot be renewed.' : 'Quick renew deadline'}
+                    className={`${!isProjectEligibleForRenewal(project) ? 'text-gray-400 cursor-not-allowed' : 'text-cyan-600 hover:text-cyan-900 dark:text-cyan-400 dark:hover:text-cyan-200'}`}>
+                    <FaCalendarAlt className='w-4 h-4' />
+                  </button>
+                )}
+
                 {canLockProjects && (
                   <button
                     onClick={() => handleToggleProjectLock(project)}
@@ -611,6 +867,44 @@ const AdminProjectsList = () => {
                   </button>
                 )}
               </div>
+
+              {quickRenewProjectId === project.id && (
+                <div className='mt-4 rounded-md border border-cyan-200 dark:border-cyan-900/40 bg-cyan-50 dark:bg-cyan-900/20 p-3 space-y-3'>
+                  <div className='text-sm font-medium text-cyan-900 dark:text-cyan-200'>Quick Renew Deadline</div>
+
+                  <div className='flex flex-wrap items-end gap-3'>
+                    <label className='flex flex-col gap-1 text-sm text-cyan-900 dark:text-cyan-200'>
+                      <span>New deadline</span>
+                      <input
+                        type='date'
+                        value={quickRenewalDate}
+                        min={new Date().toISOString().split('T')[0]}
+                        onChange={(e) => setQuickRenewalDate(e.target.value)}
+                        className='px-3 py-2 border border-cyan-200 dark:border-cyan-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-white dark:bg-gray-800 dark:text-white'
+                      />
+                    </label>
+
+                    <button
+                      type='button'
+                      onClick={() => handleQuickRenewProject(project)}
+                      disabled={!quickRenewalDate}
+                      className={`inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap ${
+                        !quickRenewalDate ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200'
+                      }`}>
+                      <FaCalendarAlt className='shrink-0' />
+                      <span>Save Renewal</span>
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={closeQuickRenewProject}
+                      className='inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md whitespace-nowrap bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {project.isLocked && (
                 <div className='mt-4 rounded-md border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 p-3 text-xs text-red-700 dark:text-red-300'>
                   <div>

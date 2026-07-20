@@ -1,6 +1,27 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaTools, FaBook, FaGlobe, FaGithub, FaLinkedin, FaTwitter, FaStar, FaLanguage, FaCertificate, FaList, FaBriefcase, FaCheck, FaTimes, FaSyncAlt } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaTools,
+  FaBook,
+  FaGlobe,
+  FaGithub,
+  FaLinkedin,
+  FaTwitter,
+  FaStar,
+  FaLanguage,
+  FaCertificate,
+  FaList,
+  FaBriefcase,
+  FaSyncAlt,
+  FaChevronDown,
+  FaClock,
+  FaEye
+} from 'react-icons/fa'
+import { toast } from 'react-toastify'
 import { useAuth } from '../../context/AuthContext'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import { calculateProfileCompleteness } from '../../utils/profileCompleteness'
@@ -13,6 +34,28 @@ const initialFormState = {
   location: '',
   skills: '',
   bio: '',
+  headline: '',
+  availabilityStatus: 'available',
+  profileVisibility: 'public',
+  responseTime: 'within_24_hours',
+  servicesOffered: '',
+  tools: '',
+  workPreference: 'flexible',
+  yearsOfExperience: '',
+  minimumProjectBudget: '',
+  preferredProjectSize: 'flexible',
+  preferredEngagements: '',
+  timezone: '',
+  availabilityDetails: '',
+  industries: '',
+  showLocationPublic: true,
+  showHourlyRate: true,
+  allowDirectMessages: true,
+  allowProjectInvites: true,
+  emailNotificationsEnabled: true,
+  emailNotificationsMessages: true,
+  emailNotificationsConnections: true,
+  emailNotificationsProjects: true,
   website: '',
   github: '',
   linkedin: '',
@@ -28,7 +71,7 @@ const initialFormState = {
 }
 
 const ProfileSettings = () => {
-  const { currentUser, updateUserProfile, getUserProfile } = useAuth()
+  const { currentUser, updateUserProfile } = useAuth()
   const profileCompleteness = calculateProfileCompleteness(currentUser)
   const missingRequired = profileCompleteness?.missingRequired ?? []
   const missingOptional = profileCompleteness?.missingOptional ?? []
@@ -37,103 +80,168 @@ const ProfileSettings = () => {
   const showFreelancerSection = userRole === 'freelancer' || userRole === 'both' || userRole === 'admin'
 
   const [formData, setFormData] = useState(initialFormState)
+  const [savedFormData, setSavedFormData] = useState(initialFormState)
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [notification, setNotification] = useState({ type: '', message: '' })
-  const [isLoading, setIsLoading] = useState(true)
-  const apiCallInProgressRef = useRef(false)
-  const [profileImageFile, setProfileImageFile] = useState(null)
-  const [previewImage, setPreviewImage] = useState(currentUser?.profilePicture || '')
+  const [isLoading, setIsLoading] = useState(!currentUser)
 
   // Helper function to populate form with user data
   const populateFormWithUserData = (user) => {
     if (!user) return
 
-    console.log('Loading user profile - profilePicture from DB:', user.profilePicture)
-
-    setFormData({
+    const nextFormData = {
       fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
       email: user.email || '',
       phone: user.phone || '',
       location: user.location || '',
       skills: user.skills || '',
       bio: user.bio || '',
+      headline: user.headline || '',
+      availabilityStatus: user.availabilityStatus || 'available',
+      profileVisibility: user.profileVisibility || 'public',
+      responseTime: user.responseTime || 'within_24_hours',
+      servicesOffered: user.servicesOffered || '',
+      tools: user.tools || '',
+      workPreference: user.workPreference || 'flexible',
+      yearsOfExperience: user.yearsOfExperience ?? '',
+      minimumProjectBudget: user.minimumProjectBudget ?? '',
+      preferredProjectSize: user.preferredProjectSize || 'flexible',
+      preferredEngagements: Array.isArray(user.preferredEngagements) ? user.preferredEngagements.join(', ') : '',
+      timezone: user.timezone || '',
+      availabilityDetails: user.availabilityDetails || '',
+      industries: user.industries || '',
+      showLocationPublic: user.showLocationPublic ?? true,
+      showHourlyRate: user.showHourlyRate ?? true,
+      allowDirectMessages: user.allowDirectMessages ?? true,
+      allowProjectInvites: user.allowProjectInvites ?? true,
+      emailNotificationsEnabled: user.emailNotificationsEnabled ?? true,
+      emailNotificationsMessages: user.emailNotificationsMessages ?? true,
+      emailNotificationsConnections: user.emailNotificationsConnections ?? true,
+      emailNotificationsProjects: user.emailNotificationsProjects ?? true,
       website: user.website || '',
       github: user.github || '',
       linkedin: user.linkedin || '',
       twitter: user.twitter || '',
       profilePicture: user.profilePicture || '',
-      hourlyRate: user.hourlyRate || '',
+      hourlyRate: user.hourlyRate ?? '',
       experienceLevel: user.experienceLevel || 'entry',
       languages: user.languages || '',
       certifications: user.certifications || '',
       serviceCategories: user.serviceCategories || '',
       upworkProfile: user.upworkProfile || '',
       fiverrProfile: user.fiverrProfile || ''
-    })
+    }
 
+    setFormData(nextFormData)
+    setSavedFormData(nextFormData)
     setIsLoading(false)
   }
 
-  // Fetch complete profile data when component mounts
+  // Update form data when currentUser becomes available
   useEffect(() => {
-    const fetchFullProfile = async () => {
-      if (apiCallInProgressRef.current) return
-
-      apiCallInProgressRef.current = true
+    if (!currentUser) {
       setIsLoading(true)
-
-      try {
-        await getUserProfile() // This updates currentUser in context
-      } catch (error) {
-        console.error('Error fetching profile data:', error)
-      } finally {
-        apiCallInProgressRef.current = false
-        setIsLoading(false)
-      }
+      return
     }
 
-    fetchFullProfile()
-  }, []) // Empty dependency array - only runs once on mount
-
-  // Update form data when currentUser changes
-  useEffect(() => {
-    if (currentUser) {
-      populateFormWithUserData(currentUser)
-    }
+    populateFormWithUserData(currentUser)
   }, [currentUser])
 
   // Handle form field changes
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }))
+    const { name, value, type, checked } = e.target
+    const nextValue = type === 'checkbox' ? checked : value
+
+    setFormData((prev) => {
+      if (name === 'emailNotificationsEnabled') {
+        if (!checked) {
+          return {
+            ...prev,
+            emailNotificationsEnabled: false,
+            emailNotificationsMessages: false,
+            emailNotificationsConnections: false,
+            emailNotificationsProjects: false
+          }
+        }
+
+        const hasAnyEmailCategoryEnabled = prev.emailNotificationsMessages || prev.emailNotificationsConnections || prev.emailNotificationsProjects
+
+        return {
+          ...prev,
+          emailNotificationsEnabled: true,
+          emailNotificationsMessages: hasAnyEmailCategoryEnabled ? prev.emailNotificationsMessages : true,
+          emailNotificationsConnections: hasAnyEmailCategoryEnabled ? prev.emailNotificationsConnections : true,
+          emailNotificationsProjects: hasAnyEmailCategoryEnabled ? prev.emailNotificationsProjects : true
+        }
+      }
+
+      return {
+        ...prev,
+        [name]: nextValue
+      }
+    })
+
+    setErrors((prev) => {
+      if (!prev[name]) return prev
+
+      const nextErrors = { ...prev }
+      delete nextErrors[name]
+      return nextErrors
+    })
   }
+
+  const hasUnsavedChanges = JSON.stringify(formData) !== JSON.stringify(savedFormData)
+  const currentAvatarUrl = formData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`
+  const savedAvatarUrl = savedFormData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`
+  const hasAvatarChanges = currentAvatarUrl !== savedAvatarUrl
+  const activeEmailPreferenceCount = [formData.emailNotificationsMessages, formData.emailNotificationsConnections, formData.emailNotificationsProjects].filter(Boolean).length
 
   // Validate all form fields and return if valid
   const validateForm = () => {
     const newErrors = {}
 
-    // Basic validation - required fields
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Full name is required'
     }
 
-    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required'
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email'
     }
 
-    // Phone validation (optional)
+    if (!formData.headline.trim()) {
+      newErrors.headline = 'Professional headline is required'
+    }
+
+    if (!formData.skills.trim()) {
+      newErrors.skills = 'Skills are required'
+    }
+
+    if (!formData.bio.trim()) {
+      newErrors.bio = 'Bio is required'
+    }
+
+    if (!formData.servicesOffered.trim()) {
+      newErrors.servicesOffered = 'Services offered is required'
+    }
+
     if (formData.phone && !/^\+[0-9 ]{8,20}$/.test(formData.phone.replace(/_/g, ''))) {
       newErrors.phone = 'Please enter a valid phone number'
     }
 
-    // URL validations for web profiles
+    const numericFields = [
+      { name: 'hourlyRate', label: 'Hourly rate' },
+      { name: 'minimumProjectBudget', label: 'Minimum project budget' },
+      { name: 'yearsOfExperience', label: 'Years of experience' }
+    ]
+
+    numericFields.forEach(({ name, label }) => {
+      if (formData[name] !== '' && (Number.isNaN(Number(formData[name])) || Number(formData[name]) < 0)) {
+        newErrors[name] = `${label} must be 0 or greater`
+      }
+    })
+
     const urlFields = ['website', 'github', 'linkedin', 'twitter', 'upworkProfile', 'fiverrProfile']
     urlFields.forEach((field) => {
       if (formData[field] && !/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(formData[field])) {
@@ -166,12 +274,37 @@ const ProfileSettings = () => {
           location: formData.location,
           skills: formData.skills,
           bio: formData.bio,
+          headline: formData.headline,
+          availabilityStatus: formData.availabilityStatus,
+          profileVisibility: formData.profileVisibility,
+          responseTime: formData.responseTime,
+          servicesOffered: formData.servicesOffered,
+          tools: formData.tools,
+          workPreference: formData.workPreference,
+          yearsOfExperience: formData.yearsOfExperience === '' ? undefined : Number(formData.yearsOfExperience),
+          minimumProjectBudget: formData.minimumProjectBudget === '' ? undefined : Number(formData.minimumProjectBudget),
+          preferredProjectSize: formData.preferredProjectSize,
+          preferredEngagements: formData.preferredEngagements
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean),
+          timezone: formData.timezone,
+          availabilityDetails: formData.availabilityDetails,
+          industries: formData.industries,
+          showLocationPublic: formData.showLocationPublic,
+          showHourlyRate: formData.showHourlyRate,
+          allowDirectMessages: formData.allowDirectMessages,
+          allowProjectInvites: formData.allowProjectInvites,
+          emailNotificationsEnabled: formData.emailNotificationsEnabled,
+          emailNotificationsMessages: formData.emailNotificationsMessages,
+          emailNotificationsConnections: formData.emailNotificationsConnections,
+          emailNotificationsProjects: formData.emailNotificationsProjects,
           website: formData.website,
           github: formData.github,
           linkedin: formData.linkedin,
           twitter: formData.twitter,
           profilePicture: formData.profilePicture,
-          hourlyRate: formData.hourlyRate ? Number(formData.hourlyRate) : undefined,
+          hourlyRate: formData.hourlyRate === '' ? undefined : Number(formData.hourlyRate),
           experienceLevel: formData.experienceLevel,
           languages: formData.languages,
           certifications: formData.certifications,
@@ -180,23 +313,41 @@ const ProfileSettings = () => {
           fiverrProfile: formData.fiverrProfile
         }
 
-        console.log('Submitting profile data with profilePicture:', profileData.profilePicture)
-
         // Send profile update to API
         const response = await updateUserProfile(profileData)
-        console.log('Profile update response:', response)
 
         // Update the form state with the response to refresh the image display
-        setFormData((prev) => ({
-          ...prev,
-          profilePicture: response.profilePicture || prev.profilePicture
-        }))
+        setFormData((prev) => {
+          const nextFormData = {
+            ...prev,
+            profilePicture: response.profilePicture || prev.profilePicture
+          }
 
-        setNotification({ type: 'success', message: 'Changes saved successfully!' })
+          setSavedFormData(nextFormData)
+          return nextFormData
+        })
+
+        setErrors({})
+        toast.success('Changes saved successfully!')
       } catch (error) {
-        console.error('Error updating profile:', error)
-        console.error('Error details:', error.response?.data || error.message)
-        setNotification({ type: 'error', message: 'Failed to save changes. Please try again.' })
+        const message = error.response?.data?.message || 'Failed to save changes. Please try again.'
+        const validationErrors = error.response?.data?.errors
+
+        if (validationErrors && typeof validationErrors === 'object') {
+          const nextErrors = {}
+
+          Object.entries(validationErrors).forEach(([field, details]) => {
+            if (details?.message) {
+              nextErrors[field] = details.message
+            }
+          })
+
+          if (Object.keys(nextErrors).length > 0) {
+            setErrors(nextErrors)
+          }
+        }
+
+        toast.error(message)
       } finally {
         setIsSubmitting(false)
       }
@@ -205,54 +356,59 @@ const ProfileSettings = () => {
 
   // Reset form to current user data or initial state
   const handleReset = () => {
+    if (!hasUnsavedChanges) return
+
     if (currentUser) {
       populateFormWithUserData(currentUser)
     } else {
       setFormData(initialFormState)
+      setSavedFormData(initialFormState)
+      setIsLoading(false)
     }
+
     setErrors({})
-    setNotification({ type: 'info', message: 'Form has been reset' })
+    setIsSubmitting(false)
+    toast.info('Form has been reset')
   }
 
   // Utility function for input field CSS classes
   const inputClasses = (errorField) => `
     w-full pl-10 p-3 rounded-lg
-    bg-light/10
+    theme-input theme-text
     transition-all duration-300
+    border ${errors[errorField] ? 'border-red-500' : 'dark:border-light/10 border-primary/10'}
     dark:placeholder:text-light/40 placeholder:text-primary/40
     dark:focus:placeholder:text-light/60 focus:placeholder:text-primary/60
-    focus:bg-light/20
     focus:outline-none focus:ring-2 focus:ring-accent/50
-    hover:scale-[1.02] hover:shadow-lg
-    ${errors[errorField] ? 'border-2 border-red-500' : 'border theme-border'}
   `
+  const selectShellClasses = (errorField) => `
+    relative rounded-lg
+    bg-primary/15 dark:bg-light/12
+    transition-all duration-300
+    border ${errors[errorField] ? 'border-red-500' : 'border-primary/15 dark:border-light/10'}
+    shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]
+    hover:border-accent/35 hover:bg-primary/20 dark:hover:bg-light/15
+    focus-within:border-accent/45
+    focus-within:ring-2 focus-within:ring-accent/50
+  `
+  const selectFieldClasses = `
+    w-full min-h-[50px] bg-transparent theme-text
+    pl-10 pr-10 py-3 rounded-lg
+    appearance-none theme-select
+    focus:outline-none
+  `
+  const selectIconClasses = 'absolute left-3 top-1/2 -translate-y-1/2 text-accent text-[16px] pointer-events-none'
+  const selectChevronClasses = 'absolute right-3 top-1/2 -translate-y-1/2 text-accent text-[14px] pointer-events-none'
+  const toggleClasses = 'h-4 w-4 rounded border-primary/20 text-accent focus:ring-accent/50 dark:border-light/20 dark:bg-transparent'
+
   return (
-    <motion.div className='space-y-8 p-6' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+    <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       {isLoading ? (
         <div className='flex justify-center items-center h-64'>
           <LoadingSpinner />
         </div>
       ) : (
         <>
-          <AnimatePresence>
-            {notification.message && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={`fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`}>
-                <div className='flex items-center gap-2'>
-                  {notification.type === 'success' ? <FaCheck /> : <FaTimes />}
-                  {notification.message}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <motion.h2 className='text-2xl font-bold theme-text' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            Profile Settings
-          </motion.h2>
-
           <motion.div
             className='mb-6 p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
             initial={{ opacity: 0, y: 12 }}
@@ -269,108 +425,198 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {missingRequired.length > 0 && (
-              <div className='mt-3'>
-                <p className='text-xs uppercase tracking-wide text-red-500 mb-1'>Required fields to complete</p>
-                <p className='text-sm theme-text-secondary'>{missingRequired.map((item) => item.label).join(', ')}</p>
+            <div className='flex items-center justify-between gap-4 flex-wrap'>
+              {missingRequired.length > 0 && (
+                <div className='mt-3'>
+                  <p className='text-xs uppercase tracking-wide text-red-500 mb-1'>Required fields to complete</p>
+                  <p className='text-sm theme-text-secondary'>{missingRequired.map((item) => item.label).join(', ')}</p>
+                </div>
+              )}
+              <div className='text-sm theme-text-secondary'>
+                <p className={hasUnsavedChanges ? 'text-amber-500' : 'theme-text-secondary'}>{hasUnsavedChanges ? 'Changes not saved yet' : 'Profile is up to date'}</p>
               </div>
-            )}
+            </div>
           </motion.div>
 
           <form onSubmit={handleSubmit}>
             <motion.div className='grid lg:grid-cols-2 gap-6 mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               {/* Basic Information */}
-              <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Basic Information</h3>
-                <div className='space-y-4'>
-                  {[
-                    { name: 'fullName', label: 'Full Name', icon: <FaUser />, type: 'text', placeholder: 'Enter your full name' },
-                    { name: 'email', label: 'Email', icon: <FaEnvelope />, type: 'email', placeholder: 'Enter your email address' },
-                    { name: 'location', label: 'Location', icon: <FaMapMarkerAlt />, type: 'text', placeholder: 'Enter your location' }
-                  ].map((field) => (
-                    <div key={field.name}>
-                      <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
-                        <input type={field.type} name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} placeholder={field.placeholder} />
-                        {errors[field.name] && (
-                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                            {errors[field.name]}
-                          </motion.p>
-                        )}
+              <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 h-full'>
+                <h3 className='text-xl font-semibold theme-text mb-2'>Basic Information</h3>
+                <p className='text-sm theme-text-secondary mb-4'>Details people use to recognize you and understand your background quickly.</p>
+                <div className='grid gap-5'>
+                  <div className='p-4 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Identity</p>
+                    </div>
+
+                    <div className='space-y-5'>
+                      <div className='flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'>
+                        <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
+
+                        <div className='flex flex-wrap items-center justify-center gap-3'>
+                          <motion.button
+                            type='button'
+                            onClick={() => {
+                              const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+                              const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
+                              setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
+                            }}
+                            className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}>
+                            <FaSyncAlt className='text-sm' />
+                            <span className='text-sm font-medium'>Generate New Avatar</span>
+                          </motion.button>
+
+                          {hasAvatarChanges && (
+                            <motion.button
+                              type='button'
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  profilePicture: savedFormData.profilePicture
+                                }))
+                              }
+                              className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors duration-300'
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}>
+                              Use Current Avatar
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Full Name</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaUser />
+                          </span>
+                          <input type='text' name='fullName' value={formData.fullName} onChange={handleChange} className={inputClasses('fullName')} placeholder='Enter your full name' />
+                          {errors.fullName && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.fullName}
+                            </motion.p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ))}
-
-                  <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Phone Number</label>
-                    <div className='relative'>
-                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                        <FaPhone />
-                      </span>
-                      <input type='tel' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
-                      {errors.phone && (
-                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
-                          {errors.phone}
-                        </motion.p>
-                      )}
-                    </div>
                   </div>
 
-                  <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Skills</label>
-                    <div className='relative'>
-                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                        <FaTools />
-                      </span>
-                      <textarea name='skills' value={formData.skills} onChange={handleChange} className={inputClasses('skills')} rows='3' placeholder='Separate skills with commas' />
+                  <div className='p-4 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Contact</p>
+                      <p className='text-sm theme-text-secondary'>Show the primary ways clients or collaborators can identify and reach you.</p>
                     </div>
-                  </div>
 
-                  <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
-                    <div className='relative'>
-                      <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                        <FaBook />
-                      </span>
-                      <textarea name='bio' value={formData.bio} onChange={handleChange} className={inputClasses('bio')} rows='4' placeholder='Describe yourself' />
+                    <div className='space-y-4'>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Email</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaEnvelope />
+                          </span>
+                          <input
+                            type='email'
+                            name='email'
+                            value={formData.email}
+                            onChange={handleChange}
+                            readOnly
+                            className={`${inputClasses('email')} cursor-not-allowed opacity-80`}
+                            placeholder='Enter your email address'
+                          />
+                          <p className='text-xs theme-text-muted mt-2'>Email changes require a separate verification flow and cannot be edited here.</p>
+                          {errors.email && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.email}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Phone Number</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaPhone />
+                          </span>
+                          <input type='tel' name='phone' value={formData.phone} onChange={handleChange} className={inputClasses('phone')} placeholder='Enter your phone number' />
+                          {errors.phone && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.phone}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Right Column: Profile Picture and Social Links */}
-              <motion.div className='flex flex-col gap-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                {/* Profile Picture */}
-                <motion.div className='p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 flex flex-col items-center'>
-                  <h3 className='text-lg font-semibold theme-text mb-4'>Profile Picture</h3>
-                  <img
-                    key={formData.profilePicture}
-                    src={formData.profilePicture || `https://i.pravatar.cc/150?u=${currentUser?._id || 'default'}`}
-                    alt='Profile'
-                    className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover'
-                  />
-                  <motion.button
-                    type='button'
-                    onClick={() => {
-                      const randomSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-                      const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
-                      setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
-                    }}
-                    className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}>
-                    <FaSyncAlt className='text-sm' />
-                    <span className='text-sm font-medium'>Generate Avatar</span>
-                  </motion.button>
-                </motion.div>
-
-                {/* Social Links */}
-                <motion.div className='p-6 h-fit rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5'>
-                  <h3 className='text-xl font-semibold theme-text mb-4'>Social Links</h3>
+              {/* Right Column: Public Presence */}
+              <motion.div className='flex flex-col gap-6 h-full' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+                <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex-1'>
+                  <h3 className='text-xl font-semibold theme-text mb-2'>Public Presence</h3>
+                  <p className='text-sm theme-text-secondary mb-4'>Shape how people discover you, review your work, and understand your public profile at a glance.</p>
                   <div className='space-y-4'>
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Professional Headline</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaBriefcase />
+                        </span>
+                        <input type='text' name='headline' value={formData.headline} onChange={handleChange} className={inputClasses('headline')} placeholder='Frontend developer focused on fast, polished client work' />
+                        {errors.headline && (
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                            {errors.headline}
+                          </motion.p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Bio</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaBook />
+                        </span>
+                        <textarea
+                          name='bio'
+                          value={formData.bio}
+                          onChange={handleChange}
+                          className={inputClasses('bio')}
+                          rows='4'
+                          placeholder='Briefly describe your background, strengths, and the kind of work you do best'
+                        />
+                        {errors.bio && (
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                            {errors.bio}
+                          </motion.p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Location</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaMapMarkerAlt />
+                        </span>
+                        <input type='text' name='location' value={formData.location} onChange={handleChange} className={inputClasses('location')} placeholder='Enter your location' />
+                      </div>
+                    </div>
+                    <div>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Timezone</label>
+                      <div className='relative'>
+                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                          <FaGlobe />
+                        </span>
+                        <input type='text' name='timezone' value={formData.timezone} onChange={handleChange} className={inputClasses('timezone')} placeholder='Europe/Vilnius' />
+                      </div>
+                    </div>
                     {[
-                      { name: 'website', label: 'Website', icon: <FaGlobe />, placeholder: 'Enter your website URL' },
+                      { name: 'website', label: 'Portfolio', icon: <FaGlobe />, placeholder: 'Enter your portfolio URL' },
                       { name: 'github', label: 'GitHub', icon: <FaGithub />, placeholder: 'Enter your GitHub profile' },
                       { name: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin />, placeholder: 'Enter your LinkedIn profile' },
                       { name: 'twitter', label: 'Twitter', icon: <FaTwitter />, placeholder: 'Enter your Twitter handle' }
@@ -380,6 +626,11 @@ const ProfileSettings = () => {
                         <div className='relative'>
                           <span className='absolute left-3 top-4 text-accent text-[16px]'>{social.icon}</span>
                           <input type='url' name={social.name} value={formData[social.name]} onChange={handleChange} className={inputClasses(social.name)} placeholder={social.placeholder} />
+                          {errors[social.name] && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors[social.name]}
+                            </motion.p>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -393,59 +644,460 @@ const ProfileSettings = () => {
                 className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7 }}>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Freelancer Details</h3>
-                <div className='grid gap-6'>
-                  <div className='grid md:grid-cols-2 gap-4'>
-                    <div>
-                      <label className='block mb-2 theme-text-secondary text-sm'>Hourly Rate</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-3 text-accent'>€</span>
-                        <input type='number' name='hourlyRate' value={formData.hourlyRate} onChange={handleChange} className={inputClasses('hourlyRate')} placeholder='€ per hour' />
-                      </div>
-                    </div>
+                transition={{ duration: 0.65 }}>
+                <h3 className='text-xl font-semibold theme-text mb-2'>Visibility & Contact Preferences</h3>
+                <p className='text-sm theme-text-secondary mb-4'>Control what visitors can see and how clients are allowed to reach you.</p>
 
+                <div className='grid gap-5'>
+                  <div>
+                    <label className='block mb-2 theme-text-secondary text-sm'>Profile Visibility</label>
+                    <div className={selectShellClasses('profileVisibility')}>
+                      <span className={selectIconClasses}>
+                        <FaEye />
+                      </span>
+                      <select name='profileVisibility' value={formData.profileVisibility} onChange={handleChange} className={selectFieldClasses}>
+                        <option value='public'>Public</option>
+                        <option value='members'>Members only</option>
+                        <option value='private'>Private</option>
+                      </select>
+                      <span className={selectChevronClasses}>
+                        <FaChevronDown />
+                      </span>
+                    </div>
+                    <p className='text-xs theme-text-muted mt-2'>Choose who can view your full profile details on the platform.</p>
+                  </div>
+
+                  <div className='grid md:grid-cols-2 gap-4'>
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='showLocationPublic' checked={formData.showLocationPublic} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Show location publicly</p>
+                        <p className='text-xs theme-text-muted mt-1'>Let visitors see your location on the public profile.</p>
+                      </div>
+                    </label>
+
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='showHourlyRate' checked={formData.showHourlyRate} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Show hourly rate</p>
+                        <p className='text-xs theme-text-muted mt-1'>Display your hourly pricing to help clients evaluate fit faster.</p>
+                      </div>
+                    </label>
+
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='allowDirectMessages' checked={formData.allowDirectMessages} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Allow direct messages</p>
+                        <p className='text-xs theme-text-muted mt-1'>Let clients contact you directly from your profile.</p>
+                      </div>
+                    </label>
+
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                      <input type='checkbox' name='allowProjectInvites' checked={formData.allowProjectInvites} onChange={handleChange} className={toggleClasses} />
+                      <div>
+                        <p className='text-sm font-medium theme-text'>Allow project invites</p>
+                        <p className='text-xs theme-text-muted mt-1'>Allow clients to invite you to relevant opportunities.</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            <motion.div
+              className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.68 }}>
+              <h3 className='text-xl font-semibold theme-text mb-2'>Email Notification Preferences</h3>
+              <p className='text-sm theme-text-secondary mb-4'>Choose which platform activity should also reach your inbox, beyond in-app notifications.</p>
+
+              <div className='grid gap-4'>
+                <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                  <input type='checkbox' name='emailNotificationsEnabled' checked={formData.emailNotificationsEnabled} onChange={handleChange} className={toggleClasses} />
+                  <div>
+                    <p className='text-sm font-medium theme-text'>Enable email notifications</p>
+                    <p className='text-xs theme-text-muted mt-1'>
+                      {formData.emailNotificationsEnabled
+                        ? activeEmailPreferenceCount > 0
+                          ? `Email updates are active for ${activeEmailPreferenceCount} category${activeEmailPreferenceCount === 1 ? '' : 'ies'}.`
+                          : 'Email delivery is on, but no categories are currently selected.'
+                        : 'All non-essential SkillBridge activity emails are currently paused.'}
+                    </p>
+                  </div>
+                </label>
+
+                <div className={`grid md:grid-cols-3 gap-4 transition-opacity duration-300 ${formData.emailNotificationsEnabled ? 'opacity-100' : 'opacity-60'}`}>
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <input
+                      type='checkbox'
+                      name='emailNotificationsMessages'
+                      checked={formData.emailNotificationsMessages}
+                      onChange={handleChange}
+                      disabled={!formData.emailNotificationsEnabled}
+                      className={toggleClasses}
+                    />
                     <div>
-                      <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                          <FaStar />
-                        </span>
-                        <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={inputClasses('experienceLevel')}>
-                          <option value='entry'>Entry Level</option>
-                          <option value='intermediate'>Intermediate</option>
-                          <option value='expert'>Expert</option>
-                        </select>
+                      <p className='text-sm font-medium theme-text'>Messages</p>
+                      <p className='text-xs theme-text-muted mt-1'>Receive emails for new direct and project messages.</p>
+                    </div>
+                  </label>
+
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <input
+                      type='checkbox'
+                      name='emailNotificationsConnections'
+                      checked={formData.emailNotificationsConnections}
+                      onChange={handleChange}
+                      disabled={!formData.emailNotificationsEnabled}
+                      className={toggleClasses}
+                    />
+                    <div>
+                      <p className='text-sm font-medium theme-text'>Connections</p>
+                      <p className='text-xs theme-text-muted mt-1'>Receive emails for connection requests and accepted invitations.</p>
+                    </div>
+                  </label>
+
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <input
+                      type='checkbox'
+                      name='emailNotificationsProjects'
+                      checked={formData.emailNotificationsProjects}
+                      onChange={handleChange}
+                      disabled={!formData.emailNotificationsEnabled}
+                      className={toggleClasses}
+                    />
+                    <div>
+                      <p className='text-sm font-medium theme-text'>Projects</p>
+                      <p className='text-xs theme-text-muted mt-1'>Reserve email delivery for invites, assignments, and important project workflow updates.</p>
+                    </div>
+                  </label>
+                </div>
+
+                <p className='text-xs theme-text-muted'>
+                  {formData.emailNotificationsEnabled
+                    ? 'In-app notifications remain available even if you reduce email categories here.'
+                    : 'Re-enable the master toggle at any time to restore category-based email delivery.'}
+                </p>
+              </div>
+            </motion.div>
+
+            {showFreelancerSection && (
+              <motion.div
+                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7 }}>
+                <h3 className='text-xl font-semibold theme-text mb-2'>Professional Settings</h3>
+                <p className='text-sm theme-text-secondary mb-4'>Organize how you present your services, work preferences, visibility, and external professional presence.</p>
+                <div className='grid gap-6'>
+                  <div className='p-5 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Work Preferences</p>
+                      <p className='text-sm theme-text-secondary'>Set your pricing, availability, experience, and preferred working style so clients can understand fit quickly.</p>
+                    </div>
+                    <div className='grid md:grid-cols-2 gap-4'>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Hourly Rate</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-3 text-accent'>€</span>
+                          <input type='number' name='hourlyRate' value={formData.hourlyRate} onChange={handleChange} className={inputClasses('hourlyRate')} placeholder='€ per hour' />
+                          {errors.hourlyRate && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.hourlyRate}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Minimum Project Budget</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-3 text-accent'>€</span>
+                          <input type='number' name='minimumProjectBudget' value={formData.minimumProjectBudget} onChange={handleChange} className={inputClasses('minimumProjectBudget')} placeholder='Minimum budget' />
+                          {errors.minimumProjectBudget && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.minimumProjectBudget}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Experience Level</label>
+                        <div className={selectShellClasses('experienceLevel')}>
+                          <span className={selectIconClasses}>
+                            <FaStar />
+                          </span>
+                          <select name='experienceLevel' value={formData.experienceLevel} onChange={handleChange} className={selectFieldClasses}>
+                            <option value='entry'>Entry Level</option>
+                            <option value='intermediate'>Intermediate</option>
+                            <option value='expert'>Expert</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Years of Experience</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaStar />
+                          </span>
+                          <input
+                            type='number'
+                            min='0'
+                            name='yearsOfExperience'
+                            value={formData.yearsOfExperience}
+                            onChange={handleChange}
+                            className={inputClasses('yearsOfExperience')}
+                            placeholder='Years of experience'
+                          />
+                          {errors.yearsOfExperience && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.yearsOfExperience}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Availability Status</label>
+                        <div className={selectShellClasses('availabilityStatus')}>
+                          <span className={selectIconClasses}>
+                            <FaBriefcase />
+                          </span>
+                          <select name='availabilityStatus' value={formData.availabilityStatus} onChange={handleChange} className={selectFieldClasses}>
+                            <option value='available'>Available</option>
+                            <option value='limited'>Limited availability</option>
+                            <option value='unavailable'>Unavailable</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Response Time</label>
+                        <div className={selectShellClasses('responseTime')}>
+                          <span className={selectIconClasses}>
+                            <FaClock />
+                          </span>
+                          <select name='responseTime' value={formData.responseTime} onChange={handleChange} className={selectFieldClasses}>
+                            <option value='within_24_hours'>Within 24 hours</option>
+                            <option value='within_3_days'>Within 3 days</option>
+                            <option value='within_week'>Within a week</option>
+                            <option value='flexible'>Flexible</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Work Preference</label>
+                        <div className={selectShellClasses('workPreference')}>
+                          <span className={selectIconClasses}>
+                            <FaMapMarkerAlt />
+                          </span>
+                          <select name='workPreference' value={formData.workPreference} onChange={handleChange} className={selectFieldClasses}>
+                            <option value='remote'>Remote</option>
+                            <option value='hybrid'>Hybrid</option>
+                            <option value='onsite'>On-site</option>
+                            <option value='flexible'>Flexible</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Preferred Project Size</label>
+                        <div className={selectShellClasses('preferredProjectSize')}>
+                          <span className={selectIconClasses}>
+                            <FaList />
+                          </span>
+                          <select name='preferredProjectSize' value={formData.preferredProjectSize} onChange={handleChange} className={selectFieldClasses}>
+                            <option value='small'>Small</option>
+                            <option value='medium'>Medium</option>
+                            <option value='large'>Large</option>
+                            <option value='ongoing'>Ongoing</option>
+                            <option value='flexible'>Flexible</option>
+                          </select>
+                          <span className={selectChevronClasses}>
+                            <FaChevronDown />
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className='md:col-span-2'>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Preferred Engagements</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaList />
+                          </span>
+                          <textarea
+                            name='preferredEngagements'
+                            value={formData.preferredEngagements}
+                            onChange={handleChange}
+                            className={inputClasses('preferredEngagements')}
+                            rows='2'
+                            placeholder='One-off builds, long-term support, product iterations'
+                          />
+                        </div>
+                        <p className='text-xs theme-text-muted mt-2'>Separate engagement types with commas.</p>
+                      </div>
+
+                      <div className='md:col-span-2'>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Availability Details</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaMapMarkerAlt />
+                          </span>
+                          <textarea
+                            name='availabilityDetails'
+                            value={formData.availabilityDetails}
+                            onChange={handleChange}
+                            className={inputClasses('availabilityDetails')}
+                            rows='3'
+                            placeholder='Available for new work from June, best for async collaboration, weekday calls preferred'
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {[
-                    { name: 'languages', label: 'Languages', icon: <FaLanguage />, placeholder: 'English (Native), Spanish (Fluent), etc.' },
-                    { name: 'certifications', label: 'Certifications', icon: <FaCertificate />, placeholder: 'List your relevant certifications' },
-                    { name: 'serviceCategories', label: 'Service Categories', icon: <FaList />, placeholder: 'Web Development, Mobile Apps, UI/UX Design, etc.' }
-                  ].map((field) => (
-                    <div key={field.name}>
-                      <label className='block mb-2 theme-text-secondary text-sm'>{field.label}</label>
-                      <div className='relative'>
-                        <span className='absolute left-3 top-4 text-accent text-[16px]'>{field.icon}</span>
-                        <textarea name={field.name} value={formData[field.name]} onChange={handleChange} className={inputClasses(field.name)} rows='2' placeholder={field.placeholder} />
+                  <div className='p-5 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Services & Expertise</p>
+                      <p className='text-sm theme-text-secondary'>Describe what you offer, the tools you use, and the expertise areas you want clients to notice first.</p>
+                    </div>
+
+                    <div className='grid gap-4'>
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Services Offered</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaBriefcase />
+                          </span>
+                          <textarea
+                            name='servicesOffered'
+                            value={formData.servicesOffered}
+                            onChange={handleChange}
+                            className={inputClasses('servicesOffered')}
+                            rows='3'
+                            placeholder='Landing pages, React dashboards, API integrations, design system work'
+                          />
+                          {errors.servicesOffered && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.servicesOffered}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Skills</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaTools />
+                          </span>
+                          <textarea name='skills' value={formData.skills} onChange={handleChange} className={inputClasses('skills')} rows='3' placeholder='JavaScript, React, UI implementation, API integration' />
+                          {errors.skills && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors.skills}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Tools & Stack</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaTools />
+                          </span>
+                          <textarea name='tools' value={formData.tools} onChange={handleChange} className={inputClasses('tools')} rows='2' placeholder='React, Node.js, MongoDB, Figma, Tailwind CSS' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Industries</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaBook />
+                          </span>
+                          <textarea name='industries' value={formData.industries} onChange={handleChange} className={inputClasses('industries')} rows='2' placeholder='SaaS, e-commerce, education, hospitality' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Languages</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaLanguage />
+                          </span>
+                          <textarea name='languages' value={formData.languages} onChange={handleChange} className={inputClasses('languages')} rows='2' placeholder='English (Native), Spanish (Fluent), etc.' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Certifications</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaCertificate />
+                          </span>
+                          <textarea name='certifications' value={formData.certifications} onChange={handleChange} className={inputClasses('certifications')} rows='2' placeholder='List your relevant certifications' />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block mb-2 theme-text-secondary text-sm'>Service Categories</label>
+                        <div className='relative'>
+                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                            <FaList />
+                          </span>
+                          <textarea
+                            name='serviceCategories'
+                            value={formData.serviceCategories}
+                            onChange={handleChange}
+                            className={inputClasses('serviceCategories')}
+                            rows='2'
+                            placeholder='Web Development, Mobile Apps, UI/UX Design, etc.'
+                          />
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
 
-                  <div>
-                    <label className='block mb-2 theme-text-secondary text-sm'>Platform Links</label>
+                  <div className='p-5 rounded-xl theme-input border theme-border'>
+                    <div className='mb-4'>
+                      <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>External Profiles</p>
+                      <label className='block mb-2 theme-text-secondary text-sm'>Platform Links</label>
+                      <p className='text-xs theme-text-muted'>Add marketplace profiles if you want clients to see more work history or reviews.</p>
+                    </div>
                     <div className='grid md:grid-cols-2 gap-4'>
                       {[
                         { name: 'upworkProfile', placeholder: 'Upwork Profile URL' },
                         { name: 'fiverrProfile', placeholder: 'Fiverr Profile URL' }
                       ].map((platform) => (
-                        <div key={platform.name} className='relative'>
-                          <span className='absolute left-3 top-4 text-accent text-[16px]'>
-                            <FaBriefcase />
-                          </span>
-                          <input type='url' name={platform.name} value={formData[platform.name]} onChange={handleChange} className={inputClasses(platform.name)} placeholder={platform.placeholder} />
+                        <div key={platform.name}>
+                          <div className='relative'>
+                            <span className='absolute left-3 top-4 text-accent text-[16px]'>
+                              <FaBriefcase />
+                            </span>
+                            <input type='url' name={platform.name} value={formData[platform.name]} onChange={handleChange} className={inputClasses(platform.name)} placeholder={platform.placeholder} />
+                          </div>
+                          {errors[platform.name] && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
+                              {errors[platform.name]}
+                            </motion.p>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -454,30 +1106,35 @@ const ProfileSettings = () => {
               </motion.div>
             )}
 
-            <div className='flex gap-4'>
-              <motion.button
-                type='button'
-                onClick={handleReset}
-                className='flex-1 bg-gray-500 text-white font-medium py-3 px-6 rounded-lg
-              hover:bg-gray-600 transition-colors duration-300
-              focus:outline-none focus:ring-2 focus:ring-gray-500/50'
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isSubmitting}>
-                Reset Form
-              </motion.button>
+            <div className='space-y-3'>
+              <p className='text-sm theme-text-secondary'>{hasUnsavedChanges ? 'You have profile edits ready to save or reset.' : 'No pending profile changes.'}</p>
 
-              <motion.button
-                type='submit'
-                className='flex-1 bg-accent text-white font-medium py-3 px-6 rounded-lg
+              <div className='flex flex-col sm:flex-row gap-4'>
+                <motion.button
+                  type='button'
+                  onClick={handleReset}
+                  className='flex-1 bg-gray-500 text-white font-medium py-3 px-6 rounded-lg
+              hover:bg-gray-600 transition-colors duration-300
+              focus:outline-none focus:ring-2 focus:ring-gray-500/50
+              disabled:opacity-50 disabled:cursor-not-allowed'
+                  whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
+                  whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
+                  disabled={isSubmitting || !hasUnsavedChanges}>
+                  Reset Form
+                </motion.button>
+
+                <motion.button
+                  type='submit'
+                  className='flex-1 bg-accent text-white font-medium py-3 px-6 rounded-lg
               hover:bg-accent/90 transition-colors duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50
               disabled:opacity-50 disabled:cursor-not-allowed'
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isSubmitting}>
-                {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
-              </motion.button>
+                  whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
+                  whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
+                  disabled={isSubmitting || !hasUnsavedChanges}>
+                  {isSubmitting ? 'Saving Changes...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
+                </motion.button>
+              </div>
             </div>
           </form>
         </>

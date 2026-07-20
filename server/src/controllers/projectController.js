@@ -1,12 +1,23 @@
 import Project from '../models/Project.js'
+import User from '../models/User.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
+import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
+import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
+import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability } from '../utils/availabilityCalendarService.js'
+import { completeProjectPhase } from '../utils/projectPhaseService.js'
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
-const ADMIN_AUDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'isLocked', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']
-const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status']
+const ADMIN_AUDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'projectBrief', 'isLocked', 'lockReason', 'lockDurationDays', 'lockedAt', 'lockExpiresAt']
+const ADMIN_EDITABLE_PROJECT_FIELDS = ['title', 'description', 'category', 'skills', 'budget', 'priority', 'deadline', 'status', 'projectBrief']
 const ALLOWED_PROJECT_PRIORITIES = ['low', 'medium', 'high']
 const ALLOWED_PROJECT_STATUSES = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
+
+const PROJECT_BRIEF_EXPERIENCE_LEVELS = ['not_specified', 'junior', 'mid', 'senior', 'expert']
+const PROJECT_BRIEF_DURATIONS = ['not_specified', 'less_than_1_week', '1_to_2_weeks', '2_to_4_weeks', '1_to_3_months', '3_plus_months', 'ongoing']
+const PROJECT_BRIEF_WORKLOADS = ['not_specified', 'under_10_hours', '10_to_20_hours', '20_to_30_hours', '30_plus_hours', 'full_time']
+const PROJECT_BRIEF_START_PREFERENCES = ['not_specified', 'immediately', 'this_week', 'within_2_weeks', 'flexible']
+const PROJECT_BRIEF_BUDGET_TYPES = ['not_specified', 'fixed', 'hourly', 'negotiable']
 
 const ALLOWED_ADMIN_STATUS_TRANSITIONS = {
   draft: ['active', 'inactive', 'archived', 'paused', 'cancelled'],
@@ -20,6 +31,89 @@ const ALLOWED_ADMIN_STATUS_TRANSITIONS = {
   inactive: ['active', 'archived'],
   archived: [],
   paused: ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
+}
+
+const normalizeStringArray = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean)
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsedValue = JSON.parse(value)
+
+      if (Array.isArray(parsedValue)) {
+        return parsedValue.map((item) => String(item).trim()).filter(Boolean)
+      }
+    } catch {
+      return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    }
+
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
+const normalizeRateNegotiation = (value) => {
+  if (!value) return undefined
+
+  if (typeof value === 'string') {
+    try {
+      const parsedValue = JSON.parse(value)
+      return parsedValue && typeof parsedValue === 'object' ? parsedValue : undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  return typeof value === 'object' ? value : undefined
+}
+
+const normalizeOptionalText = (value) => {
+  if (value === undefined || value === null) return ''
+  return String(value).trim()
+}
+
+const normalizeEnumValue = (value, allowedValues, fallback = 'not_specified') => {
+  if (value === undefined || value === null || value === '') {
+    return fallback
+  }
+
+  const normalizedValue = String(value).trim()
+  return allowedValues.includes(normalizedValue) ? normalizedValue : fallback
+}
+
+const normalizeProjectBrief = (value) => {
+  let parsedValue = value
+
+  if (typeof value === 'string') {
+    try {
+      parsedValue = JSON.parse(value)
+    } catch {
+      parsedValue = null
+    }
+  }
+
+  const brief = parsedValue && typeof parsedValue === 'object' && !Array.isArray(parsedValue) ? parsedValue : {}
+
+  return {
+    objective: normalizeOptionalText(brief.objective),
+    deliverables: normalizeStringArray(brief.deliverables),
+    scopeNotes: normalizeOptionalText(brief.scopeNotes),
+    experienceLevel: normalizeEnumValue(brief.experienceLevel, PROJECT_BRIEF_EXPERIENCE_LEVELS),
+    duration: normalizeEnumValue(brief.duration, PROJECT_BRIEF_DURATIONS),
+    workload: normalizeEnumValue(brief.workload, PROJECT_BRIEF_WORKLOADS),
+    startPreference: normalizeEnumValue(brief.startPreference, PROJECT_BRIEF_START_PREFERENCES),
+    budgetType: normalizeEnumValue(brief.budgetType, PROJECT_BRIEF_BUDGET_TYPES),
+    applicationInstructions: normalizeOptionalText(brief.applicationInstructions)
+  }
 }
 
 const validateAdminProjectUpdatePayload = (payload) => {
@@ -73,7 +167,6 @@ const validateAdminProjectUpdatePayload = (payload) => {
 // @access  Private
 const createProject = async (req, res) => {
   try {
-    // Check if user is locked
     if (req.user.isLocked) {
       return res.status(403).json({ message: 'Your account is locked. You cannot create projects.' })
     }
@@ -81,9 +174,12 @@ const createProject = async (req, res) => {
     console.log('Creating project with data:', req.body)
     console.log('Files received:', req.files)
 
-    const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation } = req.body
+    const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation, projectBrief } = req.body
 
-    // Process attachments if any
+    const normalizedSkills = normalizeStringArray(skills)
+    const normalizedRateNegotiation = normalizeRateNegotiation(rateNegotiation)
+    const normalizedProjectBrief = normalizeProjectBrief(projectBrief)
+
     const attachments = req.files
       ? req.files.map((file) => ({
           name: file.originalname,
@@ -95,56 +191,52 @@ const createProject = async (req, res) => {
     let normalizedStatus = status || 'draft'
 
     if (assigneeId && !status) {
-      // If initial rate proposal included, set to negotiating instead of assigned
-      normalizedStatus = rateNegotiation?.status === 'proposed' ? 'negotiating' : 'assigned'
+      normalizedStatus = normalizedRateNegotiation?.status === 'proposed' ? 'negotiating' : 'assigned'
     }
 
     if (assigneeId && assigneeId.toString() === req.user._id.toString()) {
       return res.status(400).json({ message: 'Cannot assign project to yourself' })
     }
 
-    // Process rateNegotiation if present - replace 'owner' with actual user ID
-    let processedRateNegotiation = rateNegotiation
-    if (rateNegotiation) {
+    let processedRateNegotiation = normalizedRateNegotiation
+    if (normalizedRateNegotiation) {
       processedRateNegotiation = {
-        ...rateNegotiation,
-        currentOffer: rateNegotiation.currentOffer
+        ...normalizedRateNegotiation,
+        currentOffer: normalizedRateNegotiation.currentOffer
           ? {
-              ...rateNegotiation.currentOffer,
+              ...normalizedRateNegotiation.currentOffer,
               proposedBy: req.user._id
             }
           : undefined,
         history:
-          rateNegotiation.history?.map((offer) => ({
+          normalizedRateNegotiation.history?.map((offer) => ({
             ...offer,
             proposedBy: req.user._id
           })) || []
       }
     }
 
-    const shouldSetBudget = !rateNegotiation || rateNegotiation.status !== 'proposed'
+    const shouldSetBudget = !normalizedRateNegotiation || normalizedRateNegotiation.status !== 'proposed'
     const finalBudget = shouldSetBudget ? Number(budget) : undefined
 
     console.log('=== CREATE PROJECT DEBUG ===')
-    console.log('RateNegotiation status:', rateNegotiation?.status)
+    console.log('RateNegotiation status:', normalizedRateNegotiation?.status)
     console.log('Should set budget:', shouldSetBudget)
     console.log('Final budget value:', finalBudget)
     console.log('Original budget from request:', budget)
 
-    // Create new project
     const project = new Project({
-      user: req.user._id, // This comes from the protect middleware
+      user: req.user._id,
       assignee: assigneeId || null,
       title,
       description,
       category,
-      skills: Array.isArray(skills) ? skills : skills.split(','),
-      // Only set budget if there's no rate negotiation (i.e., this is a fixed budget project)
-      // If rate negotiation is proposed, leave budget empty until agreed
+      skills: normalizedSkills,
       budget: finalBudget,
       priority: priority || 'low',
       deadline,
       status: normalizedStatus,
+      projectBrief: normalizedProjectBrief,
       attachments,
       rateNegotiation: processedRateNegotiation || undefined
     })
@@ -153,6 +245,28 @@ const createProject = async (req, res) => {
 
     const createdProject = await project.save()
     console.log('Project saved successfully:', createdProject)
+
+    if (assigneeId) {
+      // Auto-populate availability calendar
+      await populateAvailabilityOnProjectAssignment(assigneeId, createdProject)
+
+      await sendProjectAssignedEmail({
+        recipientId: assigneeId,
+        ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+        projectId: createdProject._id.toString(),
+        projectTitle: createdProject.title
+      })
+    }
+
+    if (assigneeId) {
+      await notifyProjectAssigned({
+        actor: req.user._id,
+        recipient: assigneeId,
+        projectId: createdProject._id.toString(),
+        projectTitle: createdProject.title,
+        actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client'
+      })
+    }
 
     res.status(201).json(createdProject)
   } catch (error) {
@@ -170,6 +284,11 @@ const publishProject = async (req, res) => {
     if (req.user.isLocked) {
       return res.status(403).json({ message: 'Your account is locked. You cannot publish projects.' })
     }
+
+    if (!req.user.isEmailVerified) {
+      return res.status(403).json({ message: 'Verify your email before publishing projects.' })
+    }
+
     const projectId = req.params.id
     const project = await Project.findById(projectId)
 
@@ -197,7 +316,7 @@ const publishProject = async (req, res) => {
 const getAllProjects = async (req, res) => {
   try {
     // Show only active projects in listings
-    const projects = await Project.find({ status: 'active' }).populate('user', 'firstName lastName email profilePicture').sort({ createdAt: -1 })
+    const projects = await Project.find({ status: 'active' }).populate('user', 'firstName lastName email profilePicture isEmailVerified').sort({ createdAt: -1 })
 
     res.json(projects)
   } catch (error) {
@@ -206,17 +325,588 @@ const getAllProjects = async (req, res) => {
   }
 }
 
+// @desc    Filter projects by budget range
+// @route   GET /api/projects/filter-by-budget
+// @access  Public
+const filterProjectsByBudget = async (req, res) => {
+  try {
+    const { minBudget, maxBudget, page = 1, limit = 10 } = req.query
+
+    // Validate budget parameters
+    if (!minBudget && !maxBudget) {
+      return res.status(400).json({ message: 'At least minBudget or maxBudget is required' })
+    }
+
+    const min = minBudget ? parseFloat(minBudget) : 0
+    const max = maxBudget ? parseFloat(maxBudget) : Number.MAX_SAFE_INTEGER
+
+    // Validate budget values
+    if (isNaN(min) || isNaN(max)) {
+      return res.status(400).json({ message: 'Budget values must be valid numbers' })
+    }
+
+    if (min < 0 || max < 0) {
+      return res.status(400).json({ message: 'Budget values cannot be negative' })
+    }
+
+    if (min > max) {
+      return res.status(400).json({ message: 'minBudget cannot be greater than maxBudget' })
+    }
+
+    // Build query
+    const query = {
+      status: 'active',
+      budget: { $gte: min, $lte: max }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count for pagination
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects with pagination
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by budget successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          minBudget: min,
+          maxBudget: max
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by budget:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
+// @desc    Filter projects by status
+// @route   GET /api/projects/filter-by-status
+// @access  Public
+const filterProjectsByStatus = async (req, res) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query
+
+    if (!status) {
+      return res.status(400).json({ message: 'Status parameter is required' })
+    }
+
+    // Parse comma-separated statuses
+    const statusArray = status
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+
+    if (statusArray.length === 0) {
+      return res.status(400).json({ message: 'At least one valid status is required' })
+    }
+
+    // Validate statuses
+    const validStatuses = ['draft', 'active', 'assigned', 'negotiating', 'in_progress', 'under_review', 'completed', 'cancelled', 'inactive', 'archived', 'paused']
+    const invalidStatuses = statusArray.filter((s) => !validStatuses.includes(s))
+
+    if (invalidStatuses.length > 0) {
+      return res.status(400).json({
+        message: `Invalid statuses: ${invalidStatuses.join(', ')}`,
+        validStatuses
+      })
+    }
+
+    // Build query
+    const query = {
+      status: { $in: statusArray }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by status successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          statuses: statusArray
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by status:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
+// @desc    Filter projects by skills
+// @route   GET /api/projects/filter-by-skills
+// @access  Public
+const filterProjectsBySkills = async (req, res) => {
+  try {
+    const { skills, matchType = 'any', page = 1, limit = 10 } = req.query
+
+    if (!skills) {
+      return res.status(400).json({ message: 'Skills parameter is required (comma-separated)' })
+    }
+
+    // Parse comma-separated skills
+    const skillsArray = skills
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length > 0)
+
+    if (skillsArray.length === 0) {
+      return res.status(400).json({ message: 'At least one valid skill is required' })
+    }
+
+    // Validate matchType
+    const validMatchTypes = ['any', 'all']
+    if (!validMatchTypes.includes(matchType)) {
+      return res.status(400).json({
+        message: 'matchType must be "any" or "all"',
+        validMatchTypes
+      })
+    }
+
+    // Build query based on matchType
+    const query = {
+      status: 'active',
+      skills: {
+        [matchType === 'all' ? '$all' : '$in']: skillsArray
+      }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by skills successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          skills: skillsArray,
+          matchType
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by skills:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
+// @desc    Filter projects by priority
+// @route   GET /api/projects/filter-by-priority
+// @access  Public
+const filterProjectsByPriority = async (req, res) => {
+  try {
+    const { priority, page = 1, limit = 10 } = req.query
+
+    if (!priority) {
+      return res.status(400).json({ message: 'Priority parameter is required (comma-separated)' })
+    }
+
+    // Parse comma-separated priorities
+    const priorityArray = priority
+      .split(',')
+      .map((p) => p.trim().toLowerCase())
+      .filter((p) => p.length > 0)
+
+    if (priorityArray.length === 0) {
+      return res.status(400).json({ message: 'At least one valid priority is required' })
+    }
+
+    // Validate priorities
+    const allowedPriorities = ['low', 'medium', 'high', 'urgent']
+    const invalidPriorities = priorityArray.filter((p) => !allowedPriorities.includes(p))
+
+    if (invalidPriorities.length > 0) {
+      return res.status(400).json({
+        message: 'Invalid priority values',
+        invalid: invalidPriorities,
+        allowed: allowedPriorities
+      })
+    }
+
+    // Build query
+    const query = {
+      status: 'active',
+      priority: { $in: priorityArray }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered by priority successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        filters: {
+          priority: priorityArray,
+          allowed: allowedPriorities
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects by priority:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
+// @desc    Filter projects by multiple criteria (budget, status, skills, priority)
+// @route   GET /api/projects/filter
+// @access  Public
+const filterProjects = async (req, res) => {
+  try {
+    const { minBudget, maxBudget, status, skills, priority, matchType = 'any', sort = 'newest', page = 1, limit = 10 } = req.query
+
+    // Build query object
+    const query = { status: 'active' }
+
+    // Add budget filter
+    if (minBudget || maxBudget) {
+      query.budget = {}
+      if (minBudget) query.budget.$gte = Math.max(0, parseInt(minBudget) || 0)
+      if (maxBudget) query.budget.$lte = Math.max(0, parseInt(maxBudget) || 0)
+
+      if (query.budget.$gte > query.budget.$lte) {
+        return res.status(400).json({ message: 'minBudget cannot be greater than maxBudget' })
+      }
+    }
+
+    // Add status filter
+    if (status) {
+      const statusArray = status
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (statusArray.length > 0) {
+        const allowedStatuses = ['draft', 'active', 'assigned', 'in_progress', 'under_review', 'completed', 'cancelled', 'negotiating']
+        const invalidStatuses = statusArray.filter((s) => !allowedStatuses.includes(s))
+
+        if (invalidStatuses.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid status values',
+            invalid: invalidStatuses,
+            allowed: allowedStatuses
+          })
+        }
+
+        query.status = { $in: statusArray }
+      }
+    }
+
+    // Add skills filter
+    if (skills) {
+      const skillsArray = skills
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (skillsArray.length > 0) {
+        query.skills = {
+          [matchType === 'all' ? '$all' : '$in']: skillsArray
+        }
+      }
+    }
+
+    // Add priority filter
+    if (priority) {
+      const priorityArray = priority
+        .split(',')
+        .map((p) => p.trim().toLowerCase())
+        .filter((p) => p.length > 0)
+
+      if (priorityArray.length > 0) {
+        const allowedPriorities = ['low', 'medium', 'high', 'urgent']
+        const invalidPriorities = priorityArray.filter((p) => !allowedPriorities.includes(p))
+
+        if (invalidPriorities.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid priority values',
+            invalid: invalidPriorities,
+            allowed: allowedPriorities
+          })
+        }
+
+        query.priority = { $in: priorityArray }
+      }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Determine sort order
+    let sortOrder = { createdAt: -1 }
+    if (sort === 'oldest') sortOrder = { createdAt: 1 }
+    else if (sort === 'budget-asc') sortOrder = { budget: 1 }
+    else if (sort === 'budget-desc') sortOrder = { budget: -1 }
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort(sortOrder)
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects filtered successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        appliedFilters: {
+          ...((minBudget || maxBudget) && { budget: { min: minBudget || 0, max: maxBudget || Infinity } }),
+          ...(status && query.status.$in && { status: query.status.$in }),
+          ...(skills && query.skills && { skills: skills.split(',').map((s) => s.trim().toLowerCase()) }),
+          ...(priority && query.priority.$in && { priority: query.priority.$in })
+        },
+        sortOrder: sort
+      }
+    })
+  } catch (err) {
+    console.error('Error filtering projects:', err)
+    res.status(500).json({ message: 'Error filtering projects', error: err.message })
+  }
+}
+
+// @desc    Search projects by keyword with optional filters
+// @route   GET /api/projects/search
+// @access  Public
+const filterProjectsByKeyword = async (req, res) => {
+  try {
+    const { q, minBudget, maxBudget, status, skills, priority, page = 1, limit = 10 } = req.query
+
+    if (!q || q.trim().length === 0) {
+      return res.status(400).json({ message: 'Search keyword (q) is required' })
+    }
+
+    const searchKeyword = q.trim().toLowerCase()
+
+    // Build query object with keyword search
+    const query = {
+      status: 'active',
+      $or: [
+        { title: { $regex: searchKeyword, $options: 'i' } },
+        { description: { $regex: searchKeyword, $options: 'i' } },
+        { skills: { $elemMatch: { $regex: searchKeyword, $options: 'i' } } },
+        { 'category.name': { $regex: searchKeyword, $options: 'i' } }
+      ]
+    }
+
+    // Add optional budget filter
+    if (minBudget || maxBudget) {
+      query.budget = {}
+      if (minBudget) query.budget.$gte = Math.max(0, parseInt(minBudget) || 0)
+      if (maxBudget) query.budget.$lte = Math.max(0, parseInt(maxBudget) || 0)
+
+      if (query.budget.$gte && query.budget.$lte && query.budget.$gte > query.budget.$lte) {
+        return res.status(400).json({ message: 'minBudget cannot be greater than maxBudget' })
+      }
+    }
+
+    // Add optional status filter
+    if (status) {
+      const statusArray = status
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (statusArray.length > 0) {
+        const allowedStatuses = ['draft', 'active', 'assigned', 'in_progress', 'under_review', 'completed', 'cancelled', 'negotiating']
+        const invalidStatuses = statusArray.filter((s) => !allowedStatuses.includes(s))
+
+        if (invalidStatuses.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid status values',
+            invalid: invalidStatuses,
+            allowed: allowedStatuses
+          })
+        }
+
+        query.status = { $in: statusArray }
+      }
+    }
+
+    // Add optional skills filter
+    if (skills) {
+      const skillsArray = skills
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+
+      if (skillsArray.length > 0) {
+        query.skills = { $in: skillsArray }
+      }
+    }
+
+    // Add optional priority filter
+    if (priority) {
+      const priorityArray = priority
+        .split(',')
+        .map((p) => p.trim().toLowerCase())
+        .filter((p) => p.length > 0)
+
+      if (priorityArray.length > 0) {
+        const allowedPriorities = ['low', 'medium', 'high', 'urgent']
+        const invalidPriorities = priorityArray.filter((p) => !allowedPriorities.includes(p))
+
+        if (invalidPriorities.length > 0) {
+          return res.status(400).json({
+            message: 'Invalid priority values',
+            invalid: invalidPriorities,
+            allowed: allowedPriorities
+          })
+        }
+
+        query.priority = { $in: priorityArray }
+      }
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10))
+    const skip = (pageNum - 1) * limitNum
+
+    // Get total count
+    const total = await Project.countDocuments(query)
+
+    // Fetch projects
+    const projects = await Project.find(query)
+      .populate('owner', 'firstName lastName profileImage skills rating')
+      .populate('category', 'name')
+      .select('title description budget priority deadline status skills category owner createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+
+    res.status(200).json({
+      message: 'Projects searched successfully',
+      data: {
+        projects,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
+        },
+        search: {
+          keyword: searchKeyword,
+          searchFields: ['title', 'description', 'skills', 'category']
+        },
+        appliedFilters: {
+          ...((minBudget || maxBudget) && { budget: { min: minBudget || 0, max: maxBudget || Infinity } }),
+          ...(status && query.status?.$in && { status: query.status.$in }),
+          ...(skills && query.skills?.$in && { skills: skills.split(',').map((s) => s.trim().toLowerCase()) }),
+          ...(priority && query.priority?.$in && { priority: query.priority.$in })
+        }
+      }
+    })
+  } catch (err) {
+    console.error('Error searching projects:', err)
+    res.status(500).json({ message: 'Error searching projects', error: err.message })
+  }
+}
+
 // @desc    Get all projects for admin (all statuses)
 // @route   GET /api/projects/admin/all
 // @access  Admin
 const getAdminAllProjects = async (req, res) => {
   try {
-    const { search = '', status = '', category = '', priority = '', startDate = '', endDate = '', page = 1, limit = 30, sort = 'createdAt:desc' } = req.query
+    const { search = '', status = '', category = '', priority = '', startDate = '', endDate = '', stalled = '', page = 1, limit = 30, sort = 'createdAt:desc' } = req.query
 
     const pageNumber = Math.max(Number(page) || 1, 1)
     const pageSize = Math.min(Math.max(Number(limit) || 30, 1), 200)
 
     const query = {}
+    const activeStatuses = ['active', 'assigned', 'negotiating', 'in_progress', 'under_review']
 
     if (status) query.status = status
     if (category) query.category = category
@@ -226,6 +916,14 @@ const getAdminAllProjects = async (req, res) => {
       query.deadline = {}
       if (startDate) query.deadline.$gte = new Date(startDate)
       if (endDate) query.deadline.$lte = new Date(endDate)
+    }
+
+    if (stalled === 'true') {
+      if (!status) {
+        query.status = { $in: activeStatuses }
+      }
+
+      query.updatedAt = { $lt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) }
     }
 
     if (search) {
@@ -364,7 +1062,7 @@ const deleteProjectAsAdmin = async (req, res) => {
 const updateProjectAsAdmin = async (req, res) => {
   try {
     const payload = req.body || {}
-    const { title, description, category, skills, budget, priority, deadline, status } = payload
+    const { title, description, category, skills, budget, priority, deadline, status, projectBrief } = payload
 
     const validation = validateAdminProjectUpdatePayload(payload)
     if (!validation.valid) {
@@ -421,6 +1119,7 @@ const updateProjectAsAdmin = async (req, res) => {
 
     if (priority !== undefined) project.priority = priority
     if (deadline !== undefined) project.deadline = deadline
+    if (projectBrief !== undefined) project.projectBrief = normalizeProjectBrief(projectBrief)
 
     if (status !== undefined && !['cancelled_by_admin', 'deleted_by_owner'].includes(status)) {
       project.status = status
@@ -450,6 +1149,96 @@ const updateProjectAsAdmin = async (req, res) => {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Renew deadlines for multiple projects as admin
+// @route   PATCH /api/projects/admin/deadlines/bulk
+// @access  Admin
+const bulkRenewProjectDeadlinesAsAdmin = async (req, res) => {
+  try {
+    const { projectIds = [], deadline } = req.body || {}
+
+    if (!Array.isArray(projectIds) || projectIds.length === 0) {
+      return res.status(400).json({ message: 'At least one project must be selected' })
+    }
+
+    const normalizedIds = [...new Set(projectIds.map((id) => String(id || '').trim()).filter(Boolean))]
+
+    if (normalizedIds.length === 0) {
+      return res.status(400).json({ message: 'At least one valid project ID is required' })
+    }
+
+    const parsedDeadline = new Date(deadline)
+
+    if (!deadline || Number.isNaN(parsedDeadline.getTime())) {
+      return res.status(400).json({ message: 'A valid renewal deadline is required' })
+    }
+
+    if (parsedDeadline <= new Date()) {
+      return res.status(400).json({ message: 'Renewal deadline must be in the future' })
+    }
+
+    const projects = await Project.find({ _id: { $in: normalizedIds } })
+
+    if (projects.length !== normalizedIds.length) {
+      const foundIds = new Set(projects.map((project) => project._id.toString()))
+      const missingIds = normalizedIds.filter((id) => !foundIds.has(id))
+
+      return res.status(404).json({
+        message: `Some projects were not found: ${missingIds.join(', ')}`
+      })
+    }
+
+    await Promise.all(projects.map((project) => project.ensureUnlockedIfExpired()))
+
+    const ineligibleProjects = projects.filter((project) => isImmutableProjectStatus(project.status) || ['completed', 'archived', 'cancelled'].includes(project.status) || project.isLocked)
+
+    if (ineligibleProjects.length > 0) {
+      return res.status(400).json({
+        message: `Some selected projects cannot be renewed: ${ineligibleProjects.map((project) => project.title || project._id.toString()).join(', ')}`
+      })
+    }
+
+    const updatedProjects = []
+
+    for (const project of projects) {
+      const beforeSnapshot = {
+        deadline: project.deadline,
+        status: project.status
+      }
+
+      project.deadline = parsedDeadline
+      await project.save()
+
+      await logAdminAction({
+        req,
+        action: 'project.deadline.renewed',
+        targetType: 'project',
+        targetId: project._id,
+        targetLabel: project.title || 'Untitled project',
+        summary: `Renewed project deadline for ${project.title || 'Untitled project'}`,
+        changes: buildFieldChanges(beforeSnapshot, project.toObject(), ['deadline']),
+        metadata: {
+          previousDeadline: beforeSnapshot.deadline,
+          newDeadline: project.deadline,
+          bulkOperation: normalizedIds.length > 1,
+          selectionSize: normalizedIds.length
+        }
+      })
+
+      updatedProjects.push(project)
+    }
+
+    res.json({
+      message: `${updatedProjects.length} project deadlines renewed successfully`,
+      count: updatedProjects.length,
+      deadline: parsedDeadline,
+      projectIds: updatedProjects.map((project) => project._id)
+    })
+  } catch (error) {
+    console.error('Error renewing project deadlines as admin:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -631,6 +1420,8 @@ const removeAssigneeAsAdmin = async (req, res) => {
       return res.status(400).json({ message: 'Project has no assigned user' })
     }
 
+    const previousAssigneeId = project.assignee
+
     // Remove assignee only (owner is never touched)
     project.assignee = null
 
@@ -640,6 +1431,10 @@ const removeAssigneeAsAdmin = async (req, res) => {
     }
 
     const updatedProject = await project.save()
+
+    // Remove from availability calendar
+    await removeProjectFromAvailability(previousAssigneeId, req.params.id)
+
     res.json({
       message: 'Assignee removed successfully',
       project: updatedProject
@@ -653,12 +1448,14 @@ const removeAssigneeAsAdmin = async (req, res) => {
   }
 }
 
+const PROJECT_DETAIL_USER_FIELDS = 'firstName lastName email profilePicture isEmailVerified headline'
+
 // @desc    Get project by ID (PUBLIC - only active)
 // @route   GET /api/projects/:id
 // @access  Public
 const getProjectById = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+    const project = await Project.findById(req.params.id).populate('user', PROJECT_DETAIL_USER_FIELDS).populate('assignee', PROJECT_DETAIL_USER_FIELDS)
 
     if (!project) {
       console.log(`[GET PROJECT] Project ${req.params.id} not found in DB`)
@@ -716,7 +1513,7 @@ const getProjectById = async (req, res) => {
 // @access  Private (creator only)
 const getProjectByIdOwner = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate('user', 'firstName lastName email profilePicture').populate('assignee', 'firstName lastName email profilePicture')
+    const project = await Project.findById(req.params.id).populate('user', PROJECT_DETAIL_USER_FIELDS).populate('assignee', PROJECT_DETAIL_USER_FIELDS)
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' })
@@ -749,7 +1546,7 @@ const getProjectByIdOwner = async (req, res) => {
 // @access  Private
 const updateProject = async (req, res) => {
   try {
-    const { title, description, category, skills, budget, priority, deadline } = req.body
+    const { title, description, category, skills, budget, priority, deadline, projectBrief } = req.body
 
     let project = await Project.findById(req.params.id)
 
@@ -773,7 +1570,7 @@ const updateProject = async (req, res) => {
 
     // If not draft, only allow extending deadline
     if (!isDraft) {
-      const hasOtherUpdates = title || description || category || skills || budget || priority || (req.files && req.files.length > 0)
+      const hasOtherUpdates = title || description || category || skills || budget || priority || projectBrief || (req.files && req.files.length > 0)
 
       if (hasOtherUpdates) {
         return res.status(400).json({ message: 'Only deadline extension is allowed after publish' })
@@ -813,10 +1610,11 @@ const updateProject = async (req, res) => {
     project.title = title || project.title
     project.description = description || project.description
     project.category = category || project.category
-    project.skills = Array.isArray(skills) ? skills : skills ? skills.split(',') : project.skills
+    project.skills = skills !== undefined ? normalizeStringArray(skills) : project.skills
     project.budget = budget || project.budget
     project.priority = priority || project.priority
     project.deadline = deadline || project.deadline
+    if (projectBrief !== undefined) project.projectBrief = normalizeProjectBrief(projectBrief)
     project.attachments = [...project.attachments, ...newAttachments]
 
     const updatedProject = await project.save()
@@ -863,6 +1661,96 @@ const deleteProject = async (req, res) => {
   }
 }
 
+// @desc    Shortlist or unshortlist a project applicant
+// @route   PATCH /api/projects/:id/applicants/:userId/shortlist
+// @access  Private (project creator only)
+const toggleApplicantShortlist = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const applicantId = req.params.userId
+    const { isShortlisted } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized to manage applicants for this project' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
+    const applicant = project.interestedUsers.find((entry) => entry.userId.toString() === applicantId)
+
+    if (!applicant) {
+      return res.status(404).json({ message: 'Applicant not found for this project' })
+    }
+
+    applicant.isShortlisted = Boolean(isShortlisted)
+
+    await project.save()
+
+    const populatedProject = await Project.findById(projectId)
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+
+    res.json(populatedProject)
+  } catch (error) {
+    console.error('Error updating applicant shortlist state:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Toggle skills verification for an applicant
+// @route   PATCH /api/projects/:id/applicants/:userId/verify-skills
+// @access  Private (project creator only)
+const toggleApplicantSkillsVerified = async (req, res) => {
+  try {
+    const projectId = req.params.id
+    const applicantId = req.params.userId
+    const { skillsVerified } = req.body
+
+    const project = await Project.findById(projectId)
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized to manage applicants for this project' })
+    }
+
+    if (isImmutableProjectStatus(project.status)) {
+      return res.status(403).json({ message: 'Project is locked and cannot be modified' })
+    }
+
+    const applicant = project.interestedUsers.find((entry) => entry.userId.toString() === applicantId)
+
+    if (!applicant) {
+      return res.status(404).json({ message: 'Applicant not found for this project' })
+    }
+
+    applicant.skillsVerified = Boolean(skillsVerified)
+
+    await project.save()
+
+    const populatedProject = await Project.findById(projectId)
+      .populate('user', 'firstName lastName email profilePicture')
+      .populate('interestedUsers.userId', 'firstName lastName email profilePicture')
+      .populate('assignee', 'firstName lastName email profilePicture')
+
+    res.json(populatedProject)
+  } catch (error) {
+    console.error('Error updating applicant skills verification state:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
 // @desc    Assign a user to a project
 // @route   POST /api/projects/:id/assign
 // @access  Private (project creator only)
@@ -902,7 +1790,26 @@ const assignUserToProject = async (req, res) => {
     project.status = 'in_progress'
 
     const updatedProject = await project.save()
+
+    // Auto-populate availability calendar
+    await populateAvailabilityOnProjectAssignment(userId, updatedProject)
+
     const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
+
+    await sendProjectAssignedEmail({
+      recipientId: userId,
+      ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title
+    })
+
+    await notifyProjectAssigned({
+      actor: req.user._id,
+      recipient: userId,
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client'
+    })
 
     res.json(populatedProject)
   } catch (error) {
@@ -939,10 +1846,35 @@ const reassignProject = async (req, res) => {
       return res.status(400).json({ message: 'User has not contacted this project' })
     }
 
+    const previousAssigneeId = project.assignee
     project.assignee = userId
 
     const updatedProject = await project.save()
+
+    // Update availability calendars for reassignment
+    if (previousAssigneeId) {
+      await removeProjectFromAvailability(previousAssigneeId, projectId)
+    }
+    await populateAvailabilityOnProjectAssignment(userId, updatedProject)
+
     const populatedProject = await Project.findById(projectId).populate('assignee', 'firstName lastName email profilePicture')
+
+    await sendProjectAssignedEmail({
+      recipientId: userId,
+      ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title,
+      isReassignment: true
+    })
+
+    await notifyProjectAssigned({
+      actor: req.user._id,
+      recipient: userId,
+      projectId: populatedProject._id.toString(),
+      projectTitle: populatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+      isReassignment: true
+    })
 
     res.json(populatedProject)
   } catch (error) {
@@ -972,9 +1904,16 @@ const removeAssignee = async (req, res) => {
       return res.status(403).json({ message: 'Project is locked and cannot be modified' })
     }
 
+    const previousAssigneeId = project.assignee
     project.assignee = null
 
     const updatedProject = await project.save()
+
+    // Remove from availability calendar if there was an assignee
+    if (previousAssigneeId) {
+      await removeProjectFromAvailability(previousAssigneeId, projectId)
+    }
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error removing assignee:', error)
@@ -1254,6 +2193,22 @@ const submitProject = async (req, res) => {
     project.status = 'under_review'
 
     const updatedProject = await project.save()
+
+    await sendProjectSubmittedEmail({
+      recipientId: project.user.toString(),
+      assigneeName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A freelancer',
+      projectId: updatedProject._id.toString(),
+      projectTitle: updatedProject.title
+    })
+
+    await notifyProjectSubmitted({
+      actor: req.user._id,
+      recipient: project.user.toString(),
+      projectId: updatedProject._id.toString(),
+      projectTitle: updatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A freelancer'
+    })
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error submitting project:', error)
@@ -1302,6 +2257,27 @@ const reviewProject = async (req, res) => {
     project.status = decision === 'accepted' ? 'completed' : 'in_progress'
 
     const updatedProject = await project.save()
+
+    if (project.assignee) {
+      await sendProjectReviewDecisionEmail({
+        recipientId: project.assignee.toString(),
+        ownerName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+        projectId: updatedProject._id.toString(),
+        projectTitle: updatedProject.title,
+        decision,
+        feedback
+      })
+    }
+
+    await notifyProjectReviewed({
+      actor: req.user._id,
+      recipient: project.assignee.toString(),
+      projectId: updatedProject._id.toString(),
+      projectTitle: updatedProject.title,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'A client',
+      decision
+    })
+
     res.json(updatedProject)
   } catch (error) {
     console.error('Error reviewing project:', error)
@@ -1344,6 +2320,269 @@ const archiveProject = async (req, res) => {
   }
 }
 
+// @desc    Mark a project as complete (owner or assignee)
+// @route   PATCH /api/projects/:id/complete
+// @access  Private
+const markProjectComplete = async (req, res) => {
+  try {
+    const { projectId } = req.params
+    const userId = req.user._id
+
+    // Find project
+    const project = await Project.findById(projectId)
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Check authorization - only owner or assignee can mark complete
+    const isOwner = project.owner.toString() === userId.toString()
+    const isAssignee = project.assignee && project.assignee.toString() === userId.toString()
+
+    if (!isOwner && !isAssignee) {
+      return res.status(403).json({ message: 'Not authorized to complete this project' })
+    }
+
+    // Check if already completed
+    if (project.status === 'completed') {
+      return res.status(400).json({ message: 'Project is already completed' })
+    }
+
+    // Update project status and completion timestamp
+    project.status = 'completed'
+    project.completedAt = new Date()
+    project.completedBy = userId
+    project.lastUpdateReason = 'Project marked as complete'
+
+    // Update availability if assignee exists
+    if (project.assignee) {
+      try {
+        await removeProjectFromAvailability(project.assignee, projectId)
+      } catch (availErr) {
+        console.error('Error removing project from availability:', availErr)
+        // Don't fail the completion if availability update fails
+      }
+    }
+
+    await project.save()
+
+    // Populate for response
+    await project.populate([
+      { path: 'owner', select: 'firstName lastName email profileImage' },
+      { path: 'assignee', select: 'firstName lastName email profileImage' },
+      { path: 'category', select: 'name' }
+    ])
+
+    res.status(200).json({
+      message: 'Project marked as complete',
+      data: project
+    })
+  } catch (err) {
+    console.error('Error marking project complete:', err)
+    res.status(500).json({ message: 'Error marking project complete', error: err.message })
+  }
+}
+
+// @desc    Get project completion stats for current user
+// @route   GET /api/projects/completion-stats
+// @access  Private
+const getProjectCompletionStats = async (req, res) => {
+  try {
+    const userId = req.user._id
+
+    // Get stats for projects owned by user
+    const ownedStats = await Project.aggregate([
+      { $match: { owner: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ])
+
+    // Get stats for projects assigned to user
+    const assignedStats = await Project.aggregate([
+      { $match: { assignee: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ])
+
+    res.status(200).json({
+      message: 'Project completion stats retrieved',
+      data: {
+        owned: ownedStats,
+        assigned: assignedStats
+      }
+    })
+  } catch (err) {
+    console.error('Error fetching completion stats:', err)
+    res.status(500).json({ message: 'Error fetching stats', error: err.message })
+  }
+}
+
+// @desc    Bulk complete projects (owner or assignee)
+// @route   POST /api/projects/bulk-complete
+// @access  Private
+const bulkCompleteProjects = async (req, res) => {
+  try {
+    const { projectIds } = req.body
+    const userId = req.user._id
+
+    // Validate input
+    if (!Array.isArray(projectIds) || projectIds.length === 0) {
+      return res.status(400).json({ message: 'projectIds must be a non-empty array' })
+    }
+
+    if (projectIds.length > 50) {
+      return res.status(400).json({ message: 'Cannot complete more than 50 projects at once' })
+    }
+
+    // Find all projects
+    const projects = await Project.find({
+      _id: { $in: projectIds }
+    })
+
+    // Validate authorization and status
+    const validProjects = projects.filter((project) => {
+      const isOwner = project.owner.toString() === userId.toString()
+      const isAssignee = project.assignee && project.assignee.toString() === userId.toString()
+      const canComplete = ['in_progress', 'under_review'].includes(project.status)
+
+      return (isOwner || isAssignee) && canComplete && project.status !== 'completed'
+    })
+
+    if (validProjects.length === 0) {
+      return res.status(400).json({ message: 'No valid projects to complete' })
+    }
+
+    const completionTime = new Date()
+    const completedProjects = []
+    const failedIds = []
+
+    // Update each project
+    for (const project of validProjects) {
+      try {
+        project.status = 'completed'
+        project.completedAt = completionTime
+        project.completedBy = userId
+        project.lastUpdateReason = 'Bulk completed by user'
+
+        // Remove from assignee availability
+        if (project.assignee) {
+          try {
+            await removeProjectFromAvailability(project.assignee, project._id)
+          } catch (availErr) {
+            console.error('Error removing from availability:', availErr)
+          }
+        }
+
+        await project.save()
+        completedProjects.push(project)
+      } catch (err) {
+        console.error(`Error completing project ${project._id}:`, err)
+        failedIds.push(project._id)
+      }
+    }
+
+    res.status(200).json({
+      message: `${completedProjects.length} project(s) completed successfully`,
+      data: {
+        completed: completedProjects.length,
+        failed: failedIds.length,
+        projects: completedProjects,
+        failedIds
+      }
+    })
+  } catch (err) {
+    console.error('Error bulk completing projects:', err)
+    res.status(500).json({ message: 'Error completing projects', error: err.message })
+  }
+}
+
+// @desc    Reschedule a project (owner only)
+// @route   PATCH /api/projects/:id/reschedule
+// @access  Private
+const rescheduleProject = async (req, res) => {
+  try {
+    const { projectId } = req.params
+    const { newDeadline } = req.body
+    const userId = req.user._id
+
+    // Validate input
+    if (!newDeadline) {
+      return res.status(400).json({ message: 'newDeadline is required' })
+    }
+
+    const newDate = new Date(newDeadline)
+    if (isNaN(newDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid deadline date' })
+    }
+
+    if (newDate <= new Date()) {
+      return res.status(400).json({ message: 'New deadline must be in the future' })
+    }
+
+    // Find project
+    const project = await Project.findById(projectId)
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    // Check authorization - only owner can reschedule
+    if (project.owner.toString() !== userId.toString()) {
+      return res.status(403).json({ message: 'Only project owner can reschedule' })
+    }
+
+    // Can't reschedule completed or cancelled projects
+    if (['completed', 'cancelled', 'archived', 'deleted_by_owner'].includes(project.status)) {
+      return res.status(400).json({ message: `Cannot reschedule ${project.status} project` })
+    }
+
+    const oldDeadline = project.deadline
+    project.deadline = newDate
+    project.lastUpdateReason = `Rescheduled from ${oldDeadline.toISOString()} to ${newDate.toISOString()}`
+
+    // Update availability if assignee exists
+    if (project.assignee) {
+      try {
+        // Remove from old date range
+        await removeProjectFromAvailability(project.assignee, projectId)
+
+        // Add to new date range
+        await populateAvailabilityOnProjectAssignment(project.assignee, projectId, project.deadline, project.priority)
+      } catch (availErr) {
+        console.error('Error updating availability on reschedule:', availErr)
+        // Don't fail the reschedule if availability update fails
+      }
+    }
+
+    await project.save()
+
+    // Populate for response
+    await project.populate([
+      { path: 'owner', select: 'firstName lastName email' },
+      { path: 'assignee', select: 'firstName lastName email' },
+      { path: 'category', select: 'name' }
+    ])
+
+    res.status(200).json({
+      message: 'Project rescheduled successfully',
+      data: {
+        project,
+        oldDeadline,
+        newDeadline: project.deadline
+      }
+    })
+  } catch (err) {
+    console.error('Error rescheduling project:', err)
+    res.status(500).json({ message: 'Error rescheduling project', error: err.message })
+  }
+}
+
 export {
   createProject,
   publishProject,
@@ -1353,11 +2592,20 @@ export {
   updateProject,
   deleteProject,
   getAllProjects,
+  filterProjectsByBudget,
+  filterProjectsByStatus,
+  filterProjectsBySkills,
+  filterProjectesByPriority,
+  filterProjects,
+  filterProjectsByKeyword,
   getAdminAllProjects,
   deleteProjectAsAdmin,
   updateProjectAsAdmin,
+  bulkRenewProjectDeadlinesAsAdmin,
   toggleProjectLockAsAdmin,
   removeAssigneeAsAdmin,
+  toggleApplicantShortlist,
+  toggleApplicantSkillsVerified,
   assignUserToProject,
   reassignProject,
   proposeRate,
@@ -1368,5 +2616,9 @@ export {
   removeFromInterested,
   submitProject,
   reviewProject,
-  archiveProject
+  archiveProject,
+  markProjectComplete,
+  getProjectCompletionStats,
+  bulkCompleteProjects,
+  rescheduleProject
 }

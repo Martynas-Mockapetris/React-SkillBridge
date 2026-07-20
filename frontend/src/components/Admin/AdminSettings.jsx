@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
+import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
+import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
+
+const CONFIG_SECTION_KEYS = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
 
 const SECTION_DEFS = {
   home: {
-    title: 'Hero Sections',
-    description: 'Manage hero and core Home page section content.',
+    title: 'Home Page Content',
+    description: 'Manage core Home page content and section copy.',
     fields: [
       { key: 'heroTitleLead', label: 'Hero Title (Lead)', type: 'text', placeholder: 'Find Your Next' },
       { key: 'heroTitleAccent', label: 'Hero Title (Accent)', type: 'text', placeholder: 'Opportunity' },
@@ -59,12 +63,24 @@ const SECTION_DEFS = {
   },
   about: {
     title: 'About Page',
-    description: 'Manage About page content and visibility settings.',
+    description: 'Manage About page content, messaging, and CTA settings.',
     fields: [
       { key: 'headline', label: 'Headline', type: 'text', placeholder: 'Build your freelance career with confidence' },
       { key: 'subheadline', label: 'Subheadline', type: 'text', placeholder: 'Connect clients and freelancers in one place' },
       { key: 'mission', label: 'Mission', type: 'textarea', placeholder: 'Describe mission...' },
-      { key: 'vision', label: 'Vision', type: 'textarea', placeholder: 'Describe vision...' }
+      { key: 'vision', label: 'Vision', type: 'textarea', placeholder: 'Describe vision...' },
+      { key: 'ctaEyebrow', label: 'CTA Eyebrow', type: 'text', placeholder: 'Next Step' },
+      { key: 'ctaHeadline', label: 'CTA Headline', type: 'text', placeholder: 'Explore the platform or create your account' },
+      {
+        key: 'ctaBody',
+        label: 'CTA Body',
+        type: 'textarea',
+        placeholder: 'Whether you are hiring, freelancing, or doing both, SkillBridge is built to make project collaboration easier to start and easier to manage.'
+      },
+      { key: 'ctaPrimaryLabel', label: 'Primary Button Label', type: 'text', placeholder: 'Explore Listings' },
+      { key: 'ctaPrimaryHref', label: 'Primary Button Link', type: 'text', placeholder: '/listings' },
+      { key: 'ctaSecondaryLabel', label: 'Secondary Button Label', type: 'text', placeholder: 'Join SkillBridge' },
+      { key: 'ctaSecondaryHref', label: 'Secondary Button Link', type: 'text', placeholder: '/register' }
     ]
   },
   contact: {
@@ -119,178 +135,197 @@ const HOME_FIELD_GROUPS = [
   }
 ]
 
-const DEFAULT_PRICING_PLANS = [
-  {
-    title: 'Basic',
-    price: 'Free',
-    period: '',
-    description: 'Perfect for exploring the platform',
-    users: '8.4k',
-    isRecommended: false,
-    badgeText: '',
-    buttonLabel: 'Get Started',
-    features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access']
-  },
-  {
-    title: 'Creator Premium',
-    price: '€19.99',
-    period: 'month',
-    description: 'Perfect for businesses and startups',
-    users: '1.2k',
-    isRecommended: false,
-    badgeText: '',
-    buttonLabel: 'Get Started',
-    features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge']
-  },
-  {
-    title: 'Freelancer Premium',
-    price: '€19.99',
-    period: 'month',
-    description: 'Perfect for professional freelancers',
-    users: '0.8k',
-    isRecommended: false,
-    badgeText: '',
-    buttonLabel: 'Get Started',
-    features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system']
-  },
-  {
-    title: 'Full Package',
-    price: '€29.99',
-    period: 'month',
-    description: 'Perfect for agencies and growing freelancers',
-    users: '0.5k',
-    isRecommended: true,
-    badgeText: 'Recommended',
-    buttonLabel: 'Get Started',
-    features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools']
-  }
+const HOME_SECTION_ITEMS = [
+  { key: 'hero', label: 'Hero Section', visibilityKey: 'showHero' },
+  { key: 'features', label: 'Features Section', visibilityKey: 'showFeatures' },
+  { key: 'howItWorks', label: 'How It Works Section', visibilityKey: 'showHowItWorks' },
+  { key: 'testimonials', label: 'Testimonials Section', visibilityKey: 'showTestimonials' },
+  { key: 'pricing', label: 'Pricing Section', visibilityKey: 'showPricing' },
+  { key: 'contact', label: 'Contact Section', visibilityKey: 'showContact' }
 ]
 
-const DEFAULT_TESTIMONIALS = [
-  {
-    name: 'Emma Wilson',
-    role: 'Project Owner',
-    content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
-    rating: 5,
-    avatarSeed: 'emma-wilson'
-  },
-  {
-    name: 'Michael Chen',
-    role: 'Freelance Developer',
-    content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
-    rating: 4,
-    avatarSeed: 'michael-chen'
-  },
-  {
-    name: 'Sarah Johnson',
-    role: 'Project Owner',
-    content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
-    rating: 5,
-    avatarSeed: 'sarah-johnson'
-  },
-  {
-    name: 'David Rodriguez',
-    role: 'Freelance Designer',
-    content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
-    rating: 4.5,
-    avatarSeed: 'david-rodriguez'
-  },
-  {
-    name: 'Lisa Chang',
-    role: 'Project Owner',
-    content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
-    rating: 5,
-    avatarSeed: 'lisa-chang'
-  }
+const ABOUT_SECTION_ITEMS = [
+  { key: 'hero', label: 'Hero Block', visibilityKey: 'showHero' },
+  { key: 'highlights', label: 'Highlights Block', visibilityKey: 'showHighlights' },
+  { key: 'cta', label: 'CTA Block', visibilityKey: 'showCta' }
 ]
 
-const initialDrafts = {
-  home: { enabled: true, values: {} },
-  pricing: { enabled: true, values: {} },
-  testimonials: { enabled: true, values: {} },
-  blog: { enabled: true, values: {} },
-  about: { enabled: true, values: {} },
-  contact: { enabled: true, values: {} },
-  mail: { enabled: true, values: {} },
-  system: { enabled: true, values: {} }
+const DEFAULT_ABOUT_HERO_BUILDER = {
+  contentAlign: 'left',
+  contentWidth: 'wide',
+  showEyebrow: true
 }
 
-const SETTINGS_VIEW_MAP = {
-  'home.hero': {
-    pageTitle: 'Home Page',
-    pageDescription: 'Manage all Home page content pages and sections.',
-    sectionId: 'home'
-  },
-  'home.pricing': {
-    pageTitle: 'Home Page',
-    pageDescription: 'Manage all Home page content pages and sections.',
-    sectionId: 'pricing'
-  },
-  'home.testimonials': {
-    pageTitle: 'Home Page',
-    pageDescription: 'Manage all Home page content pages and sections.',
-    sectionId: 'testimonials'
-  },
-  blog: {
-    pageTitle: 'Blog Page',
-    pageDescription: 'Manage public Blog page text content and labels.',
-    sectionId: 'blog'
-  },
-  'blog-detail': {
-    pageTitle: 'Blog Detail Page',
-    pageDescription: 'Blog detail page settings will be added here.',
-    sectionId: 'blog-detail'
-  },
-  listings: {
-    pageTitle: 'Listings Page',
-    pageDescription: 'Listings page settings will be added here.',
-    sectionId: 'listings'
-  },
-  'project-detail': {
-    pageTitle: 'Project Detail Page',
-    pageDescription: 'Project detail page settings will be added here.',
-    sectionId: 'project-detail'
-  },
-  about: {
-    pageTitle: 'About Page',
-    pageDescription: 'Manage About page content and visibility settings.',
-    sectionId: 'about'
-  },
-  contact: {
-    pageTitle: 'Contact Info',
-    pageDescription: 'Manage platform contact channels and support details.',
-    sectionId: 'contact'
-  },
-  mail: {
-    pageTitle: 'Mail Settings',
-    pageDescription: 'Configure mail defaults shown to users.',
-    sectionId: 'mail'
-  },
-  system: {
-    pageTitle: 'System Settings',
-    pageDescription: 'General platform settings and admin defaults.',
-    sectionId: 'system'
+const DEFAULT_ABOUT_HIGHLIGHTS_BUILDER = {
+  contentAlign: 'left',
+  contentWidth: 'wide',
+  cardLayout: 'stacked',
+  showIcons: true
+}
+
+const ABOUT_HIGHLIGHTS_LAYOUT_LABELS = {
+  stacked: 'Stacked',
+  grid: 'Balanced Grid',
+  'feature-first': 'Feature First'
+}
+
+const DEFAULT_ABOUT_CTA_BUILDER = {
+  contentAlign: 'left',
+  contentWidth: 'wide',
+  buttonLayout: 'stacked-mobile',
+  emphasisStyle: 'soft',
+  showSecondaryButton: true
+}
+
+const DEFAULT_ABOUT_SECTION_ORDER = ABOUT_SECTION_ITEMS.map((item) => item.key)
+
+const DEFAULT_ABOUT_SECTION_BACKGROUNDS = {}
+
+const ABOUT_CTA_EMPHASIS_LABELS = {
+  soft: 'Soft Panel',
+  strong: 'Strong Panel',
+  outline: 'Outline Surface'
+}
+
+const DEFAULT_ABOUT_SECTION_VISIBILITY = ABOUT_SECTION_ITEMS.reduce((acc, item) => {
+  acc[item.visibilityKey] = true
+  return acc
+}, {})
+
+const LAYOUT_PRESET_LABELS = {
+  centered: 'Centered',
+  split: 'Split',
+  editorial: 'Editorial',
+  minimal: 'Minimal'
+}
+
+const CONTENT_ALIGN_LABELS = {
+  left: 'Left',
+  center: 'Center'
+}
+
+const CTA_LAYOUT_LABELS = {
+  'stacked-mobile': 'Stacked Mobile / Row Desktop',
+  inline: 'Inline',
+  split: 'Split Emphasis'
+}
+
+const PAGE_HEIGHT_LABELS = {
+  screen: 'Full Screen',
+  large: 'Large',
+  medium: 'Medium'
+}
+
+const BACKGROUND_PRESET_LABELS = {
+  default: 'Default Theme',
+  transparent: 'Transparent',
+  soft: 'Soft Tint',
+  panel: 'Panel Surface',
+  accent: 'Accent Tint'
+}
+
+const PRICING_CARD_DENSITY_LABELS = {
+  compact: 'Compact',
+  balanced: 'Balanced',
+  spacious: 'Spacious'
+}
+
+const PRICING_EMPHASIS_STYLE_LABELS = {
+  subtle: 'Subtle',
+  strong: 'Strong',
+  outline: 'Outline'
+}
+
+const PRICING_FEATURED_PRESENTATION_LABELS = {
+  badge: 'Badge',
+  lifted: 'Lifted Card',
+  spotlight: 'Spotlight'
+}
+
+const TESTIMONIAL_CARD_STYLE_LABELS = {
+  glass: 'Glass',
+  panel: 'Panel',
+  minimal: 'Minimal'
+}
+
+const TESTIMONIAL_SECTION_EMPHASIS_LABELS = {
+  balanced: 'Balanced',
+  featured: 'Featured',
+  editorial: 'Editorial'
+}
+
+const DEFAULT_HOME_HERO_BUILDER = {
+  layoutPreset: 'centered',
+  contentAlign: 'center',
+  ctaLayout: 'stacked-mobile',
+  heroHeight: 'screen',
+  showScrollIndicator: true,
+  showBackgroundPattern: true
+}
+
+const DEFAULT_HOME_SECTION_VISIBILITY = HOME_SECTION_ITEMS.reduce((acc, item) => {
+  acc[item.visibilityKey] = true
+  return acc
+}, {})
+
+const DEFAULT_HOME_SECTION_ORDER = HOME_SECTION_ITEMS.map((item) => item.key)
+
+const DEFAULT_HOME_SECTION_SPACING = {}
+
+const DEFAULT_HOME_SECTION_BACKGROUNDS = {}
+
+const cloneHomeBuilderValue = (value) => {
+  if (Array.isArray(value)) return [...value]
+  if (value && typeof value === 'object') return { ...value }
+  return value
+}
+
+const createDraftsFromConfig = (config = {}) =>
+  CONFIG_SECTION_KEYS.reduce((acc, sectionKey) => {
+    acc[sectionKey] = {
+      enabled: config?.[sectionKey]?.enabled ?? true,
+      values: config?.[sectionKey]?.values || {}
+    }
+
+    return acc
+  }, {})
+
+const normalizeHomeSectionOrder = (savedOrder) => {
+  const defaultOrder = HOME_SECTION_ITEMS.map((item) => item.key)
+
+  if (!Array.isArray(savedOrder) || !savedOrder.length) {
+    return defaultOrder
   }
+
+  const allowedKeys = new Set(defaultOrder)
+  const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
+  const missingKeys = defaultOrder.filter((key) => !sanitizedOrder.includes(key))
+
+  return [...sanitizedOrder, ...missingKeys]
 }
 
-const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
+const SETTINGS_VIEW_LOOKUP = SETTINGS_VIEW_REGISTRY.reduce((acc, view) => {
+  acc[view.id] = view
+  return acc
+}, {})
+
+const getSettingsView = (activeSectionId) => {
+  return SETTINGS_VIEW_LOOKUP[activeSectionId] || SETTINGS_VIEW_LOOKUP[DEFAULT_SETTINGS_SECTION]
+}
+
+const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   const [loading, setLoading] = useState(true)
   const [config, setConfig] = useState(null)
   const [savingSection, setSavingSection] = useState('')
-  const [drafts, setDrafts] = useState(initialDrafts)
+  const [drafts, setDrafts] = useState(() => createDraftsFromConfig())
 
   const sectionMap = useMemo(() => {
     if (!config) return {}
-    return {
-      home: config.home || {},
-      pricing: config.pricing || {},
-      testimonials: config.testimonials || {},
-      blog: config.blog || {},
-      about: config.about || {},
-      contact: config.contact || {},
-      mail: config.mail || {},
-      system: config.system || {}
-    }
+
+    return CONFIG_SECTION_KEYS.reduce((acc, sectionKey) => {
+      acc[sectionKey] = config[sectionKey] || {}
+      return acc
+    }, {})
   }, [config])
 
   useEffect(() => {
@@ -300,16 +335,7 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
         const data = await getSystemConfig()
         setConfig(data)
 
-        setDrafts({
-          home: { enabled: data?.home?.enabled ?? true, values: data?.home?.values || {} },
-          pricing: { enabled: data?.pricing?.enabled ?? true, values: data?.pricing?.values || {} },
-          testimonials: { enabled: data?.testimonials?.enabled ?? true, values: data?.testimonials?.values || {} },
-          blog: { enabled: data?.blog?.enabled ?? true, values: data?.blog?.values || {} },
-          about: { enabled: data?.about?.enabled ?? true, values: data?.about?.values || {} },
-          contact: { enabled: data?.contact?.enabled ?? true, values: data?.contact?.values || {} },
-          mail: { enabled: data?.mail?.enabled ?? true, values: data?.mail?.values || {} },
-          system: { enabled: data?.system?.enabled ?? true, values: data?.system?.values || {} }
-        })
+        setDrafts(createDraftsFromConfig(data))
       } catch (error) {
         toast.error(error?.response?.data?.message || 'Failed to load settings')
       } finally {
@@ -343,6 +369,205 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
     }))
   }
 
+  const getSiteBuilderValue = (key, fallback) => drafts?.siteBuilder?.values?.[key] ?? fallback
+
+  const updateSiteBuilderValue = (key, nextValueOrUpdater) => {
+    setDrafts((prev) => {
+      const currentValue = prev?.siteBuilder?.values?.[key]
+      const nextValue = typeof nextValueOrUpdater === 'function' ? nextValueOrUpdater(currentValue) : nextValueOrUpdater
+
+      return {
+        ...prev,
+        siteBuilder: {
+          ...prev.siteBuilder,
+          values: {
+            ...prev.siteBuilder.values,
+            [key]: nextValue
+          }
+        }
+      }
+    })
+  }
+
+  const handleHomeHeroBuilderChange = (key, value) => {
+    updateSiteBuilderValue('homeHero', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const handleHomeSectionVisibilityChange = (key, value) => {
+    updateSiteBuilderValue('homeSections', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const moveHomeSectionOrderItem = (key, direction) => {
+    updateSiteBuilderValue('homeSectionOrder', (savedOrder) => {
+      const currentOrder = [...normalizeHomeSectionOrder(savedOrder)]
+      const currentIndex = currentOrder.indexOf(key)
+
+      if (currentIndex === -1) {
+        return currentOrder
+      }
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+      if (targetIndex < 0 || targetIndex >= currentOrder.length) {
+        return currentOrder
+      }
+
+      const nextOrder = [...currentOrder]
+      const [movedItem] = nextOrder.splice(currentIndex, 1)
+      nextOrder.splice(targetIndex, 0, movedItem)
+
+      return nextOrder
+    })
+  }
+
+  const handleAboutHeroBuilderChange = (key, value) => {
+    updateSiteBuilderValue('aboutHero', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const handleAboutHighlightsBuilderChange = (key, value) => {
+    updateSiteBuilderValue('aboutHighlights', (currentValue = {}) => ({
+      ...DEFAULT_ABOUT_HIGHLIGHTS_BUILDER,
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const resetAboutHighlightsBuilder = () => {
+    updateSiteBuilderValue('aboutHighlights', { ...DEFAULT_ABOUT_HIGHLIGHTS_BUILDER })
+  }
+
+  const handleAboutCtaBuilderChange = (key, value) => {
+    updateSiteBuilderValue('aboutCta', (currentValue = {}) => ({
+      ...DEFAULT_ABOUT_CTA_BUILDER,
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const resetAboutCtaBuilder = () => {
+    updateSiteBuilderValue('aboutCta', { ...DEFAULT_ABOUT_CTA_BUILDER })
+  }
+
+  const handleAboutSectionVisibilityChange = (key, value) => {
+    updateSiteBuilderValue('aboutSections', (currentValue = {}) => ({
+      ...currentValue,
+      [key]: value
+    }))
+  }
+
+  const moveAboutSectionOrderItem = (key, direction) => {
+    updateSiteBuilderValue('aboutSectionOrder', (savedOrder) => {
+      const currentOrder = Array.isArray(savedOrder) && savedOrder.length ? [...savedOrder] : [...DEFAULT_ABOUT_SECTION_ORDER]
+      const allowedKeys = new Set(DEFAULT_ABOUT_SECTION_ORDER)
+      const sanitizedOrder = currentOrder.filter((item) => allowedKeys.has(item))
+      const missingKeys = DEFAULT_ABOUT_SECTION_ORDER.filter((item) => !sanitizedOrder.includes(item))
+      const normalizedOrder = [...sanitizedOrder, ...missingKeys]
+
+      const currentIndex = normalizedOrder.indexOf(key)
+      if (currentIndex === -1) {
+        return normalizedOrder
+      }
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+      if (targetIndex < 0 || targetIndex >= normalizedOrder.length) {
+        return normalizedOrder
+      }
+
+      const nextOrder = [...normalizedOrder]
+      const [movedItem] = nextOrder.splice(currentIndex, 1)
+      nextOrder.splice(targetIndex, 0, movedItem)
+
+      return nextOrder
+    })
+  }
+
+  const handleAboutSectionBackgroundChange = (sectionKey, value) => {
+    updateSiteBuilderValue('aboutSectionBackgrounds', (currentValue = {}) => ({
+      ...currentValue,
+      [sectionKey]: value
+    }))
+  }
+
+  const resetAboutHeroBuilder = () => {
+    updateSiteBuilderValue('aboutHero', { ...DEFAULT_ABOUT_HERO_BUILDER })
+  }
+
+  const resetAboutSectionVisibility = () => {
+    updateSiteBuilderValue('aboutSections', { ...DEFAULT_ABOUT_SECTION_VISIBILITY })
+  }
+
+  const resetAboutSectionBackgrounds = () => {
+    updateSiteBuilderValue('aboutSectionBackgrounds', { ...DEFAULT_ABOUT_SECTION_BACKGROUNDS })
+  }
+
+  const resetAllAboutLayoutControls = () => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          aboutHero: cloneHomeBuilderValue(DEFAULT_ABOUT_HERO_BUILDER),
+          aboutHighlights: cloneHomeBuilderValue(DEFAULT_ABOUT_HIGHLIGHTS_BUILDER),
+          aboutCta: cloneHomeBuilderValue(DEFAULT_ABOUT_CTA_BUILDER),
+          aboutSections: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_VISIBILITY),
+          aboutSectionOrder: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_ORDER),
+          aboutSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_ABOUT_SECTION_BACKGROUNDS)
+        }
+      }
+    }))
+  }
+
+  const resetAboutSectionOrder = () => {
+    updateSiteBuilderValue('aboutSectionOrder', [...DEFAULT_ABOUT_SECTION_ORDER])
+  }
+
+  const handleHomeSectionSpacingChange = (sectionKey, edge, value) => {
+    updateSiteBuilderValue('homeSectionSpacing', (currentValue = {}) => ({
+      ...currentValue,
+      [sectionKey]: {
+        top: currentValue?.[sectionKey]?.top || 'normal',
+        bottom: currentValue?.[sectionKey]?.bottom || 'normal',
+        ...(currentValue?.[sectionKey] || {}),
+        [edge]: value
+      }
+    }))
+  }
+
+  const handleHomeSectionBackgroundChange = (sectionKey, value) => {
+    updateSiteBuilderValue('homeSectionBackgrounds', (currentValue = {}) => ({
+      ...currentValue,
+      [sectionKey]: value
+    }))
+  }
+
+  const handleSaveSiteBuilderSection = async () => {
+    try {
+      setSavingSection('siteBuilder')
+
+      const payload = {
+        enabled: drafts.siteBuilder.enabled,
+        values: drafts.siteBuilder.values
+      }
+
+      const response = await updateSystemConfigSection('siteBuilder', payload)
+      setConfig(response.config)
+      toast.success('siteBuilder settings saved')
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Failed to save siteBuilder settings')
+    } finally {
+      setSavingSection('')
+    }
+  }
+
   const handleSaveSection = async (sectionId) => {
     try {
       setSavingSection(sectionId)
@@ -365,6 +590,30 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
   const getPricingPlans = () => {
     const plans = drafts?.pricing?.values?.pricingPlans
     return Array.isArray(plans) && plans.length ? plans : DEFAULT_PRICING_PLANS
+  }
+
+  const getPricingLayout = () => {
+    return {
+      ...DEFAULT_PRICING_LAYOUT,
+      ...(drafts?.pricing?.values?.layout || {})
+    }
+  }
+
+  const handlePricingLayoutChange = (key, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      pricing: {
+        ...prev.pricing,
+        values: {
+          ...prev.pricing.values,
+          layout: {
+            ...DEFAULT_PRICING_LAYOUT,
+            ...(prev.pricing.values?.layout || {}),
+            [key]: value
+          }
+        }
+      }
+    }))
   }
 
   const updatePricingPlans = (updater) => {
@@ -428,6 +677,30 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
     return [...testimonials, ...DEFAULT_TESTIMONIALS.slice(testimonials.length)]
   }
 
+  const getTestimonialsLayout = () => {
+    return {
+      ...DEFAULT_TESTIMONIALS_LAYOUT,
+      ...(drafts?.testimonials?.values?.layout || {})
+    }
+  }
+
+  const handleTestimonialsLayoutChange = (key, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      testimonials: {
+        ...prev.testimonials,
+        values: {
+          ...prev.testimonials.values,
+          layout: {
+            ...DEFAULT_TESTIMONIALS_LAYOUT,
+            ...(prev.testimonials.values?.layout || {}),
+            [key]: value
+          }
+        }
+      }
+    }))
+  }
+
   const updateTestimonials = (updater) => {
     setDrafts((prev) => {
       const currentTestimonials = Array.isArray(prev?.testimonials?.values?.testimonials) && prev.testimonials.values.testimonials.length ? prev.testimonials.values.testimonials : DEFAULT_TESTIMONIALS
@@ -468,6 +741,43 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
       if (items.length <= 1) return items
       return items.filter((_, i) => i !== index)
     })
+  }
+
+  const resetHomeHeroBuilder = () => {
+    updateSiteBuilderValue('homeHero', { ...DEFAULT_HOME_HERO_BUILDER })
+  }
+
+  const resetHomeSectionVisibility = () => {
+    updateSiteBuilderValue('homeSections', { ...DEFAULT_HOME_SECTION_VISIBILITY })
+  }
+
+  const resetHomeSectionOrder = () => {
+    updateSiteBuilderValue('homeSectionOrder', [...DEFAULT_HOME_SECTION_ORDER])
+  }
+
+  const resetHomeSectionSpacing = () => {
+    updateSiteBuilderValue('homeSectionSpacing', { ...DEFAULT_HOME_SECTION_SPACING })
+  }
+
+  const resetHomeSectionBackgrounds = () => {
+    updateSiteBuilderValue('homeSectionBackgrounds', { ...DEFAULT_HOME_SECTION_BACKGROUNDS })
+  }
+
+  const resetAllHomeLayoutControls = () => {
+    setDrafts((prev) => ({
+      ...prev,
+      siteBuilder: {
+        ...prev.siteBuilder,
+        values: {
+          ...prev.siteBuilder.values,
+          homeHero: cloneHomeBuilderValue(DEFAULT_HOME_HERO_BUILDER),
+          homeSections: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_VISIBILITY),
+          homeSectionOrder: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_ORDER),
+          homeSectionSpacing: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_SPACING),
+          homeSectionBackgrounds: cloneHomeBuilderValue(DEFAULT_HOME_SECTION_BACKGROUNDS)
+        }
+      }
+    }))
   }
 
   const renderInputControl = (sectionId, field, customLabel) => (
@@ -705,6 +1015,134 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
     )
   }
 
+  const renderPricingLayoutEditor = () => {
+    const pricingLayout = getPricingLayout()
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Pricing Layout</h5>
+          <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the density, visual emphasis, and featured-plan treatment used by the public pricing block.</p>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Card Density</label>
+            <select
+              value={pricingLayout.cardDensity}
+              onChange={(e) => handlePricingLayoutChange('cardDensity', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='compact'>Compact</option>
+              <option value='balanced'>Balanced</option>
+              <option value='spacious'>Spacious</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Emphasis Style</label>
+            <select
+              value={pricingLayout.emphasisStyle}
+              onChange={(e) => handlePricingLayoutChange('emphasisStyle', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='subtle'>Subtle</option>
+              <option value='strong'>Strong</option>
+              <option value='outline'>Outline</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Featured Plan Presentation</label>
+            <select
+              value={pricingLayout.featuredPlanPresentation}
+              onChange={(e) => handlePricingLayoutChange('featuredPlanPresentation', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='badge'>Badge</option>
+              <option value='lifted'>Lifted Card</option>
+              <option value='spotlight'>Spotlight</option>
+            </select>
+          </div>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          {[
+            { label: 'Density', value: PRICING_CARD_DENSITY_LABELS[pricingLayout.cardDensity] || 'Balanced' },
+            { label: 'Emphasis', value: PRICING_EMPHASIS_STYLE_LABELS[pricingLayout.emphasisStyle] || 'Subtle' },
+            { label: 'Featured', value: PRICING_FEATURED_PRESENTATION_LABELS[pricingLayout.featuredPlanPresentation] || 'Badge' }
+          ].map((item) => (
+            <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+              <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderTestimonialsLayoutEditor = () => {
+    const testimonialsLayout = getTestimonialsLayout()
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Testimonials Layout</h5>
+          <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control testimonial card treatment, the number of visible cards, and the section emphasis used on the public Home page.</p>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Card Style</label>
+            <select
+              value={testimonialsLayout.cardStyle}
+              onChange={(e) => handleTestimonialsLayoutChange('cardStyle', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='glass'>Glass</option>
+              <option value='panel'>Panel</option>
+              <option value='minimal'>Minimal</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Visible Count</label>
+            <select
+              value={String(testimonialsLayout.visibleCount)}
+              onChange={(e) => handleTestimonialsLayoutChange('visibleCount', Number(e.target.value))}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='3'>3</option>
+              <option value='6'>6</option>
+              <option value='9'>9</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Section Emphasis</label>
+            <select
+              value={testimonialsLayout.sectionEmphasis}
+              onChange={(e) => handleTestimonialsLayoutChange('sectionEmphasis', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='balanced'>Balanced</option>
+              <option value='featured'>Featured</option>
+              <option value='editorial'>Editorial</option>
+            </select>
+          </div>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+          {[
+            { label: 'Card Style', value: TESTIMONIAL_CARD_STYLE_LABELS[testimonialsLayout.cardStyle] || 'Glass' },
+            { label: 'Visible Count', value: String(testimonialsLayout.visibleCount || 6) },
+            { label: 'Emphasis', value: TESTIMONIAL_SECTION_EMPHASIS_LABELS[testimonialsLayout.sectionEmphasis] || 'Balanced' }
+          ].map((item) => (
+            <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+              <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   const renderTestimonialsEditor = () => {
     const testimonials = getTestimonials()
 
@@ -794,6 +1232,783 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
     )
   }
 
+  const renderHomeHeroBuilderPanel = () => {
+    const heroBuilder = getSiteBuilderValue('homeHero', {})
+    const sectionVisibility = getSiteBuilderValue('homeSections', {})
+    const sectionOrder = normalizeHomeSectionOrder(getSiteBuilderValue('homeSectionOrder', []))
+    const sectionSpacing = getSiteBuilderValue('homeSectionSpacing', {})
+    const sectionBackgrounds = getSiteBuilderValue('homeSectionBackgrounds', {})
+
+    const orderedSections = sectionOrder
+      .map((sectionKey) => {
+        const item = HOME_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
+        if (!item) return null
+
+        const isVisible = sectionVisibility[item.visibilityKey] ?? true
+
+        return {
+          ...item,
+          isVisible
+        }
+      })
+      .filter(Boolean)
+
+    const visibleSectionsCount = orderedSections.filter((item) => item.isVisible).length
+    const hiddenSectionsCount = orderedSections.length - visibleSectionsCount
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h4 className='text-lg font-bold text-gray-900 dark:text-white'>Home Page Builder</h4>
+          <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure Home page layout, presentation, and section visibility from one place.</p>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2'>
+          <button
+            type='button'
+            onClick={resetAllHomeLayoutControls}
+            className='px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset All Layout Controls
+          </button>
+        </div>
+
+        <div className='flex items-center justify-between gap-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Hero Layout</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the main Home hero presentation and visual toggles.</p>
+          </div>
+
+          <button
+            type='button'
+            onClick={resetHomeHeroBuilder}
+            className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset Hero
+          </button>
+        </div>
+
+        {/* Layout & style settings */}
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Layout Preset</label>
+            <select
+              value={heroBuilder.layoutPreset || 'centered'}
+              onChange={(e) => handleHomeHeroBuilderChange('layoutPreset', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='centered'>Centered</option>
+              <option value='split'>Split</option>
+              <option value='editorial'>Editorial</option>
+              <option value='minimal'>Minimal</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+            <select
+              value={heroBuilder.contentAlign || 'center'}
+              onChange={(e) => handleHomeHeroBuilderChange('contentAlign', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='left'>Left</option>
+              <option value='center'>Center</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>CTA Layout</label>
+            <select
+              value={heroBuilder.ctaLayout || 'stacked-mobile'}
+              onChange={(e) => handleHomeHeroBuilderChange('ctaLayout', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='stacked-mobile'>Stacked Mobile / Row Desktop</option>
+              <option value='inline'>Inline</option>
+              <option value='split'>Split Emphasis</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Page Height</label>
+            <select
+              value={heroBuilder.heroHeight || 'screen'}
+              onChange={(e) => handleHomeHeroBuilderChange('heroHeight', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='screen'>Full Screen</option>
+              <option value='large'>Large</option>
+              <option value='medium'>Medium</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Toggleable visual elements */}
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
+            <input
+              type='checkbox'
+              checked={heroBuilder.showScrollIndicator ?? true}
+              onChange={(e) => handleHomeHeroBuilderChange('showScrollIndicator', e.target.checked)}
+              className='rounded border-gray-300 text-accent focus:ring-accent'
+            />
+            Show scroll indicator
+          </label>
+
+          <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
+            <input
+              type='checkbox'
+              checked={heroBuilder.showBackgroundPattern ?? true}
+              onChange={(e) => handleHomeHeroBuilderChange('showBackgroundPattern', e.target.checked)}
+              className='rounded border-gray-300 text-accent focus:ring-accent'
+            />
+            Show background pattern
+          </label>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Visibility</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Choose which sections should appear on the public Home page.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionVisibility}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Visibility
+            </button>
+          </div>
+
+          <div className='space-y-2'>
+            {HOME_SECTION_ITEMS.map((item) => {
+              const isVisible = sectionVisibility[item.visibilityKey] ?? true
+
+              return (
+                <label key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Currently visible on the Home page' : 'Currently hidden from the Home page'}</p>
+                  </div>
+
+                  <input type='checkbox' checked={isVisible} onChange={(e) => handleHomeSectionVisibilityChange(item.visibilityKey, e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Section ordering and visibility */}
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Order</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the top-to-bottom order of sections on the public Home page.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionOrder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Order
+            </button>
+          </div>
+
+          <div className='space-y-2'>
+            {sectionOrder.map((sectionKey, index, order) => {
+              const item = HOME_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
+              const isVisible = sectionVisibility[item?.visibilityKey] ?? true
+
+              if (!item) return null
+
+              return (
+                <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Visible on page' : 'Hidden by visibility settings'}</p>
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => moveHomeSectionOrderItem(item.key, 'up')}
+                      disabled={index === 0}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Up
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={() => moveHomeSectionOrderItem(item.key, 'down')}
+                      disabled={index === order.length - 1}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Down
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Current render order with visibility status */}
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h6 className='text-sm font-semibold text-gray-900 dark:text-white'>Current Render Order</h6>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>This is the order the Home page will use after saving, with visibility applied per section.</p>
+            </div>
+            <span className='text-xs text-gray-500 dark:text-gray-400'>Total: {orderedSections.length}</span>
+          </div>
+
+          <div className='space-y-2'>
+            {orderedSections.map((item, index) => (
+              <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 px-3 py-2'>
+                <div className='flex items-center gap-3 min-w-0'>
+                  <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-semibold text-accent'>{index + 1}</span>
+
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>{item.isVisible ? 'Will render on page' : 'Hidden and skipped in public render'}</p>
+                  </div>
+                </div>
+
+                <span
+                  className={`px-2 py-1 rounded-full text-[11px] font-semibold ${
+                    item.isVisible ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                  }`}>
+                  {item.isVisible ? 'Visible' : 'Hidden'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section spacing controls */}
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Spacing</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the vertical spacing for each Home page section.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionSpacing}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Spacing
+            </button>
+          </div>
+
+          <div className='space-y-3'>
+            {HOME_SECTION_ITEMS.map((item) => {
+              const spacing = sectionSpacing[item.key] || {}
+
+              return (
+                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                  <p className='text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</p>
+
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                    <div>
+                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Top Spacing</label>
+                      <select
+                        value={spacing.top || 'normal'}
+                        onChange={(e) => handleHomeSectionSpacingChange(item.key, 'top', e.target.value)}
+                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                        <option value='none'>None</option>
+                        <option value='tight'>Tight</option>
+                        <option value='normal'>Normal</option>
+                        <option value='relaxed'>Relaxed</option>
+                        <option value='loose'>Loose</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Bottom Spacing</label>
+                      <select
+                        value={spacing.bottom || 'normal'}
+                        onChange={(e) => handleHomeSectionSpacingChange(item.key, 'bottom', e.target.value)}
+                        className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                        <option value='none'>None</option>
+                        <option value='tight'>Tight</option>
+                        <option value='normal'>Normal</option>
+                        <option value='relaxed'>Relaxed</option>
+                        <option value='loose'>Loose</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Section background controls */}
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Home Section Backgrounds</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the background treatment for each Home page section.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetHomeSectionBackgrounds}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Backgrounds
+            </button>
+          </div>
+
+          <div className='space-y-3'>
+            {HOME_SECTION_ITEMS.map((item) => {
+              const backgroundValue = sectionBackgrounds[item.key] || 'default'
+
+              return (
+                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                  <label className='block text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</label>
+
+                  <select
+                    value={backgroundValue}
+                    onChange={(e) => handleHomeSectionBackgroundChange(item.key, e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                    <option value='default'>Default Theme</option>
+                    <option value='transparent'>Transparent</option>
+                    <option value='soft'>Soft Tint</option>
+                    <option value='panel'>Panel Surface</option>
+                    <option value='accent'>Accent Tint</option>
+                  </select>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Builder summary preview */}
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Review the current Home page builder configuration before saving it to the public site.</p>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
+            {[
+              { label: 'Layout Preset', value: LAYOUT_PRESET_LABELS[heroBuilder.layoutPreset || 'centered'] || 'Centered' },
+              { label: 'Content Alignment', value: CONTENT_ALIGN_LABELS[heroBuilder.contentAlign || 'center'] || 'Center' },
+              { label: 'CTA Layout', value: CTA_LAYOUT_LABELS[heroBuilder.ctaLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
+              { label: 'Page Height', value: PAGE_HEIGHT_LABELS[heroBuilder.heroHeight || 'screen'] || 'Full Screen' },
+              { label: 'Scroll Indicator', value: (heroBuilder.showScrollIndicator ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'Background Pattern', value: (heroBuilder.showBackgroundPattern ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'Visible Sections', value: String(visibleSectionsCount) },
+              { label: 'Hidden Sections', value: String(hiddenSectionsCount) },
+              { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' }
+            ].map((item) => (
+              <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+                <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className='flex flex-wrap items-center gap-2 pt-2'>
+          <button type='button' onClick={handleSaveSiteBuilderSection} disabled={savingSection === 'siteBuilder'} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+            {savingSection === 'siteBuilder' ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const renderAboutLayoutPanel = () => {
+    const aboutHeroBuilder = getSiteBuilderValue('aboutHero', {})
+    const aboutHighlightsBuilder = getSiteBuilderValue('aboutHighlights', {})
+    const aboutCtaBuilder = getSiteBuilderValue('aboutCta', {})
+    const sectionVisibility = getSiteBuilderValue('aboutSections', {})
+    const sectionOrder = (() => {
+      const savedOrder = getSiteBuilderValue('aboutSectionOrder', [])
+      if (!Array.isArray(savedOrder) || !savedOrder.length) return DEFAULT_ABOUT_SECTION_ORDER
+
+      const allowedKeys = new Set(DEFAULT_ABOUT_SECTION_ORDER)
+      const sanitizedOrder = savedOrder.filter((key) => allowedKeys.has(key))
+      const missingKeys = DEFAULT_ABOUT_SECTION_ORDER.filter((key) => !sanitizedOrder.includes(key))
+
+      return [...sanitizedOrder, ...missingKeys]
+    })()
+    const sectionBackgrounds = getSiteBuilderValue('aboutSectionBackgrounds', {})
+
+    const visibleSectionsCount = ABOUT_SECTION_ITEMS.filter((item) => sectionVisibility[item.visibilityKey] ?? true).length
+    const hiddenSectionsCount = ABOUT_SECTION_ITEMS.length - visibleSectionsCount
+
+    return (
+      <div className='mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-4'>
+        <div>
+          <h4 className='text-lg font-bold text-gray-900 dark:text-white'>About Page Builder</h4>
+          <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Configure About page presentation, hero layout, and section-level visibility.</p>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2'>
+          <button
+            type='button'
+            onClick={resetAllAboutLayoutControls}
+            className='px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset All Layout Controls
+          </button>
+        </div>
+
+        <div className='flex items-center justify-between gap-3'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Hero Layout</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the public About hero alignment and text presentation.</p>
+          </div>
+
+          <button
+            type='button'
+            onClick={resetAboutHeroBuilder}
+            className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+            Reset Hero
+          </button>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+            <select
+              value={aboutHeroBuilder.contentAlign || 'left'}
+              onChange={(e) => handleAboutHeroBuilderChange('contentAlign', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='left'>Left</option>
+              <option value='center'>Center</option>
+            </select>
+          </div>
+
+          <div>
+            <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Width</label>
+            <select
+              value={aboutHeroBuilder.contentWidth || 'wide'}
+              onChange={(e) => handleAboutHeroBuilderChange('contentWidth', e.target.value)}
+              className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+              <option value='narrow'>Narrow</option>
+              <option value='wide'>Wide</option>
+              <option value='full'>Full</option>
+            </select>
+          </div>
+
+          <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:pt-6'>
+            <input
+              type='checkbox'
+              checked={aboutHeroBuilder.showEyebrow ?? true}
+              onChange={(e) => handleAboutHeroBuilderChange('showEyebrow', e.target.checked)}
+              className='rounded border-gray-300 text-accent focus:ring-accent'
+            />
+            Show eyebrow
+          </label>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Highlights Layout</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the About highlights section layout, width, and icon treatment.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutHighlightsBuilder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Highlights
+            </button>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4'>
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+              <select
+                value={aboutHighlightsBuilder.contentAlign || 'left'}
+                onChange={(e) => handleAboutHighlightsBuilderChange('contentAlign', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='left'>Left</option>
+                <option value='center'>Center</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Width</label>
+              <select
+                value={aboutHighlightsBuilder.contentWidth || 'wide'}
+                onChange={(e) => handleAboutHighlightsBuilderChange('contentWidth', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='narrow'>Narrow</option>
+                <option value='wide'>Wide</option>
+                <option value='full'>Full</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Card Layout</label>
+              <select
+                value={aboutHighlightsBuilder.cardLayout || 'stacked'}
+                onChange={(e) => handleAboutHighlightsBuilderChange('cardLayout', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='stacked'>Stacked</option>
+                <option value='grid'>Balanced Grid</option>
+                <option value='feature-first'>Feature First</option>
+              </select>
+            </div>
+
+            <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 xl:pt-6'>
+              <input
+                type='checkbox'
+                checked={aboutHighlightsBuilder.showIcons ?? true}
+                onChange={(e) => handleAboutHighlightsBuilderChange('showIcons', e.target.checked)}
+                className='rounded border-gray-300 text-accent focus:ring-accent'
+              />
+              Show highlight icons
+            </label>
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>CTA Layout</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the About CTA presentation, width, and button layout.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutCtaBuilder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset CTA
+            </button>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4'>
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Alignment</label>
+              <select
+                value={aboutCtaBuilder.contentAlign || 'left'}
+                onChange={(e) => handleAboutCtaBuilderChange('contentAlign', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='left'>Left</option>
+                <option value='center'>Center</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Content Width</label>
+              <select
+                value={aboutCtaBuilder.contentWidth || 'wide'}
+                onChange={(e) => handleAboutCtaBuilderChange('contentWidth', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='narrow'>Narrow</option>
+                <option value='wide'>Wide</option>
+                <option value='full'>Full</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Button Layout</label>
+              <select
+                value={aboutCtaBuilder.buttonLayout || 'stacked-mobile'}
+                onChange={(e) => handleAboutCtaBuilderChange('buttonLayout', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='stacked-mobile'>Stacked Mobile / Row Desktop</option>
+                <option value='inline'>Inline</option>
+                <option value='split'>Split Emphasis</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'>Emphasis Style</label>
+              <select
+                value={aboutCtaBuilder.emphasisStyle || 'soft'}
+                onChange={(e) => handleAboutCtaBuilderChange('emphasisStyle', e.target.value)}
+                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                <option value='soft'>Soft Panel</option>
+                <option value='strong'>Strong Panel</option>
+                <option value='outline'>Outline Surface</option>
+              </select>
+            </div>
+
+            <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 xl:pt-6'>
+              <input
+                type='checkbox'
+                checked={aboutCtaBuilder.showSecondaryButton ?? true}
+                onChange={(e) => handleAboutCtaBuilderChange('showSecondaryButton', e.target.checked)}
+                className='rounded border-gray-300 text-accent focus:ring-accent'
+              />
+              Show secondary button
+            </label>
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Order</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the top-to-bottom order of blocks on the public About page.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutSectionOrder}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Order
+            </button>
+          </div>
+
+          <div className='space-y-2'>
+            {sectionOrder.map((sectionKey, index, order) => {
+              const item = ABOUT_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
+              const isVisible = sectionVisibility[item?.visibilityKey] ?? true
+
+              if (!item) return null
+
+              return (
+                <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 px-3 py-2'>
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-semibold text-accent'>{index + 1}</span>
+
+                    <div className='min-w-0'>
+                      <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                      <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Visible on page' : 'Hidden by visibility settings'}</p>
+                    </div>
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => moveAboutSectionOrderItem(item.key, 'up')}
+                      disabled={index === 0}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Up
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={() => moveAboutSectionOrderItem(item.key, 'down')}
+                      disabled={index === order.length - 1}
+                      className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50'>
+                      Down
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>About Section Backgrounds</h5>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Control the background treatment for each About page block.</p>
+            </div>
+
+            <button
+              type='button'
+              onClick={resetAboutSectionBackgrounds}
+              className='px-2.5 py-1.5 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'>
+              Reset Backgrounds
+            </button>
+          </div>
+
+          <div className='space-y-3'>
+            {ABOUT_SECTION_ITEMS.map((item) => {
+              const backgroundValue = sectionBackgrounds[item.key] || 'default'
+
+              return (
+                <div key={item.key} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                  <label className='block text-sm font-medium text-gray-900 dark:text-white mb-3'>{item.label}</label>
+
+                  <select
+                    value={backgroundValue}
+                    onChange={(e) => handleAboutSectionBackgroundChange(item.key, e.target.value)}
+                    className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'>
+                    <option value='default'>Default Theme</option>
+                    <option value='transparent'>Transparent</option>
+                    <option value='soft'>Soft Tint</option>
+                    <option value='panel'>Panel Surface</option>
+                    <option value='accent'>Accent Tint</option>
+                  </select>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <h6 className='text-sm font-semibold text-gray-900 dark:text-white'>Current Render Order</h6>
+              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>This is the order the About page will use after saving, with visibility applied per block.</p>
+            </div>
+            <span className='text-xs text-gray-500 dark:text-gray-400'>Total: {sectionOrder.length}</span>
+          </div>
+
+          <div className='space-y-2'>
+            {sectionOrder.map((sectionKey, index) => {
+              const item = ABOUT_SECTION_ITEMS.find((entry) => entry.key === sectionKey)
+              const isVisible = sectionVisibility[item?.visibilityKey] ?? true
+
+              if (!item) return null
+
+              return (
+                <div key={item.key} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/70 px-3 py-2'>
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-semibold text-accent'>{index + 1}</span>
+
+                    <div className='min-w-0'>
+                      <p className='text-sm font-medium text-gray-900 dark:text-white'>{item.label}</p>
+                      <p className='text-xs text-gray-500 dark:text-gray-400'>{isVisible ? 'Will render on page' : 'Hidden and skipped in public render'}</p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-2 py-1 rounded-full text-[11px] font-semibold ${
+                      isVisible ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                    }`}>
+                    {isVisible ? 'Visible' : 'Hidden'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className='border-t border-gray-200 dark:border-gray-700 pt-8 space-y-4'>
+          <div>
+            <h5 className='text-sm font-semibold text-gray-900 dark:text-white'>Builder Summary Preview</h5>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Review the current About page builder configuration before saving it to the public site.</p>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3'>
+            {[
+              { label: 'Content Alignment', value: CONTENT_ALIGN_LABELS[aboutHeroBuilder.contentAlign || 'left'] || 'Left' },
+              { label: 'Content Width', value: aboutHeroBuilder.contentWidth || 'wide' },
+              { label: 'Eyebrow', value: (aboutHeroBuilder.showEyebrow ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'Visible Sections', value: String(visibleSectionsCount) },
+              { label: 'Hidden Sections', value: String(hiddenSectionsCount) },         
+              { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' },
+              { label: 'Highlights Width', value: aboutHighlightsBuilder.contentWidth || 'wide' },
+              { label: 'Highlights Layout', value: ABOUT_HIGHLIGHTS_LAYOUT_LABELS[aboutHighlightsBuilder.cardLayout || 'stacked'] || 'Stacked' },
+              { label: 'Highlights Icons', value: (aboutHighlightsBuilder.showIcons ?? true) ? 'Shown' : 'Hidden' },
+              { label: 'CTA Width', value: aboutCtaBuilder.contentWidth || 'wide' },
+              { label: 'CTA Buttons', value: CTA_LAYOUT_LABELS[aboutCtaBuilder.buttonLayout || 'stacked-mobile'] || 'Stacked Mobile / Row Desktop' },
+              { label: 'CTA Emphasis', value: ABOUT_CTA_EMPHASIS_LABELS[aboutCtaBuilder.emphasisStyle || 'soft'] || 'Soft Panel' },
+              { label: 'Secondary CTA', value: (aboutCtaBuilder.showSecondaryButton ?? true) ? 'Shown' : 'Hidden' }
+            ].map((item) => (
+              <div key={item.label} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 p-3'>
+                <p className='text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400'>{item.label}</p>
+                <p className='mt-2 text-sm font-medium text-gray-900 dark:text-white'>{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2 pt-2'>
+          <button type='button' onClick={handleSaveSiteBuilderSection} disabled={savingSection === 'siteBuilder'} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+            {savingSection === 'siteBuilder' ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   const renderSectionFields = (sectionId, section) => {
     if (sectionId === 'home') {
       return (
@@ -817,6 +2032,7 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
       return (
         <div className='mt-4 space-y-4'>
           <div className='space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+          {renderPricingLayoutEditor()}
           {renderPricingPlansEditor()}
         </div>
       )
@@ -826,6 +2042,7 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
       return (
         <div className='mt-4 space-y-4'>
           <div className='space-y-3'>{section.fields.map((field) => renderField(sectionId, field))}</div>
+          {renderTestimonialsLayoutEditor()}
           {renderTestimonialsEditor()}
         </div>
       )
@@ -848,7 +2065,7 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
       ) : (
         <div>
           {(() => {
-            const activeView = SETTINGS_VIEW_MAP[activeSectionId] || SETTINGS_VIEW_MAP['home.hero']
+            const activeView = getSettingsView(activeSectionId)
             const sectionId = activeView.sectionId
             const section = SECTION_DEFS[sectionId]
 
@@ -857,40 +2074,50 @@ const AdminSettings = ({ activeSectionId = 'home.hero' }) => {
                 <div className='flex flex-wrap items-start justify-between gap-3'>
                   <div>
                     <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-2'>{activeView.pageTitle}</p>
-                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{section?.title || activeView.pageTitle}</h3>
-                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView.pageDescription}</p>
+                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>{activeView?.sectionTitle || section?.title || activeView?.pageTitle}</h3>
+                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView?.sectionDescription || activeView?.pageDescription}</p>
                   </div>
                 </div>
 
-                {!section ? (
+                {!section || !activeView?.isImplemented ? (
                   <div className='mt-6 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-6'>
-                    <h4 className='text-base font-semibold text-gray-900 dark:text-white'>Blank Settings Page</h4>
-                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>Listings Page settings can be added here later.</p>
+                    <h4 className='text-base font-semibold text-gray-900 dark:text-white'>Builder Page Placeholder</h4>
+                    <p className='text-sm text-gray-500 dark:text-gray-400 mt-2'>{activeView?.pageDescription || 'This settings page will be implemented in a later step.'}</p>
                   </div>
                 ) : (
                   <>
                     <div className='mt-4 flex items-center gap-2'>
                       <input
-                        id={`enabled-${sectionId}`}
+                        id={`enabled-${activeSectionId}`}
                         type='checkbox'
-                        checked={!!drafts[sectionId]?.enabled}
-                        onChange={(e) => handleEnabledChange(sectionId, e.target.checked)}
+                        checked={['home.layout', 'about.layout'].includes(activeSectionId) ? !!drafts.siteBuilder?.enabled : !!drafts[sectionId]?.enabled}
+                        onChange={(e) => handleEnabledChange(['home.layout', 'about.layout'].includes(activeSectionId) ? 'siteBuilder' : sectionId, e.target.checked)}
                         className='rounded border-gray-300 text-accent focus:ring-accent'
                       />
-                      <label htmlFor={`enabled-${sectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
+                      <label htmlFor={`enabled-${activeSectionId}`} className='text-sm text-gray-700 dark:text-gray-300'>
                         Enabled
                       </label>
                     </div>
 
-                    {renderSectionFields(sectionId, section)}
+                    {activeSectionId === 'home.layout' && renderHomeHeroBuilderPanel()}
+                    {activeSectionId === 'about.layout' && renderAboutLayoutPanel()}
 
-                    <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>Last updated: {sectionMap[sectionId]?.updatedAt ? new Date(sectionMap[sectionId].updatedAt).toLocaleString() : 'N/A'}</div>
+                    {!['home.layout', 'about.layout'].includes(activeSectionId) && renderSectionFields(sectionId, section)}
 
-                    <div className='mt-4 flex flex-wrap items-center gap-2'>
-                      <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
-                        {savingSection === sectionId ? 'Saving...' : 'Save Section'}
-                      </button>
+                    <div className='mt-4 text-xs text-gray-500 dark:text-gray-400'>
+                      Last updated:{' '}
+                      {(['home.layout', 'about.layout'].includes(activeSectionId) ? sectionMap.siteBuilder?.updatedAt : sectionMap[sectionId]?.updatedAt)
+                        ? new Date(['home.layout', 'about.layout'].includes(activeSectionId) ? sectionMap.siteBuilder.updatedAt : sectionMap[sectionId].updatedAt).toLocaleString()
+                        : 'N/A'}
                     </div>
+
+                    {!['home.layout', 'about.layout'].includes(activeSectionId) && (
+                      <div className='mt-4 flex flex-wrap items-center gap-2'>
+                        <button onClick={() => handleSaveSection(sectionId)} disabled={savingSection === sectionId} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-60'>
+                          {savingSection === sectionId ? 'Saving...' : 'Save Section'}
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

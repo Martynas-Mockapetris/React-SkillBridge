@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { authAxios } from '../utils/axiosConfig'
 
 const API_URL = 'http://localhost:5000/api/auth'
 
@@ -21,6 +22,30 @@ export const login = async (email, password) => {
     localStorage.setItem('user', JSON.stringify(response.data))
   }
 
+  return response.data
+}
+
+// Forgot password
+export const forgotPassword = async (email) => {
+  const response = await axios.post(`${API_URL}/forgot-password`, { email })
+  return response.data
+}
+
+// Reset password
+export const resetPassword = async ({ token, password }) => {
+  const response = await axios.post(`${API_URL}/reset-password`, { token, password })
+  return response.data
+}
+
+// Confirm email verification
+export const confirmEmailVerification = async (token) => {
+  const response = await axios.post(`${API_URL}/verify-email/confirm`, { token })
+  return response.data
+}
+
+// Request or resend email verification
+export const requestEmailVerification = async () => {
+  const response = await authAxios.post(`${API_URL}/verify-email/request`)
   return response.data
 }
 

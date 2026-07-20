@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FaExclamationTriangle, FaShieldAlt, FaUserLock, FaUserClock, FaProjectDiagram } from 'react-icons/fa'
+import { FaExclamationTriangle, FaShieldAlt, FaUserLock, FaUserClock, FaProjectDiagram, FaCheckCircle, FaKey, FaArrowRight } from 'react-icons/fa'
 
 const severityStyles = {
   critical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
@@ -7,17 +7,124 @@ const severityStyles = {
   info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
 }
 
-const HealthCard = ({ label, value, icon }) => (
+const QueueSummaryCard = ({ label, value, tone = 'neutral', onClick }) => {
+  const toneClass =
+    tone === 'critical'
+      ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300'
+      : tone === 'warning'
+        ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300'
+        : 'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-200'
+
+  return (
+    <button type='button' onClick={onClick} className={`rounded-lg border p-4 text-left transition-colors hover:border-accent/40 hover:bg-accent/5 ${toneClass}`}>
+      <p className='text-xs font-semibold uppercase tracking-wide opacity-80'>{label}</p>
+      <div className='mt-2 flex items-center justify-between gap-3'>
+        <span className='text-2xl font-bold'>{value}</span>
+        <span className='inline-flex items-center gap-2 text-xs font-medium text-accent'>
+          <span>Open</span>
+          <FaArrowRight className='w-3 h-3' />
+        </span>
+      </div>
+    </button>
+  )
+}
+
+const HealthCard = ({ label, value, icon, actionLabel, onAction }) => (
   <div className='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4'>
     <div className='flex items-center justify-between'>
       <p className='text-sm text-gray-500 dark:text-gray-400'>{label}</p>
       <span className='text-accent'>{icon}</span>
     </div>
     <p className='text-2xl font-bold text-gray-900 dark:text-white mt-2'>{value}</p>
+    {actionLabel && onAction && (
+      <button type='button' onClick={onAction} className='mt-3 inline-flex items-center gap-2 text-sm font-medium text-accent hover:text-accent/80 transition-colors'>
+        <span>{actionLabel}</span>
+        <FaArrowRight className='w-3 h-3' />
+      </button>
+    )}
   </div>
 )
 
-const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) => {
+const getAlertAction = (alertId, onOpenSection) => {
+  if (!onOpenSection) return null
+
+  if (alertId === 'locked-users') {
+    return {
+      label: 'Review locked users',
+      onClick: () => onOpenSection('users', { status: 'locked' })
+    }
+  }
+
+  if (alertId === 'inactive-users') {
+    return {
+      label: 'Review inactive users',
+      onClick: () => onOpenSection('users', { status: 'inactive' })
+    }
+  }
+
+  if (alertId === 'unverified-users') {
+    return {
+      label: 'Review unverified users',
+      onClick: () => onOpenSection('users', { verification: 'unverified' })
+    }
+  }
+
+  if (alertId === 'password-reset-required-users') {
+    return {
+      label: 'Review reset-required users',
+      onClick: () => onOpenSection('users', { passwordResetRequired: 'true' })
+    }
+  }
+
+  if (alertId === 'stalled-projects') {
+    return {
+      label: 'Review stalled projects',
+      onClick: () => onOpenSection('projects', { stalled: 'true' })
+    }
+  }
+
+  return null
+}
+
+const getQueueSummaryCards = (signals, onOpenSection) => [
+  {
+    key: 'locked-users',
+    label: 'Locked Users',
+    value: signals.lockedUsers || 0,
+    tone: (signals.lockedUsers || 0) >= 15 ? 'critical' : (signals.lockedUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { status: 'locked' })
+  },
+  {
+    key: 'inactive-users',
+    label: 'Inactive Users',
+    value: signals.inactiveUsers || 0,
+    tone: (signals.inactiveUsers || 0) >= 50 ? 'critical' : (signals.inactiveUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { status: 'inactive' })
+  },
+  {
+    key: 'unverified-users',
+    label: 'Unverified Users',
+    value: signals.unverifiedUsers || 0,
+    tone: (signals.unverifiedUsers || 0) >= 25 ? 'critical' : (signals.unverifiedUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { verification: 'unverified' })
+  },
+  {
+    key: 'password-reset-required-users',
+    label: 'Reset Required',
+    value: signals.passwordResetRequiredUsers || 0,
+    tone: (signals.passwordResetRequiredUsers || 0) >= 15 ? 'critical' : (signals.passwordResetRequiredUsers || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('users', { passwordResetRequired: 'true' })
+  },
+  {
+    key: 'stalled-projects',
+    label: 'Stalled Projects',
+    value: signals.stalledProjects || 0,
+    tone: (signals.stalledProjects || 0) >= 15 ? 'critical' : (signals.stalledProjects || 0) > 0 ? 'warning' : 'neutral',
+    onClick: () => onOpenSection?.('projects', { stalled: 'true' })
+  }
+]
+
+const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals, onOpenSection }) => {
   if (isLoading) {
     return (
       <div className='mt-8 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6'>
@@ -28,15 +135,25 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
 
   const summary = alertSummary || { total: 0, critical: 0, warning: 0, info: 0 }
   const list = Array.isArray(alerts) ? alerts : []
-  const signals = healthSignals || { lockedUsers: 0, inactiveUsers: 0, stalledProjects: 0 }
+  const signals = healthSignals || {
+    lockedUsers: 0,
+    inactiveUsers: 0,
+    unverifiedUsers: 0,
+    passwordResetRequiredUsers: 0,
+    stalledProjects: 0
+  }
+  const queueSummaryCards = getQueueSummaryCards(signals, onOpenSection)
 
   return (
     <motion.section className='mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6' initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
       <div className='xl:col-span-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6'>
-        <div className='flex items-center justify-between mb-4'>
-          <div className='flex items-center gap-2'>
-            <FaExclamationTriangle className='text-amber-500' />
-            <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>Active Alerts</h3>
+        <div className='flex flex-col gap-3 mb-4 lg:flex-row lg:items-center lg:justify-between'>
+          <div>
+            <div className='flex items-center gap-2'>
+              <FaExclamationTriangle className='text-amber-500' />
+              <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>Action Queue</h3>
+            </div>
+            <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>Priority admin issues that can be reviewed directly from the dashboard.</p>
           </div>
           <div className='flex items-center gap-2 text-xs'>
             <span className='px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'>Total: {summary.total}</span>
@@ -45,21 +162,43 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
           </div>
         </div>
 
+        <div className='mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'>
+          {queueSummaryCards.map((card) => (
+            <QueueSummaryCard key={card.key} label={card.label} value={card.value} tone={card.tone} onClick={card.onClick} />
+          ))}
+        </div>
+
         {!list.length ? (
           <div className='rounded-lg border border-green-200 dark:border-green-900/40 bg-green-50 dark:bg-green-900/20 p-4 text-green-800 dark:text-green-300 text-sm'>No active alerts. System health looks stable.</div>
         ) : (
           <div className='space-y-3'>
-            {list.map((alert) => (
-              <div key={alert.id} className='rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/40'>
-                <div className='flex items-start justify-between gap-4'>
-                  <div>
-                    <p className='font-semibold text-gray-900 dark:text-white'>{alert.title}</p>
-                    <p className='text-sm text-gray-600 dark:text-gray-300 mt-1'>{alert.message}</p>
+            {list.map((alert) => {
+              const action = getAlertAction(alert.id, onOpenSection)
+
+              return (
+                <div key={alert.id} className='rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/40'>
+                  <div className='flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between'>
+                    <div>
+                      <p className='font-semibold text-gray-900 dark:text-white'>{alert.title}</p>
+                      <p className='text-sm text-gray-600 dark:text-gray-300 mt-1'>{alert.message}</p>
+                    </div>
+
+                    <div className='flex items-center gap-2'>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${severityStyles[alert.severity] || severityStyles.info}`}>{alert.severity || 'info'}</span>
+                      {action && (
+                        <button
+                          type='button'
+                          onClick={action.onClick}
+                          className='inline-flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-medium text-accent hover:bg-accent/15 transition-colors'>
+                          <span>{action.label}</span>
+                          <FaArrowRight className='w-3 h-3' />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${severityStyles[alert.severity] || severityStyles.info}`}>{alert.severity || 'info'}</span>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
@@ -71,9 +210,29 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals }) =>
         </div>
 
         <div className='space-y-3'>
-          <HealthCard label='Locked Users' value={signals.lockedUsers || 0} icon={<FaUserLock />} />
-          <HealthCard label='Inactive Users (14+ d)' value={signals.inactiveUsers || 0} icon={<FaUserClock />} />
-          <HealthCard label='Stalled Projects (14+ d)' value={signals.stalledProjects || 0} icon={<FaProjectDiagram />} />
+          <HealthCard label='Locked Users' value={signals.lockedUsers || 0} icon={<FaUserLock />} actionLabel='Open locked users' onAction={() => onOpenSection?.('users', { status: 'locked' })} />
+          <HealthCard label='Inactive Users (14+ d)' value={signals.inactiveUsers || 0} icon={<FaUserClock />} actionLabel='Open inactive users' onAction={() => onOpenSection?.('users', { status: 'inactive' })} />
+          <HealthCard
+            label='Unverified Users'
+            value={signals.unverifiedUsers || 0}
+            icon={<FaCheckCircle />}
+            actionLabel='Open unverified users'
+            onAction={() => onOpenSection?.('users', { verification: 'unverified' })}
+          />
+          <HealthCard
+            label='Password Reset Required'
+            value={signals.passwordResetRequiredUsers || 0}
+            icon={<FaKey />}
+            actionLabel='Open reset-required users'
+            onAction={() => onOpenSection?.('users', { passwordResetRequired: 'true' })}
+          />
+          <HealthCard
+            label='Stalled Projects (14+ d)'
+            value={signals.stalledProjects || 0}
+            icon={<FaProjectDiagram />}
+            actionLabel='Open stalled projects'
+            onAction={() => onOpenSection?.('projects', { stalled: 'true' })}
+          />
         </div>
       </div>
     </motion.section>

@@ -1,12 +1,15 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { archiveProject } from '../../services/projectService'
+import ProjectCompletionButton from '../shared/ProjectCompletionButton'
+import RescheduleModal from '../../modal/RescheduleModal'
 
 const ProjectActions = ({
   project,
   currentUser,
   isOwner,
   isAssignee,
+  hasApplied,
   isFavorited,
   favoriteLoading,
   handleToggleFavorite,
@@ -47,16 +50,18 @@ const ProjectActions = ({
         </button>
       )}
 
-      {/* Contact Creator / Login Button */}
+      {/* Apply / Express Interest CTA */}
       {!['completed', 'archived', 'deleted_by_owner'].includes(project.status) && (
         <>
           {currentUser && currentUser._id !== project.user?._id ? (
-            <button onClick={() => setIsContactModalOpen(true)} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-              Contact Creator
+            <button
+              onClick={() => setIsContactModalOpen(true)}
+              className={`w-full py-3 rounded-lg transition-all ${hasApplied ? 'bg-accent/10 text-accent hover:bg-accent hover:text-white' : 'bg-accent text-white hover:bg-accent/90'}`}>
+              {hasApplied ? 'Send Follow-up Message' : 'Apply for Project'}
             </button>
           ) : !currentUser ? (
             <button onClick={() => navigate('/login')} className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-              Login to Contact
+              Login to Apply
             </button>
           ) : (
             <button disabled className='w-full py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50'>
@@ -93,6 +98,19 @@ const ProjectActions = ({
           Review Submission
         </button>
       )}
+
+      {/* Mark Complete Button - for owner or assignee under review/in progress */}
+      {(isOwner || isAssignee) && ['in_progress', 'under_review'].includes(project.status) && <ProjectCompletionButton project={project} onComplete={loadProject} variant='button' size='md' />}
+
+      {/* Reschedule Project Button - for owner */}
+      {isOwner && !['completed', 'archived', 'cancelled', 'deleted_by_owner'].includes(project.status) && (
+        <button onClick={() => setIsRescheduleModalOpen(true)} className='w-full py-3 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-lg transition-all'>
+          Reschedule Project
+        </button>
+      )}
+
+      {/* Reschedule Modal */}
+      <RescheduleModal isOpen={isRescheduleModalOpen} project={project} onClose={() => setIsRescheduleModalOpen(false)} onReschedule={loadProject} />
 
       {/* Archive Project Button - for owner when completed */}
       {isOwner && project.status === 'completed' && (

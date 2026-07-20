@@ -26,6 +26,8 @@ const defaultStats = {
   healthSignals: {
     lockedUsers: 0,
     inactiveUsers: 0,
+    unverifiedUsers: 0,
+    passwordResetRequiredUsers: 0,
     stalledProjects: 0
   },
   kpis: {
@@ -37,7 +39,7 @@ const defaultStats = {
   }
 }
 
-const AdminStats = () => {
+const AdminStats = ({ onOpenSection }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [stats, setStats] = useState(defaultStats)
@@ -165,7 +167,7 @@ const AdminStats = () => {
         </div>
       </div>
 
-      <AdminAlertsPanel isLoading={isLoading} alertSummary={stats.alertSummary} alerts={stats.alerts} healthSignals={stats.healthSignals} />
+      <AdminAlertsPanel isLoading={isLoading} alertSummary={stats.alertSummary} alerts={stats.alerts} healthSignals={stats.healthSignals} onOpenSection={onOpenSection} />
       <AdminAuditLogPanel />
     </div>
   )

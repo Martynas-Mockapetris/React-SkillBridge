@@ -1,25 +1,73 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaClock, FaDollarSign, FaUser, FaTags, FaTimes, FaCheck } from 'react-icons/fa'
+import { FaArrowLeft, FaTimes, FaCheck, FaEnvelope } from 'react-icons/fa'
 import { getProjectById } from '../services/projectService'
 import { useAuth } from '../context/AuthContext'
 import ContactModal from '../modal/ContactModal'
 import ProjectModal from '../modal/ProjectModal'
-import { formatStatus } from '../utils/formatters'
+import { getCollaborationStageClasses, getCollaborationStageLabel, getDisplayName, getProjectRelationshipSummary } from '../utils/projectDetailUI'
 import SubmitProjectModal from '../modal/SubmitProjectModal'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import ReviewProjectModal from '../modal/ReviewProjectModal'
+import VerificationBadge from '../components/shared/VerificationBadge'
 import { useRateNegotiation } from '../hooks/useRateNegotiation'
 import { useProjectModals } from '../hooks/useProjectModals'
 import { useFavorites } from '../hooks/useFavorites'
 import { useProjectMessages } from '../hooks/useProjectMessages'
-import { ProjectHeader, SkillsRequired, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
+import { ProjectHeader, RateNegotiationCard, ProjectActions, MessagesTab } from '../components/ProjectDetail'
+import { normalizeSkills } from '../utils/skillUtils'
+
+const PROJECT_BRIEF_LABELS = {
+  experienceLevel: {
+    not_specified: 'Not specified',
+    junior: 'Junior',
+    mid: 'Mid',
+    senior: 'Senior',
+    expert: 'Expert'
+  },
+  duration: {
+    not_specified: 'Not specified',
+    less_than_1_week: 'Less than 1 week',
+    '1_to_2_weeks': '1 to 2 weeks',
+    '2_to_4_weeks': '2 to 4 weeks',
+    '1_to_3_months': '1 to 3 months',
+    '3_plus_months': '3+ months',
+    ongoing: 'Ongoing'
+  },
+  workload: {
+    not_specified: 'Not specified',
+    under_10_hours: 'Under 10 hrs/week',
+    '10_to_20_hours': '10 to 20 hrs/week',
+    '20_to_30_hours': '20 to 30 hrs/week',
+    '30_plus_hours': '30+ hrs/week',
+    full_time: 'Full time'
+  },
+  startPreference: {
+    not_specified: 'Not specified',
+    immediately: 'Immediately',
+    this_week: 'This week',
+    within_2_weeks: 'Within 2 weeks',
+    flexible: 'Flexible'
+  },
+  budgetType: {
+    not_specified: 'Not specified',
+    fixed: 'Fixed',
+    hourly: 'Hourly',
+    negotiable: 'Negotiable'
+  }
+}
+
+const getProjectBriefLabel = (group, value) => {
+  if (!value) return 'Not specified'
+  return PROJECT_BRIEF_LABELS[group]?.[value] || 'Not specified'
+}
 
 const ProjectDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser, loading: authLoading } = useAuth()
 
   const [project, setProject] = useState(null)
@@ -61,6 +109,14 @@ const ProjectDetail = () => {
 
   const isOwner = currentUser && project && currentUser._id === project.user?._id
   const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)
+  const hasApplied = Boolean(
+    currentUser &&
+    Array.isArray(project?.interestedUsers) &&
+    project.interestedUsers.some((entry) => {
+      const userId = entry?.userId?._id || entry?.userId
+      return userId?.toString() === currentUser._id?.toString()
+    })
+  )
 
   // Fetch project on mount or when id/currentUser changes
   useEffect(() => {
@@ -93,12 +149,35 @@ const ProjectDetail = () => {
     }
   })
 
-  const formatPriority = (priority) => {
-    if (!priority) return 'Low'
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
-  }
+  const collaborationStageLabel = getCollaborationStageLabel(project?.status)
+  const collaborationStageClasses = getCollaborationStageClasses(project?.status)
+
+  const relationshipSummary = getProjectRelationshipSummary({
+    isOwner,
+    isAssignee,
+    hasAssignee: Boolean(project?.assignee)
+  })
+
+  const canContactAssignee = (project?.user?._id === currentUser?._id || project?.user === currentUser?._id) && !['completed', 'archived', 'cancelled_by_admin', 'deleted_by_owner'].includes(project?.status)
+
+  const clientDisplayName = getDisplayName(project?.user, 'Client not available')
+  const assigneeDisplayName = getDisplayName(project?.assignee, 'No freelancer assigned yet')
+  const projectBrief = project?.projectBrief || {}
+  const deliverables = Array.isArray(projectBrief.deliverables) ? projectBrief.deliverables : []
+  const normalizedSkills = normalizeSkills(project?.skills)
+
+  const experienceLevelLabel = getProjectBriefLabel('experienceLevel', projectBrief.experienceLevel)
+  const durationLabel = getProjectBriefLabel('duration', projectBrief.duration)
+  const workloadLabel = getProjectBriefLabel('workload', projectBrief.workload)
+  const startPreferenceLabel = getProjectBriefLabel('startPreference', projectBrief.startPreference)
+  const budgetTypeLabel = getProjectBriefLabel('budgetType', projectBrief.budgetType)
 
   const handleBack = () => {
+    if (location.state?.returnTo) {
+      navigate(location.state.returnTo)
+      return
+    }
+
     navigate(-1)
   }
 
@@ -190,14 +269,146 @@ const ProjectDetail = () => {
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
             {/* Main Content */}
             <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-              {/* Description Section */}
-              <div className='theme-card p-2 rounded-lg'>
-                <h2 className='text-2xl font-semibold theme-text mb-4'>Description</h2>
-                <p className='theme-text-secondary leading-relaxed'>{project.description}</p>
-              </div>
+              {/* Project Brief Section */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg space-y-6'>
+                <div className='space-y-2'>
+                  <h3 className='text-xl font-semibold theme-text'>Project Brief</h3>
+                  <p className='text-sm leading-6 theme-text-secondary'>Summary of the project scope, expectations, and delivery requirements.</p>
+                </div>
 
-              {/* Skills Required */}
-              <SkillsRequired skills={project.skills} />
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Experience Level</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{experienceLevelLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Start Preference</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{startPreferenceLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Estimated Duration</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{durationLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Workload</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{workloadLabel}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Budget Model</p>
+                    <p className='mt-2 text-base font-semibold theme-text'>{budgetTypeLabel}</p>
+                    <p className='mt-1 text-sm theme-text-secondary'>{project.rateNegotiation?.currentOffer ? 'Active rate discussion in progress.' : 'No active rate negotiation.'}</p>
+                  </div>
+
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Skills Required</p>
+
+                    {normalizedSkills.length > 0 ? (
+                      <div className='mt-3 flex flex-wrap gap-2'>
+                        {normalizedSkills.map((skill, index) => (
+                          <span key={`${skill}-${index}`} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent border border-accent/20'>
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className='mt-2 text-base font-semibold theme-text'>Not specified</p>
+                    )}
+                  </div>
+                </div>
+
+                {projectBrief.objective && (
+                  <div className='space-y-2'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Objective</p>
+                    <p className='text-sm leading-7 theme-text'>{projectBrief.objective}</p>
+                  </div>
+                )}
+
+                {deliverables.length > 0 && (
+                  <div className='space-y-3'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Deliverables</p>
+                    <div className='flex flex-wrap gap-2'>
+                      {deliverables.map((deliverable, index) => (
+                        <span key={`${deliverable}-${index}`} className='inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-accent/10 text-accent'>
+                          {deliverable}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {projectBrief.scopeNotes && (
+                  <div className='space-y-2'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Scope Notes</p>
+                    <p className='text-sm leading-7 theme-text'>{projectBrief.scopeNotes}</p>
+                  </div>
+                )}
+
+                {projectBrief.applicationInstructions && (
+                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-accent/5 p-4 space-y-2'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.14em] text-accent'>Application Instructions</p>
+                    <p className='text-sm leading-7 theme-text'>{projectBrief.applicationInstructions}</p>
+                  </div>
+                )}
+
+                <div className='pt-2 space-y-4'>
+                  <h3 className='text-xl font-semibold theme-text'>Delivery Snapshot</h3>
+
+                  {project.rateNegotiation?.currentOffer ? (
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
+                      <div className='mt-2 flex flex-wrap items-center gap-2'>
+                        <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>
+                          {project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}
+                        </span>
+
+                        {project.rateNegotiation?.status === 'proposed' && (
+                          <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'>Offer Pending</span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
+                      <p className='mt-2 text-sm theme-text-secondary'>Fixed project budget with no active negotiation.</p>
+                    </div>
+                  )}
+
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Timeline</p>
+                      <p className='mt-2 text-base font-semibold theme-text'>{project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible deadline'}</p>
+                      <p className='mt-1 text-sm theme-text-secondary'>
+                        {project.status === 'under_review'
+                          ? 'Work is completed and waiting for client review.'
+                          : project.status === 'in_progress'
+                            ? 'Delivery is actively in progress.'
+                            : project.status === 'negotiating'
+                              ? 'Budget and rate are still being finalized.'
+                              : 'Project timing depends on the current collaboration stage.'}
+                      </p>
+                    </div>
+
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Work Expectations</p>
+                      <div className='mt-2 flex flex-col gap-2 text-sm theme-text-secondary'>
+                        <p>
+                          <span className='font-semibold theme-text'>Experience:</span> {experienceLevelLabel}
+                        </p>
+                        <p>
+                          <span className='font-semibold theme-text'>Duration:</span> {durationLabel}
+                        </p>
+                        <p>
+                          <span className='font-semibold theme-text'>Workload:</span> {workloadLabel}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
 
               {/* Review Feedback Section - visible to both */}
               {project.review && project.review.decision && (
@@ -231,43 +442,96 @@ const ProjectDetail = () => {
             </motion.div>
 
             {/* Sidebar */}
-            <motion.div className='space-y-6 p-2' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
-              {/* Assigned Person Card */}
-              {project.assignee && (
-                <div className='theme-card p-6 rounded-lg border-2 border-accent/30'>
-                  <h3 className='text-xl font-semibold theme-text mb-4 flex items-center gap-2'>
-                    <span className='w-3 h-3 bg-accent rounded-full'></span>
-                    Assigned To
-                  </h3>
-                  <div className='flex items-center gap-3 mb-4'>
-                    <img
-                      src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`}
-                      alt={project.assignee.firstName}
-                      className='w-14 h-14 rounded-full object-cover border-2 border-accent/20'
-                    />
-                    <div>
-                      <p className='font-semibold theme-text'>
-                        {project.assignee.firstName} {project.assignee.lastName}
-                      </p>
-                      <p className='text-sm theme-text-secondary'>{project.assignee.email}</p>
+            <motion.div className='space-y-5' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+              {/* Collaboration Overview */}
+              {project.user && (
+                <div className='theme-card p-6 rounded-lg space-y-5'>
+                  <div className='space-y-3'>
+                    <div className='flex flex-wrap items-center justify-between gap-3'>
+                      <h3 className='text-xl font-semibold theme-text'>Collaboration Overview</h3>
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${collaborationStageClasses}`}>{collaborationStageLabel}</span>
+                    </div>
+                    <p className='text-sm leading-6 theme-text-secondary'>{relationshipSummary}</p>
+                  </div>
+
+                  <div className='space-y-4'>
+                    <div className='rounded-lg border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary mb-3'>Client</p>
+                      <div className='flex items-center gap-3'>
+                        <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover border border-accent/20' />
+                        <div className='min-w-0'>
+                          <div className='flex items-center gap-2 flex-wrap'>
+                            <p className='font-semibold theme-text'>{clientDisplayName}</p>
+                            <VerificationBadge isVerified={project.user.isEmailVerified} />
+                          </div>
+                          <p className='text-sm theme-text-secondary'>{project.user.headline || 'Project owner'}</p>
+                          <p className='text-xs theme-text-muted mt-1 inline-flex items-center gap-1'>
+                            <FaEnvelope className='text-[10px]' />
+                            <span className='truncate'>{project.user.email}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                      <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary mb-3'>Freelancer</p>
+
+                      {project.assignee ? (
+                        <div className='flex items-center gap-3'>
+                          <img
+                            src={project.assignee.profilePicture || `https://i.pravatar.cc/150?u=${project.assignee._id}`}
+                            alt={project.assignee.firstName}
+                            className='w-12 h-12 rounded-full object-cover border border-accent/20'
+                          />
+                          <div className='min-w-0'>
+                            <div className='flex items-center gap-2 flex-wrap'>
+                              <p className='font-semibold theme-text'>{assigneeDisplayName}</p>
+                              <VerificationBadge isVerified={project.assignee.isEmailVerified} />
+                            </div>
+                            <p className='text-sm theme-text-secondary'>{project.assignee.headline || 'Assigned freelancer'}</p>
+                            <p className='text-xs theme-text-muted mt-1 inline-flex items-center gap-1'>
+                              <FaEnvelope className='text-[10px]' />
+                              <span className='truncate'>{project.assignee.email}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className='rounded-lg border border-dashed dark:border-light/10 border-primary/10 p-4'>
+                          <p className='font-medium theme-text'>{assigneeDisplayName}</p>
+                          <p className='text-sm theme-text-secondary mt-1'>The project is still open and no freelancer has been assigned yet.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Contact button */}
-                  {/* Only show if project is NOT (completed/archived) */}
-                  {(project.user._id === currentUser?._id || project.user === currentUser?._id) && !['completed', 'archived', 'cancelled_by_admin', 'deleted_by_owner'].includes(project.status) && (
-                    <div className='pt-4 border-t dark:border-light/10 border-primary/10'>
-                      <motion.button
-                        onClick={() => navigate(`/messages`)}
-                        className='w-full py-2 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded transition-all text-sm'
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}>
-                        Contact Assignee
-                      </motion.button>
-                    </div>
+                  {project.assignee && canContactAssignee && (
+                    <motion.button
+                      onClick={() => navigate('/messages')}
+                      className='w-full py-3 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded-lg transition-all text-sm font-medium'
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}>
+                      Contact Assignee
+                    </motion.button>
                   )}
                 </div>
               )}
+
+              {/* Action Buttons */}
+              <ProjectActions
+                project={project}
+                currentUser={currentUser}
+                isOwner={isOwner}
+                isAssignee={isAssignee}
+                hasApplied={hasApplied}
+                isFavorited={isFavorited}
+                favoriteLoading={favoriteLoading}
+                handleToggleFavorite={handleToggleFavorite}
+                setIsEditModalOpen={setIsEditModalOpen}
+                setIsContactModalOpen={setIsContactModalOpen}
+                setIsSubmitModalOpen={setIsSubmitModalOpen}
+                setIsReviewModalOpen={setIsReviewModalOpen}
+                loadProject={loadProject}
+              />
 
               {/* Rate Negotiation */}
               <RateNegotiationCard
@@ -283,102 +547,6 @@ const ProjectDetail = () => {
                 handleCounterRate={handleCounterRate}
                 handleAcceptRate={handleAcceptRate}
               />
-
-              {/* Project Details Card */}
-              <div className='theme-card p-6 rounded-lg space-y-4'>
-                <h3 className='text-xl font-semibold theme-text mb-4'>Project Details</h3>
-
-                {/* Budget */}
-                {(!project.rateNegotiation || project.rateNegotiation.status === 'accepted') && (
-                  <div className='flex items-center gap-3 theme-text-secondary'>
-                    <FaDollarSign className='text-accent' />
-                    <div>
-                      <p className='text-sm'>Budget</p>
-                      <p className='text-lg font-semibold theme-text'>€{project.budget}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Proposed Budget (when negotiating) */}
-                {project.rateNegotiation?.status === 'proposed' && (
-                  <div className='flex items-center gap-3 p-3 rounded-lg bg-orange-100 dark:bg-orange-900/20'>
-                    <FaDollarSign className='text-orange-600 dark:text-orange-400' />
-                    <div>
-                      <p className='text-sm text-orange-800 dark:text-orange-200'>Proposed Budget</p>
-                      <div className='flex items-center gap-2'>
-                        <p className='text-lg font-semibold text-orange-900 dark:text-orange-100'>€{project.rateNegotiation.currentOffer?.amount}</p>
-                        <span className='text-xs px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded font-semibold'>PROPOSED</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Rate Type */}
-                {project.rateNegotiation?.currentOffer && (
-                  <div className='flex items-center gap-3 theme-text-secondary text-sm'>
-                    <span className='px-2 py-1 bg-accent/10 dark:bg-accent/20 text-accent rounded font-medium'>{project.rateNegotiation.currentOffer.type === 'hourly' ? 'Hourly Rate' : 'Fixed Price'}</span>
-                  </div>
-                )}
-
-                {/* Deadline */}
-                <div className='flex items-center gap-3 theme-text-secondary'>
-                  <FaClock className='text-accent' />
-                  <div>
-                    <p className='text-sm'>Deadline</p>
-                    <p className='text-lg font-semibold theme-text'>{new Date(project.deadline).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className='flex items-center gap-3 theme-text-secondary'>
-                  <FaUser className='text-accent' />
-                  <div>
-                    <p className='text-sm'>Status</p>
-                    <p className='text-lg font-semibold theme-text'>{formatStatus(project.status)}</p>
-                  </div>
-                </div>
-
-                {/* Priority */}
-                <div className='flex items-center gap-3 theme-text-secondary'>
-                  <FaTags className='text-accent' />
-                  <div>
-                    <p className='text-sm'>Priority</p>
-                    <p className='text-lg font-semibold theme-text'>{formatPriority(project.priority)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Client Info */}
-              {project.user && (
-                <div className='theme-card p-6 rounded-lg'>
-                  <h3 className='text-xl font-semibold theme-text mb-4'>Client Info</h3>
-                  <div className='flex items-center gap-3'>
-                    <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover' />
-                    <div>
-                      <p className='font-semibold theme-text'>
-                        {project.user.firstName} {project.user.lastName}
-                      </p>
-                      <p className='text-sm theme-text-secondary'>{project.user.email}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <ProjectActions
-                project={project}
-                currentUser={currentUser}
-                isOwner={isOwner}
-                isAssignee={isAssignee}
-                isFavorited={isFavorited}
-                favoriteLoading={favoriteLoading}
-                handleToggleFavorite={handleToggleFavorite}
-                setIsEditModalOpen={setIsEditModalOpen}
-                setIsContactModalOpen={setIsContactModalOpen}
-                setIsSubmitModalOpen={setIsSubmitModalOpen}
-                setIsReviewModalOpen={setIsReviewModalOpen}
-                loadProject={loadProject}
-              />
             </motion.div>
           </div>
         )}
@@ -390,7 +558,7 @@ const ProjectDetail = () => {
       {project && <ProjectModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} mode='edit' initialData={project} onProjectUpdated={loadProject} />}
 
       {/* Contact Modal */}
-      {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} />}
+      {project && project.user && <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} project={project} hasApplied={hasApplied} />}
 
       {/* Submit and Review Modals */}
       {project && <SubmitProjectModal isOpen={isSubmitModalOpen} onClose={() => setIsSubmitModalOpen(false)} project={project} onSubmitSuccess={loadProject} />}

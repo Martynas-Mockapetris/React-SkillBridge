@@ -1,6 +1,8 @@
 import Message from '../models/Message.js'
 import Project from '../models/Project.js'
 import User from '../models/User.js'
+import { notifyMessageReceived } from '../utils/notificationService.js'
+import { sendNewMessageEmail } from '../utils/activityEmailService.js'
 
 // @desc    Send a message (project-based or direct to freelancer)
 // @route   POST /api/messages
@@ -12,9 +14,10 @@ export const sendMessage = async (req, res) => {
       return res.status(403).json({ message: 'Your account is locked. You cannot send messages.' })
     }
     const { projectId, receiverId, content, subject } = req.body
+    const normalizedContent = typeof content === 'string' ? content.trim() : ''
 
     // Validate required fields
-    if (!receiverId || !content) {
+    if (!receiverId || !normalizedContent) {
       return res.status(400).json({ message: 'Receiver ID and content are required' })
     }
 
@@ -41,29 +44,46 @@ export const sendMessage = async (req, res) => {
     const messageData = {
       sender: req.user._id,
       receiver: receiverId,
-      content
+      content: normalizedContent
     }
 
     // Add optional fields
     if (projectId) messageData.project = projectId
     if (subject) messageData.subject = subject
 
+    // Handle file attachments if present
+    if (req.files && req.files.length > 0) {
+      messageData.attachments = req.files.map((file) => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        path: file.path,
+        mimetype: file.mimetype,
+        size: file.size
+      }))
+    }
+
     // Create and save message
     const message = new Message(messageData)
     const savedMessage = await message.save()
 
-    // If project-based, add sender to interestedUsers
+    // If project-based, add sender to interestedUsers or refresh their proposal preview
     if (projectId) {
       const project = await Project.findById(projectId)
       const isProjectOwner = project.user.toString() === req.user._id.toString()
-      const alreadyInterested = project.interestedUsers.some((user) => user.userId.toString() === req.user._id.toString())
+      const normalizedPreview = normalizedContent.replace(/\s+/g, ' ').slice(0, 280)
+      const existingInterest = project.interestedUsers.find((user) => user.userId.toString() === req.user._id.toString())
 
-      if (!isProjectOwner && !alreadyInterested) {
+      if (!isProjectOwner && !existingInterest) {
         project.interestedUsers.push({
           userId: req.user._id,
           status: 'pending',
+          proposalPreview: normalizedPreview,
           contactedAt: new Date()
         })
+        await project.save()
+      } else if (!isProjectOwner && existingInterest) {
+        existingInterest.proposalPreview = normalizedPreview
+        existingInterest.contactedAt = new Date()
         await project.save()
       }
     }
@@ -74,6 +94,22 @@ export const sendMessage = async (req, res) => {
     if (projectId) {
       await savedMessage.populate('project', 'title')
     }
+
+    // Send notification to receiver
+    await notifyMessageReceived({
+      sender: req.user._id,
+      recipient: receiverId,
+      messageId: savedMessage._id,
+      projectId,
+      senderName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone',
+      subject
+    })
+
+    // Send email notification to receiver
+    await sendNewMessageEmail({
+      recipientId: receiverId,
+      senderName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone'
+    })
 
     res.status(201).json(savedMessage)
   } catch (error) {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import AdminHeader from '../components/Admin/AdminHeader'
 import AdminSidebar from '../components/Admin/AdminSidebar'
 import AdminStats from '../components/Admin/AdminStats'
@@ -10,6 +10,7 @@ import AdminSettings from '../components/Admin/AdminSettings'
 import AdminBlogPostsList from '../components/Admin/AdminBlogPostsList'
 import { useAuth } from '../context/AuthContext'
 import { canAccessAdminSection, getAdminSections, getDefaultAdminSection } from '../utils/accessRoles'
+import { DEFAULT_SETTINGS_SECTION } from '../components/Admin/settingsNavigation'
 
 const formatLabel = (value) => {
   if (!value) return ''
@@ -37,10 +38,56 @@ const getSettingsBreadcrumbItems = (activeSettingsSection) => {
 const Admin = () => {
   const { currentUser } = useAuth()
   const [activeSection, setActiveSection] = useState('dashboard')
-  const [activeSettingsSection, setActiveSettingsSection] = useState('home.hero')
+  const [activeSettingsSection, setActiveSettingsSection] = useState(DEFAULT_SETTINGS_SECTION)
+  const [adminSectionRequest, setAdminSectionRequest] = useState(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const availableSections = useMemo(() => getAdminSections(currentUser), [currentUser])
   const defaultSection = useMemo(() => getDefaultAdminSection(currentUser), [currentUser])
+
+  const buildRequestFromSearchParams = () => {
+    const section = searchParams.get('section') || 'dashboard'
+
+    const filters = {
+      status: searchParams.get('status') || '',
+      verification: searchParams.get('verification') || '',
+      passwordResetRequired: searchParams.get('passwordResetRequired') || '',
+      stalled: searchParams.get('stalled') || '',
+      sort: searchParams.get('sort') || ''
+    }
+
+    return { section, filters }
+  }
+
+  const updateAdminSearchParams = (section, filters = {}) => {
+    const nextParams = new URLSearchParams()
+
+    nextParams.set('section', section)
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        nextParams.set(key, value)
+      }
+    })
+
+    setSearchParams(nextParams)
+  }
+
+  const handleSetActiveSection = (section) => {
+    setActiveSection(section)
+    setAdminSectionRequest(null)
+    updateAdminSearchParams(section)
+  }
+
+  const handleOpenSection = (section, filters = {}) => {
+    setActiveSection(section)
+    setAdminSectionRequest({
+      section,
+      filters,
+      requestId: Date.now()
+    })
+    updateAdminSearchParams(section, filters)
+  }
 
   useEffect(() => {
     if (!defaultSection) {
@@ -49,6 +96,8 @@ const Admin = () => {
 
     if (!canAccessAdminSection(currentUser, activeSection)) {
       setActiveSection(defaultSection)
+      setAdminSectionRequest(null)
+      updateAdminSearchParams(defaultSection)
     }
   }, [currentUser, activeSection, defaultSection])
 
@@ -64,13 +113,33 @@ const Admin = () => {
     return null
   }
 
-  return (
-    <div className='flex h-screen bg-gray-100 dark:bg-gray-900 pt-[68px]'>
-      <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} activeSettingsSection={activeSettingsSection} setActiveSettingsSection={setActiveSettingsSection} />
+  useEffect(() => {
+    const { section, filters } = buildRequestFromSearchParams()
 
-      <div className='flex-1 flex flex-col overflow-hidden'>
+    if (!canAccessAdminSection(currentUser, section)) {
+      return
+    }
+
+    setActiveSection(section)
+
+    if (section === 'users' || section === 'projects') {
+      setAdminSectionRequest({
+        section,
+        filters,
+        requestId: Date.now()
+      })
+    } else {
+      setAdminSectionRequest(null)
+    }
+  }, [searchParams, currentUser])
+
+  return (
+    <div className='flex min-h-[calc(100vh-68px)] bg-gray-100 dark:bg-gray-900 pt-[68px]'>
+      <AdminSidebar activeSection={activeSection} setActiveSection={handleSetActiveSection} activeSettingsSection={activeSettingsSection} setActiveSettingsSection={setActiveSettingsSection} />
+
+      <div className='flex-1 min-w-0 flex flex-col'>
         <AdminHeader activeSection={activeSection} />
-        <main className='flex-1 overflow-x-hidden overflow-y-auto'>
+        <main className='flex-1 overflow-x-hidden'>
           <div className='container mx-auto px-6 py-8'>
             <nav aria-label='Breadcrumb' className='mb-4'>
               <ol className='flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
@@ -93,9 +162,9 @@ const Admin = () => {
               </ol>
             </nav>
 
-            {activeSection === 'dashboard' && canAccessAdminSection(currentUser, 'dashboard') && <AdminStats />}
-            {activeSection === 'users' && canAccessAdminSection(currentUser, 'users') && <AdminUsersList />}
-            {activeSection === 'projects' && canAccessAdminSection(currentUser, 'projects') && <AdminProjectsList />}
+            {activeSection === 'dashboard' && canAccessAdminSection(currentUser, 'dashboard') && <AdminStats onOpenSection={handleOpenSection} />}
+            {activeSection === 'users' && canAccessAdminSection(currentUser, 'users') && <AdminUsersList navigationRequest={adminSectionRequest} />}
+            {activeSection === 'projects' && canAccessAdminSection(currentUser, 'projects') && <AdminProjectsList navigationRequest={adminSectionRequest} />}
             {activeSection === 'announcements' && canAccessAdminSection(currentUser, 'announcements') && <AdminAnnouncementsList />}
             {activeSection === 'blog' && canAccessAdminSection(currentUser, 'blog') && <AdminBlogPostsList />}
             {activeSection === 'settings' && canAccessAdminSection(currentUser, 'settings') && <AdminSettings activeSectionId={activeSettingsSection} />}

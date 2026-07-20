@@ -1,10 +1,36 @@
 import Announcement from '../models/Announcement.js'
 
+const announcementListingUserFields = [
+  'firstName',
+  'lastName',
+  'profilePicture',
+  'userType',
+  'headline',
+  'availabilityStatus',
+  'experienceLevel',
+  'yearsOfExperience',
+  'skills',
+  'serviceCategories',
+  'location',
+  'timezone',
+  'hourlyRate',
+  'showHourlyRate',
+  'showLocationPublic',
+  'profileVisibility',
+  'isEmailVerified'
+].join(' ')
+
 // Create a new announcement
 export const createAnnouncement = async (req, res) => {
   try {
     const { hourlyRate, skills, background, title } = req.body
     const userId = req.user._id
+
+    if (!req.user.isEmailVerified) {
+      return res.status(403).json({
+        message: 'Verify your email before publishing announcements.'
+      })
+    }
 
     // Validate required fields
     if (!hourlyRate || !skills || !background || !title) {
@@ -54,7 +80,7 @@ export const getAnnouncementsByUser = async (req, res) => {
 // Get all active announcements (for browsing)
 export const getAllAnnouncements = async (req, res) => {
   try {
-    const announcements = await Announcement.find({ isActive: true }).populate('userId', 'firstName lastName profilePicture userType').sort({ createdAt: -1 })
+    const announcements = await Announcement.find({ isActive: true }).populate('userId', announcementListingUserFields).sort({ createdAt: -1 })
 
     res.json(announcements)
   } catch (error) {
@@ -138,7 +164,15 @@ export const toggleAnnouncementStatus = async (req, res) => {
       return res.status(403).json({ message: 'You can only toggle your own announcements' })
     }
 
-    announcement.isActive = !announcement.isActive
+    const nextIsActive = !announcement.isActive
+
+    if (nextIsActive && !req.user.isEmailVerified) {
+      return res.status(403).json({
+        message: 'Verify your email before publishing announcements.'
+      })
+    }
+
+    announcement.isActive = nextIsActive
     await announcement.save()
 
     res.json({ message: `Announcement ${announcement.isActive ? 'resumed' : 'paused'}`, announcement })

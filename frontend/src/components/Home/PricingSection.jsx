@@ -1,59 +1,52 @@
 import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS } from '../../constants/homePageData'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
-const PricingSection = ({ content = {} }) => {
+const PricingSection = ({ content = {}, layout = {} }) => {
   const pricingTitleLead = content.pricingTitleLead || 'Flexible'
   const pricingTitleAccent = content.pricingTitleAccent || 'Pricing'
   const pricingSubtitle = content.pricingSubtitle || 'Choose the perfect plan that suits your needs and budget'
+  const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
+  const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
+  const pricingLayout = { ...DEFAULT_PRICING_LAYOUT, ...layout }
+  const cardDensity = pricingLayout.cardDensity
+  const emphasisStyle = pricingLayout.emphasisStyle
+  const featuredPlanPresentation = pricingLayout.featuredPlanPresentation
 
-  const defaultPricingData = [
-    {
-      title: 'Basic',
-      price: 'Free',
-      period: '',
-      description: 'Perfect for exploring the platform',
-      features: ['Browse projects/freelancers', 'Basic profile creation', 'Limited project posts', 'Community access'],
-      users: '8.4k',
-      isRecommended: false,
-      badgeText: ''
-    },
-    {
-      title: 'Creator Premium',
-      price: '€19.99',
-      period: 'month',
-      description: 'Perfect for businesses and startups',
-      features: ['Unlimited project posts', 'Priority project listing', 'Advanced search filters', 'Direct messaging', 'Verified badge'],
-      users: '1.2k',
-      isRecommended: false,
-      badgeText: ''
-    },
-    {
-      title: 'Freelancer Premium',
-      price: '€19.99',
-      period: 'month',
-      description: 'Perfect for professional freelancers',
-      features: ['Featured profile listing', 'Proposal prioritization', 'Skills verification badge', 'Analytics dashboard', 'Client reviews system'],
-      users: '0.8k',
-      isRecommended: false,
-      badgeText: ''
-    },
-    {
-      title: 'Full Package',
-      price: '€29.99',
-      period: 'month',
-      description: 'Perfect for agencies and growing freelancers',
-      features: ['All Creator Premium features', 'All Freelancer Premium features', 'Team management tools', 'Multiple project handling', 'Collaboration tools'],
-      users: '0.5k',
-      isRecommended: true,
-      badgeText: 'Recommended'
-    }
-  ]
+  const pricingData = Array.isArray(content.pricingPlans) && content.pricingPlans.length ? content.pricingPlans : DEFAULT_PRICING_PLANS
+  const gridClass =
+    cardDensity === 'compact'
+      ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-3 max-w-8xl mx-auto'
+      : cardDensity === 'spacious'
+        ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6 max-w-8xl mx-auto'
+        : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 max-w-8xl mx-auto'
 
-  const pricingData = Array.isArray(content.pricingPlans) && content.pricingPlans.length ? content.pricingPlans : defaultPricingData
+  const cardPaddingClass = cardDensity === 'compact' ? 'p-6' : cardDensity === 'spacious' ? 'p-10' : 'p-8'
+  const featureSpacingClass = cardDensity === 'compact' ? 'space-y-4 mb-8' : cardDensity === 'spacious' ? 'space-y-6 mb-12' : 'space-y-5 mb-10'
+  const emphasisClass =
+    emphasisStyle === 'strong'
+      ? 'border border-accent/25 bg-gradient-to-br from-accent/10 via-primary/10 to-transparent shadow-lg shadow-accent/5'
+      : emphasisStyle === 'outline'
+        ? 'border-2 border-accent/20 bg-transparent'
+        : 'bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent'
+
+  const getFeaturedCardClass = (plan) => {
+    if (!plan.isRecommended) return ''
+    if (featuredPlanPresentation === 'lifted') return 'lg:-translate-y-4 ring-1 ring-accent/35 shadow-2xl shadow-accent/10'
+    if (featuredPlanPresentation === 'spotlight') return 'border border-accent/35 bg-gradient-to-br from-accent/15 via-accent/10 to-transparent shadow-xl shadow-accent/10'
+    return 'shadow-lg hover:shadow-accent/10'
+  }
+
+  const getBadgeClass = () => {
+    if (featuredPlanPresentation === 'spotlight') return 'bg-accent text-primary'
+    if (featuredPlanPresentation === 'lifted') return 'bg-primary text-light dark:bg-light dark:text-primary'
+    return 'bg-accent/20 text-accent'
+  }
 
   return (
-    <section className='w-full py-20 theme-bg relative z-[1]'>
+    <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
       <div className='absolute inset-0 overflow-hidden'>
         {/* Molecular patterns */}
         <div className='absolute -left-20 top-40 opacity-20'>
@@ -82,12 +75,11 @@ const PricingSection = ({ content = {} }) => {
           <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>{pricingSubtitle}</p>
         </motion.div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 max-w-8xl mx-auto'>
+        <div className={gridClass}>
           {pricingData.map((plan, index) => (
             <motion.div
               key={index}
-              className={`bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-8 rounded-lg backdrop-blur-sm
-                ${plan.isRecommended ? 'shadow-lg hover:shadow-accent/10' : ''}`}
+              className={`relative rounded-lg backdrop-blur-sm ${cardPaddingClass} ${emphasisClass} ${getFeaturedCardClass(plan)}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{
                 opacity: 1,
@@ -101,7 +93,6 @@ const PricingSection = ({ content = {} }) => {
               }}
               whileHover={{
                 scale: 1.02,
-                backgroundColor: 'rgba(var(--primary-rgb), 0.08)',
                 transition: {
                   type: 'tween',
                   duration: 0.2,
@@ -112,7 +103,7 @@ const PricingSection = ({ content = {} }) => {
               {plan.isRecommended && (
                 <motion.div className='absolute top-5 right-5' initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}>
                   <motion.span
-                    className='bg-accent/20 text-accent text-sm py-1 px-3 rounded-full inline-block'
+                    className={`${getBadgeClass()} text-sm py-1 px-3 rounded-full inline-block`}
                     animate={{
                       scale: [1, 1.05, 1],
                       opacity: [1, 0.8, 1]
@@ -141,7 +132,7 @@ const PricingSection = ({ content = {} }) => {
                 <p className='theme-text-secondary'>{plan.description}</p>
               </div>
 
-              <ul className='theme-text-secondary space-y-5 mb-10 flex-grow'>
+              <ul className={`theme-text-secondary ${featureSpacingClass} flex-grow`}>
                 {plan.features.map((feature, idx) => (
                   <motion.li key={idx} className='flex items-center gap-3' initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: index * 0.1 + idx * 0.1 }}>
                     <motion.div

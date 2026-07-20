@@ -1,5 +1,25 @@
 import User from '../models/User.js'
 import { generateToken } from '../utils/jwtUtils.js'
+import { hashToken, isTokenExpired } from '../utils/authTokenUtils.js'
+import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
+import { sendVerificationEmail } from '../utils/emailVerificationService.js'
+
+const EMAIL_VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000
+const PASSWORD_RESET_REQUEST_COOLDOWN_MS = 60 * 1000
+
+const buildAuthUserResponse = (user, includeToken = false) => ({
+  _id: user._id,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  email: user.email,
+  userType: user.userType,
+  isLocked: user.isLocked,
+  lastLogin: user.lastLogin,
+  isEmailVerified: user.isEmailVerified,
+  emailVerifiedAt: user.emailVerifiedAt,
+  forcePasswordReset: user.forcePasswordReset,
+  ...(includeToken ? { token: generateToken(user._id) } : {})
+})
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -24,14 +44,8 @@ export const registerUser = async (req, res) => {
     })
 
     if (user) {
-      res.status(201).json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userType: user.userType,
-        token: generateToken(user._id)
-      })
+      await sendVerificationEmail(user)
+      res.status(201).json(buildAuthUserResponse(user, true))
     }
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -53,16 +67,7 @@ export const loginUser = async (req, res) => {
       user.lastLogin = new Date()
       await user.save()
 
-      res.json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userType: user.userType,
-        isLocked: user.isLocked,
-        lastLogin: user.lastLogin,
-        token: generateToken(user._id)
-      })
+      res.json(buildAuthUserResponse(user, true))
     } else {
       res.status(401).json({ message: 'Invalid email or password' })
     }
@@ -80,16 +85,160 @@ export const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id)
 
     if (user) {
-      res.json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userType: user.userType
-      })
+      res.json(buildAuthUserResponse(user))
     } else {
       res.status(404).json({ message: 'User not found' })
     }
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Send or resend email verification link
+// @route   POST /api/auth/verify-email/request
+// @access  Private
+export const requestEmailVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.isEmailVerified) {
+      return res.json({
+        message: 'Email is already verified.',
+        isEmailVerified: true
+      })
+    }
+
+    const lastSentAt = user.emailVerificationLastSentAt ? new Date(user.emailVerificationLastSentAt).getTime() : 0
+    const now = Date.now()
+
+    if (lastSentAt && now - lastSentAt < EMAIL_VERIFICATION_RESEND_COOLDOWN_MS) {
+      const retryAfterSeconds = Math.ceil((EMAIL_VERIFICATION_RESEND_COOLDOWN_MS - (now - lastSentAt)) / 1000)
+
+      return res.status(429).json({
+        message: `Please wait ${retryAfterSeconds} seconds before requesting another verification email.`
+      })
+    }
+
+    const mailResult = await sendVerificationEmail(user)
+
+    res.json({
+      message: mailResult.delivered ? 'Verification email sent.' : 'Verification link generated, but email delivery is not configured.',
+      delivery: mailResult
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Confirm email verification token
+// @route   POST /api/auth/verify-email/confirm
+// @access  Public
+export const confirmEmailVerification = async (req, res) => {
+  try {
+    const { token } = req.body
+
+    if (!token) {
+      return res.status(400).json({ message: 'Verification token is required.' })
+    }
+
+    const tokenHash = hashToken(token)
+
+    const user = await User.findOne({ emailVerificationTokenHash: tokenHash }).select('+emailVerificationTokenHash +emailVerificationTokenExpiresAt')
+
+    if (!user || !user.emailVerificationTokenExpiresAt || isTokenExpired(user.emailVerificationTokenExpiresAt)) {
+      return res.status(400).json({ message: 'Verification link is invalid or has expired.' })
+    }
+
+    user.isEmailVerified = true
+    user.emailVerifiedAt = new Date()
+    user.emailVerificationTokenHash = null
+    user.emailVerificationTokenExpiresAt = null
+    await user.save()
+
+    res.json({
+      message: 'Email verified successfully.',
+      user: buildAuthUserResponse(user)
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Request password reset link
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' })
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase()
+    const user = await User.findOne({ email: normalizedEmail })
+
+    const genericResponse = {
+      message: 'If an account with that email exists, a password reset link has been sent.'
+    }
+
+    if (!user) {
+      return res.json(genericResponse)
+    }
+
+    const lastRequestedAt = user.passwordResetRequestedAt ? new Date(user.passwordResetRequestedAt).getTime() : 0
+    const now = Date.now()
+
+    if (lastRequestedAt && now - lastRequestedAt < PASSWORD_RESET_REQUEST_COOLDOWN_MS) {
+      return res.json(genericResponse)
+    }
+
+    await sendPasswordResetEmail(user)
+
+    return res.json(genericResponse)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// @desc    Reset password using token
+// @route   POST /api/auth/reset-password
+// @access  Public
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body
+
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and new password are required.' })
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long.' })
+    }
+
+    const tokenHash = hashToken(token)
+
+    const user = await User.findOne({ passwordResetTokenHash: tokenHash }).select('+passwordResetTokenHash +passwordResetTokenExpiresAt')
+
+    if (!user || !user.passwordResetTokenExpiresAt || isTokenExpired(user.passwordResetTokenExpiresAt)) {
+      return res.status(400).json({ message: 'Reset link is invalid or has expired.' })
+    }
+
+    user.password = password
+    user.passwordResetTokenHash = null
+    user.passwordResetTokenExpiresAt = null
+    user.passwordResetRequestedAt = null
+    user.forcePasswordReset = false
+    user.forcePasswordResetSetAt = null
+    await user.save()
+
+    res.json({
+      message: 'Password has been reset successfully.'
+    })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }

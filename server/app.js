@@ -11,6 +11,8 @@ import ratingRoutes from './src/routes/ratingRoutes.js'
 import configRoutes from './src/routes/configRoutes.js'
 import blogRoutes from './src/routes/blogRoutes.js'
 import { startProjectAutoUnlockScheduler } from './src/utils/projectLockScheduler.js'
+import analyticsRoutes from './src/routes/analyticsRoutes.js'
+import availabilityRoutes from './src/routes/availabilityRoutes.js'
 
 dotenv.config()
 
@@ -42,6 +44,8 @@ app.use('/api/announcements', announcementRoutes)
 app.use('/api/ratings', ratingRoutes)
 app.use('/api/config', configRoutes)
 app.use('/api/blog', blogRoutes)
+app.use('/api/analytics', analyticsRoutes)
+app.use('/api/availability', availabilityRoutes)
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'))

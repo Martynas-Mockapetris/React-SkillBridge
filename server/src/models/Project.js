@@ -1,5 +1,57 @@
 import mongoose from 'mongoose'
 
+const projectBriefSchema = new mongoose.Schema(
+  {
+    objective: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    deliverables: {
+      type: [String],
+      default: []
+    },
+    scopeNotes: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    experienceLevel: {
+      type: String,
+      enum: ['not_specified', 'junior', 'mid', 'senior', 'expert'],
+      default: 'not_specified'
+    },
+    duration: {
+      type: String,
+      enum: ['not_specified', 'less_than_1_week', '1_to_2_weeks', '2_to_4_weeks', '1_to_3_months', '3_plus_months', 'ongoing'],
+      default: 'not_specified'
+    },
+    workload: {
+      type: String,
+      enum: ['not_specified', 'under_10_hours', '10_to_20_hours', '20_to_30_hours', '30_plus_hours', 'full_time'],
+      default: 'not_specified'
+    },
+    startPreference: {
+      type: String,
+      enum: ['not_specified', 'immediately', 'this_week', 'within_2_weeks', 'flexible'],
+      default: 'not_specified'
+    },
+    budgetType: {
+      type: String,
+      enum: ['not_specified', 'fixed', 'hourly', 'negotiable'],
+      default: 'not_specified'
+    },
+    applicationInstructions: {
+      type: String,
+      default: '',
+      trim: true
+    }
+  },
+  {
+    _id: false
+  }
+)
+
 const projectSchema = mongoose.Schema(
   {
     user: {
@@ -66,6 +118,10 @@ const projectSchema = mongoose.Schema(
       type: Date,
       default: null
     },
+    projectBrief: {
+      type: projectBriefSchema,
+      default: () => ({})
+    },
     attachments: [
       {
         name: String,
@@ -125,6 +181,20 @@ const projectSchema = mongoose.Schema(
           type: String,
           enum: ['pending', 'accepted', 'rejected'],
           default: 'pending'
+        },
+        proposalPreview: {
+          type: String,
+          default: '',
+          trim: true,
+          maxlength: 280
+        },
+        isShortlisted: {
+          type: Boolean,
+          default: false
+        },
+        skillsVerified: {
+          type: Boolean,
+          default: false
         },
         contactedAt: {
           type: Date,

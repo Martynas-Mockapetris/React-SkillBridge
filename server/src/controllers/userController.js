@@ -2,7 +2,35 @@ import User from '../models/User.js'
 import Project from '../models/Project.js'
 import Announcement from '../models/Announcement.js'
 import AdminActionLog from '../models/AdminActionLog.js'
+import Connection from '../models/Connection.js'
+import Notification from '../models/Notification.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
+import { sendPasswordResetEmail } from '../utils/accountRecoveryService.js'
+import { sendVerificationEmail } from '../utils/emailVerificationService.js'
+import { notifyConnectionAccepted, notifyConnectionRequested } from '../utils/notificationService.js'
+import { sendConnectionAcceptedEmail, sendConnectionRequestedEmail } from '../utils/activityEmailService.js'
+
+const CONNECTION_USER_FIELDS =
+  'firstName lastName headline profilePicture isEmailVerified userType location showLocationPublic availabilityStatus yearsOfExperience hourlyRate showHourlyRate allowDirectMessages allowProjectInvites skills servicesOffered experienceLevel averageRating totalRatings ratings.feedback ratings.score ratings.createdAt website github linkedin'
+
+const mapConnectionRecord = (connection, currentUserId) => {
+  const requesterId = connection.requester?._id ? connection.requester._id.toString() : connection.requester.toString()
+  const recipientId = connection.recipient?._id ? connection.recipient._id.toString() : connection.recipient.toString()
+  const normalizedCurrentUserId = currentUserId.toString()
+  const isRequester = requesterId === normalizedCurrentUserId
+  const otherUser = isRequester ? connection.recipient : connection.requester
+
+  return {
+    _id: connection._id,
+    status: connection.status,
+    requestedAt: connection.requestedAt,
+    respondedAt: connection.respondedAt,
+    requester: connection.requester,
+    recipient: connection.recipient,
+    otherUser,
+    direction: connection.status === 'accepted' ? 'connected' : isRequester ? 'outgoing' : 'incoming'
+  }
+}
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -28,10 +56,6 @@ export const getUserProfile = async (req, res) => {
 // @route   PUT /api/users/profile
 // @access  Private
 export const updateUserProfile = async (req, res) => {
-  console.log('PUT /profile route reached')
-  console.log('Request body:', req.body)
-  console.log('User from token:', req.user)
-
   try {
     const user = await User.findById(req.user._id)
 
@@ -47,6 +71,28 @@ export const updateUserProfile = async (req, res) => {
       'location',
       'skills',
       'bio',
+      'headline',
+      'availabilityStatus',
+      'profileVisibility',
+      'responseTime',
+      'servicesOffered',
+      'tools',
+      'workPreference',
+      'yearsOfExperience',
+      'minimumProjectBudget',
+      'preferredProjectSize',
+      'preferredEngagements',
+      'timezone',
+      'availabilityDetails',
+      'industries',
+      'showLocationPublic',
+      'showHourlyRate',
+      'allowDirectMessages',
+      'allowProjectInvites',
+      'emailNotificationsEnabled',
+      'emailNotificationsMessages',
+      'emailNotificationsConnections',
+      'emailNotificationsProjects',
       'website',
       'github',
       'linkedin',
@@ -86,6 +132,53 @@ export const updateUserProfile = async (req, res) => {
     }
   } catch (error) {
     console.error('Error updating user profile:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Change current user's password
+// @route   PUT /api/users/profile/password
+// @access  Private
+export const changeUserPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required.' })
+    }
+
+    if (String(newPassword).length < 8) {
+      return res.status(400).json({ message: 'New password must be at least 8 characters long.' })
+    }
+
+    if (String(currentPassword) === String(newPassword)) {
+      return res.status(400).json({ message: 'New password must be different from your current password.' })
+    }
+
+    const user = await User.findById(req.user._id).select('+password')
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const passwordMatches = await user.comparePassword(currentPassword)
+
+    if (!passwordMatches) {
+      return res.status(400).json({ message: 'Current password is incorrect.' })
+    }
+
+    user.password = newPassword
+    user.forcePasswordReset = false
+    user.forcePasswordResetSetAt = null
+    user.passwordResetTokenHash = null
+    user.passwordResetTokenExpiresAt = null
+    user.passwordResetRequestedAt = null
+
+    await user.save()
+
+    res.json({ message: 'Password updated successfully.' })
+  } catch (error) {
+    console.error('Error changing user password:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -366,6 +459,15 @@ export const getAdminDashboardStats = async (req, res) => {
       lastLogin: { $ne: null, $lt: twoWeeksAgo }
     })
 
+    const unverifiedUsers = await User.countDocuments({
+      userType: { $ne: 'admin' },
+      isEmailVerified: false
+    })
+
+    const passwordResetRequiredUsers = await User.countDocuments({
+      forcePasswordReset: true
+    })
+
     const stalledProjects = await Project.countDocuments({
       status: { $in: activeStatuses },
       updatedAt: { $lt: twoWeeksAgo }
@@ -400,6 +502,26 @@ export const getAdminDashboardStats = async (req, res) => {
         title: 'Stalled active projects',
         message: `${stalledProjects} active projects not updated in 14+ days.`,
         metric: stalledProjects
+      })
+    }
+
+    if (unverifiedUsers >= 10) {
+      alerts.push({
+        id: 'unverified-users',
+        severity: unverifiedUsers >= 25 ? 'critical' : 'warning',
+        title: 'High number of unverified users',
+        message: `${unverifiedUsers} non-admin users still have not verified their email.`,
+        metric: unverifiedUsers
+      })
+    }
+
+    if (passwordResetRequiredUsers >= 5) {
+      alerts.push({
+        id: 'password-reset-required-users',
+        severity: passwordResetRequiredUsers >= 15 ? 'critical' : 'warning',
+        title: 'Users still need password reset',
+        message: `${passwordResetRequiredUsers} users are marked as requiring a password reset.`,
+        metric: passwordResetRequiredUsers
       })
     }
 
@@ -443,6 +565,8 @@ export const getAdminDashboardStats = async (req, res) => {
       healthSignals: {
         lockedUsers,
         inactiveUsers,
+        unverifiedUsers,
+        passwordResetRequiredUsers,
         stalledProjects
       }
     })
@@ -671,9 +795,12 @@ export const getAdminUserAnnouncements = async (req, res) => {
 // @access  Admin
 export const getAdminUsers = async (req, res) => {
   try {
-    const { search = '', role = '', status = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
+    const { search = '', role = '', status = '', verification = '', passwordResetRequired = '', adminTag = '', notesState = '', page = 1, limit = 10, sort = 'createdAt:desc' } = req.query
 
     const query = {}
+    const escapedAdminTag = String(adminTag || '')
+      .trim()
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
     // Search by name or email
     if (search) {
@@ -683,6 +810,35 @@ export const getAdminUsers = async (req, res) => {
     // Filter by userType
     if (role) {
       query.userType = role
+    }
+
+    // Filter by email verification status
+    if (verification === 'verified') {
+      query.isEmailVerified = true
+    }
+
+    if (verification === 'unverified') {
+      query.isEmailVerified = false
+    }
+
+    if (passwordResetRequired === 'true') {
+      query.forcePasswordReset = true
+    }
+
+    if (passwordResetRequired === 'false') {
+      query.forcePasswordReset = false
+    }
+
+    if (escapedAdminTag) {
+      query.adminTags = { $regex: escapedAdminTag, $options: 'i' }
+    }
+
+    if (notesState === 'with_notes') {
+      query.$and = [...(query.$and || []), { adminNotes: { $exists: true, $ne: '' } }]
+    }
+
+    if (notesState === 'without_notes') {
+      query.$and = [...(query.$and || []), { $or: [{ adminNotes: { $exists: false } }, { adminNotes: '' }] }]
     }
 
     // Filter by status (Active / Inactive / Locked)
@@ -730,7 +886,22 @@ export const getAdminUsers = async (req, res) => {
 }
 
 const PRIVILEGED_USER_TYPES = ['admin', 'moderator', 'blogger', 'config_manager']
-const ADMIN_USER_EDITABLE_FIELDS = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel']
+const ADMIN_USER_EDITABLE_FIELDS = ['firstName', 'lastName', 'email', 'userType', 'phone', 'location', 'skills', 'bio', 'hourlyRate', 'experienceLevel', 'adminNotes', 'adminTags']
+
+const normalizeAdminTags = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((tag) => String(tag).trim()).filter(Boolean)
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
 
 // @desc    Toggle user lock status (admin)
 // @route   PATCH /api/users/admin/:userId/lock
@@ -832,9 +1003,21 @@ export const updateAdminUser = async (req, res) => {
 
     const updates = {}
     ADMIN_USER_EDITABLE_FIELDS.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field]
+      if (req.body[field] === undefined) {
+        return
       }
+
+      if (field === 'adminTags') {
+        updates[field] = normalizeAdminTags(req.body[field])
+        return
+      }
+
+      if (field === 'adminNotes') {
+        updates[field] = String(req.body[field] || '').trim()
+        return
+      }
+
+      updates[field] = req.body[field]
     })
 
     if (Object.keys(updates).length === 0) {
@@ -882,6 +1065,215 @@ export const updateAdminUser = async (req, res) => {
     res.json({ message: 'User updated successfully', user: updatedUser })
   } catch (error) {
     console.error('Error updating user:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Trigger password reset email for a user (admin)
+// @route   POST /api/users/admin/:userId/password-reset
+// @access  Admin
+export const requestAdminPasswordReset = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot trigger password reset for privileged users' })
+    }
+
+    const mailResult = await sendPasswordResetEmail(user, { forcePasswordReset: true })
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.password_reset_requested',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Requested password reset for ${targetLabel}`,
+      metadata: {
+        targetEmail: user.email,
+        forcePasswordReset: true,
+        delivered: mailResult.delivered,
+        deliveryReason: mailResult.reason || null
+      }
+    })
+
+    res.json({
+      message: mailResult.delivered ? 'Password reset email sent.' : 'Password reset link generated, but email delivery is not configured.',
+      delivery: mailResult
+    })
+  } catch (error) {
+    console.error('Error requesting admin password reset:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Trigger verification email for a user (admin)
+// @route   POST /api/users/admin/:userId/verify-email
+// @access  Admin
+export const requestAdminEmailVerification = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'User email is already verified.' })
+    }
+
+    const mailResult = await sendVerificationEmail(user)
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.email_verification_requested',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Requested email verification for ${targetLabel}`,
+      metadata: {
+        targetEmail: user.email,
+        delivered: mailResult.delivered,
+        deliveryReason: mailResult.reason || null
+      }
+    })
+
+    res.json({
+      message: mailResult.delivered ? 'Verification email sent.' : 'Verification link generated, but email delivery is not configured.',
+      delivery: mailResult
+    })
+  } catch (error) {
+    console.error('Error requesting admin email verification:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Reactivate user activity by refreshing last login (admin)
+// @route   PATCH /api/users/admin/:userId/reactivate
+// @access  Admin
+export const reactivateAdminUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    await user.ensureUnlockedIfExpired()
+
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot reactivate privileged users' })
+    }
+
+    if (user.isLocked) {
+      return res.status(400).json({ message: 'Locked users must be unlocked before reactivation' })
+    }
+
+    const beforeSnapshot = {
+      lastLogin: user.lastLogin
+    }
+
+    user.lastLogin = new Date()
+    await user.save()
+
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.reactivated',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Reactivated user ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['lastLogin']),
+      metadata: {
+        targetEmail: user.email,
+        reactivatedAt: user.lastLogin
+      }
+    })
+
+    res.json({
+      message: 'User reactivated successfully',
+      user: {
+        _id: user._id,
+        lastLogin: user.lastLogin
+      }
+    })
+  } catch (error) {
+    console.error('Error reactivating user:', error)
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+// @desc    Directly verify user email without sending verification mail (admin)
+// @route   PATCH /api/users/admin/:userId/verify-email/direct
+// @access  Admin
+export const verifyAdminUserDirect = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (PRIVILEGED_USER_TYPES.includes(user.userType)) {
+      return res.status(403).json({ message: 'Cannot directly verify privileged users' })
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'User email is already verified.' })
+    }
+
+    const beforeSnapshot = {
+      isEmailVerified: user.isEmailVerified,
+      emailVerifiedAt: user.emailVerifiedAt,
+      emailVerificationTokenHash: user.emailVerificationTokenHash,
+      emailVerificationTokenExpiresAt: user.emailVerificationTokenExpiresAt
+    }
+
+    user.isEmailVerified = true
+    user.emailVerifiedAt = new Date()
+    user.emailVerificationTokenHash = null
+    user.emailVerificationTokenExpiresAt = null
+
+    await user.save()
+
+    const targetLabel = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User'
+
+    await logAdminAction({
+      req,
+      action: 'user.email_verified_direct',
+      targetType: 'user',
+      targetId: user._id,
+      targetLabel,
+      summary: `Directly verified email for ${targetLabel}`,
+      changes: buildFieldChanges(beforeSnapshot, user.toObject(), ['isEmailVerified', 'emailVerifiedAt', 'emailVerificationTokenHash', 'emailVerificationTokenExpiresAt']),
+      metadata: {
+        targetEmail: user.email,
+        verifiedAt: user.emailVerifiedAt
+      }
+    })
+
+    res.json({
+      message: 'User email verified successfully',
+      user: {
+        _id: user._id,
+        isEmailVerified: user.isEmailVerified,
+        emailVerifiedAt: user.emailVerifiedAt
+      }
+    })
+  } catch (error) {
+    console.error('Error directly verifying user email:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
@@ -1049,43 +1441,397 @@ export const getUserById = async (req, res) => {
   }
 }
 
-// @desc    Add freelancer to favorites
-// @route   POST /api/users/favorites/freelancer/:freelancerId
+// @desc    Get current user's connection inbox and network
+// @route   GET /api/users/connections
 // @access  Private
-export const addFreelancerToFavorites = async (req, res) => {
+export const getMyConnections = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-    const freelancerId = req.params.freelancerId
+    const connections = await Connection.find({
+      $or: [{ requester: req.user._id }, { recipient: req.user._id }],
+      status: { $in: ['pending', 'accepted'] }
+    })
+      .populate('requester', CONNECTION_USER_FIELDS)
+      .populate('recipient', CONNECTION_USER_FIELDS)
+      .sort({ updatedAt: -1, requestedAt: -1 })
 
-    // Check if already favorited
-    if (user.favoriteFreelancers.includes(freelancerId)) {
-      return res.status(400).json({ message: 'Freelancer already in favorites' })
+    const mappedConnections = connections.map((connection) => mapConnectionRecord(connection, req.user._id))
+
+    const connectionUserIds = [
+      ...new Map(
+        mappedConnections
+          .map((connection) => connection.otherUser?._id)
+          .filter(Boolean)
+          .map((userId) => [userId.toString(), userId])
+      ).values()
+    ]
+
+    let completedProjectsCountByUserId = new Map()
+
+    if (connectionUserIds.length > 0) {
+      const completedProjectStats = await Project.aggregate([
+        {
+          $match: {
+            status: 'completed',
+            $or: [{ user: { $in: connectionUserIds } }, { assignee: { $in: connectionUserIds } }]
+          }
+        },
+        {
+          $project: {
+            participants: {
+              $setUnion: [['$user'], { $cond: [{ $ifNull: ['$assignee', false] }, ['$assignee'], []] }]
+            }
+          }
+        },
+        { $unwind: '$participants' },
+        { $match: { participants: { $in: connectionUserIds } } },
+        {
+          $group: {
+            _id: '$participants',
+            completedProjectsCount: { $sum: 1 }
+          }
+        }
+      ])
+
+      completedProjectsCountByUserId = new Map(completedProjectStats.map((item) => [item._id.toString(), item.completedProjectsCount]))
     }
 
-    user.favoriteFreelancers.push(freelancerId)
-    await user.save()
+    const enrichedConnections = mappedConnections.map((connection) => {
+      if (!connection.otherUser?._id) {
+        return connection
+      }
 
-    res.json({ message: 'Added to favorites', favoriteFreelancers: user.favoriteFreelancers })
+      const otherUserData = connection.otherUser.toObject ? connection.otherUser.toObject() : connection.otherUser
+      const ratings = Array.isArray(otherUserData.ratings) ? otherUserData.ratings : []
+
+      const latestReview = ratings.filter((rating) => typeof rating.feedback === 'string' && rating.feedback.trim()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]
+
+      return {
+        ...connection,
+        otherUser: {
+          ...otherUserData,
+          completedProjectsCount: completedProjectsCountByUserId.get(connection.otherUser._id.toString()) || 0,
+          recentReview: latestReview
+            ? {
+                feedback: latestReview.feedback.trim(),
+                score: latestReview.score,
+                createdAt: latestReview.createdAt
+              }
+            : null,
+          ratings: undefined
+        }
+      }
+    })
+
+    const incomingRequests = enrichedConnections.filter((connection) => connection.direction === 'incoming')
+    const outgoingRequests = enrichedConnections.filter((connection) => connection.direction === 'outgoing')
+    const acceptedConnections = enrichedConnections.filter((connection) => connection.status === 'accepted')
+
+    res.json({
+      incomingRequests,
+      outgoingRequests,
+      acceptedConnections,
+      summary: {
+        incomingCount: incomingRequests.length,
+        outgoingCount: outgoingRequests.length,
+        connectionsCount: acceptedConnections.length
+      }
+    })
   } catch (error) {
-    console.error('Error adding freelancer to favorites:', error)
+    console.error('Error fetching connections:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
 
-// @desc    Remove freelancer from favorites
-// @route   DELETE /api/users/favorites/freelancer/:freelancerId
+// @desc    Get current user's notifications summary
+// @route   GET /api/users/notifications/unread-count
 // @access  Private
-export const removeFreelancerFromFavorites = async (req, res) => {
+export const getUnreadNotificationCount = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-    const freelancerId = req.params.freelancerId
+    const unreadCount = await Notification.countDocuments({
+      recipient: req.user._id,
+      isRead: false
+    })
 
-    user.favoriteFreelancers = user.favoriteFreelancers.filter((id) => id.toString() !== freelancerId)
-    await user.save()
-
-    res.json({ message: 'Removed from favorites', favoriteFreelancers: user.favoriteFreelancers })
+    res.json({ unreadCount })
   } catch (error) {
-    console.error('Error removing freelancer from favorites:', error)
+    console.error('Error fetching unread notification count:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Get current user's notifications
+// @route   GET /api/users/notifications
+// @access  Private
+export const getMyNotifications = async (req, res) => {
+  try {
+    const { limit = 20 } = req.query
+    const pageSize = Math.min(Math.max(Number(limit) || 20, 1), 100)
+
+    const notifications = await Notification.find({
+      recipient: req.user._id
+    })
+      .populate('actor', 'firstName lastName email profilePicture userType')
+      .sort({ createdAt: -1 })
+      .limit(pageSize)
+
+    res.json(notifications)
+  } catch (error) {
+    console.error('Error fetching notifications:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Mark one notification as read
+// @route   PATCH /api/users/notifications/:notificationId/read
+// @access  Private
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const notification = await Notification.findOne({
+      _id: req.params.notificationId,
+      recipient: req.user._id
+    })
+
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found.' })
+    }
+
+    if (!notification.isRead) {
+      notification.isRead = true
+      notification.readAt = new Date()
+      await notification.save()
+    }
+
+    const populatedNotification = await Notification.findById(notification._id).populate('actor', 'firstName lastName email profilePicture userType')
+
+    res.json(populatedNotification)
+  } catch (error) {
+    console.error('Error marking notification as read:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Mark all notifications as read
+// @route   PATCH /api/users/notifications/read-all
+// @access  Private
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const readAt = new Date()
+
+    const result = await Notification.updateMany(
+      {
+        recipient: req.user._id,
+        isRead: false
+      },
+      {
+        $set: {
+          isRead: true,
+          readAt
+        }
+      }
+    )
+
+    res.json({
+      message: 'Notifications marked as read.',
+      updatedCount: result.modifiedCount || 0
+    })
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Send a connection request to a freelancer profile
+// @route   POST /api/users/connections/:userId
+// @access  Private
+export const sendConnectionRequest = async (req, res) => {
+  try {
+    const targetUserId = req.params.userId
+    const requesterName = `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone'
+
+    if (targetUserId === req.user._id.toString()) {
+      return res.status(400).json({ message: 'You cannot connect with yourself.' })
+    }
+
+    const targetUser = await User.findById(targetUserId).select('_id userType')
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (!['freelancer', 'both'].includes(targetUser.userType)) {
+      return res.status(400).json({ message: 'Connections are available only for freelancer profiles.' })
+    }
+
+    let connection = await Connection.findOne({
+      $or: [
+        { requester: req.user._id, recipient: targetUserId },
+        { requester: targetUserId, recipient: req.user._id }
+      ]
+    })
+
+    if (connection?.status === 'accepted') {
+      return res.status(400).json({ message: 'You are already connected.' })
+    }
+
+    if (connection?.status === 'pending' && connection.requester.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Connection request already sent.' })
+    }
+
+    if (connection?.status === 'pending' && connection.recipient.toString() === req.user._id.toString()) {
+      connection.status = 'accepted'
+      connection.respondedAt = new Date()
+      await connection.save()
+      await connection.populate('requester', CONNECTION_USER_FIELDS)
+      await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+      await notifyConnectionAccepted({
+        actor: req.user._id,
+        recipient: connection.requester._id,
+        connectionId: connection._id,
+        actorName: requesterName
+      })
+
+      await sendConnectionAcceptedEmail({
+        recipientId: connection.requester._id,
+        actorName: requesterName,
+        actorUserId: req.user._id.toString()
+      })
+
+      return res.json({
+        message: 'Connection request accepted.',
+        connection: mapConnectionRecord(connection, req.user._id)
+      })
+    }
+
+    if (!connection) {
+      connection = new Connection({
+        requester: req.user._id,
+        recipient: targetUserId,
+        status: 'pending'
+      })
+    } else {
+      connection.requester = req.user._id
+      connection.recipient = targetUserId
+      connection.status = 'pending'
+      connection.requestedAt = new Date()
+      connection.respondedAt = null
+    }
+
+    await connection.save()
+    await connection.populate('requester', CONNECTION_USER_FIELDS)
+    await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+    await notifyConnectionRequested({
+      requester: req.user._id,
+      recipient: targetUserId,
+      connectionId: connection._id,
+      requesterName
+    })
+
+    await sendConnectionRequestedEmail({
+      recipientId: targetUserId,
+      requesterName
+    })
+
+    res.status(201).json({
+      message: 'Connection request sent.',
+      connection: mapConnectionRecord(connection, req.user._id)
+    })
+  } catch (error) {
+    console.error('Error sending connection request:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Accept an incoming connection request
+// @route   PATCH /api/users/connections/:connectionId/accept
+// @access  Private
+export const acceptConnectionRequest = async (req, res) => {
+  try {
+    const connection = await Connection.findOne({
+      _id: req.params.connectionId,
+      recipient: req.user._id,
+      status: 'pending'
+    })
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Connection request not found.' })
+    }
+
+    connection.status = 'accepted'
+    connection.respondedAt = new Date()
+    await connection.save()
+    await connection.populate('requester', CONNECTION_USER_FIELDS)
+    await connection.populate('recipient', CONNECTION_USER_FIELDS)
+
+    await notifyConnectionAccepted({
+      actor: req.user._id,
+      recipient: connection.requester._id,
+      connectionId: connection._id,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone'
+    })
+
+    await sendConnectionAcceptedEmail({
+      recipientId: connection.requester._id,
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'Someone',
+      actorUserId: req.user._id.toString()
+    })
+
+    res.json({
+      message: 'Connection request accepted.',
+      connection: mapConnectionRecord(connection, req.user._id)
+    })
+  } catch (error) {
+    console.error('Error accepting connection request:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Decline an incoming connection request
+// @route   PATCH /api/users/connections/:connectionId/decline
+// @access  Private
+export const declineConnectionRequest = async (req, res) => {
+  try {
+    const connection = await Connection.findOne({
+      _id: req.params.connectionId,
+      recipient: req.user._id,
+      status: 'pending'
+    })
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Connection request not found.' })
+    }
+
+    connection.status = 'declined'
+    connection.respondedAt = new Date()
+    await connection.save()
+
+    res.json({ message: 'Connection request declined.' })
+  } catch (error) {
+    console.error('Error declining connection request:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+// @desc    Remove an accepted connection or cancel a pending one
+// @route   DELETE /api/users/connections/:connectionId
+// @access  Private
+export const removeConnection = async (req, res) => {
+  try {
+    const connection = await Connection.findOne({
+      _id: req.params.connectionId,
+      $or: [{ requester: req.user._id }, { recipient: req.user._id }]
+    })
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Connection not found.' })
+    }
+
+    const message = connection.status === 'accepted' ? 'Connection removed.' : 'Connection request removed.'
+    await connection.deleteOne()
+
+    res.json({ message })
+  } catch (error) {
+    console.error('Error removing connection:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }

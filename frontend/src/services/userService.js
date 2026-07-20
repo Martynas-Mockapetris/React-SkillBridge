@@ -107,12 +107,16 @@ export const getAdminUserAnnouncements = async (userId, params = {}) => {
 // Fetch all users for admin panel
 export const getAdminUsers = async (params = {}) => {
   try {
-    const { search = '', role = '', status = '', page = 1, limit = 10, sort = 'createdAt:desc' } = params
+    const { search = '', role = '', status = '', verification = '', passwordResetRequired = '', adminTag = '', notesState = '', page = 1, limit = 10, sort = 'createdAt:desc' } = params
 
     const queryParams = new URLSearchParams({
       search,
       role,
       status,
+      verification,
+      passwordResetRequired,
+      adminTag,
+      notesState,
       page,
       limit,
       sort
@@ -144,6 +148,46 @@ export const updateAdminUser = async (userId, payload) => {
     return response.data
   } catch (error) {
     console.error('Failed to update admin user:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const requestAdminPasswordReset = async (userId) => {
+  try {
+    const response = await authAxios.post(`/api/users/admin/${userId}/password-reset`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to request admin password reset:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const requestAdminEmailVerification = async (userId) => {
+  try {
+    const response = await authAxios.post(`/api/users/admin/${userId}/verify-email`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to request admin email verification:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const reactivateAdminUser = async (userId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/admin/${userId}/reactivate`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to reactivate admin user:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const verifyAdminUserDirect = async (userId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/admin/${userId}/verify-email/direct`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to directly verify admin user email:', error.response?.data || error.message)
     throw error
   }
 }
@@ -192,24 +236,92 @@ export const removeFromFavorites = async (projectId) => {
   }
 }
 
-// Add freelancer to favorites
-export const addFreelancerToFavorites = async (freelancerId) => {
+export const getMyConnections = async () => {
   try {
-    const response = await authAxios.post(`/api/users/favorites/freelancer/${freelancerId}`)
+    const response = await authAxios.get('/api/users/connections')
     return response.data
   } catch (error) {
-    console.error('Failed to add freelancer to favorites:', error.response?.data || error.message)
+    console.error('Failed to fetch connections:', error.response?.data || error.message)
     throw error
   }
 }
 
-// Remove freelancer from favorites
-export const removeFreelancerFromFavorites = async (freelancerId) => {
+export const sendConnectionRequest = async (userId) => {
   try {
-    const response = await authAxios.delete(`/api/users/favorites/freelancer/${freelancerId}`)
+    const response = await authAxios.post(`/api/users/connections/${userId}`)
     return response.data
   } catch (error) {
-    console.error('Failed to remove freelancer from favorites:', error.response?.data || error.message)
+    console.error('Failed to send connection request:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const acceptConnectionRequest = async (connectionId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/connections/${connectionId}/accept`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to accept connection request:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const declineConnectionRequest = async (connectionId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/connections/${connectionId}/decline`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to decline connection request:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const removeConnection = async (connectionId) => {
+  try {
+    const response = await authAxios.delete(`/api/users/connections/${connectionId}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to remove connection:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const getUnreadNotificationCount = async () => {
+  try {
+    const response = await authAxios.get('/api/users/notifications/unread-count')
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch unread notification count:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const getMyNotifications = async (limit = 20) => {
+  try {
+    const response = await authAxios.get(`/api/users/notifications?limit=${limit}`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch notifications:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const markNotificationAsRead = async (notificationId) => {
+  try {
+    const response = await authAxios.patch(`/api/users/notifications/${notificationId}/read`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to mark notification as read:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+export const markAllNotificationsAsRead = async () => {
+  try {
+    const response = await authAxios.patch('/api/users/notifications/read-all')
+    return response.data
+  } catch (error) {
+    console.error('Failed to mark all notifications as read:', error.response?.data || error.message)
     throw error
   }
 }
@@ -221,6 +333,17 @@ export const updateUserProfile = async (profileData) => {
     return response.data
   } catch (error) {
     console.error('Failed to update profile:', error.response?.data || error.message)
+    throw error
+  }
+}
+
+// Changes the user's password
+export const changeUserPassword = async (passwordData) => {
+  try {
+    const response = await authAxios.put('/api/users/profile/password', passwordData)
+    return response.data
+  } catch (error) {
+    console.error('Failed to change password:', error.response?.data || error.message)
     throw error
   }
 }

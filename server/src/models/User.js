@@ -54,10 +54,60 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerifiedAt: {
+    type: Date,
+    default: null
+  },
+  emailVerificationTokenHash: {
+    type: String,
+    default: null,
+    select: false
+  },
+  emailVerificationTokenExpiresAt: {
+    type: Date,
+    default: null,
+    select: false
+  },
+  emailVerificationLastSentAt: {
+    type: Date,
+    default: null
+  },
+  passwordResetTokenHash: {
+    type: String,
+    default: null,
+    select: false
+  },
+  passwordResetTokenExpiresAt: {
+    type: Date,
+    default: null,
+    select: false
+  },
+  forcePasswordReset: {
+    type: Boolean,
+    default: false
+  },
+  forcePasswordResetSetAt: {
+    type: Date,
+    default: null
+  },
+  adminNotes: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  adminTags: {
+    type: [String],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now
   },
+
   // New profile fields
   phone: {
     type: String,
@@ -75,7 +125,107 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-
+  headline: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  availabilityStatus: {
+    type: String,
+    enum: ['available', 'limited', 'unavailable'],
+    default: 'available'
+  },
+  profileVisibility: {
+    type: String,
+    enum: ['public', 'members', 'private'],
+    default: 'public'
+  },
+  responseTime: {
+    type: String,
+    enum: ['within_24_hours', 'within_3_days', 'within_week', 'flexible'],
+    default: 'within_24_hours'
+  },
+  servicesOffered: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  tools: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  workPreference: {
+    type: String,
+    enum: ['remote', 'hybrid', 'onsite', 'flexible'],
+    default: 'flexible'
+  },
+  yearsOfExperience: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
+  minimumProjectBudget: {
+    type: Number,
+    min: 0,
+    default: null
+  },
+  preferredProjectSize: {
+    type: String,
+    enum: ['small', 'medium', 'large', 'ongoing', 'flexible'],
+    default: 'flexible'
+  },
+  preferredEngagements: {
+    type: [String],
+    default: []
+  },
+  timezone: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  availabilityDetails: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  industries: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  showLocationPublic: {
+    type: Boolean,
+    default: true
+  },
+  showHourlyRate: {
+    type: Boolean,
+    default: true
+  },
+  allowDirectMessages: {
+    type: Boolean,
+    default: true
+  },
+  allowProjectInvites: {
+    type: Boolean,
+    default: true
+  },
+  emailNotificationsEnabled: {
+    type: Boolean,
+    default: true
+  },
+  emailNotificationsMessages: {
+    type: Boolean,
+    default: true
+  },
+  emailNotificationsConnections: {
+    type: Boolean,
+    default: true
+  },
+  emailNotificationsProjects: {
+    type: Boolean,
+    default: true
+  },
   // Social links
   website: {
     type: String,
@@ -131,7 +281,7 @@ const UserSchema = new mongoose.Schema({
     default: []
   },
 
-  // Favorite freelancers
+  // Legacy freelancer bookmarks kept temporarily for compatibility with older flows
   favoriteFreelancers: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'User',
@@ -143,6 +293,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+
   // Rating system for freelancers
   ratings: {
     type: [
@@ -188,7 +339,25 @@ const UserSchema = new mongoose.Schema({
   totalRatings: {
     type: Number,
     default: 0
-  }
+  },
+
+  // Profile view tracking
+  profileViewCount: {
+    type: Number,
+    default: 0
+  },
+  profileViews: [
+    {
+      viewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      viewedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
 })
 
 // Hash password before saving

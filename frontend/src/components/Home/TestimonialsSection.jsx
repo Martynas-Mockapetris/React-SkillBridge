@@ -2,64 +2,27 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import { DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
+import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
-const TestimonialsSection = ({ content = {} }) => {
+const TestimonialsSection = ({ content = {}, layout = {} }) => {
   const [expandedId, setExpandedId] = useState(null)
 
   const testimonialsTitleLead = content.testimonialsTitleLead || 'What Our'
   const testimonialsTitleAccent = content.testimonialsTitleAccent || 'Clients Say'
   const testimonialsSubtitle = content.testimonialsSubtitle || 'Discover how our platform has transformed businesses and careers through real success stories'
+  const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
+  const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
+  const testimonialsLayout = { ...DEFAULT_TESTIMONIALS_LAYOUT, ...layout }
+  const visibleCount = Math.max(1, Number(testimonialsLayout.visibleCount) || DEFAULT_TESTIMONIALS_LAYOUT.visibleCount)
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  const fallbackTestimonials = [
-    {
-      id: 1,
-      name: 'Emma Wilson',
-      rating: 5,
-      role: 'Project Owner',
-      content: 'Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.',
-      avatarSeed: 'emma-wilson'
-    },
-    {
-      id: 2,
-      name: 'Michael Chen',
-      rating: 4,
-      role: 'Freelance Developer',
-      content: 'As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.',
-      avatarSeed: 'michael-chen'
-    },
-    {
-      id: 3,
-      name: 'Sarah Johnson',
-      rating: 5,
-      role: 'Project Owner',
-      content: 'Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.',
-      avatarSeed: 'sarah-johnson'
-    },
-    {
-      id: 4,
-      name: 'David Rodriguez',
-      rating: 4.5,
-      role: 'Freelance Designer',
-      content: 'The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.',
-      avatarSeed: 'david-rodriguez'
-    },
-    {
-      id: 5,
-      name: 'Lisa Chang',
-      rating: 5,
-      role: 'Project Owner',
-      content: 'Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.',
-      avatarSeed: 'lisa-chang'
-    }
-  ]
-
   const testimonialData = useMemo(() => {
     const configured = Array.isArray(content.testimonials) ? content.testimonials : []
-    const source = configured.length ? [...configured, ...fallbackTestimonials.slice(configured.length)] : fallbackTestimonials
+    const source = configured.length ? [...configured, ...DEFAULT_TESTIMONIALS.slice(configured.length)] : DEFAULT_TESTIMONIALS
 
     return source.map((item, index) => ({
       id: index + 1,
@@ -71,7 +34,35 @@ const TestimonialsSection = ({ content = {} }) => {
     }))
   }, [content.testimonials])
 
-  // Reitingas
+  const visibleTestimonials = testimonialData.slice(0, visibleCount)
+
+  const gridClass =
+    visibleCount <= 3
+      ? 'grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto relative'
+      : visibleCount <= 6
+        ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative'
+        : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative'
+
+  const cardClass =
+    testimonialsLayout.cardStyle === 'panel'
+      ? 'theme-bg p-6 rounded-xl border border-accent/15 cursor-pointer shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl'
+      : testimonialsLayout.cardStyle === 'minimal'
+        ? 'bg-transparent p-6 rounded-lg border border-primary/10 dark:border-light/10 cursor-pointer transition-all duration-300 hover:border-accent/30 hover:-translate-y-1'
+        : 'bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-6 rounded-lg cursor-pointer backdrop-blur-sm transition-all duration-300 dark:hover:bg-light/10 hover:bg-primary/10 hover:shadow-lg hover:-translate-y-1'
+
+  const expandedCardClass =
+    testimonialsLayout.cardStyle === 'panel'
+      ? 'absolute top-0 left-0 right-0 theme-bg p-8 rounded-xl border border-accent/20 shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'
+      : testimonialsLayout.cardStyle === 'minimal'
+        ? 'absolute top-0 left-0 right-0 bg-white/95 dark:bg-primary/95 p-8 rounded-xl border border-accent/20 shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'
+        : 'absolute top-0 left-0 right-0 theme-bg/55 p-8 rounded-lg shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'
+
+  const headingWrapClass =
+    testimonialsLayout.sectionEmphasis === 'editorial' ? 'text-center mb-20 max-w-4xl mx-auto' : testimonialsLayout.sectionEmphasis === 'featured' ? 'text-center mb-18 max-w-3xl mx-auto' : 'text-center mb-16'
+
+  const quoteIconClass = testimonialsLayout.sectionEmphasis === 'featured' ? 'text-accent/30 text-5xl absolute top-4 right-4' : 'text-accent/20 text-4xl absolute top-4 right-4'
+
+  {/* Rating component */}
   const Rating = ({ rating, className }) => {
     return (
       <div className={`flex gap-1 ${className}`}>
@@ -84,7 +75,7 @@ const TestimonialsSection = ({ content = {} }) => {
   }
 
   return (
-    <section className='w-full py-20 theme-bg relative'>
+    <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative`}>
       {/* Molecular Patterns Background */}
       <div className='absolute inset-0 overflow-hidden'>
         <div className='absolute left-20 top-40 opacity-20'>
@@ -106,9 +97,9 @@ const TestimonialsSection = ({ content = {} }) => {
         </div>
       </div>
 
+    
       <div className='container mx-auto px-4 relative z-10'>
-        {/* Sekcijos antraste */}
-        <div className='text-center mb-16'>
+        <div className={headingWrapClass}>
           <h2 className='text-4xl font-heading font-bold mb-4'>
             <span className='theme-text'>{testimonialsTitleLead}</span>
             <span className='text-accent'> {testimonialsTitleAccent}</span>
@@ -116,19 +107,13 @@ const TestimonialsSection = ({ content = {} }) => {
           <p className='theme-text-secondary max-w-2xl mx-auto mb-12'>{testimonialsSubtitle}</p>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [&>*:nth-last-child(-n+2)]:lg:translate-x-1/2 relative'>
+        <div className={gridClass}>
           {expandedId && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className='fixed inset-0 z-40' onClick={() => toggleExpand(null)} />}
 
-          {testimonialData.map((testimonial) => (
+          {visibleTestimonials.map((testimonial) => (
             <div key={testimonial.id} className='relative'>
-              {/* Testimonial Card */}
-              <motion.div
-                className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-6 rounded-lg cursor-pointer
-                  backdrop-blur-sm transition-all duration-300
-                  dark:hover:bg-light/10 hover:bg-primary/10 hover:shadow-lg hover:-translate-y-1'
-                onClick={() => toggleExpand(testimonial.id)}>
-                <FaQuoteLeft className='text-accent/20 text-4xl absolute top-4 right-4' />
+              <motion.div className={cardClass} onClick={() => toggleExpand(testimonial.id)}>
+                <FaQuoteLeft className={quoteIconClass} />
                 <div className='flex items-center gap-4 mb-4'>
                   <img src={testimonial.image} alt={testimonial.name} className='w-12 h-12 rounded-full object-cover' />
                   <div>
@@ -140,7 +125,6 @@ const TestimonialsSection = ({ content = {} }) => {
                 <p className='theme-text-secondary line-clamp-2'>{testimonial.content}</p>
               </motion.div>
 
-              {/* Expanded Card */}
               <AnimatePresence>
                 {expandedId === testimonial.id && (
                   <motion.div
@@ -149,8 +133,7 @@ const TestimonialsSection = ({ content = {} }) => {
                     exit={{ opacity: 0, scale: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                     onClick={() => toggleExpand(null)}
-                    className='absolute top-0 left-0 right-0 theme-bg/55 p-8 rounded-lg
-                    shadow-xl backdrop-blur-sm z-50 transform-origin-center cursor-pointer'>
+                    className={expandedCardClass}>
                     <FaQuoteLeft className='text-accent/30 text-5xl absolute top-6 right-6' />
                     <div className='flex items-center gap-4 mb-6'>
                       <img src={testimonial.image} alt={testimonial.name} className='w-16 h-16 rounded-full object-cover' />

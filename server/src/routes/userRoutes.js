@@ -2,6 +2,7 @@ import express from 'express'
 import {
   getUserProfile,
   updateUserProfile,
+  changeUserPassword,
   deleteUserAccount,
   getUserStats,
   addToFavorites,
@@ -9,8 +10,15 @@ import {
   getFavoriteProjects,
   getFreelancers,
   getUserById,
-  addFreelancerToFavorites,
-  removeFreelancerFromFavorites,
+  getMyConnections,
+  getUnreadNotificationCount,
+  getMyNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  sendConnectionRequest,
+  acceptConnectionRequest,
+  declineConnectionRequest,
+  removeConnection,
   getAdminDashboardStats,
   getAdminAuditLogs,
   getAdminUserDetail,
@@ -19,6 +27,10 @@ import {
   getAdminUsers,
   toggleUserLock,
   updateAdminUser,
+  requestAdminPasswordReset,
+  requestAdminEmailVerification,
+  reactivateAdminUser,
+  verifyAdminUserDirect,
   deleteAdminUser
 } from '../controllers/userController.js'
 import { protect, requireAllPermissions, requirePermission } from '../middleware/authMiddleware.js'
@@ -35,6 +47,7 @@ router.get('/test', (req, res) => {
 // Profile routes
 router.get('/profile', protect, getUserProfile)
 router.put('/profile', protect, updateUserProfile)
+router.put('/profile/password', protect, changeUserPassword)
 router.delete('/profile', protect, deleteUserAccount)
 
 // Stats route
@@ -53,12 +66,27 @@ router.get('/admin/users/:userId', protect, requirePermission(PERMISSIONS.USERS_
 router.get('/admin/users', protect, requirePermission(PERMISSIONS.USERS_READ), getAdminUsers)
 router.patch('/admin/:userId/lock', protect, requirePermission(PERMISSIONS.USERS_LOCK), toggleUserLock)
 router.put('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_UPDATE), updateAdminUser)
+router.post('/admin/:userId/password-reset', protect, requirePermission(PERMISSIONS.USERS_UPDATE), requestAdminPasswordReset)
+router.post('/admin/:userId/verify-email', protect, requirePermission(PERMISSIONS.USERS_UPDATE), requestAdminEmailVerification)
+router.patch('/admin/:userId/reactivate', protect, requirePermission(PERMISSIONS.USERS_UPDATE), reactivateAdminUser)
+router.patch('/admin/:userId/verify-email/direct', protect, requirePermission(PERMISSIONS.USERS_UPDATE), verifyAdminUserDirect)
 router.delete('/admin/:userId', protect, requirePermission(PERMISSIONS.USERS_DELETE), deleteAdminUser)
 
-// Favorites routes - specific routes first!
+// Notification routes
+router.get('/notifications/unread-count', protect, getUnreadNotificationCount)
+router.get('/notifications', protect, getMyNotifications)
+router.patch('/notifications/read-all', protect, markAllNotificationsAsRead)
+router.patch('/notifications/:notificationId/read', protect, markNotificationAsRead)
+
+// Connections routes
+router.get('/connections', protect, getMyConnections)
+router.post('/connections/:userId', protect, sendConnectionRequest)
+router.patch('/connections/:connectionId/accept', protect, acceptConnectionRequest)
+router.patch('/connections/:connectionId/decline', protect, declineConnectionRequest)
+router.delete('/connections/:connectionId', protect, removeConnection)
+
+// Project favorites routes
 router.get('/favorites', protect, getFavoriteProjects)
-router.post('/favorites/freelancer/:freelancerId', protect, addFreelancerToFavorites)
-router.delete('/favorites/freelancer/:freelancerId', protect, removeFreelancerFromFavorites)
 router.post('/favorites/:projectId', protect, addToFavorites)
 router.delete('/favorites/:projectId', protect, removeFromFavorites)
 
