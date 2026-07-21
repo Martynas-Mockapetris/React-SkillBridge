@@ -1,4 +1,7 @@
 import AvailabilityCalendar from '../models/AvailabilityCalendar.js'
+import Logger from './logger.js'
+
+const logger = new Logger('AvailabilityCalendarService')
 
 const PRIORITY_CAPACITY = {
   low: 25,
@@ -23,7 +26,7 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
     const { _id: projectId, deadline, priority = 'low' } = projectData
 
     if (!deadline) {
-      console.warn('Project has no deadline, skipping calendar population')
+      logger.warn('Project has no deadline, skipping calendar population')
       return
     }
 
@@ -116,9 +119,9 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
       await calendar.save()
     }
 
-    console.log(`Availability calendar updated for freelancer ${freelancerId} for project ${projectId}`)
+    logger.debug(`Availability calendar updated for freelancer ${freelancerId} for project ${projectId}`)
   } catch (error) {
-    console.error('Error populating availability on project assignment:', error)
+    logger.error('Error populating availability on project assignment:', error)
     // Don't throw - this is secondary operation
   }
 }
@@ -151,9 +154,9 @@ export const removeProjectFromAvailability = async (freelancerId, projectId) => 
       await calendar.save()
     }
 
-    console.log(`Project ${projectId} removed from availability for freelancer ${freelancerId}`)
+    logger.debug(`Project ${projectId} removed from availability for freelancer ${freelancerId}`)
   } catch (error) {
-    console.error('Error removing project from availability:', error)
+    logger.error('Error removing project from availability:', error)
     // Don't throw - this is secondary operation
   }
 }

@@ -46,7 +46,6 @@ const router = express.Router()
 
 // Test route
 router.get('/test', (req, res) => {
-  console.log('Test route hit!')
   res.json({ message: 'Project routes are working' })
 })
 

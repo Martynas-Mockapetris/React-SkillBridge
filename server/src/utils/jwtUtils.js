@@ -1,4 +1,7 @@
 import jwt from 'jsonwebtoken'
+import Logger from './logger.js'
+
+const logger = new Logger('JWTUtils')
 
 // Generate token for authenticated users
 export const generateToken = (userId) => {
@@ -10,10 +13,10 @@ export const generateToken = (userId) => {
 // Verify a token is valid
 export const verifyToken = (token) => {
   try {
-    console.log('Verifying token with secret length:', process.env.JWT_SECRET.length)
+    logger.debug('Verifying token with secret length:', process.env.JWT_SECRET.length)
     return jwt.verify(token, process.env.JWT_SECRET)
   } catch (error) {
-    console.error('Token verification error:', error.message)
+    logger.error('Token verification error:', error.message)
     return null
   }
 }

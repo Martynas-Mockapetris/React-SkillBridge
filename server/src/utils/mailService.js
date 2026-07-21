@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer'
 import SystemConfig from '../models/SystemConfig.js'
+import Logger from './logger.js'
+
+const logger = new Logger('MailService')
 
 const toBoolean = (value, fallback = false) => {
   if (typeof value === 'boolean') return value
@@ -70,10 +73,10 @@ export const sendMail = async ({ to, subject, text, html }) => {
   }
 
   if (!isMailConfigured(settings)) {
-    console.warn('Mail delivery skipped: mail transport is not configured.')
+    logger.warn('Mail delivery skipped: mail transport is not configured.')
 
     if (process.env.NODE_ENV !== 'production') {
-      console.log('Mail preview:', {
+      logger.debug('Mail preview:', {
         to,
         subject,
         text,

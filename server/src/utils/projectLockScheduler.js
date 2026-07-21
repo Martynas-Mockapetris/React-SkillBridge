@@ -1,5 +1,8 @@
 import mongoose from 'mongoose'
 import Project from '../models/Project.js'
+import Logger from './logger.js'
+
+const logger = new Logger('ProjectLockScheduler')
 
 const DEFAULT_SCAN_MS = 5 * 60 * 1000 // 5 minutes
 
@@ -28,9 +31,9 @@ const runProjectUnlockScan = async () => {
     if (lockedProjects.length === 0) return
 
     await Promise.all(lockedProjects.map((project) => project.ensureUnlockedIfExpired()))
-    console.log(`[project-lock-scheduler] Auto-unlocked ${lockedProjects.length} expired project lock(s)`)
+    logger.debug(`[project-lock-scheduler] Auto-unlocked ${lockedProjects.length} expired project lock(s)`)
   } catch (error) {
-    console.error('[project-lock-scheduler] Scan failed:', error)
+    logger.error('[project-lock-scheduler] Scan failed:', error)
   } finally {
     isRunning = false
   }
@@ -45,5 +48,5 @@ export const startProjectAutoUnlockScheduler = () => {
   // Run one immediate scan on startup.
   runProjectUnlockScan()
 
-  console.log(`[project-lock-scheduler] Started (interval: ${scanMs} ms)`)
+  logger.debug(`[project-lock-scheduler] Started (interval: ${scanMs} ms)`)
 }
