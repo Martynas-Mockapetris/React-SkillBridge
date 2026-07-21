@@ -1,19 +1,22 @@
 import User from '../models/User.js'
 import Project from '../models/Project.js'
+import Logger from '../utils/logger.js'
+
+const logger = new Logger('RatingController')
 
 // Submit a rating for a freelancer or client
 export const submitRating = async (req, res) => {
   try {
     // Check if user is authenticated
     if (!req.user) {
-      console.log('[RATING SUBMIT] Not authenticated - no user in request')
+      logger.debug('[RATING SUBMIT] Not authenticated - no user in request')
       return res.status(401).json({ message: 'You must be logged in to submit a rating' })
     }
 
     const { receiverId, projectId, score, feedback } = req.body
     const raterId = req.user._id
 
-    console.log('[RATING SUBMIT START]', { receiverId, projectId, score, raterId: raterId.toString() })
+    logger.debug('[RATING SUBMIT START]', { receiverId, projectId, score, raterId: raterId.toString() })
 
     // Validate required fields
     if (!receiverId || !projectId || !score) {
@@ -28,20 +31,20 @@ export const submitRating = async (req, res) => {
     // Find the receiver (person being rated)
     const receiver = await User.findById(receiverId)
     if (!receiver) {
-      console.log('[RATING SUBMIT] User not found:', receiverId)
+      logger.debug('[RATING SUBMIT] User not found:', receiverId)
       return res.status(404).json({ message: 'User not found' })
     }
 
-    console.log('[RATING SUBMIT] Receiver found:', receiver._id.toString())
+    logger.debug('[RATING SUBMIT] Receiver found:', receiver._id.toString())
 
     // Find the project to verify authorization
     const project = await Project.findById(projectId)
     if (!project) {
-      console.log('[RATING SUBMIT] Project not found:', projectId)
+      logger.debug('[RATING SUBMIT] Project not found:', projectId)
       return res.status(404).json({ message: 'Project not found' })
     }
 
-    console.log('[RATING SUBMIT] Project found:', project._id.toString())
+    logger.debug('[RATING SUBMIT] Project found:', project._id.toString())
 
     // Determine if rating freelancer or client and verify authorization
     let isRatingFreelancer
@@ -65,11 +68,11 @@ export const submitRating = async (req, res) => {
     const existingRating = receiver.ratings.find((rating) => rating.projectId.toString() === projectId && rating.ratedBy.toString() === raterId.toString())
 
     if (existingRating) {
-      console.log('[RATING SUBMIT] User already rated this person for this project')
+      logger.debug('[RATING SUBMIT] User already rated this person for this project')
       return res.status(400).json({ message: 'You have already rated this user for this project' })
     }
 
-    console.log('[RATING SUBMIT] Creating new rating entry')
+    logger.debug('[RATING SUBMIT] Creating new rating entry')
 
     // Add rating to receiver's ratings array
     const newRating = {
@@ -82,18 +85,18 @@ export const submitRating = async (req, res) => {
 
     receiver.ratings.push(newRating)
 
-    console.log('[RATING SUBMIT] Rating pushed to array, recalculating average')
+    logger.debug('[RATING SUBMIT] Rating pushed to array, recalculating average')
 
     // Recalculate average rating
     const totalScore = receiver.ratings.reduce((sum, rating) => sum + rating.score, 0)
     receiver.averageRating = totalScore / receiver.ratings.length
     receiver.totalRatings = receiver.ratings.length
 
-    console.log('[RATING SUBMIT] Saving receiver with new rating:', { averageRating: receiver.averageRating, totalRatings: receiver.totalRatings })
+    logger.debug('[RATING SUBMIT] Saving receiver with new rating:', { averageRating: receiver.averageRating, totalRatings: receiver.totalRatings })
 
     await receiver.save()
 
-    console.log('[RATING SUBMIT] SUCCESS')
+    logger.debug('[RATING SUBMIT] SUCCESS')
 
     res.status(201).json({
       message: 'Rating submitted successfully',
@@ -104,7 +107,7 @@ export const submitRating = async (req, res) => {
       }
     })
   } catch (error) {
-    console.error('[RATING SUBMIT ERROR]', {
+    logger.error('[RATING SUBMIT ERROR]', {
       message: error.message,
       code: error.code,
       stack: error.stack,
@@ -133,7 +136,7 @@ export const getFreelancerRatings = async (req, res) => {
       ratings: freelancer.ratings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     })
   } catch (error) {
-    console.error('Error fetching ratings:', error)
+    logger.error('Error fetching ratings:', error)
     res.status(500).json({ message: 'Failed to fetch ratings', error: error.message })
   }
 }
@@ -168,7 +171,7 @@ export const getRatingStats = async (req, res) => {
       distribution
     })
   } catch (error) {
-    console.error('Error fetching rating stats:', error)
+    logger.error('Error fetching rating stats:', error)
     res.status(500).json({ message: 'Failed to fetch rating stats', error: error.message })
   }
 }
