@@ -74,8 +74,7 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (validateForm()) {
-      console.log('Forma pateikta:', formData)
-      // API
+      // API call will be added in next commit with toast notifications
     }
   }
 
