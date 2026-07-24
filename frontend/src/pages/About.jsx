@@ -22,7 +22,6 @@ const About = () => {
         const data = await getPublicSystemConfig()
         setPublicConfig(data || null)
       } catch (err) {
-        console.error('Failed to load About page config:', err)
         setError(err.response?.data?.message || 'Failed to load About page.')
       } finally {
         setLoading(false)

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
 import AuthContext from '../context/AuthContext'
 import { createProject, saveProjectDraft, updateProject } from '../services/projectService'
-import { toast } from 'react-toastify' // Import toast for notifications
+import { showSuccessToast, showErrorToast } from '../utils/toastHelper'
 
 const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', initialData = null, onProjectUpdated }) => {
   // Form state
@@ -306,8 +306,6 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         projectBrief: formData.projectBrief
       }
 
-      console.log('Sending project data:', projectData)
-
       if (isEditMode && initialData) {
         const updatePayload = isDeadlineOnly
           ? { deadline: formData.deadline }
@@ -327,12 +325,11 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
         onClose()
         if (onProjectUpdated) onProjectUpdated()
-        toast.success('Project updated successfully!')
+        showSuccessToast('Project updated successfully!')
         return
       }
 
       const createdProject = await createProject(projectData)
-      console.log('Project created:', createdProject)
 
       resetForm()
       onClose()
@@ -341,10 +338,9 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         onProjectCreated()
       }
 
-      toast.success('Project published successfully!')
+      showSuccessToast('Project published successfully!')
     } catch (error) {
-      console.error('Error creating project:', error)
-      toast.error('Failed to create project. Please try again.')
+      showErrorToast('Failed to create project. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -373,10 +369,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         projectBrief: formData.projectBrief
       }
 
-      console.log('Saving draft:', projectData)
-
       const savedDraft = await saveProjectDraft(projectData)
-      console.log('Draft saved:', savedDraft)
 
       resetForm()
       onClose()
@@ -385,10 +378,9 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         onProjectCreated()
       }
 
-      toast.success('Draft saved successfully!')
+      showSuccessToast('Draft saved successfully!')
     } catch (err) {
-      console.error('Error saving draft:', err)
-      toast.error('Failed to save draft. Please try again.')
+      showErrorToast('Failed to save draft. Please try again.')
     } finally {
       setSubmitting(false)
     }
