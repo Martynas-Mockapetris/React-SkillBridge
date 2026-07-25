@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import VerificationBadge from '../shared/VerificationBadge'
+import LoadingSpinner from '../shared/LoadingSpinner'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 import { normalizeSkills } from '../../utils/skillUtils'
 
@@ -26,7 +27,7 @@ const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, i
         className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 relative'>
         {/* Favorite button - top right corner */}
         <motion.button onClick={handleFavoriteClick} disabled={isFavoriting} className='absolute top-4 right-4 z-10' whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-          <FaHeart className={`text-2xl ${isFavorited ? 'text-red-500' : 'text-gray-400'}`} />
+          {isFavoriting ? <LoadingSpinner size='sm' /> : <FaHeart className={`text-2xl ${isFavorited ? 'text-red-500' : 'text-gray-400'}`} />}
         </motion.button>
 
         {/* Project title */}
