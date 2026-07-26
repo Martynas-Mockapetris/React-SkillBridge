@@ -9,6 +9,7 @@ import EmptyFilterState from '../components/shared/EmptyFilterState'
 import ExportResultsButton from '../components/shared/ExportResultsButton'
 import ProjectCard from '../components/Listings/ProjectCard'
 import CardLoader from '../components/Listings/CardLoader'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaFilter, FaChevronLeft } from 'react-icons/fa'
@@ -138,11 +139,16 @@ const FilteredProjectsView = () => {
 
               {/* Loading state */}
               {loading && (
-                <div className='grid grid-cols-1 gap-6 mt-6'>
-                  {[...Array(6)].map((_, i) => (
-                    <CardLoader key={i} />
-                  ))}
-                </div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='mt-6'>
+                  <div className='flex justify-center mb-8'>
+                    <LoadingSpinner size='md' />
+                  </div>
+                  <div className='grid grid-cols-1 gap-6'>
+                    {[...Array(6)].map((_, i) => (
+                      <CardLoader key={i} />
+                    ))}
+                  </div>
+                </motion.div>
               )}
 
               {/* Projects grid */}
