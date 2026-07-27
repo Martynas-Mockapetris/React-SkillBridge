@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaLink, FaUpload, FaTrash } from 'react-icons/fa'
 import { submitProject } from '../services/projectService'
 import { toast } from 'react-toastify'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
   const [linkInput, setLinkInput] = useState('')
@@ -67,7 +68,6 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
       setNote('')
       setLinkInput('')
     } catch (error) {
-      console.error('Error submitting project:', error)
       toast.error('Failed to submit project. Please try again.')
     } finally {
       setSubmitting(false)
@@ -186,8 +186,15 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
                 disabled={submitting}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium'>
-                {submitting ? 'Submitting...' : 'Submit Project'}
+                className='w-full py-3 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2'>
+                {submitting ? (
+                  <>
+                    <LoadingSpinner size='sm' className='border-t-2 border-white' />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Project'
+                )}
               </motion.button>
             </div>
           </motion.div>

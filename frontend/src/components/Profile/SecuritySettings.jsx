@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
+import LoadingSpinner from '../shared/LoadingSpinner'
 import { changeUserPassword } from '../../services/userService'
 
 const SecuritySettings = () => {
@@ -465,10 +466,12 @@ const SecuritySettings = () => {
               className='w-full bg-accent text-white font-medium py-3 px-6 rounded-lg
               hover:bg-accent/90 transition-colors duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50
-              disabled:opacity-50 disabled:cursor-not-allowed'
+              disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2'
               whileHover={canSubmitPassword && !isSubmitting ? { scale: 1.02 } : undefined}
               whileTap={canSubmitPassword && !isSubmitting ? { scale: 0.98 } : undefined}
               disabled={!canSubmitPassword || isSubmitting}>
+              {isSubmitting && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
               {isSubmitting ? 'Updating Password...' : 'Update Password'}
             </motion.button>
           </div>

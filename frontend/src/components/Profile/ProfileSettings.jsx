@@ -1128,10 +1128,12 @@ const ProfileSettings = () => {
                   className='flex-1 bg-accent text-white font-medium py-3 px-6 rounded-lg
               hover:bg-accent/90 transition-colors duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50
-              disabled:opacity-50 disabled:cursor-not-allowed'
+              disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2'
                   whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
                   whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
                   disabled={isSubmitting || !hasUnsavedChanges}>
+                  {isSubmitting && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                   {isSubmitting ? 'Saving Changes...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
                 </motion.button>
               </div>
