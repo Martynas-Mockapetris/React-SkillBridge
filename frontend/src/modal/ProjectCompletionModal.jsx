@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaCheckCircle, FaTimes } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useState } from 'react'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const ProjectCompletionModal = ({ isOpen, project, onClose, onComplete }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -31,7 +32,6 @@ const ProjectCompletionModal = ({ isOpen, project, onClose, onComplete }) => {
       onClose()
     } catch (err) {
       toast.error(`Error completing project: ${err.message}`)
-      console.error('Error marking project complete:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -112,7 +112,8 @@ const ProjectCompletionModal = ({ isOpen, project, onClose, onComplete }) => {
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className='flex-1 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium disabled:opacity-50 transition-colors duration-200'>
+                  className='flex-1 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium disabled:opacity-50 transition-colors duration-200 flex items-center justify-center gap-2'>
+                  {isSubmitting && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                   {isSubmitting ? 'Completing...' : 'Mark Complete'}
                 </motion.button>
               </div>

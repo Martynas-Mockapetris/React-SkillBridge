@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const presets = [
   { label: '7 days', value: 7 },
@@ -101,7 +102,8 @@ const AdminLockProjectModal = ({ isOpen, onClose, onConfirm, project, loading })
                 className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition'>
                 Cancel
               </button>
-              <button type='submit' disabled={loading} className='px-5 py-2 rounded-lg bg-red-600 text-white font-semibold shadow hover:bg-red-700 disabled:opacity-60'>
+              <button type='submit' disabled={loading} className='px-5 py-2 rounded-lg bg-red-600 text-white font-semibold shadow hover:bg-red-700 disabled:opacity-60 flex items-center justify-center gap-2'>
+                {loading && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                 {loading ? 'Locking...' : 'Lock Project'}
               </button>
             </div>

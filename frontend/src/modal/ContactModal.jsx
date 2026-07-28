@@ -30,7 +30,6 @@ const ContactModal = ({ isOpen, onClose, project }) => {
       setContent('')
       onClose()
     } catch (error) {
-      console.error('Error sending message:', error)
       if (error.response?.status === 401) {
         toast.error('Please login to send messages')
       } else {
