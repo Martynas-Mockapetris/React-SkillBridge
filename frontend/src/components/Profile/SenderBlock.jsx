@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { FaClock } from 'react-icons/fa'
 import { assignUserToProject } from '../../services/projectService'
 import { sendMessage } from '../../services/messageService'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onAssignSuccess }) => {
   const [assigning, setAssigning] = useState(false)
@@ -72,9 +73,10 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
           <motion.button
             onClick={handleAssign}
             disabled={assigning}
-            className='px-3 py-1 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded text-sm transition-all'
+            className='px-3 py-1 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded text-sm transition-all flex items-center justify-center gap-1'
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}>
+            {assigning && <LoadingSpinner size='sm' className='border-t-2 border-accent' />}
             {assigning ? 'Assigning...' : 'Assign'}
           </motion.button>
         )}
@@ -117,9 +119,10 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
             <motion.button
               onClick={handleReply}
               disabled={!replyText.trim() || sending}
-              className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
+              className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}>
+              {sending && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
               {sending ? 'Sending...' : 'Reply'}
             </motion.button>
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { sendMessage } from '../services/messageService'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const AdminMailUserModal = ({ isOpen, onClose, recipient, onSent }) => {
   const [message, setMessage] = useState('')
@@ -77,7 +78,11 @@ const AdminMailUserModal = ({ isOpen, onClose, recipient, onSent }) => {
               <button type='button' onClick={onClose} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition'>
                 Cancel
               </button>
-              <button type='submit' disabled={isSubmitting || !message.trim()} className='px-5 py-2 rounded-lg bg-accent text-white font-semibold shadow hover:bg-accent/90 disabled:opacity-60'>
+              <button
+                type='submit'
+                disabled={isSubmitting || !message.trim()}
+                className='px-5 py-2 rounded-lg bg-accent text-white font-semibold shadow hover:bg-accent/90 disabled:opacity-60 flex items-center justify-center gap-2'>
+                {isSubmitting && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                 {isSubmitting ? 'Sending…' : 'Send Mail'}
               </button>
             </div>

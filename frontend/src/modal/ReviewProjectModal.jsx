@@ -4,6 +4,7 @@ import { FaTimes, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { reviewProject } from '../services/projectService'
 import { toast } from 'react-toastify'
 import RatingModal from './RatingModal'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
   const [feedback, setFeedback] = useState('')
@@ -37,7 +38,6 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
         setFeedback('')
       }
     } catch (error) {
-      console.error('Error reviewing project:', error)
       toast.error('Failed to review project. Please try again.')
     } finally {
       setReviewing(false)
@@ -147,6 +147,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className='flex items-center justify-center gap-2 py-3 px-4 bg-red-500/90 hover:bg-red-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm'>
+                    {reviewing && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                     <FaTimesCircle size={16} /> Decline
                   </motion.button>
                   <motion.button
@@ -155,6 +156,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className='flex items-center justify-center gap-2 py-3 px-4 bg-green-500/90 hover:bg-green-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm'>
+                    {reviewing && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                     <FaCheckCircle size={16} /> Accept
                   </motion.button>
                 </div>

@@ -354,6 +354,7 @@ const UserDetail = () => {
                           : 'bg-accent/10 text-accent hover:bg-accent hover:text-white'
                   }`}
                   whileHover={connectionStatus === 'pending' || connectionStatus === 'accepted' ? {} : { scale: 1.05 }}>
+                  {connectionLoading && <LoadingSpinner size='sm' className={connectionStatus === 'incoming' ? 'border-t-2 border-white' : 'border-t-2 border-accent'} />}
                   <FaUserPlus />
                   <span>{connectionStatus === 'accepted' ? 'Connected' : connectionStatus === 'pending' ? 'Request Sent' : connectionStatus === 'incoming' ? 'Accept Connection' : 'Connect'}</span>
                 </motion.button>

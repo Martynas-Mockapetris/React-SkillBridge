@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaCalendar, FaTimes, FaCheck } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useState } from 'react'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
   const [newDeadline, setNewDeadline] = useState('')
@@ -52,7 +53,6 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
       onClose()
     } catch (err) {
       toast.error(`Error rescheduling: ${err.message}`)
-      console.error('Error rescheduling project:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -150,9 +150,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                   className='flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 transition-colors duration-200'>
                   {isSubmitting ? (
                     <>
-                      <div className='animate-spin'>
-                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full'></div>
-                      </div>
+                      <LoadingSpinner size='sm' className='border-t-2 border-white' />
                       <span>Rescheduling...</span>
                     </>
                   ) : (

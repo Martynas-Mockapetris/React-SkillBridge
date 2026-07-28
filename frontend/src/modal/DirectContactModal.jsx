@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheck, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
 import { toast } from 'react-toastify'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const DirectContactModal = ({ isOpen, onClose, freelancer }) => {
   const [formData, setFormData] = useState({
@@ -189,7 +190,7 @@ const DirectContactModal = ({ isOpen, onClose, freelancer }) => {
                     className='flex-1 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2'>
                     {loading ? (
                       <>
-                        <div className='animate-spin rounded-full h-4 w-4 border-t-2 border-white'></div>
+                        <LoadingSpinner size='sm' className='border-t-2 border-white' />
                         Sending...
                       </>
                     ) : (
