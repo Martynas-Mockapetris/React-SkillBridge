@@ -67,31 +67,62 @@ export const getFreelancerCalendar = async (req, res) => {
 
     const calendar = await getOrCreateCalendar(freelancerId, parseInt(year), parseInt(month))
 
+    // DEBUG: Log calendar info
+    console.log(`[DEBUG] Calendar fetched for ${freelancerId}: year=${calendar.year}, month=${calendar.month}, days.length=${calendar.days.length}`)
+    if (calendar.days.length > 0) {
+      console.log(
+        `[DEBUG] First 3 days:`,
+        calendar.days.slice(0, 3).map((d) => ({ date: d.date, status: d.status }))
+      )
+    }
+
     // Add projectsCount and projectTitles to each day for frontend rendering
-    const enrichedDays = calendar.days.map((day) => ({
-      date: day.date,
-      status: day.status,
-      capacity: day.capacity,
-      manualStatus: day.manualStatus,
-      notes: day.notes,
-      assignedProjects: day.assignedProjects,
-      projectsCount: day.assignedProjects.length,
-      projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority, deadline: p.deadline }))
-    }))
+    const enrichedDays = calendar.days.map((day) => {
+      const enrichedDay = {
+        date: day.date,
+        status: day.status,
+        capacity: day.capacity,
+        manualStatus: day.manualStatus,
+        notes: day.notes,
+        assignedProjects: day.assignedProjects || [],
+        projectsCount: (day.assignedProjects || []).length,
+        projectTitles: (day.assignedProjects || []).map((p) => ({ title: p.title, priority: p.priority, deadline: p.deadline }))
+      }
+      return enrichedDay
+    })
+
+    // DEBUG: Log enrichedDays info
+    console.log(`[DEBUG] enrichedDays created: length=${enrichedDays.length}`)
+    if (enrichedDays.length > 0) {
+      console.log(
+        `[DEBUG] enrichedDays first 3:`,
+        enrichedDays.slice(0, 3).map((d) => ({ date: d.date, status: d.status }))
+      )
+    }
 
     // Calculate days breakdown by status
-    const daysBreakdown = {
-      green: enrichedDays.filter((d) => d.status === 'green').length,
-      yellow: enrichedDays.filter((d) => d.status === 'yellow').length,
-      orange: enrichedDays.filter((d) => d.status === 'orange').length,
-      red: enrichedDays.filter((d) => d.status === 'red').length
-    }
+    const statusCounts = { green: 0, yellow: 0, orange: 0, red: 0 }
+    enrichedDays.forEach((day) => {
+      const status = day.status
+      if (statusCounts.hasOwnProperty(status)) {
+        statusCounts[status]++
+      } else {
+        console.warn(`[WARNING] Unexpected status: ${status}`)
+      }
+    })
+
+    const daysBreakdown = statusCounts
+
+    // DEBUG: Log daysBreakdown
+    console.log(`[DEBUG] daysBreakdown: ${JSON.stringify(daysBreakdown)}`)
 
     const enrichedData = {
       ...calendar.toObject(),
       days: enrichedDays,
       daysBreakdown
     }
+
+    console.log(`[DEBUG] Final response - days.length: ${enrichedData.days.length}, daysBreakdown: ${JSON.stringify(enrichedData.daysBreakdown)}`)
 
     res.status(200).json({
       success: true,
