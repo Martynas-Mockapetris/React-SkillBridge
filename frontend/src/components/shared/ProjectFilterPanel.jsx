@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes } from 'react-icons/fa'
+import { components, patterns } from '../../utils/designTokens'
 
 export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasActiveFilters }) => {
   const [expandedSections, setExpandedSections] = useState({
@@ -46,20 +47,20 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
   }
 
   return (
-    <div className='bg-white rounded-lg shadow p-4 md:p-6'>
+    <div className='theme-card rounded-lg shadow p-4 md:p-6 border theme-border'>
       {/* Header with Clear Button */}
       <div className='flex items-center justify-between mb-4'>
-        <h3 className='text-lg font-semibold text-gray-900'>Filters</h3>
+        <h3 className='text-lg font-semibold theme-text'>Filters</h3>
         {hasActiveFilters && (
-          <button onClick={onClearAll} className='text-sm px-3 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium'>
+          <button onClick={onClearAll} className='text-sm px-3 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium'>
             Clear All
           </button>
         )}
       </div>
 
       {/* Budget Range */}
-      <div className='border-b border-gray-200 mb-4 pb-4'>
-        <button onClick={() => toggleSection('budget')} className='w-full flex items-center justify-between py-2 text-left font-medium text-gray-700 hover:text-gray-900'>
+      <div className='border-b theme-border mb-4 pb-4'>
+        <button onClick={() => toggleSection('budget')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
           <span>Budget Range</span>
           <span className={`transform transition-transform ${expandedSections.budget ? 'rotate-180' : ''}`}>▼</span>
         </button>
@@ -72,14 +73,14 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                   placeholder='Min Budget'
                   value={filters.minBudget}
                   onChange={(e) => onFilterChange('minBudget', e.target.value)}
-                  className='px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  className='px-3 py-2 border theme-border rounded-lg text-sm theme-text focus:outline-none focus:ring-2 focus:ring-accent theme-input'
                 />
                 <input
                   type='number'
                   placeholder='Max Budget'
                   value={filters.maxBudget}
                   onChange={(e) => onFilterChange('maxBudget', e.target.value)}
-                  className='px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  className='px-3 py-2 border theme-border rounded-lg text-sm theme-text focus:outline-none focus:ring-2 focus:ring-accent theme-input'
                 />
               </div>
             </motion.div>
@@ -88,8 +89,8 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       </div>
 
       {/* Status Filter */}
-      <div className='border-b border-gray-200 mb-4 pb-4'>
-        <button onClick={() => toggleSection('status')} className='w-full flex items-center justify-between py-2 text-left font-medium text-gray-700 hover:text-gray-900'>
+      <div className='border-b theme-border mb-4 pb-4'>
+        <button onClick={() => toggleSection('status')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
           <span>Status</span>
           <span className={`transform transition-transform ${expandedSections.status ? 'rotate-180' : ''}`}>▼</span>
         </button>
@@ -99,8 +100,8 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
               <div className='grid grid-cols-2 gap-2 mt-3'>
                 {statusOptions.map((status) => (
                   <label key={status} className='flex items-center cursor-pointer'>
-                    <input type='checkbox' checked={filters.status.includes(status)} onChange={() => onFilterChange('addStatus', status)} className='w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500' />
-                    <span className='ml-2 text-sm text-gray-700 capitalize'>{status.replace('_', ' ')}</span>
+                    <input type='checkbox' checked={filters.status.includes(status)} onChange={() => onFilterChange('addStatus', status)} className='w-4 h-4 rounded border-accent text-accent focus:ring-accent' />
+                    <span className='ml-2 text-sm theme-text capitalize'>{status.replace('_', ' ')}</span>
                   </label>
                 ))}
               </div>
@@ -110,8 +111,8 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       </div>
 
       {/* Skills Filter */}
-      <div className='border-b border-gray-200 mb-4 pb-4'>
-        <button onClick={() => toggleSection('skills')} className='w-full flex items-center justify-between py-2 text-left font-medium text-gray-700 hover:text-gray-900'>
+      <div className='border-b theme-border mb-4 pb-4'>
+        <button onClick={() => toggleSection('skills')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
           <span>Skills</span>
           <span className={`transform transition-transform ${expandedSections.skills ? 'rotate-180' : ''}`}>▼</span>
         </button>
@@ -128,7 +129,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     .filter((s) => s.length > 0)
                   onFilterChange('skills', skills)
                 }}
-                className='w-full mt-3 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none'
+                className='w-full mt-3 px-3 py-2 border theme-border rounded-lg text-sm theme-text focus:outline-none focus:ring-2 focus:ring-accent resize-none theme-input'
                 rows='3'
               />
               {/* Match Type Toggle */}
@@ -137,7 +138,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                   <button
                     key={option.value}
                     onClick={() => onFilterChange('matchType', option.value)}
-                    className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${filters.matchType === option.value ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                    className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${filters.matchType === option.value ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-800 theme-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                     {option.label}
                   </button>
                 ))}
@@ -148,8 +149,8 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       </div>
 
       {/* Priority Filter */}
-      <div className='border-b border-gray-200 mb-4 pb-4'>
-        <button onClick={() => toggleSection('priority')} className='w-full flex items-center justify-between py-2 text-left font-medium text-gray-700 hover:text-gray-900'>
+      <div className='border-b theme-border mb-4 pb-4'>
+        <button onClick={() => toggleSection('priority')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
           <span>Priority</span>
           <span className={`transform transition-transform ${expandedSections.priority ? 'rotate-180' : ''}`}>▼</span>
         </button>
@@ -159,13 +160,8 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
               <div className='grid grid-cols-2 gap-2 mt-3'>
                 {priorityOptions.map((priority) => (
                   <label key={priority} className='flex items-center cursor-pointer'>
-                    <input
-                      type='checkbox'
-                      checked={filters.priority.includes(priority)}
-                      onChange={() => onFilterChange('addPriority', priority)}
-                      className='w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500'
-                    />
-                    <span className='ml-2 text-sm text-gray-700 capitalize'>{priority}</span>
+                    <input type='checkbox' checked={filters.priority.includes(priority)} onChange={() => onFilterChange('addPriority', priority)} className='w-4 h-4 rounded border-accent text-accent focus:ring-accent' />
+                    <span className='ml-2 text-sm theme-text capitalize'>{priority}</span>
                   </label>
                 ))}
               </div>
@@ -175,10 +171,10 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       </div>
 
       {/* Sort Options - Always Visible */}
-      <div className='pt-4 border-t border-gray-200 mt-4'>
+      <div className='pt-4 border-t theme-border mt-4'>
         <div className='flex items-center justify-between mb-3'>
-          <h4 className='font-medium text-gray-700'>Sort Results</h4>
-          <div className='flex-1 ml-3 h-0.5 bg-gradient-to-r from-blue-400 to-transparent'></div>
+          <h4 className='font-medium theme-text'>Sort Results</h4>
+          <div className='flex-1 ml-3 h-0.5 bg-gradient-to-r from-accent to-transparent'></div>
         </div>
         <div className='flex flex-col gap-2'>
           {sortOptions.map((option) => (
@@ -189,10 +185,10 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                 value={option.value}
                 checked={filters.sort === option.value}
                 onChange={(e) => onFilterChange('sort', e.target.value)}
-                className='w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500'
+                className='w-4 h-4 border-accent text-accent focus:ring-accent'
               />
-              <span className='ml-2 text-sm text-gray-700 group-hover:text-blue-600 transition-colors'>{option.label}</span>
-              {filters.sort === option.value && <motion.div layoutId='activeSort' className='ml-auto w-2 h-2 bg-blue-500 rounded-full' initial={{ scale: 0 }} animate={{ scale: 1 }} />}
+              <span className='ml-2 text-sm theme-text group-hover:text-accent transition-colors'>{option.label}</span>
+              {filters.sort === option.value && <motion.div layoutId='activeSort' className='ml-auto w-2 h-2 bg-accent rounded-full' initial={{ scale: 0 }} animate={{ scale: 1 }} />}
             </motion.label>
           ))}
         </div>
