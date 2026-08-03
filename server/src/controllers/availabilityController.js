@@ -67,9 +67,24 @@ export const getFreelancerCalendar = async (req, res) => {
 
     const calendar = await getOrCreateCalendar(freelancerId, parseInt(year), parseInt(month))
 
+    // Add projectsCount and projectTitles to each day for frontend rendering
+    const enrichedData = {
+      ...calendar.toObject(),
+      days: calendar.days.map((day) => ({
+        date: day.date,
+        status: day.status,
+        capacity: day.capacity,
+        manualStatus: day.manualStatus,
+        notes: day.notes,
+        assignedProjects: day.assignedProjects,
+        projectsCount: day.assignedProjects.length,
+        projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority, deadline: p.deadline }))
+      }))
+    }
+
     res.status(200).json({
       success: true,
-      data: calendar
+      data: enrichedData
     })
   } catch (error) {
     console.error('Error fetching calendar:', error)

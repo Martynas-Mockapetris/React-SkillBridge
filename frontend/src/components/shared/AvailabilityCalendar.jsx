@@ -413,6 +413,13 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
                       </motion.div>
                     )}
 
+                    {/* Project count badge */}
+                    {!isSelected && day.projectsCount > 0 && (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='absolute top-1 right-1 w-5 h-5 md:w-6 md:h-6 bg-accent rounded-full flex items-center justify-center'>
+                        <span className='text-white text-xs font-bold'>{day.projectsCount}</span>
+                      </motion.div>
+                    )}
+
                     {/* Hover tooltip - hidden on mobile */}
                     <AnimatePresence>
                       {hoveredDay === idx && (
@@ -420,12 +427,21 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className='hidden md:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-xs whitespace-nowrap z-50 pointer-events-none shadow-lg'>
+                          className='hidden md:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-xs z-50 pointer-events-none shadow-lg max-w-xs'>
                           <div className='font-semibold'>{getStatusLabel(currentStatus)}</div>
                           <div className='text-xs opacity-90'>{getDayCapacityLabel(day.capacity)}</div>
                           {day.projectsCount > 0 && (
-                            <div className='text-xs opacity-90 mt-1'>
-                              {day.projectsCount} project{day.projectsCount !== 1 ? 's' : ''}
+                            <div className='text-xs opacity-90 mt-1 space-y-1'>
+                              <div className='font-medium'>
+                                {day.projectsCount} project{day.projectsCount !== 1 ? 's' : ''}
+                              </div>
+                              {day.projectTitles &&
+                                day.projectTitles.slice(0, 3).map((proj, idx) => (
+                                  <div key={idx} className='text-xs truncate opacity-90'>
+                                    • {proj.title}
+                                  </div>
+                                ))}
+                              {day.projectTitles && day.projectTitles.length > 3 && <div className='text-xs opacity-75'>+{day.projectTitles.length - 3} more</div>}
                             </div>
                           )}
                         </motion.div>
