@@ -8,6 +8,10 @@
     @apply bg-light dark:bg-primary;
   }
 
+  .theme-card {
+    @apply bg-light dark:bg-primary;
+  }
+
   /* Tekstu spalvos su skirtingais permatomumo lygiais */
   .theme-text {
     @apply text-primary dark:text-light;
