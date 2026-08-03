@@ -68,18 +68,29 @@ export const getFreelancerCalendar = async (req, res) => {
     const calendar = await getOrCreateCalendar(freelancerId, parseInt(year), parseInt(month))
 
     // Add projectsCount and projectTitles to each day for frontend rendering
+    const enrichedDays = calendar.days.map((day) => ({
+      date: day.date,
+      status: day.status,
+      capacity: day.capacity,
+      manualStatus: day.manualStatus,
+      notes: day.notes,
+      assignedProjects: day.assignedProjects,
+      projectsCount: day.assignedProjects.length,
+      projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority, deadline: p.deadline }))
+    }))
+
+    // Calculate days breakdown by status
+    const daysBreakdown = {
+      green: enrichedDays.filter((d) => d.status === 'green').length,
+      yellow: enrichedDays.filter((d) => d.status === 'yellow').length,
+      orange: enrichedDays.filter((d) => d.status === 'orange').length,
+      red: enrichedDays.filter((d) => d.status === 'red').length
+    }
+
     const enrichedData = {
       ...calendar.toObject(),
-      days: calendar.days.map((day) => ({
-        date: day.date,
-        status: day.status,
-        capacity: day.capacity,
-        manualStatus: day.manualStatus,
-        notes: day.notes,
-        assignedProjects: day.assignedProjects,
-        projectsCount: day.assignedProjects.length,
-        projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority, deadline: p.deadline }))
-      }))
+      days: enrichedDays,
+      daysBreakdown
     }
 
     res.status(200).json({
@@ -214,15 +225,26 @@ export const getPublicFreelancerCalendar = async (req, res) => {
     }
 
     // Only show public information
+    const publicDays = calendar.days.map((day) => ({
+      date: day.date,
+      status: day.status,
+      capacity: day.capacity,
+      projectsCount: day.assignedProjects.length,
+      projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority }))
+    }))
+
+    // Calculate days breakdown by status
+    const daysBreakdown = {
+      green: publicDays.filter((d) => d.status === 'green').length,
+      yellow: publicDays.filter((d) => d.status === 'yellow').length,
+      orange: publicDays.filter((d) => d.status === 'orange').length,
+      red: publicDays.filter((d) => d.status === 'red').length
+    }
+
     const publicData = {
       ...calendar.toObject(),
-      days: calendar.days.map((day) => ({
-        date: day.date,
-        status: day.status,
-        capacity: day.capacity,
-        projectsCount: day.assignedProjects.length,
-        projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority }))
-      }))
+      days: publicDays,
+      daysBreakdown
     }
 
     res.status(200).json({
@@ -480,11 +502,20 @@ export const getFilteredAvailability = async (req, res) => {
         .filter((day) => day.projectsCount > 0)
     }
 
+    // Calculate days breakdown by status
+    const daysBreakdown = {
+      green: filteredDays.filter((d) => d.status === 'green').length,
+      yellow: filteredDays.filter((d) => d.status === 'yellow').length,
+      orange: filteredDays.filter((d) => d.status === 'orange').length,
+      red: filteredDays.filter((d) => d.status === 'red').length
+    }
+
     res.status(200).json({
       message: 'Filtered availability retrieved',
       data: {
         ...calendar.toObject(),
         days: filteredDays,
+        daysBreakdown,
         appliedFilters: {
           status: statusFilter
         }
