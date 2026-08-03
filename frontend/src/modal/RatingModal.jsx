@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaStar } from 'react-icons/fa'
 import { submitRating } from '../services/ratingService'
 import { useAuth } from '../context/AuthContext'
+import { patterns } from '../utils/designTokens'
 
 const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted, ratedUserType = 'freelancer' }) => {
   const { logout } = useAuth()
@@ -103,21 +104,16 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
           {/* Modal */}
           <motion.div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={(e) => e.stopPropagation()}>
             <motion.div
-              className='bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto'
+              className='theme-card rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto'
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}>
               {/* Header */}
-              <div className='flex items-center justify-between p-6 border-b dark:border-gray-700 border-gray-200 sticky top-0 bg-inherit rounded-t-lg'>
+              <div className='flex items-center justify-between p-6 border-b theme-border sticky top-0 theme-card rounded-t-lg'>
                 <h2 className='text-2xl font-bold theme-text'>Rate {userTypeLabel}</h2>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleClose}
-                  disabled={loading}
-                  className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50'>
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleClose} disabled={loading} className='theme-text-secondary hover:theme-text transition-colors disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
               </div>
@@ -140,7 +136,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
                 )}
 
                 {/* User Info */}
-                <div className='flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg'>
+                <div className='flex items-center gap-3 p-4 theme-card/50 border theme-border rounded-lg'>
                   <img src={ratedUser.profilePicture || `https://i.pravatar.cc/150?u=${ratedUser._id}`} alt={ratedUser.firstName} className='w-12 h-12 rounded-full object-cover' />
                   <div>
                     <p className='font-semibold theme-text'>
@@ -165,7 +161,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
                         whileTap={{ scale: 0.9 }}
                         className='p-2 rounded-lg transition-colors'
                         disabled={loading}>
-                        <FaStar size={32} className={`transition-colors ${star <= (hoverScore || score) ? 'text-accent' : 'text-gray-300 dark:text-gray-600'}`} />
+                        <FaStar size={32} className={`transition-colors ${star <= (hoverScore || score) ? 'text-accent' : 'theme-text-secondary'}`} />
                       </motion.button>
                     ))}
                   </div>
@@ -189,7 +185,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
                     placeholder='Share your experience working with this freelancer...'
                     disabled={loading}
                     rows='4'
-                    className='w-full px-4 py-2 rounded-lg theme-input theme-text border dark:border-gray-600 border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all resize-none disabled:opacity-50'
+                    className='w-full px-4 py-2 rounded-lg theme-input theme-text border theme-border focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all resize-none disabled:opacity-50'
                   />
                   <p className='text-xs theme-text-secondary mt-1'>{feedback.length} / 500 characters</p>
                 </div>

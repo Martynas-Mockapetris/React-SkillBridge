@@ -4,6 +4,7 @@ import { FaTimes, FaLink, FaUpload, FaTrash } from 'react-icons/fa'
 import { submitProject } from '../services/projectService'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
+import { patterns } from '../utils/designTokens'
 
 const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
   const [linkInput, setLinkInput] = useState('')
@@ -78,15 +79,11 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
     <AnimatePresence>
       {isOpen && (
         <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className='bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto'>
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className='theme-card rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto'>
             {/* Header */}
-            <div className='sticky top-0 flex justify-between items-center p-6 border-b dark:border-gray-700 border-gray-200 bg-white dark:bg-gray-800'>
+            <div className='sticky top-0 flex justify-between items-center p-6 border-b theme-border theme-card'>
               <h2 className='text-2xl font-bold theme-text'>Submit Project</h2>
-              <button onClick={onClose} className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'>
+              <button onClick={onClose} className='theme-text-secondary hover:theme-text transition-colors'>
                 <FaTimes size={24} />
               </button>
             </div>
@@ -104,7 +101,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
                     value={linkInput}
                     onChange={(e) => setLinkInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addLink()}
-                    className='flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 theme-text placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent text-sm'
+                    className='flex-1 px-3 py-2 rounded-lg border theme-border theme-input theme-text placeholder-theme-text-secondary focus:outline-none focus:ring-2 focus:ring-accent text-sm'
                     placeholder='https://github.com/your-repo'
                   />
                   <motion.button
@@ -124,7 +121,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
-                        className='flex justify-between items-center gap-2 p-2 rounded-lg bg-primary/5 dark:bg-light/5 border border-primary/10 dark:border-light/10'>
+                        className='flex justify-between items-center gap-2 p-2 rounded-lg theme-card/50 border theme-border'>
                         <a href={link} target='_blank' rel='noreferrer' className='text-accent hover:underline text-xs truncate'>
                           {link}
                         </a>
@@ -140,10 +137,10 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
               {/* Files Section */}
               <div className='space-y-3'>
                 <label className='block text-sm font-semibold theme-text'>Files (Optional)</label>
-                <div className='border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-accent transition-colors cursor-pointer'>
+                <div className='border-2 border-dashed theme-border rounded-lg p-4 text-center hover:border-accent transition-colors cursor-pointer'>
                   <input type='file' id='file-input' multiple onChange={handleFileChange} className='hidden' />
                   <label htmlFor='file-input' className='cursor-pointer flex flex-col items-center gap-2'>
-                    <FaUpload className='text-gray-400 text-2xl' />
+                    <FaUpload className='theme-text-secondary text-2xl' />
                     <p className='text-sm font-medium theme-text'>Click to upload files</p>
                     <p className='text-xs theme-text-secondary'>Max 5 files, 10MB each</p>
                   </label>
@@ -157,7 +154,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
-                        className='flex justify-between items-center gap-2 p-2 rounded-lg bg-primary/5 dark:bg-light/5 border border-primary/10 dark:border-light/10'>
+                        className='flex justify-between items-center gap-2 p-2 rounded-lg theme-card/50 border theme-border'>
                         <span className='text-xs theme-text truncate'>{file.name}</span>
                         <button onClick={() => removeFile(idx)} className='text-gray-400 hover:text-red-500 transition-colors flex-shrink-0'>
                           <FaTrash size={12} />
@@ -175,7 +172,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={4}
-                  className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 theme-text placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent text-sm resize-none'
+                  className='w-full px-3 py-2 rounded-lg border theme-border theme-input theme-text placeholder-theme-text-secondary focus:outline-none focus:ring-2 focus:ring-accent text-sm resize-none'
                   placeholder='Tell the client what you submitted and any important details...'
                 />
               </div>
