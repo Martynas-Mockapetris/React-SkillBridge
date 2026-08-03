@@ -402,16 +402,4 @@ const notificationService = {
 export default notificationService
 
 // Named exports for convenience
-export {
-  showSuccess,
-  showError,
-  showWarning,
-  showInfo,
-  showLoading,
-  showConfirmation,
-  showValidation,
-  updateNotification,
-  dismissNotification,
-  promiseNotification,
-  asyncNotification
-}
+export { showSuccess, showError, showWarning, showInfo, showLoading, showConfirmation, showValidation, updateNotification, dismissNotification, promiseNotification, asyncNotification }

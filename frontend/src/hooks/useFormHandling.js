@@ -47,50 +47,56 @@ const useFormHandling = (initialData = {}, onSubmit, validationSchema = {}) => {
    * Handle input change and clear field error
    * @param {Event} e - Change event from input/textarea/select
    */
-  const handleChange = useCallback((e) => {
-    const { name, value, type, checked } = e.target
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value, type, checked } = e.target
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }))
 
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => {
-        const updated = { ...prev }
-        delete updated[name]
-        return updated
-      })
-    }
+      // Clear error for this field when user starts typing
+      if (errors[name]) {
+        setErrors((prev) => {
+          const updated = { ...prev }
+          delete updated[name]
+          return updated
+        })
+      }
 
-    // Clear general error when user makes changes
-    if (generalError) {
-      setGeneralError(null)
-    }
-  }, [errors, generalError])
+      // Clear general error when user makes changes
+      if (generalError) {
+        setGeneralError(null)
+      }
+    },
+    [errors, generalError]
+  )
 
   /**
    * Handle input blur for validation
    * @param {Event} e - Blur event from input
    */
-  const handleBlur = useCallback((e) => {
-    const { name, value } = e.target
+  const handleBlur = useCallback(
+    (e) => {
+      const { name, value } = e.target
 
-    // Only validate if schema is provided for this field
-    if (validationSchema[name]) {
-      const fieldSchema = validationSchema[name]
-      const { type, options } = typeof fieldSchema === 'string' ? { type: fieldSchema, options: {} } : fieldSchema
+      // Only validate if schema is provided for this field
+      if (validationSchema[name]) {
+        const fieldSchema = validationSchema[name]
+        const { type, options } = typeof fieldSchema === 'string' ? { type: fieldSchema, options: {} } : fieldSchema
 
-      // Import validateField here to avoid circular dependencies
-      import('../utils/formValidation').then(({ validateField }) => {
-        const { isValid, error } = validateField(type, value, options)
-        if (!isValid) {
-          setErrors((prev) => ({ ...prev, [name]: error }))
-        }
-      })
-    }
-  }, [validationSchema])
+        // Import validateField here to avoid circular dependencies
+        import('../utils/formValidation').then(({ validateField }) => {
+          const { isValid, error } = validateField(type, value, options)
+          if (!isValid) {
+            setErrors((prev) => ({ ...prev, [name]: error }))
+          }
+        })
+      }
+    },
+    [validationSchema]
+  )
 
   /**
    * Validate entire form using schema
