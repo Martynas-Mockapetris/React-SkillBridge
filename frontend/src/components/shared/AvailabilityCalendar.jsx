@@ -6,6 +6,7 @@ import AvailabilityEditPanel from './AvailabilityEditPanel'
 import AvailabilityCalendarSkeleton from './AvailabilityCalendarSkeleton'
 import useAvailability from '../../hooks/useAvailability'
 import StatusFilterChips from './StatusFilterChips'
+import { patterns } from '../../utils/designTokens'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -329,8 +330,8 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
 
       {/* Edit Mode Banner */}
       {editMode && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className='mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg'>
-          <p className='text-blue-700 dark:text-blue-400 text-sm font-medium'>Click on a day to select it, then choose its status. {Object.keys(selectedDays).length} day(s) selected.</p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className='mb-4 p-4 bg-accent/10 border border-accent/30 rounded-lg theme-text-secondary text-sm font-medium'>
+          Click on a day to select it, then choose its status. {Object.keys(selectedDays).length} day(s) selected.
         </motion.div>
       )}
 
@@ -440,16 +441,17 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
 
       {/* Summary Stats - only for own profile, hidden in edit mode */}
       {!isPublicView && !editMode && (
-        <div className='mt-6 pt-6 border-t dark:border-light/10 border-primary/10 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4'>
+        <div className='mt-6 pt-6 border-t theme-border grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4'>
           {[
-            { label: 'Available', value: calendarData.daysBreakdown?.green || 0, color: 'bg-green-100 dark:bg-green-900/30' },
-            { label: 'Partially Busy', value: calendarData.daysBreakdown?.yellow || 0, color: 'bg-yellow-100 dark:bg-yellow-900/30' },
-            { label: 'Busy', value: calendarData.daysBreakdown?.orange || 0, color: 'bg-orange-100 dark:bg-orange-900/30' },
-            { label: 'Fully Busy', value: calendarData.daysBreakdown?.red || 0, color: 'bg-red-100 dark:bg-red-900/30' }
+            { label: 'Available', value: calendarData.daysBreakdown?.green || 0, statusColor: 'green' },
+            { label: 'Partially Busy', value: calendarData.daysBreakdown?.yellow || 0, statusColor: 'yellow' },
+            { label: 'Busy', value: calendarData.daysBreakdown?.orange || 0, statusColor: 'orange' },
+            { label: 'Fully Busy', value: calendarData.daysBreakdown?.red || 0, statusColor: 'red' }
           ].map((stat) => (
-            <div key={stat.label} className={`p-2 md:p-3 rounded-lg ${stat.color}`}>
+            <div key={stat.label} className='p-2 md:p-3 rounded-lg theme-card border theme-border'>
               <div className='text-xs theme-text-secondary'>{stat.label}</div>
               <div className='text-lg md:text-xl font-bold theme-text'>{stat.value}</div>
+              <div className='mt-1 w-2 h-2 rounded-full' style={{ backgroundColor: getStatusColor(stat.statusColor) }}></div>
             </div>
           ))}
         </div>
