@@ -193,10 +193,9 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
             day.assignedProjects.push(projectId)
           }
 
-          // Recalculate capacity
+          // Recalculate capacity using weighted calculation
           const totalCapacity = day.assignedProjects.reduce((sum, proj) => {
-            // Get priority from actual project or estimate based on order
-            return sum + (PRIORITY_CAPACITY[priority] || 0)
+            return sum + getCapacityWeight(priority)
           }, 0)
 
           day.capacity = Math.max(0, 100 - totalCapacity)
