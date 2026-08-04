@@ -231,8 +231,8 @@ export const removeProjectFromAvailability = async (freelancerId, projectId) => 
         // Remove project from assignedProjects
         day.assignedProjects = day.assignedProjects.filter((id) => id.toString() !== projectId.toString())
 
-        // Recalculate capacity and status
-        const totalCapacity = day.assignedProjects.length > 0 ? day.assignedProjects.length * 50 : 0
+        // Recalculate capacity and status - note: uses stored priority from remaining projects
+        const totalCapacity = day.assignedProjects.length > 0 ? day.assignedProjects.length * PRIORITY_CAPACITY.medium : 0
         day.capacity = Math.max(0, 100 - totalCapacity)
         day.status = getStatusByCapacity(totalCapacity)
 
