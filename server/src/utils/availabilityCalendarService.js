@@ -17,6 +17,96 @@ const getStatusByCapacity = (capacityUsed) => {
 }
 
 /**
+ * Get capacity weight for a priority level
+ * @param {string} priority - 'low', 'medium', or 'high'
+ * @returns {number} Capacity weight (25, 50, or 100)
+ */
+const getCapacityWeight = (priority) => {
+  return PRIORITY_CAPACITY[priority] || PRIORITY_CAPACITY.low
+}
+
+/**
+ * Calculate total capacity used by projects on a specific day
+ * @param {Array} assignedProjectIds - Array of project ObjectIds
+ * @param {Map} projectMap - Map of projectId -> project object with priority
+ * @returns {number} Total capacity used (0-100+)
+ */
+const calculateTotalCapacityUsed = (assignedProjectIds, projectMap) => {
+  return assignedProjectIds.reduce((total, projectId) => {
+    const projectKey = projectId.toString()
+    const project = projectMap.get(projectKey)
+    const priority = project?.priority || 'low'
+    return total + getCapacityWeight(priority)
+  }, 0)
+}
+
+/**
+ * Check if assigning a project would create a High Priority conflict
+ * High Priority projects need exclusive access (no other projects allowed)
+ * @param {Array} assignedProjectIds - Current projects on day
+ * @param {Map} projectMap - Map of all projects
+ * @returns {boolean} True if there's a conflict
+ */
+const hasHighPriorityConflict = (assignedProjectIds, projectMap) => {
+  return assignedProjectIds.some((projectId) => {
+    const projectKey = projectId.toString()
+    const project = projectMap.get(projectKey)
+    return project?.priority === 'high'
+  })
+}
+
+/**
+ * Check if a new project can be assigned to a date range without exceeding capacity
+ * @param {Array} assignedProjectIds - Current projects on a specific day
+ * @param {Object} newProject - Project to be assigned {priority, _id}
+ * @param {Map} projectMap - Map of all existing projects
+ * @returns {Object} {canAssign: boolean, capacityUsed: number, capacityAvailable: number, conflictReason: string|null}
+ */
+const validateDayCapacity = (assignedProjectIds, newProject, projectMap) => {
+  const newProjectWeight = getCapacityWeight(newProject.priority)
+
+  // Check High Priority exclusivity
+  if (newProject.priority === 'high' && assignedProjectIds.length > 0) {
+    return {
+      canAssign: false,
+      capacityUsed: calculateTotalCapacityUsed(assignedProjectIds, projectMap),
+      capacityAvailable: 0,
+      conflictReason: 'Cannot assign High Priority project when other projects exist on this date'
+    }
+  }
+
+  if (hasHighPriorityConflict(assignedProjectIds, projectMap)) {
+    return {
+      canAssign: false,
+      capacityUsed: 100,
+      capacityAvailable: 0,
+      conflictReason: 'Cannot assign project: High Priority project already occupies this date'
+    }
+  }
+
+  // Calculate current capacity
+  const currentCapacityUsed = calculateTotalCapacityUsed(assignedProjectIds, projectMap)
+  const capacityAfterAssignment = currentCapacityUsed + newProjectWeight
+
+  // Check if assignment would exceed 100%
+  if (capacityAfterAssignment > 100) {
+    return {
+      canAssign: false,
+      capacityUsed: currentCapacityUsed,
+      capacityAvailable: 100 - currentCapacityUsed,
+      conflictReason: `Cannot assign project (${newProjectWeight}% needed). Only ${100 - currentCapacityUsed}% capacity available`
+    }
+  }
+
+  return {
+    canAssign: true,
+    capacityUsed: capacityAfterAssignment,
+    capacityAvailable: 100 - capacityAfterAssignment,
+    conflictReason: null
+  }
+}
+
+/**
  * Automatically populate availability calendar when project is assigned
  * @param {string} freelancerId - ID of freelancer being assigned
  * @param {object} projectData - Project object with deadline, priority, and _id
