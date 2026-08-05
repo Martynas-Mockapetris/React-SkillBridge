@@ -1,9 +1,10 @@
 import Project from '../models/Project.js'
 import User from '../models/User.js'
+import AvailabilityCalendar from '../models/AvailabilityCalendar.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
 import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
-import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability } from '../utils/availabilityCalendarService.js'
+import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability, validateDayCapacity } from '../utils/availabilityCalendarService.js'
 import Logger from '../utils/logger.js'
 
 const logger = new Logger('ProjectController')
@@ -249,6 +250,40 @@ const createProject = async (req, res) => {
     logger.debug('Project saved successfully:', createdProject)
 
     if (assigneeId) {
+      // Validate capacity before assignment
+      const calendars = await AvailabilityCalendar.find({
+        freelancer: assigneeId
+      }).populate('days.assignedProjects', 'priority')
+
+      let hasCapacityIssue = false
+      let conflictMessage = ''
+
+      for (const calendar of calendars) {
+        for (const day of calendar.days) {
+          const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+          const deadlineDate = new Date(createdProject.deadline)
+          deadlineDate.setHours(0, 0, 0, 0)
+
+          if (dayDate <= deadlineDate && dayDate >= new Date()) {
+            const validation = validateDayCapacity(day.assignedProjects, createdProject, new Map())
+            if (!validation.canAssign) {
+              hasCapacityIssue = true
+              conflictMessage = validation.conflictReason
+              break
+            }
+          }
+        }
+        if (hasCapacityIssue) break
+      }
+
+      if (hasCapacityIssue) {
+        await Project.deleteOne({ _id: createdProject._id })
+        return res.status(409).json({ 
+          message: 'Cannot assign project: Freelancer capacity exceeded',
+          conflictReason: conflictMessage 
+        })
+      }
+
       // Auto-populate availability calendar
       await populateAvailabilityOnProjectAssignment(assigneeId, createdProject)
 
