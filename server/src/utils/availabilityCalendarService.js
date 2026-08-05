@@ -107,6 +107,50 @@ const validateDayCapacity = (assignedProjectIds, newProject, projectMap) => {
 }
 
 /**
+ * Check if High Priority project conflicts with existing projects on date range
+ * High Priority projects need exclusive calendar access
+ * @param {string} freelancerId - Freelancer ID
+ * @param {Object} projectData - {priority, deadline, _id}
+ * @returns {Object} {hasConflict: boolean, conflictingDates: Array}
+ */
+export const checkHighPriorityConflicts = async (freelancerId, projectData) => {
+  try {
+    if (projectData.priority !== 'high') {
+      return { hasConflict: false, conflictingDates: [] }
+    }
+
+    const calendars = await AvailabilityCalendar.find({
+      freelancer: freelancerId
+    }).populate('days.assignedProjects')
+
+    const conflictingDates = []
+    const deadlineDate = new Date(projectData.deadline)
+    deadlineDate.setHours(0, 0, 0, 0)
+
+    for (const calendar of calendars) {
+      for (const day of calendar.days) {
+        const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+
+        if (dayDate <= deadlineDate && dayDate >= new Date() && day.assignedProjects.length > 0) {
+          conflictingDates.push({
+            date: `${calendar.year}-${String(calendar.month).padStart(2, '0')}-${String(day.date).padStart(2, '0')}`,
+            projectCount: day.assignedProjects.length
+          })
+        }
+      }
+    }
+
+    return {
+      hasConflict: conflictingDates.length > 0,
+      conflictingDates
+    }
+  } catch (error) {
+    logger.error('Error checking High Priority conflicts:', error)
+    return { hasConflict: false, conflictingDates: [] }
+  }
+}
+
+/**
  * Automatically populate availability calendar when project is assigned
  * @param {string} freelancerId - ID of freelancer being assigned
  * @param {object} projectData - Project object with deadline, priority, and _id

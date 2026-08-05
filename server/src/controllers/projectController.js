@@ -4,7 +4,7 @@ import AvailabilityCalendar from '../models/AvailabilityCalendar.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
 import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
-import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability, validateDayCapacity } from '../utils/availabilityCalendarService.js'
+import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability, validateDayCapacity, checkHighPriorityConflicts } from '../utils/availabilityCalendarService.js'
 import Logger from '../utils/logger.js'
 
 const logger = new Logger('ProjectController')
@@ -276,11 +276,23 @@ const createProject = async (req, res) => {
         if (hasCapacityIssue) break
       }
 
+      // Check High Priority conflicts
+      if (createdProject.priority === 'high') {
+        const { hasConflict, conflictingDates } = await checkHighPriorityConflicts(assigneeId, createdProject)
+        if (hasConflict) {
+          await Project.deleteOne({ _id: createdProject._id })
+          return res.status(409).json({
+            message: 'Cannot assign High Priority project: Other projects already exist on those dates',
+            conflictingDates
+          })
+        }
+      }
+
       if (hasCapacityIssue) {
         await Project.deleteOne({ _id: createdProject._id })
-        return res.status(409).json({ 
+        return res.status(409).json({
           message: 'Cannot assign project: Freelancer capacity exceeded',
-          conflictReason: conflictMessage 
+          conflictReason: conflictMessage
         })
       }
 
