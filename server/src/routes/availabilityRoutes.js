@@ -23,6 +23,7 @@ router.post('/batch/capacity', protect, batchCalculateCapacity)
 
 // Protected routes (auth required)
 router.get('/:freelancerId/current', protect, getFreelancerCalendar)
+router.post('/:freelancerId/validate-assignment', validateProjectAssignmentCapacity)
 router.get('/:freelancerId/availability', protect, getFreelancerAvailability)
 router.get('/:freelancerId/all', protect, getFreelancerAllCalendars)
 router.put('/:freelancerId/:year/:month/:date', protect, updateDayAvailability)

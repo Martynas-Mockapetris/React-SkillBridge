@@ -485,6 +485,80 @@ export const batchCalculateCapacity = async (req, res) => {
   }
 }
 
+// Validate if a project can be assigned to a freelancer on given dates
+export const validateProjectAssignmentCapacity = async (req, res) => {
+  try {
+    const { freelancerId } = req.params
+    const { projectId, priority, deadline } = req.body
+
+    if (!freelancerId || !projectId || !priority || !deadline) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: freelancerId, projectId, priority, deadline' 
+      })
+    }
+
+    // Get all calendars for this freelancer
+    const calendars = await AvailabilityCalendar.find({
+      freelancer: freelancerId
+    }).populate('days.assignedProjects', 'priority')
+
+    // Check each day in date range for conflicts
+    const conflicts = []
+    const deadlineDate = new Date(deadline)
+    deadlineDate.setHours(0, 0, 0, 0)
+
+    for (const calendar of calendars) {
+      for (const day of calendar.days) {
+        const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+        
+        if (dayDate <= deadlineDate && dayDate >= new Date()) {
+          // Check High Priority conflict
+          if (priority === 'high' && day.assignedProjects.length > 0) {
+            conflicts.push({
+              date: `${calendar.year}-${calendar.month}-${day.date}`,
+              reason: 'High Priority project needs exclusive access'
+            })
+            continue
+          }
+
+          // Check if High Priority already exists
+          const hasHighPriority = day.assignedProjects.some((p) => p.priority === 'high')
+          if (hasHighPriority) {
+            conflicts.push({
+              date: `${calendar.year}-${calendar.month}-${day.date}`,
+              reason: 'High Priority project already occupies this date'
+            })
+            continue
+          }
+
+          // Check capacity
+          const newWeight = getCapacityWeight(priority)
+          const currentCapacity = calculateTotalCapacityUsed(day.assignedProjects, priority)
+          
+          if (currentCapacity + newWeight > 100) {
+            conflicts.push({
+              date: `${calendar.year}-${calendar.month}-${day.date}`,
+              reason: `Insufficient capacity (need ${newWeight}%, have ${100 - currentCapacity}% available)`
+            })
+          }
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      canAssign: conflicts.length === 0,
+      conflictCount: conflicts.length,
+      conflicts,
+      message: conflicts.length === 0 ? 'Project can be assigned' : `Assignment blocked by ${conflicts.length} capacity conflict(s)`
+    })
+  } catch (error) {
+    console.error('Error validating assignment capacity:', error)
+    res.status(500).json({ message: 'Error validating capacity', error: error.message })
+  }
+}
+
+// Helper to get capacity weight based on priority
 export const getFilteredAvailability = async (req, res) => {
   try {
     const { freelancerId } = req.params
