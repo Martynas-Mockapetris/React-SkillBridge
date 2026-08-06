@@ -266,17 +266,25 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
  */
 export const removeProjectFromAvailability = async (freelancerId, projectId) => {
   try {
+    const Project = require('../models/Project.js').default || require('../models/Project.js')
+    
     const calendars = await AvailabilityCalendar.find({
       freelancer: freelancerId
-    })
+    }).populate('days.assignedProjects', 'priority')
 
     for (const calendar of calendars) {
       calendar.days = calendar.days.map((day) => {
         // Remove project from assignedProjects
-        day.assignedProjects = day.assignedProjects.filter((id) => id.toString() !== projectId.toString())
+        day.assignedProjects = day.assignedProjects.filter((proj) => proj._id.toString() !== projectId.toString())
 
-        // Recalculate capacity and status - note: uses stored priority from remaining projects
-        const totalCapacity = day.assignedProjects.length > 0 ? day.assignedProjects.length * PRIORITY_CAPACITY.medium : 0
+        // Recalculate capacity using actual project priorities
+        let totalCapacity = 0
+        if (day.assignedProjects.length > 0) {
+          totalCapacity = day.assignedProjects.reduce((sum, proj) => {
+            return sum + getCapacityWeight(proj.priority || 'low')
+          }, 0)
+        }
+
         day.capacity = Math.max(0, 100 - totalCapacity)
         day.status = getStatusByCapacity(totalCapacity)
 
