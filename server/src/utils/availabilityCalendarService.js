@@ -21,7 +21,7 @@ const getStatusByCapacity = (capacityUsed) => {
  * @param {string} priority - 'low', 'medium', or 'high'
  * @returns {number} Capacity weight (25, 50, or 100)
  */
-const getCapacityWeight = (priority) => {
+export const getCapacityWeight = (priority) => {
   return PRIORITY_CAPACITY[priority] || PRIORITY_CAPACITY.low
 }
 
@@ -31,7 +31,7 @@ const getCapacityWeight = (priority) => {
  * @param {Map} projectMap - Map of projectId -> project object with priority
  * @returns {number} Total capacity used (0-100+)
  */
-const calculateTotalCapacityUsed = (assignedProjectIds, projectMap) => {
+export const calculateTotalCapacityUsed = (assignedProjectIds, projectMap) => {
   return assignedProjectIds.reduce((total, projectId) => {
     const projectKey = projectId.toString()
     const project = projectMap.get(projectKey)
@@ -47,7 +47,7 @@ const calculateTotalCapacityUsed = (assignedProjectIds, projectMap) => {
  * @param {Map} projectMap - Map of all projects
  * @returns {boolean} True if there's a conflict
  */
-const hasHighPriorityConflict = (assignedProjectIds, projectMap) => {
+export const hasHighPriorityConflict = (assignedProjectIds, projectMap) => {
   return assignedProjectIds.some((projectId) => {
     const projectKey = projectId.toString()
     const project = projectMap.get(projectKey)
@@ -62,7 +62,7 @@ const hasHighPriorityConflict = (assignedProjectIds, projectMap) => {
  * @param {Map} projectMap - Map of all existing projects
  * @returns {Object} {canAssign: boolean, capacityUsed: number, capacityAvailable: number, conflictReason: string|null}
  */
-const validateDayCapacity = (assignedProjectIds, newProject, projectMap) => {
+export const validateDayCapacity = (assignedProjectIds, newProject, projectMap) => {
   const newProjectWeight = getCapacityWeight(newProject.priority)
 
   // Check High Priority exclusivity

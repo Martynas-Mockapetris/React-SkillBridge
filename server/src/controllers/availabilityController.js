@@ -1,5 +1,6 @@
 import AvailabilityCalendar from '../models/AvailabilityCalendar.js'
 import Project from '../models/Project.js'
+import { validateDayCapacity, calculateTotalCapacityUsed, hasHighPriorityConflict } from '../utils/availabilityCalendarService.js'
 
 // Priority to capacity consumption mapping
 const PRIORITY_CAPACITY = {
