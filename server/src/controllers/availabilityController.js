@@ -117,13 +117,19 @@ export const getFreelancerCalendar = async (req, res) => {
     // DEBUG: Log daysBreakdown
     console.log(`[DEBUG] daysBreakdown: ${JSON.stringify(daysBreakdown)}`)
 
+    // Calculate capacity breakdown
+    const daysCapacityBreakdown = {
+      fullCapacity: enrichedDays.filter((d) => d.capacity === 100).length,
+      partialCapacity: enrichedDays.filter((d) => d.capacity > 0 && d.capacity < 100).length,
+      noCapacity: enrichedDays.filter((d) => d.capacity === 0).length
+    }
+
     const enrichedData = {
       ...calendar.toObject(),
       days: enrichedDays,
-      daysBreakdown
+      daysBreakdown,
+      daysCapacityBreakdown
     }
-
-    console.log(`[DEBUG] Final response - days.length: ${enrichedData.days.length}, daysBreakdown: ${JSON.stringify(enrichedData.daysBreakdown)}`)
 
     res.status(200).json({
       success: true,
@@ -273,10 +279,18 @@ export const getPublicFreelancerCalendar = async (req, res) => {
       red: publicDays.filter((d) => d.status === 'red').length
     }
 
+    // Calculate capacity breakdown
+    const daysCapacityBreakdown = {
+      fullCapacity: publicDays.filter((d) => d.capacity === 100).length,
+      partialCapacity: publicDays.filter((d) => d.capacity > 0 && d.capacity < 100).length,
+      noCapacity: publicDays.filter((d) => d.capacity === 0).length
+    }
+
     const publicData = {
       ...calendar.toObject(),
       days: publicDays,
-      daysBreakdown
+      daysBreakdown,
+      daysCapacityBreakdown
     }
 
     res.status(200).json({
@@ -616,12 +630,20 @@ export const getFilteredAvailability = async (req, res) => {
       red: filteredDays.filter((d) => d.status === 'red').length
     }
 
+    // Calculate capacity breakdown
+    const daysCapacityBreakdown = {
+      fullCapacity: filteredDays.filter((d) => d.capacity === 100).length,
+      partialCapacity: filteredDays.filter((d) => d.capacity > 0 && d.capacity < 100).length,
+      noCapacity: filteredDays.filter((d) => d.capacity === 0).length
+    }
+
     res.status(200).json({
       message: 'Filtered availability retrieved',
       data: {
         ...calendar.toObject(),
         days: filteredDays,
         daysBreakdown,
+        daysCapacityBreakdown,
         appliedFilters: {
           status: statusFilter
         }
