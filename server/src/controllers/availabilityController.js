@@ -68,15 +68,6 @@ export const getFreelancerCalendar = async (req, res) => {
 
     const calendar = await getOrCreateCalendar(freelancerId, parseInt(year), parseInt(month))
 
-    // DEBUG: Log calendar info
-    console.log(`[DEBUG] Calendar fetched for ${freelancerId}: year=${calendar.year}, month=${calendar.month}, days.length=${calendar.days.length}`)
-    if (calendar.days.length > 0) {
-      console.log(
-        `[DEBUG] First 3 days:`,
-        calendar.days.slice(0, 3).map((d) => ({ date: d.date, status: d.status }))
-      )
-    }
-
     // Add projectsCount and projectTitles to each day for frontend rendering
     const enrichedDays = calendar.days.map((day) => {
       const enrichedDay = {
@@ -92,15 +83,6 @@ export const getFreelancerCalendar = async (req, res) => {
       return enrichedDay
     })
 
-    // DEBUG: Log enrichedDays info
-    console.log(`[DEBUG] enrichedDays created: length=${enrichedDays.length}`)
-    if (enrichedDays.length > 0) {
-      console.log(
-        `[DEBUG] enrichedDays first 3:`,
-        enrichedDays.slice(0, 3).map((d) => ({ date: d.date, status: d.status }))
-      )
-    }
-
     // Calculate days breakdown by status
     const statusCounts = { green: 0, yellow: 0, orange: 0, red: 0 }
     enrichedDays.forEach((day) => {
@@ -113,9 +95,6 @@ export const getFreelancerCalendar = async (req, res) => {
     })
 
     const daysBreakdown = statusCounts
-
-    // DEBUG: Log daysBreakdown
-    console.log(`[DEBUG] daysBreakdown: ${JSON.stringify(daysBreakdown)}`)
 
     // Calculate capacity breakdown
     const daysCapacityBreakdown = {
