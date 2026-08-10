@@ -8,6 +8,7 @@ import {
   toggleCalendarVisibility,
   calculateFreelancerCapacity,
   batchCalculateCapacity,
+  validateProjectAssignmentCapacity,
   getFilteredAvailability
 } from '../controllers/availabilityController.js'
 import { protect } from '../middleware/authMiddleware.js'
