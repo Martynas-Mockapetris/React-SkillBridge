@@ -403,6 +403,16 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
                     {/* Day number */}
                     <span className={`font-semibold ${['red', 'orange'].includes(currentStatus) ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{day.date}</span>
 
+                    {/* Capacity indicator bar */}
+                    {day.capacity < 100 && (
+                      <div className='absolute bottom-1 left-1 right-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden'>
+                        <div
+                          className='h-full bg-green-500 transition-all'
+                          style={{ width: `${100 - day.capacity}%` }}
+                        />
+                      </div>
+                    )}
+
                     {/* Today indicator */}
                     {isToday && <div className='absolute inset-0 rounded-lg border-2 border-white dark:border-gray-900 opacity-60'></div>}
 
