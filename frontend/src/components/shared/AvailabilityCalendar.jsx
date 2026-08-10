@@ -338,14 +338,17 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       {/* Legend */}
       <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 text-sm'>
         {[
-          { status: 'green', label: 'Available' },
-          { status: 'yellow', label: 'Partially Busy' },
-          { status: 'orange', label: '50% Busy' },
-          { status: 'red', label: '100% Busy' }
+          { status: 'green', label: 'Available', capacity: '100%' },
+          { status: 'yellow', label: 'Partially Busy', capacity: '1-50%' },
+          { status: 'orange', label: '50% Busy', capacity: '50-99%' },
+          { status: 'red', label: '100% Busy', capacity: '0%' }
         ].map((item) => (
           <div key={item.status} className='flex items-center gap-2'>
             <div className='w-2 h-2 md:w-3 md:h-3 rounded flex-shrink-0' style={{ backgroundColor: getStatusColor(item.status) }}></div>
-            <span className='theme-text-secondary text-xs md:text-sm'>{item.label}</span>
+            <div className='flex flex-col'>
+              <span className='theme-text-secondary text-xs md:text-sm'>{item.label}</span>
+              <span className='theme-text-secondary text-xs opacity-70'>{item.capacity}</span>
+            </div>
           </div>
         ))}
       </div>
