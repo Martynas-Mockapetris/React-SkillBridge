@@ -17,7 +17,9 @@ const getStatusByCapacity = (capacityUsed) => {
   return 'green'
 }
 
-// Get or create calendar for a month
+// @desc    Get or create availability calendar for a month
+// @route   Internal helper
+// @access  Private
 export const getOrCreateCalendar = async (freelancerId, year, month) => {
   try {
     let calendar = await AvailabilityCalendar.findOne({
@@ -56,7 +58,9 @@ export const getOrCreateCalendar = async (freelancerId, year, month) => {
   }
 }
 
-// Get calendar for freelancer
+// @desc    Get freelancer's availability calendar for a specific month
+// @route   GET /api/availability/:freelancerId
+// @access  Private
 export const getFreelancerCalendar = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -120,7 +124,9 @@ export const getFreelancerCalendar = async (req, res) => {
   }
 }
 
-// Get freelancer availability status
+// @desc    Get current availability status and capacity overview
+// @route   GET /api/availability/:freelancerId/status
+// @access  Private
 export const getFreelancerAvailability = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -157,7 +163,9 @@ export const getFreelancerAvailability = async (req, res) => {
   }
 }
 
-// Update manual availability for a day
+// @desc    Update manual availability status and notes for a specific day
+// @route   PATCH /api/availability/:freelancerId/:year/:month/:date
+// @access  Private
 export const updateDayAvailability = async (req, res) => {
   try {
     const { freelancerId, year, month, date } = req.params
@@ -204,7 +212,9 @@ export const updateDayAvailability = async (req, res) => {
   }
 }
 
-// Get all calendars for a freelancer (all months)
+// @desc    Get all availability calendars for a freelancer
+// @route   GET /api/availability/:freelancerId/all
+// @access  Private
 export const getFreelancerAllCalendars = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -225,7 +235,9 @@ export const getFreelancerAllCalendars = async (req, res) => {
   }
 }
 
-// Get public calendar (for viewing profile)
+// @desc    Get public availability calendar for freelancer profile viewing
+// @route   GET /api/availability/public/:freelancerId/:year/:month
+// @access  Public
 export const getPublicFreelancerCalendar = async (req, res) => {
   try {
     const { freelancerId, year, month } = req.params
@@ -282,7 +294,9 @@ export const getPublicFreelancerCalendar = async (req, res) => {
   }
 }
 
-// Toggle calendar visibility
+// @desc    Toggle calendar between public and private visibility
+// @route   PATCH /api/availability/:freelancerId/visibility
+// @access  Private
 export const toggleCalendarVisibility = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -310,7 +324,9 @@ export const toggleCalendarVisibility = async (req, res) => {
   }
 }
 
-// Calculate freelancer capacity for project filtering
+// @desc    Calculate freelancer capacity and availability matrix for projects
+// @route   POST /api/availability/:freelancerId/calculate-capacity
+// @access  Private
 export const calculateFreelancerCapacity = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -419,7 +435,9 @@ export const calculateFreelancerCapacity = async (req, res) => {
   }
 }
 
-// Batch calculate capacity for multiple freelancers (for project filtering UI)
+// @desc    Batch calculate capacity for multiple freelancers at once
+// @route   POST /api/availability/batch/calculate-capacity
+// @access  Private
 export const batchCalculateCapacity = async (req, res) => {
   try {
     const { freelancerIds, startDate, endDate } = req.body
@@ -479,15 +497,17 @@ export const batchCalculateCapacity = async (req, res) => {
   }
 }
 
-// Validate if a project can be assigned to a freelancer on given dates
+// @desc    Validate if project can be assigned within freelancer capacity
+// @route   POST /api/availability/:freelancerId/validate-assignment
+// @access  Private
 export const validateProjectAssignmentCapacity = async (req, res) => {
   try {
     const { freelancerId } = req.params
     const { projectId, priority, deadline } = req.body
 
     if (!freelancerId || !projectId || !priority || !deadline) {
-      return res.status(400).json({ 
-        message: 'Missing required fields: freelancerId, projectId, priority, deadline' 
+      return res.status(400).json({
+        message: 'Missing required fields: freelancerId, projectId, priority, deadline'
       })
     }
 
@@ -504,7 +524,7 @@ export const validateProjectAssignmentCapacity = async (req, res) => {
     for (const calendar of calendars) {
       for (const day of calendar.days) {
         const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
-        
+
         if (dayDate <= deadlineDate && dayDate >= new Date()) {
           // Check High Priority conflict
           if (priority === 'high' && day.assignedProjects.length > 0) {
@@ -528,7 +548,7 @@ export const validateProjectAssignmentCapacity = async (req, res) => {
           // Check capacity
           const newWeight = getCapacityWeight(priority)
           const currentCapacity = calculateTotalCapacityUsed(day.assignedProjects, priority)
-          
+
           if (currentCapacity + newWeight > 100) {
             conflicts.push({
               date: `${calendar.year}-${calendar.month}-${day.date}`,
@@ -552,7 +572,9 @@ export const validateProjectAssignmentCapacity = async (req, res) => {
   }
 }
 
-// Helper to get capacity weight based on priority
+// @desc    Get filtered availability calendar by project status
+// @route   GET /api/availability/:freelancerId/filtered
+// @access  Private
 export const getFilteredAvailability = async (req, res) => {
   try {
     const { freelancerId } = req.params
