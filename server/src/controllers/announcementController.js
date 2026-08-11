@@ -20,7 +20,9 @@ const announcementListingUserFields = [
   'isEmailVerified'
 ].join(' ')
 
-// Create a new announcement
+// @desc    Create a new service announcement
+// @route   POST /api/announcements
+// @access  Private
 export const createAnnouncement = async (req, res) => {
   try {
     const { hourlyRate, skills, background, title } = req.body
@@ -63,7 +65,9 @@ export const createAnnouncement = async (req, res) => {
   }
 }
 
-// Get all announcements for a specific freelancer
+// @desc    Get all announcements for the logged-in freelancer
+// @route   GET /api/announcements
+// @access  Private
 export const getAnnouncementsByUser = async (req, res) => {
   try {
     const userId = req.user._id
@@ -77,7 +81,9 @@ export const getAnnouncementsByUser = async (req, res) => {
   }
 }
 
-// Get all active announcements (for browsing)
+// @desc    Get all active announcements for browsing
+// @route   GET /api/announcements/all
+// @access  Public
 export const getAllAnnouncements = async (req, res) => {
   try {
     const announcements = await Announcement.find({ isActive: true }).populate('userId', announcementListingUserFields).sort({ createdAt: -1 })
@@ -89,7 +95,9 @@ export const getAllAnnouncements = async (req, res) => {
   }
 }
 
-// Update announcement
+// @desc    Update an existing announcement
+// @route   PUT /api/announcements/:id
+// @access  Private
 export const updateAnnouncement = async (req, res) => {
   try {
     const { id } = req.params
@@ -123,7 +131,9 @@ export const updateAnnouncement = async (req, res) => {
   }
 }
 
-// Delete announcement
+// @desc    Delete an announcement
+// @route   DELETE /api/announcements/:id
+// @access  Private
 export const deleteAnnouncement = async (req, res) => {
   try {
     const { id } = req.params
@@ -148,7 +158,9 @@ export const deleteAnnouncement = async (req, res) => {
   }
 }
 
-// Toggle announcement active status
+// @desc    Toggle announcement active status (pause/resume)
+// @route   PATCH /api/announcements/:id/toggle
+// @access  Private
 export const toggleAnnouncementStatus = async (req, res) => {
   try {
     const { id } = req.params
@@ -182,7 +194,9 @@ export const toggleAnnouncementStatus = async (req, res) => {
   }
 }
 
-// Admin: Toggle announcement status (pause/resume)
+// @desc    Toggle announcement status as admin (pause/resume)
+// @route   PATCH /api/announcements/admin/:id/toggle
+// @access  Admin
 export const toggleAnnouncementStatusAsAdmin = async (req, res) => {
   try {
     const { id } = req.params
@@ -205,7 +219,9 @@ export const toggleAnnouncementStatusAsAdmin = async (req, res) => {
   }
 }
 
-// Admin: Delete announcement
+// @desc    Delete announcement as admin
+// @route   DELETE /api/announcements/admin/:id
+// @access  Admin
 export const deleteAnnouncementAsAdmin = async (req, res) => {
   try {
     const { id } = req.params
