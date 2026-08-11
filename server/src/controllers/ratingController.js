@@ -4,7 +4,9 @@ import Logger from '../utils/logger.js'
 
 const logger = new Logger('RatingController')
 
-// Submit a rating for a freelancer or client
+// @desc    Submit a rating for a freelancer or client
+// @route   POST /api/ratings
+// @access  Private
 export const submitRating = async (req, res) => {
   try {
     // Check if user is authenticated
@@ -119,7 +121,9 @@ export const submitRating = async (req, res) => {
   }
 }
 
-// Get all ratings for a freelancer
+// @desc    Get all ratings for a specific freelancer
+// @route   GET /api/ratings/:freelancerId
+// @access  Public
 export const getFreelancerRatings = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -141,7 +145,9 @@ export const getFreelancerRatings = async (req, res) => {
   }
 }
 
-// Get rating statistics
+// @desc    Get rating statistics and distribution for a freelancer
+// @route   GET /api/ratings/:freelancerId/stats
+// @access  Public
 export const getRatingStats = async (req, res) => {
   try {
     const { freelancerId } = req.params
