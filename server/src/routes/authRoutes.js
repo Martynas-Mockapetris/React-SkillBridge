@@ -4,15 +4,24 @@ import { protect } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-// Public routes
+// Test route
+router.get('/test', (req, res) => {
+  res.json({ message: 'Auth routes are working' })
+})
+
+// Authentication routes (registration & login)
 router.post('/register', registerUser)
 router.post('/login', loginUser)
+
+// Email verification routes
+router.post('/verify-email/request', protect, requestEmailVerification)
 router.post('/verify-email/confirm', confirmEmailVerification)
+
+// Password recovery routes
 router.post('/forgot-password', forgotPassword)
 router.post('/reset-password', resetPassword)
 
-// Protected routes
+// Profile routes
 router.get('/profile', protect, getUserProfile)
-router.post('/verify-email/request', protect, requestEmailVerification)
 
 export default router
