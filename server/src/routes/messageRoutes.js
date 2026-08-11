@@ -5,11 +5,20 @@ import upload from '../middleware/uploadMiddleware.js'
 
 const router = express.Router()
 
-// All message routes require authentication
+// Test route
+router.get('/test', (req, res) => {
+  res.json({ message: 'Message routes are working' })
+})
+
+// Message sending route
 router.post('/', protect, upload.array('attachments', 5), sendMessage)
+
+// Message retrieval routes
 router.get('/my-messages', protect, getUserMessages)
-router.get('/conversation/:userId', protect, getConversation)
 router.get('/project/:projectId', protect, getProjectMessages)
+router.get('/conversation/:userId', protect, getConversation)
+
+// Message status routes
 router.put('/:id/read', protect, markAsRead)
 
 export default router
