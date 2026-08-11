@@ -5,12 +5,17 @@ import { getPublishedBlogPosts, getPublishedBlogPostBySlug, getAllBlogPostsAdmin
 
 const router = express.Router()
 
-// Public routes
+// Test route
+router.get('/test', (req, res) => {
+  res.json({ message: 'Blog routes are working' })
+})
+
+// Public routes (published blog posts)
 router.get('/', getPublishedBlogPosts)
-router.get('/admin/all', protect, requirePermission(PERMISSIONS.BLOG_READ_ADMIN), getAllBlogPostsAdmin)
 router.get('/:slug', getPublishedBlogPostBySlug)
 
-// Admin routes
+// Admin routes (blog management)
+router.get('/admin/all', protect, requirePermission(PERMISSIONS.BLOG_READ_ADMIN), getAllBlogPostsAdmin)
 router.post('/', protect, requirePermission(PERMISSIONS.BLOG_WRITE), createBlogPost)
 router.put('/:id', protect, requirePermission(PERMISSIONS.BLOG_WRITE), updateBlogPost)
 router.patch('/:id/publish', protect, requirePermission(PERMISSIONS.BLOG_WRITE), toggleBlogPostPublish)
