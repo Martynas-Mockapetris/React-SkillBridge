@@ -42,7 +42,8 @@ const DetailedCalendarView = ({
     month: 'long',
     year: 'numeric'
   })
-  const firstDayOfMonth = new Date(calendarData.year, calendarData.month - 1, 1).getDay()
+  // Convert to Monday-first calendar (0 = Monday, 6 = Sunday)
+  const firstDayOfMonth = (new Date(calendarData.year, calendarData.month - 1, 1).getDay() + 6) % 7
   const calendarGrid = [...Array(firstDayOfMonth), ...calendarData.days]
 
   return (
@@ -123,8 +124,8 @@ const DetailedCalendarView = ({
       )}
 
       {/* Day headers */}
-      <div className='grid grid-cols-7 gap-1 md:gap-2 mb-2'>
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+      <div className='grid grid-cols-7 gap-0.5 md:gap-1 mb-2'>
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
           <div key={day} className='text-center text-xs md:text-sm font-semibold theme-text-secondary py-1 md:py-2'>
             <span className='hidden sm:inline'>{day}</span>
             <span className='sm:hidden'>{day.slice(0, 1)}</span>
@@ -133,7 +134,7 @@ const DetailedCalendarView = ({
       </div>
 
       {/* Calendar Grid - Responsive */}
-      <div className='grid grid-cols-7 gap-1 md:gap-2'>
+      <div className='grid grid-cols-7 gap-0.5 md:gap-1'>
         <AnimatePresence>
           {calendarGrid?.map((day, idx) => {
             const isEmpty = !day?.date

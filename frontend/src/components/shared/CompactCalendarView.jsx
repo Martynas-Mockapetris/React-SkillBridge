@@ -1,103 +1,117 @@
-import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
-const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNextMonth, getStatusColor, getStatusLabel, getDayCapacityLabel }) => {
-  const [hoveredDay, setHoveredDay] = useState(null)
-
+const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNextMonth, getStatusColor, getStatusLabel }) => {
   if (!calendarData || !calendarData.days) {
     return <div className='p-4 text-center theme-text-secondary text-sm'>No calendar data available</div>
   }
 
-  const monthName = new Date(calendarData.year, calendarData.month - 1).toLocaleString('default', {
-    month: 'short',
-    year: 'numeric'
-  })
-  // Convert to Monday-first calendar (0 = Monday, 6 = Sunday)
-  const firstDayOfMonth = (new Date(calendarData.year, calendarData.month - 1, 1).getDay() + 6) % 7
-  const calendarGrid = [...Array(firstDayOfMonth), ...calendarData.days]
+  // Helper to generate calendar grid for a specific month
+  const generateCalendarGrid = (year, month, daysData) => {
+    const firstDayOfMonth = (new Date(year, month - 1, 1).getDay() + 6) % 7
+    const daysInMonth = new Date(year, month, 0).getDate()
+    const leadingEmpty = Array(firstDayOfMonth).fill(null)
 
-  return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='p-4 theme-card rounded-lg border dark:border-light/10 border-primary/10'>
-      {/* Compact Header */}
-      <div className='flex items-center justify-between mb-4'>
-        <h4 className='text-sm font-semibold theme-text'>{monthName}</h4>
-        <div className='flex gap-1'>
-          <motion.button onClick={onPreviousMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-1.5 hover:bg-accent/10 rounded transition-colors duration-200' aria-label='Previous month'>
-            <FaChevronLeft className='theme-text text-xs' />
-          </motion.button>
-          <motion.button onClick={onNextMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-1.5 hover:bg-accent/10 rounded transition-colors duration-200' aria-label='Next month'>
-            <FaChevronRight className='theme-text text-xs' />
-          </motion.button>
-        </div>
-      </div>
+    let monthDays
+    if (daysData) {
+      monthDays = daysData
+    } else {
+      // Create placeholder days with green status for months without data
+      monthDays = Array.from({ length: daysInMonth }, (_, i) => ({
+        date: i + 1,
+        status: 'green',
+        capacity: 100
+      }))
+    }
 
-      {/* Compact Day Headers */}
-      <div className='grid grid-cols-7 gap-0.5 mb-1'>
+    const trailingEmpty = Array(42 - leadingEmpty.length - monthDays.length).fill(null)
+    return [...leadingEmpty, ...monthDays, ...trailingEmpty]
+  }
+
+  // Get month name
+  const getMonthName = (year, month) => new Date(year, month - 1).toLocaleString('default', { month: 'short' })
+
+  // Calculate previous month
+  const getPrevMonth = (year, month) => (month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 })
+
+  // Calculate next month
+  const getNextMonth = (year, month) => (month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 })
+
+  const currentYear = calendarData.year
+  const currentMonth = calendarData.month
+  const { year: prevYear, month: prevMonth } = getPrevMonth(currentYear, currentMonth)
+  const { year: nextYear, month: nextMonth } = getNextMonth(currentYear, currentMonth)
+
+  // Generate grids
+  const prevGrid = generateCalendarGrid(prevYear, prevMonth, null)
+  const currentGrid = generateCalendarGrid(currentYear, currentMonth, calendarData.days)
+  const nextGrid = generateCalendarGrid(nextYear, nextMonth, null)
+
+  // Mini month renderer
+  const renderMiniMonth = (year, month, grid) => (
+    <div className='flex flex-col items-center gap-1 flex-1 min-w-0'>
+      <h5 className='text-sm font-semibold theme-text text-center'>{getMonthName(year, month)}</h5>
+      {/* Day headers */}
+      <div className='grid grid-cols-7 gap-px w-full mb-0.5'>
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) => (
           <div key={day} className='text-center text-xs font-semibold theme-text-secondary py-0.5'>
             {day}
           </div>
         ))}
       </div>
-
-      {/* Compact Calendar Grid */}
-      <div className='grid grid-cols-7 gap-0.5'>
+      {/* Calendar grid */}
+      <div className='grid grid-cols-7 gap-px w-full bg-gray-50 dark:bg-gray-800/20 p-1 rounded'>
         <AnimatePresence>
-          {calendarGrid?.map((day, idx) => {
+          {grid?.map((day, idx) => {
             const isEmpty = !day?.date
-            const isToday = !isEmpty && new Date(calendarData.year, calendarData.month - 1, day?.date).toDateString() === new Date().toDateString()
+            const isToday = !isEmpty && new Date(year, month - 1, day?.date).toDateString() === new Date().toDateString()
 
             return (
               <motion.div
-                key={`${calendarData.month}-${idx}`}
+                key={`${month}-${idx}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.01 }}
-                onMouseEnter={() => !isEmpty && setHoveredDay(idx)}
-                onMouseLeave={() => setHoveredDay(null)}
-                className={`relative aspect-square rounded flex items-center justify-center text-xs font-semibold transition-all duration-150 ${
+                className={`aspect-square text-xs rounded flex items-center justify-center font-semibold transition-all duration-150 ${
                   !isEmpty ? 'hover:shadow-md hover:scale-110 cursor-pointer' : ''
                 } ${isToday ? 'ring-1' : ''}`}
                 style={{
                   backgroundColor: isEmpty ? 'transparent' : getStatusColor(day?.status),
                   ringColor: isToday ? '#ffffff' : 'transparent'
-                }}>
-                {!isEmpty && (
-                  <>
-                    <span className={`${['red', 'orange'].includes(day?.status) ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{day.date}</span>
-
-                    {/* Today indicator - small dot */}
-                    {isToday && <div className='absolute inset-0 rounded border border-white dark:border-gray-900 opacity-50 pointer-events-none'></div>}
-
-                    {/* Hover Tooltip */}
-                    <AnimatePresence>
-                      {hoveredDay === idx && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                          transition={{ duration: 0.15 }}
-                          className='hidden sm:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded text-xs z-50 pointer-events-none shadow-lg whitespace-nowrap'>
-                          <div className='font-semibold'>{getStatusLabel(day?.status)}</div>
-                          <div className='text-xs opacity-80'>{getDayCapacityLabel(day.capacity)}</div>
-                          {day.projectsCount > 0 && (
-                            <div className='text-xs opacity-80 mt-0.5'>
-                              {day.projectsCount} project{day.projectsCount !== 1 ? 's' : ''}
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </>
-                )}
+                }}
+                title={!isEmpty ? `${day.date} - ${getStatusLabel(day?.status)}` : ''}>
+                {!isEmpty && <span className={`${['red', 'orange'].includes(day?.status) ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{day.date}</span>}
               </motion.div>
             )
           })}
         </AnimatePresence>
       </div>
+    </div>
+  )
 
-      {/* Compact Legend */}
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='p-4 theme-card rounded-lg border dark:border-light/10 border-primary/10'>
+      {/* Navigation */}
+      <div className='flex items-center justify-between mb-4'>
+        <motion.button onClick={onPreviousMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-1.5 hover:bg-accent/10 rounded transition-colors duration-200' aria-label='Previous month'>
+          <FaChevronLeft className='theme-text text-xs' />
+        </motion.button>
+        <span className='text-xs font-semibold theme-text-secondary'>
+          {getMonthName(prevYear, prevMonth)} - {getMonthName(nextYear, nextMonth)}
+        </span>
+        <motion.button onClick={onNextMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-1.5 hover:bg-accent/10 rounded transition-colors duration-200' aria-label='Next month'>
+          <FaChevronRight className='theme-text text-xs' />
+        </motion.button>
+      </div>
+
+      {/* Three-month view */}
+      <div className='flex gap-3 w-full'>
+        {renderMiniMonth(prevYear, prevMonth, prevGrid)}
+        {renderMiniMonth(currentYear, currentMonth, currentGrid)}
+        {renderMiniMonth(nextYear, nextMonth, nextGrid)}
+      </div>
+
+      {/* Legend */}
       <div className='grid grid-cols-4 gap-1 mt-3 text-xs'>
         {[
           { status: 'green', label: 'Available' },
