@@ -13,7 +13,8 @@ const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNex
     month: 'short',
     year: 'numeric'
   })
-  const firstDayOfMonth = new Date(calendarData.year, calendarData.month - 1, 1).getDay()
+  // Convert to Monday-first calendar (0 = Monday, 6 = Sunday)
+  const firstDayOfMonth = (new Date(calendarData.year, calendarData.month - 1, 1).getDay() + 6) % 7
   const calendarGrid = [...Array(firstDayOfMonth), ...calendarData.days]
 
   return (
@@ -33,7 +34,7 @@ const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNex
 
       {/* Compact Day Headers */}
       <div className='grid grid-cols-7 gap-0.5 mb-1'>
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
+        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) => (
           <div key={day} className='text-center text-xs font-semibold theme-text-secondary py-0.5'>
             {day}
           </div>
