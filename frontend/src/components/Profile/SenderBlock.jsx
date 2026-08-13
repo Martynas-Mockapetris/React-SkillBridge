@@ -107,7 +107,7 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder='Type your reply...'
-              className='flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 border-gray-300 theme-bg theme-text focus:outline-none focus:border-accent'
+              className='flex-1 px-4 py-2 rounded-lg border border-primary/50 dark:border-light/10 theme-bg theme-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20'
               onKeyPress={(e) => {
                 // Send on Enter key
                 if (e.key === 'Enter' && !e.shiftKey) {

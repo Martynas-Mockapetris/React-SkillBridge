@@ -193,7 +193,7 @@ const ProjectsList = () => {
       case 'cancelled_by_admin':
         return <FaTimes className='text-red-600' />
       case 'archived':
-        return <FaArchive className='text-gray-500' />
+        return <FaArchive className='text-primary/60 dark:text-light/60' />
       case 'draft':
         return <FaPause className='text-yellow-500' />
       default:
@@ -356,7 +356,7 @@ const ProjectsList = () => {
       {/* Empty State */}
       {!loading && !error && filteredProjects.length === 0 && (
         <div className='text-center py-10'>
-          <FaLightbulb className='mx-auto text-4xl text-gray-400 mb-4' />
+          <FaLightbulb className='mx-auto text-4xl text-primary/40 dark:text-light/40 mb-4' />
           <h3 className='text-xl font-medium theme-text mb-2'>No projects found</h3>
           <p className='theme-text-secondary'>
             {projectType === 'all'
@@ -416,7 +416,7 @@ const ProjectsList = () => {
                         className='ml-2'
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}>
-                        <FaHeart className={`text-2xl ${isFavorited(project._id) ? 'text-red-500' : 'text-gray-400'}`} />
+                        <FaHeart className={`text-2xl ${isFavorited(project._id) ? 'text-red-500' : 'text-primary/40 dark:text-light/40'}`} />
                       </motion.button>
                     </div>
                   </div>
