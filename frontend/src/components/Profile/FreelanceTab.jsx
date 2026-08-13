@@ -101,7 +101,7 @@ const FreelanceTab = ({ user }) => {
           <div className='bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 p-4 rounded-lg'>{error}</div>
         ) : announcements.length === 0 ? (
           <div className='space-y-4 text-center'>
-            <FaBriefcase className='text-5xl text-gray-300 dark:text-gray-600 mx-auto' />
+            <FaBriefcase className='text-5xl text-primary/40 dark:text-light/40 mx-auto' />
             <p className='theme-text-secondary text-lg'>No announcements yet. Create your first freelance announcement to get started!</p>
             <motion.button
               onClick={() => {
@@ -128,7 +128,7 @@ const FreelanceTab = ({ user }) => {
                   transition: { duration: 0.1 }
                 }}
                 transition={{ duration: 0.2, delay: index * 0.1 }}
-                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 group backdrop-blur-sm'>
+                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group backdrop-blur-sm border border-primary/10 dark:border-light/10'>
                 {/* Title Section */}
                 <div className='flex items-start gap-4 mb-4'>
                   <div className='flex-1'>
@@ -160,7 +160,7 @@ const FreelanceTab = ({ user }) => {
                 <div className='mt-4 flex items-center justify-between'>
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                      announcement.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      announcement.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-primary/10 dark:bg-light/10 text-primary/70 dark:text-light/70'
                     }`}>
                     {announcement.isActive ? '● Active' : '○ Paused'}
                   </span>
@@ -223,7 +223,7 @@ const FreelanceTab = ({ user }) => {
           <FaCalendar className='text-accent text-xl' />
           <h2 className='text-2xl font-bold theme-text'>My Availability</h2>
         </div>
-        <div className='theme-card rounded-lg overflow-hidden'>
+        <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg overflow-hidden border border-primary/10 dark:border-light/10'>
           <AvailabilityCalendar freelancerId={user?._id} isOwnProfile={true} isPublicView={false} />
         </div>
       </motion.div>

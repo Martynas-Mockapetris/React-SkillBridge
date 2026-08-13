@@ -221,7 +221,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: groupIndex * 0.05 }}
-              className='theme-card p-6 rounded-lg hover:shadow-lg transition-all'>
+              className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
               {/* Direct Message Header */}
               <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(conversationKey, groupMessages)}>
                 <div className='flex items-center justify-between'>
@@ -282,7 +282,11 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
                             className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
+                            <div className={`max-w-[70%] p-4 rounded-lg ${
+                              isOwnMessage
+                                ? 'bg-gradient-to-br dark:from-accent/20 dark:to-accent/10 from-accent/10 to-accent/5 border border-accent/20'
+                                : 'bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10'
+                            }`}>
                               {!isOwnMessage && (
                                 <div className='flex items-center gap-2 mb-2'>
                                   <img
@@ -482,7 +486,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
                           className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
+                          <div className={`max-w-[70%] p-4 rounded-lg backdrop-blur-sm ${isOwnMessage ? 'bg-gradient-to-br dark:from-accent/20 dark:to-accent/10 from-accent/10 to-accent/5 border border-accent/20' : 'bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10'}`}>
                             {!isOwnMessage && (
                               <div className='flex items-center gap-2 mb-2'>
                                 <img

@@ -56,7 +56,7 @@ const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, o
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className='space-y-8'>
       {/* Summary */}
-      <div className='p-4 bg-accent/10 rounded-lg'>
+      <div className='p-4 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
         <p className='theme-text font-semibold'>
           {interestedCount} {interestedCount === 1 ? 'person' : 'people'} interested in this project
         </p>

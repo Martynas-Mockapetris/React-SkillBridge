@@ -34,7 +34,7 @@ const RatingsSection = ({ ratings, stats, loading }) => {
   return (
     <div className='space-y-6'>
       {/* Rating Summary */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg'>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-6 rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
         <div className='flex items-center justify-between mb-6'>
           <h2 className='text-2xl font-bold theme-text'>Your Ratings</h2>
           <div className='text-right'>
@@ -75,7 +75,7 @@ const RatingsSection = ({ ratings, stats, loading }) => {
         <div className='space-y-4'>
           <h3 className='text-lg font-bold theme-text'>Client Reviews</h3>
           {ratings.ratings.map((rating, index) => (
-            <motion.div key={rating._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className='theme-card p-4 rounded-lg'>
+            <motion.div key={rating._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-4 rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
               {/* Reviewer Info */}
               <div className='flex items-center gap-3 mb-3'>
                 <div className='w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center'>
