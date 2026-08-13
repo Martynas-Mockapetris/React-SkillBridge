@@ -49,18 +49,18 @@ const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNex
 
   // Mini month renderer
   const renderMiniMonth = (year, month, grid) => (
-    <div className='flex flex-col items-center gap-1 flex-1 min-w-0'>
+    <div className='flex flex-col items-center gap-2 flex-1 min-w-0'>
       <h5 className='text-sm font-semibold theme-text text-center'>{getMonthName(year, month)}</h5>
       {/* Day headers */}
-      <div className='grid grid-cols-7 gap-px w-full mb-0.5'>
+      <div className='grid grid-cols-7 gap-1 w-full'>
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) => (
-          <div key={day} className='text-center text-xs font-semibold theme-text-secondary py-0.5'>
+          <div key={day} className='text-center text-xs font-semibold theme-text-secondary py-1'>
             {day}
           </div>
         ))}
       </div>
       {/* Calendar grid */}
-      <div className='grid grid-cols-7 gap-px w-full bg-gray-50 dark:bg-gray-800/20 p-1 rounded'>
+      <div className='grid grid-cols-7 gap-1 w-full bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-2 rounded border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
         <AnimatePresence>
           {grid?.map((day, idx) => {
             const isEmpty = !day?.date
@@ -90,7 +90,10 @@ const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNex
   )
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='p-4 theme-card rounded-lg border dark:border-light/10 border-primary/10'>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className='p-4 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
       {/* Navigation */}
       <div className='flex items-center justify-between mb-4'>
         <motion.button onClick={onPreviousMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-1.5 hover:bg-accent/10 rounded transition-colors duration-200' aria-label='Previous month'>
@@ -105,25 +108,31 @@ const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNex
       </div>
 
       {/* Three-month view */}
-      <div className='flex gap-3 w-full'>
+      <div className='flex gap-4 w-full'>
         {renderMiniMonth(prevYear, prevMonth, prevGrid)}
         {renderMiniMonth(currentYear, currentMonth, currentGrid)}
         {renderMiniMonth(nextYear, nextMonth, nextGrid)}
       </div>
 
-      {/* Legend */}
-      <div className='grid grid-cols-4 gap-1 mt-3 text-xs'>
-        {[
-          { status: 'green', label: 'Available' },
-          { status: 'yellow', label: 'Partial' },
-          { status: 'orange', label: 'Busy' },
-          { status: 'red', label: 'Full' }
-        ].map((item) => (
-          <div key={item.status} className='flex items-center gap-1'>
-            <div className='w-1.5 h-1.5 rounded flex-shrink-0' style={{ backgroundColor: getStatusColor(item.status) }}></div>
-            <span className='theme-text-secondary truncate'>{item.label}</span>
-          </div>
-        ))}
+      {/* Enhanced Legend */}
+      <div className='mt-6 pt-6 border-t border-primary/10 dark:border-light/10'>
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+          {[
+            { status: 'green', label: 'Available', color: '#10b981' },
+            { status: 'yellow', label: 'Partial', color: '#f59e0b' },
+            { status: 'orange', label: 'Busy', color: '#f97316' },
+            { status: 'red', label: 'Full', color: '#ef4444' }
+          ].map((item) => (
+            <motion.div
+              key={item.status}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className='p-3 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10 backdrop-blur-sm flex items-center gap-2'>
+              <div className='w-3 h-3 rounded-full flex-shrink-0' style={{ backgroundColor: item.color }}></div>
+              <span className='theme-text-secondary text-xs font-medium'>{item.label}</span>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </motion.div>
   )

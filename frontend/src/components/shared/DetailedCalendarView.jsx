@@ -47,9 +47,12 @@ const DetailedCalendarView = ({
   const calendarGrid = [...Array(firstDayOfMonth), ...calendarData.days]
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='p-6 theme-card rounded-lg border dark:border-light/10 border-primary/10'>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className='p-6 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
       {/* Header */}
-      <div className='flex items-center justify-between mb-6'>
+      <div className='flex items-center justify-between mb-7'>
         <h3 className='text-lg font-semibold theme-text'>{monthName}</h3>
         <div className='flex gap-2 items-center'>
           <motion.button onClick={onPreviousMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200' aria-label='Previous month'>
@@ -91,26 +94,32 @@ const DetailedCalendarView = ({
       )}
 
       {/* Legend */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 text-sm'>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
         {[
           { status: 'green', label: 'Available', capacity: '100%' },
           { status: 'yellow', label: 'Partially Busy', capacity: '1-50%' },
           { status: 'orange', label: '50% Busy', capacity: '50-99%' },
           { status: 'red', label: '100% Busy', capacity: '0%' }
         ].map((item) => (
-          <div key={item.status} className='flex items-center gap-2'>
-            <div className='w-2 h-2 md:w-3 md:h-3 rounded flex-shrink-0' style={{ backgroundColor: getStatusColor(item.status) }}></div>
-            <div className='flex flex-col'>
-              <span className='theme-text-secondary text-xs md:text-sm'>{item.label}</span>
-              <span className='theme-text-secondary text-xs opacity-70'>{item.capacity}</span>
+          <motion.div
+            key={item.status}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className='p-3 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
+            <div className='flex items-center gap-3'>
+              <div className='w-4 h-4 md:w-5 md:h-5 rounded flex-shrink-0' style={{ backgroundColor: getStatusColor(item.status) }}></div>
+              <div className='flex flex-col min-w-0'>
+                <span className='theme-text text-xs md:text-sm font-medium'>{item.label}</span>
+                <span className='theme-text-secondary text-xs opacity-70'>{item.capacity}</span>
+              </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {/* Status Filter - only for own profile */}
       {isOwnProfile && !editMode && (
-        <div className='mb-6 pb-6 border-b dark:border-light/10 border-primary/10'>
+        <div className='mb-6 pb-6 border-b border-primary/10 dark:border-light/10'>
           <StatusFilterChips selectedStatus={statusFilter} onStatusChange={onStatusFilterChange} onClear={onClearFilter} />
           {filterLoading && (
             <div className='mt-3 flex items-center gap-2 text-sm theme-text-secondary'>
@@ -124,9 +133,9 @@ const DetailedCalendarView = ({
       )}
 
       {/* Day headers */}
-      <div className='grid grid-cols-7 gap-0.5 md:gap-1 mb-2'>
+      <div className='grid grid-cols-7 gap-1 mb-3'>
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-          <div key={day} className='text-center text-xs md:text-sm font-semibold theme-text-secondary py-1 md:py-2'>
+          <div key={day} className='text-center text-xs md:text-sm font-semibold theme-text-secondary py-2 md:py-3'>
             <span className='hidden sm:inline'>{day}</span>
             <span className='sm:hidden'>{day.slice(0, 1)}</span>
           </div>
@@ -134,7 +143,7 @@ const DetailedCalendarView = ({
       </div>
 
       {/* Calendar Grid - Responsive */}
-      <div className='grid grid-cols-7 gap-0.5 md:gap-1'>
+      <div className='grid grid-cols-7 gap-1'>
         <AnimatePresence>
           {calendarGrid?.map((day, idx) => {
             const isEmpty = !day?.date

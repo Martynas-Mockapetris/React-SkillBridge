@@ -291,15 +291,15 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   }
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-4 my-0 pb-6'>
       {/* View Toggle Button */}
-      <div className='flex justify-end gap-2'>
+      <div className='flex justify-end gap-2 px-6 mt-6'>
         <motion.button
           onClick={() => setViewMode('compact')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className={`px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm font-medium ${
-            viewMode === 'compact' ? 'bg-accent text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 theme-text hover:shadow'
+            viewMode === 'compact' ? 'bg-accent text-white shadow-lg' : 'bg-primary/10 dark:bg-light/10 theme-text hover:shadow hover:bg-primary/20 dark:hover:bg-light/20'
           }`}
           aria-label='Switch to compact view'
           title='Compact view'>
@@ -311,7 +311,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className={`px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm font-medium ${
-            viewMode === 'detailed' ? 'bg-accent text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-700 theme-text hover:shadow'
+            viewMode === 'detailed' ? 'bg-accent text-white shadow-lg' : 'bg-primary/10 dark:bg-light/10 theme-text hover:shadow hover:bg-primary/20 dark:hover:bg-light/20'
           }`}
           aria-label='Switch to detailed view'
           title='Detailed view'>
@@ -323,7 +323,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       {/* Calendar View */}
       <AnimatePresence mode='wait'>
         {viewMode === 'compact' ? (
-          <motion.div key='compact' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key='compact' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='px-6 mb-6'>
             <CompactCalendarView
               calendarData={calendarData}
               currentDate={currentDate}
@@ -335,7 +335,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
             />
           </motion.div>
         ) : (
-          <motion.div key='detailed' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key='detailed' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='px-6 mb-6'>
             <DetailedCalendarView
               calendarData={calendarData}
               currentDate={currentDate}
