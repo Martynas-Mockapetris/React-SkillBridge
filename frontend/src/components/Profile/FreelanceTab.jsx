@@ -92,7 +92,7 @@ const FreelanceTab = ({ user }) => {
       )}
 
       {/* Announcements List or Empty State */}
-      <div className='theme-card p-8 rounded-lg text-center'>
+      <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-8 rounded-lg text-center border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
         {loading ? (
           <div className='flex justify-center py-8'>
             <LoadingSpinner />

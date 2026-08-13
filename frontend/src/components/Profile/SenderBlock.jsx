@@ -85,7 +85,12 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
       {/* Messages from this sender */}
       <div className='space-y-3 pl-16'>
         {messages.map((message, msgIndex) => (
-          <motion.div key={message._id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: msgIndex * 0.05 }} className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-4 rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
+          <motion.div
+            key={message._id}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
+            className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-4 rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
             {/* Message content */}
             <p className='theme-text leading-relaxed mb-2'>{message.content}</p>
 
