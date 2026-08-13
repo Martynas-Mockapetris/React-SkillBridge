@@ -54,11 +54,9 @@ router.put('/:id/publish', protect, publishProject)
 
 // Project retrieval routes (public and user projects)
 router.get('/all', getAllProjects)
-router.get('/:id', optionalProtect, getProjectById)
-router.get('/:id/owner', protect, getProjectByIdOwner)
 router.get('/', protect, getUserProjects)
 
-// Project search and filtering routes
+// Project search and filtering routes (specific routes BEFORE /:id)
 router.get('/filter/budget', filterProjectsByBudget)
 router.get('/filter/status', filterProjectsByStatus)
 router.get('/filter/skills', filterProjectsBySkills)
@@ -66,12 +64,16 @@ router.get('/filter/priority', filterProjectsByPriority)
 router.get('/filter', filterProjects)
 router.get('/search', filterProjectsByKeyword)
 
+// Project interest routes (specific routes BEFORE /:id)
+router.get('/interested', protect, getInterestedProjects)
+
+// Dynamic routes AFTER specific routes
+router.get('/:id', optionalProtect, getProjectById)
+router.get('/:id/owner', protect, getProjectByIdOwner)
+
 // Project update and deletion routes
 router.put('/:id', protect, upload.array('attachments', 5), updateProject)
 router.delete('/:id', protect, deleteProject)
-
-// Project interest and favorites routes
-router.get('/interested', protect, getInterestedProjects)
 router.delete('/:id/interested', protect, removeFromInterested)
 
 // Applicant management routes
