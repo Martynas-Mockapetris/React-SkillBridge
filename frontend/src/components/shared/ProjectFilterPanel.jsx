@@ -34,25 +34,27 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
 
   const getStatusColor = (status) => {
     const colors = {
-      draft: 'bg-gray-100 text-gray-800',
-      active: 'bg-green-100 text-green-800',
-      assigned: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-purple-100 text-purple-800',
-      under_review: 'bg-orange-100 text-orange-800',
-      completed: 'bg-emerald-100 text-emerald-800',
-      cancelled: 'bg-red-100 text-red-800',
-      negotiating: 'bg-yellow-100 text-yellow-800'
+      draft: 'bg-primary/10 dark:bg-light/10 text-primary dark:text-light',
+      active: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
+      assigned: 'bg-accent/10 text-accent',
+      in_progress: 'bg-purple-500/10 text-purple-600 dark:text-purple-300',
+      under_review: 'bg-orange-500/10 text-orange-600 dark:text-orange-300',
+      completed: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
+      cancelled: 'bg-red-500/10 text-red-600 dark:text-red-300',
+      negotiating: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-300'
     }
-    return colors[status] || 'bg-gray-100 text-gray-800'
+    return colors[status] || 'bg-primary/10 dark:bg-light/10 text-primary dark:text-light'
   }
 
   return (
-    <div className='theme-card rounded-lg shadow p-4 md:p-6 border theme-border'>
+    <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg p-4 md:p-6 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
       {/* Header with Clear Button */}
       <div className='flex items-center justify-between mb-4'>
         <h3 className='text-lg font-semibold theme-text'>Filters</h3>
         {hasActiveFilters && (
-          <button onClick={onClearAll} className='text-sm px-3 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium'>
+          <button
+            onClick={onClearAll}
+            className='text-sm px-3 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded-md hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-colors font-medium'>
             Clear All
           </button>
         )}
@@ -138,7 +140,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                   <button
                     key={option.value}
                     onClick={() => onFilterChange('matchType', option.value)}
-                    className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${filters.matchType === option.value ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-800 theme-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+                    className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${filters.matchType === option.value ? 'bg-accent text-white' : 'bg-primary/10 dark:bg-light/10 theme-text-secondary hover:bg-primary/20 dark:hover:bg-light/20'}`}>
                     {option.label}
                   </button>
                 ))}

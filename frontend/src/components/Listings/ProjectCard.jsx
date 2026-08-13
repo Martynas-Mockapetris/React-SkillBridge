@@ -27,14 +27,14 @@ const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, i
         className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 relative'>
         {/* Favorite button - top right corner */}
         <motion.button onClick={handleFavoriteClick} disabled={isFavoriting} className='absolute top-4 right-4 z-10' whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-          {isFavoriting ? <LoadingSpinner size='sm' /> : <FaHeart className={`text-2xl ${isFavorited ? 'text-red-500' : 'text-gray-400'}`} />}
+          {isFavoriting ? <LoadingSpinner size='sm' /> : <FaHeart className={`text-2xl ${isFavorited ? 'text-red-500' : 'theme-text-secondary'}`} />}
         </motion.button>
 
         {/* Project title */}
         <div className='mb-2 pr-8 flex items-start gap-2'>
           <h3 className='text-xl font-bold theme-text line-clamp-2 min-w-0'>{project.title}</h3>
           {isApplied && (
-            <span className='shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-semibold bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/40'>
+            <span className='shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/20'>
               Applied
             </span>
           )}

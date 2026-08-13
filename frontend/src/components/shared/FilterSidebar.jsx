@@ -2,42 +2,23 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaTimes } from 'react-icons/fa'
 import { ProjectFilterPanel } from './ProjectFilterPanel'
 
-const FilterSidebar = ({
-  isOpen,
-  onToggle,
-  onClose,
-  filters,
-  onFilterChange,
-  onClearAll,
-  hasActiveFilters,
-  isDarkMode
-}) => {
+const FilterSidebar = ({ isOpen, onToggle, onClose, filters, onFilterChange, onClearAll, hasActiveFilters, isDarkMode }) => {
   return (
     <>
       {/* Mobile Toggle Button */}
-      <div className="lg:hidden fixed top-20 left-4 z-40">
+      <div className='lg:hidden fixed top-24 left-4 z-40'>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onToggle}
-          className={`p-3 rounded-lg shadow-lg transition-colors ${
-            isDarkMode
-              ? 'bg-slate-700 hover:bg-slate-600 text-white'
-              : 'bg-white hover:bg-gray-100 text-slate-800'
-          } ${hasActiveFilters ? 'ring-2 ring-blue-500' : ''}`}
-          aria-label="Toggle filters"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          className={`p-3 rounded-lg shadow-lg transition-colors bg-accent text-white hover:bg-accent/80 ${hasActiveFilters ? 'ring-2 ring-accent ring-offset-2 dark:ring-offset-primary ring-offset-light' : ''}`}
+          aria-label='Toggle filters'>
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
             <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeLinecap='round'
+              strokeLinejoin='round'
               strokeWidth={2}
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              d='M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z'
             />
           </svg>
         </motion.button>
@@ -45,15 +26,7 @@ const FilterSidebar = ({
 
       {/* Mobile Overlay */}
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30 top-16"
-          />
-        )}
+        {isOpen && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className='lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30 top-16' />}
       </AnimatePresence>
 
       {/* Sidebar Container */}
@@ -64,51 +37,37 @@ const FilterSidebar = ({
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`
           fixed lg:relative lg:translate-x-0
-          top-16 left-0 h-[calc(100vh-4rem)] lg:h-auto
-          w-80 lg:w-1/4 lg:min-w-max
+          top-24 left-0 h-[calc(100vh-6rem)] lg:h-auto
+          w-80 lg:w-64
           z-40 lg:z-0
           overflow-y-auto lg:overflow-visible
-          ${isDarkMode ? 'bg-slate-800' : 'bg-white'}
-          border-r ${isDarkMode ? 'border-slate-700' : 'border-gray-200'}
-          shadow-xl lg:shadow-none
-        `}
-      >
+          bg-light dark:bg-primary
+          border-r border-primary/10 dark:border-light/10
+          shadow-xl lg:shadow-none p-4 lg:p-0
+        `>
         {/* Header with Close Button */}
         <div
           className={`
             sticky top-0 z-50 p-4 border-b
-            ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}
+            bg-light dark:bg-primary border-primary/10 dark:border-light/10
             lg:hidden
-          `}
-        >
-          <div className="flex items-center justify-between">
-            <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-              Filters
-            </h2>
+          `}>
+          <div className='flex items-center justify-between'>
+            <h2 className={`text-lg font-semibold theme-text`}>Filters</h2>
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={onClose}
-              className={`p-2 rounded-lg ${
-                isDarkMode
-                  ? 'hover:bg-slate-700 text-gray-400 hover:text-white'
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
-              aria-label="Close filters"
-            >
+              className={`p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-light/10 theme-text-secondary hover:text-accent transition-colors`}
+              aria-label='Close filters'>
               <FaTimes />
             </motion.button>
           </div>
         </div>
 
         {/* Filter Panel */}
-        <div className="p-4 lg:p-0">
-          <ProjectFilterPanel
-            filters={filters}
-            onFilterChange={onFilterChange}
-            onClearAll={onClearAll}
-            hasActiveFilters={hasActiveFilters}
-          />
+        <div className='p-4 lg:p-0'>
+          <ProjectFilterPanel filters={filters} onFilterChange={onFilterChange} onClearAll={onClearAll} hasActiveFilters={hasActiveFilters} />
         </div>
       </motion.div>
     </>

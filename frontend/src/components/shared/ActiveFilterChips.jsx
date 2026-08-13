@@ -73,10 +73,16 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
   }
 
   return (
-    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className='mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      className='mb-6 p-4 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10 rounded-lg backdrop-blur-sm'>
       <div className='flex items-center justify-between mb-3'>
-        <h4 className='text-sm font-semibold text-gray-700'>Active Filters</h4>
-        <button onClick={onClearAll} className='text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors'>
+        <h4 className='text-sm font-semibold theme-text-secondary'>Active Filters</h4>
+        <button
+          onClick={onClearAll}
+          className='text-xs px-2 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-colors font-medium'>
           Clear All
         </button>
       </div>
@@ -89,9 +95,9 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className='inline-flex items-center gap-2 px-3 py-1 bg-white border border-blue-300 rounded-full text-sm text-gray-700 shadow-sm'>
+              className='inline-flex items-center gap-2 px-3 py-1 bg-light/10 dark:bg-light/5 border border-primary/10 dark:border-light/10 rounded-full text-sm theme-text-secondary backdrop-blur-sm'>
               <span>{filter.label}</span>
-              <button onClick={filter.onRemove} className='ml-1 text-gray-500 hover:text-red-500 transition-colors' aria-label={`Remove ${filter.label} filter`}>
+              <button onClick={filter.onRemove} className='ml-1 theme-text-secondary hover:text-accent transition-colors' aria-label={`Remove ${filter.label} filter`}>
                 <FaTimes size={12} />
               </button>
             </motion.div>

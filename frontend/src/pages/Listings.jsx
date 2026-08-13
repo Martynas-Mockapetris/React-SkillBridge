@@ -1,4 +1,5 @@
 import { useTheme } from '../context/ThemeContext'
+import { motion } from 'framer-motion'
 import { useProjectFilters } from '../hooks/useProjectFilters'
 import { ProjectFilterPanel } from '../components/shared/ProjectFilterPanel'
 import { ActiveFilterChips } from '../components/shared/ActiveFilterChips'
@@ -52,7 +53,9 @@ const Listings = () => {
       <div className='grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 md:p-8'>
         {/* Filter Panel */}
         <aside className='lg:col-span-1'>
-          <ProjectFilterPanel filters={filters} onFilterChange={handleFilterChange} onClearAll={clearAllFilters} hasActiveFilters={hasActiveFilters()} />
+          <div className='sticky top-20 lg:static z-20 pt-[100px]'>
+            <ProjectFilterPanel filters={filters} onFilterChange={handleFilterChange} onClearAll={clearAllFilters} hasActiveFilters={hasActiveFilters()} />
+          </div>
         </aside>
 
         {/* Main Content */}
@@ -61,16 +64,16 @@ const Listings = () => {
 
           {hasActiveFilters() ? (
             <div className='mb-6'>
-              <div className='flex items-center justify-between mb-4 p-4 bg-gradient-to-r from-blue-50 to-transparent rounded-lg border border-blue-100'>
+              <div className='flex items-center justify-between mb-4 p-4 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
                 <div className='flex items-center gap-3'>
                   <div>
-                    <p className='text-xs font-medium text-gray-600 uppercase tracking-wide'>Sorting</p>
+                    <p className='text-xs font-medium theme-text-secondary uppercase tracking-wide'>Sorting</p>
                     <SortIndicatorBadge currentSort={filters.sort} onSortChange={handleSortChange} />
                   </div>
                 </div>
                 <div className='text-right'>
-                  <p className='text-xs font-medium text-gray-600 uppercase tracking-wide'>Results</p>
-                  <motion.span key={results.pagination?.total} initial={{ scale: 0.8 }} animate={{ scale: 1 }} className='inline-block text-2xl font-bold text-blue-600'>
+                  <p className='text-xs font-medium theme-text-secondary uppercase tracking-wide'>Results</p>
+                  <motion.span key={results.pagination?.total} initial={{ scale: 0.8 }} animate={{ scale: 1 }} className='inline-block text-2xl font-bold text-accent'>
                     {results.pagination?.total || 0}
                   </motion.span>
                 </div>
