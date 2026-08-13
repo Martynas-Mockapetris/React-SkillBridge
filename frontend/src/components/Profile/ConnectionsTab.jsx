@@ -421,7 +421,7 @@ const ConnectionsTab = () => {
   return (
     <div className='space-y-5 lg:space-y-6'>
       <div className='grid gap-3 lg:gap-4 2xl:grid-cols-[minmax(0,1fr)_180px_180px_180px] 2xl:items-stretch'>
-        <div className='overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-white/80 via-white/60 to-accent/5 shadow-[0_20px_60px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-light/10 dark:from-light/[0.06] dark:via-light/[0.03] dark:to-accent/10 2xl:col-span-1'>
+        <div className='overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm dark:border-light/10 2xl:col-span-1'>
           <div className='flex flex-col gap-4 px-4 py-4 sm:px-5 sm:py-5 lg:gap-5 lg:px-6'>
             <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
               <label className='block'>
@@ -434,7 +434,7 @@ const ConnectionsTab = () => {
                     value={acceptedSearch}
                     onChange={(event) => setAcceptedSearch(event.target.value)}
                     placeholder='Search by name, skill, service, headline, or location'
-                    className='h-[50px] w-full rounded-lg border border-primary/10 bg-white/80 pl-11 pr-4 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-light/10 dark:bg-light/[0.06]'
+                    className='h-[50px] w-full rounded-lg border theme-border bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text transition-all duration-300 placeholder:text-primary/40 dark:placeholder:text-light/40 focus:bg-light/20 dark:focus:bg-light/20 focus:outline-none focus:ring-2 focus:ring-accent/50 hover:scale-[1.02] hover:shadow-lg'
                   />
                 </div>
               </label>
@@ -493,17 +493,17 @@ const ConnectionsTab = () => {
           </div>
         </div>
 
-        <div className='theme-card flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4'>
+        <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
         </div>
 
-        <div className='theme-card flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4'>
+        <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
         </div>
 
-        <div className='theme-card flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4'>
+        <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
           <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
         </div>

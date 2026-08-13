@@ -1113,9 +1113,9 @@ const ProfileSettings = () => {
                 <motion.button
                   type='button'
                   onClick={handleReset}
-                  className='flex-1 bg-gray-500 text-white font-medium py-3 px-6 rounded-lg
-              hover:bg-gray-600 transition-colors duration-300
-              focus:outline-none focus:ring-2 focus:ring-gray-500/50
+                  className='flex-1 bg-primary/20 dark:bg-light/10 text-primary dark:text-light font-medium py-3 px-6 rounded-lg
+              hover:bg-primary/30 dark:hover:bg-light/20 transition-colors duration-300
+              focus:outline-none focus:ring-2 focus:ring-primary/50
               disabled:opacity-50 disabled:cursor-not-allowed'
                   whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
                   whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
