@@ -23,7 +23,7 @@ const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondar
       ? 'rounded-3xl border border-accent/30 bg-accent/10 dark:bg-accent/15 p-8 md:p-10'
       : emphasisStyle === 'outline'
         ? 'rounded-3xl border-2 theme-border bg-transparent p-8 md:p-10'
-        : 'rounded-3xl border theme-border bg-white/50 dark:bg-black/20 p-8 md:p-10'
+        : 'rounded-3xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-8 md:p-10'
 
   return (
     <motion.div className={`${surfaceClass} ${widthClass}`} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}>

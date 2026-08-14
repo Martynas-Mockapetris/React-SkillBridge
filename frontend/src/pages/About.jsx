@@ -92,8 +92,8 @@ const About = () => {
   const showCta = aboutSectionVisibility.showCta ?? true
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      <PageBackground variant='minimal' />
+    <section className='w-full relative z-[1] pt-[80px]'>
+      <PageBackground />
 
       {loading && (
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
@@ -116,7 +116,7 @@ const About = () => {
               switch (sectionKey) {
                 case 'hero':
                   return showHero ? (
-                    <section key='hero' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')} relative z-10`}>
+                    <section key='hero' className='relative z-10'>
                       <div className='container mx-auto px-4'>
                         <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
                       </div>
@@ -125,7 +125,7 @@ const About = () => {
 
                 case 'highlights':
                   return showHighlights ? (
-                    <section key='highlights' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')} relative z-10`}>
+                    <section key='highlights' className='relative z-10'>
                       <div className='container mx-auto px-4'>
                         <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
                       </div>
@@ -134,7 +134,7 @@ const About = () => {
 
                 case 'cta':
                   return showCta ? (
-                    <section key='cta' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')} relative z-10`}>
+                    <section key='cta' className='relative z-10'>
                       <div className='container mx-auto px-4'>
                         <AboutCta
                           eyebrow={ctaEyebrow}
