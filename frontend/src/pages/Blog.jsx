@@ -58,9 +58,8 @@ const Blog = () => {
   const blogReadMoreLabel = blogContent.blogReadMoreLabel || 'Read article'
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      <PageBackground variant='minimal' />
-
+    <section className='w-full relative z-[1] pt-[80px]'>
+      <PageBackground />
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
         <motion.div className='max-w-3xl mb-10' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <p className='text-sm uppercase tracking-[0.2em] text-accent mb-3'>{blogEyebrow}</p>
@@ -80,7 +79,7 @@ const Blog = () => {
         {!loading && error && <div className='rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-5 py-4 text-red-700 dark:text-red-300'>{error}</div>}
 
         {!loading && !error && posts.length === 0 && (
-          <div className='rounded-xl border theme-border bg-white/40 dark:bg-black/20 px-6 py-10 text-center'>
+          <div className='rounded-xl border theme-border px-6 py-10 text-center'>
             <h2 className='text-2xl font-semibold theme-text mb-2'>{blogEmptyTitle}</h2>
             <p className='theme-text-secondary'>{blogEmptySubtitle}</p>
           </div>
@@ -91,7 +90,7 @@ const Blog = () => {
             {posts.map((post, index) => (
               <div key={post._id} className='inline-block w-full mb-6 break-inside-avoid'>
                 <motion.article
-                  className='rounded-2xl border theme-border bg-white/50 dark:bg-black/20 overflow-hidden hover:shadow-xl transition-all'
+                  className='rounded-2xl border theme-border overflow-hidden hover:shadow-xl transition-all'
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.35, delay: index * 0.06 }}>
