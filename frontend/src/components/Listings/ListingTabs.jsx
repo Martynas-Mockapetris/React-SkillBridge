@@ -9,7 +9,6 @@ import CardLoader from './CardLoader'
 import { getAllProjects, getInterestedProjects } from '../../services/projectService'
 import { getAllAnnouncements } from '../../services/announcementService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites, getMyConnections } from '../../services/userService'
-import molecularPattern from '../../assets/molecular-pattern.svg'
 import { useAuth } from '../../context/AuthContext'
 
 const parseCommaSeparatedList = (value) => {
@@ -509,26 +508,7 @@ const ListingTabs = () => {
   const visibleResultsCount = activeTab === 'projects' ? filteredProjects.length : filteredFreelancers.length
 
   return (
-    <section className='w-full pt-[96px] md:pt-[104px] pb-20 theme-bg relative z-[2]'>
-      <div className='absolute inset-0 overflow-hidden'>
-        {/* Molecular patterns */}
-        <div className='absolute -left-20 top-40 opacity-20'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[45deg]' />
-        </div>
-        <div className='absolute -right-20 bottom-20 opacity-15'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-30deg]' />
-        </div>
-        <div className='absolute left-3/4 top-28 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[35deg]' />
-        </div>
-        <div className='absolute right-1/3 top-1/3 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[60deg]' />
-        </div>
-        <div className='absolute left-1/3 bottom-40 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[200px] h-[200px] rotate-[-15deg]' />
-        </div>
-      </div>
-
+    <section className='w-full pt-[96px] md:pt-[104px] pb-20 relative z-[1]'>
       {/* Main container */}
       <div className='container mx-auto px-4 relative z-10'>
         <div className='max-w-8xl mx-auto'>
@@ -563,8 +543,8 @@ const ListingTabs = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: activeTab === 'projects' ? 20 : -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
-            <div className='mb-8 overflow-hidden rounded-lg border dark:border-light/10 border-primary/10 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm'>
+            className='rounded-b-lg p-12'>
+            <div className='mb-8 overflow-hidden rounded-lg border dark:border-light/10 border-primary/10'>
               <div className='flex flex-col gap-5 border-b dark:border-light/10 border-primary/10 px-5 py-5 md:px-6'>
                 <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
                   <div className='flex flex-wrap items-center gap-2'>

@@ -6,6 +6,7 @@ import { ActiveFilterChips } from '../components/shared/ActiveFilterChips'
 import { SortResultsHeader } from '../components/shared/SortResultsHeader'
 import { SortIndicatorBadge } from '../components/shared/SortIndicatorBadge'
 import ListingTabs from '../components/Listings/ListingTabs'
+import molecularPattern from '../assets/molecular-pattern.svg'
 import { useEffect } from 'react'
 
 const Listings = () => {
@@ -49,8 +50,18 @@ const Listings = () => {
   }
 
   return (
-    <main className={`transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
-      <div className='grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 md:p-8'>
+    <main className={`relative transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
+      {/* Background Patterns */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+        <div className='absolute -left-40 -top-20 opacity-20'>
+          <img src={molecularPattern} alt='' className='w-[550px] h-[550px] rotate-45' />
+        </div>
+        <div className='absolute -right-32 bottom-40 opacity-20'>
+          <img src={molecularPattern} alt='' className='w-[450px] h-[450px] rotate-[-30deg]' />
+        </div>
+      </div>
+
+      <div className='relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 md:p-8'>
         {/* Filter Panel */}
         <aside className='lg:col-span-1'>
           <div className='sticky top-20 lg:static z-20 pt-[100px]'>
@@ -64,7 +75,7 @@ const Listings = () => {
 
           {hasActiveFilters() ? (
             <div className='mb-6'>
-              <div className='flex items-center justify-between mb-4 p-4 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
+              <div className='flex items-center justify-between mb-4 p-4 rounded-lg border border-primary/10 dark:border-light/10'>
                 <div className='flex items-center gap-3'>
                   <div>
                     <p className='text-xs font-medium theme-text-secondary uppercase tracking-wide'>Sorting</p>

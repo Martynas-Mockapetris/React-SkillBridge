@@ -47,7 +47,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
   }
 
   return (
-    <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg p-4 md:p-6 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
+    <div className='rounded-lg p-4 md:p-6 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
       {/* Header with Clear Button */}
       <div className='flex items-center justify-between mb-4'>
         <h3 className='text-lg font-semibold theme-text'>Filters</h3>

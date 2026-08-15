@@ -73,11 +73,7 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      className='mb-6 p-4 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10 rounded-lg backdrop-blur-sm'>
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className='mb-6 p-4 border border-primary/10 dark:border-light/10 rounded-lg'>
       <div className='flex items-center justify-between mb-3'>
         <h4 className='text-sm font-semibold theme-text-secondary'>Active Filters</h4>
         <button
