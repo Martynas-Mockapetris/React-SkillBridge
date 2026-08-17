@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
-// Manages all 8 modal states
+// Manages all modal states
 export const useProjectModals = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
 
   return {
     isContactModalOpen,
@@ -15,6 +16,8 @@ export const useProjectModals = () => {
     isSubmitModalOpen,
     setIsSubmitModalOpen,
     isReviewModalOpen,
-    setIsReviewModalOpen
+    setIsReviewModalOpen,
+    isRescheduleModalOpen,
+    setIsRescheduleModalOpen
   }
 }

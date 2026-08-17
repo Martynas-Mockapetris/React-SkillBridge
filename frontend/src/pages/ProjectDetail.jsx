@@ -76,7 +76,7 @@ const ProjectDetail = () => {
   const [error, setError] = useState(null)
 
   // Extract modal state into hook
-  const { isContactModalOpen, setIsContactModalOpen, isEditModalOpen, setIsEditModalOpen, isSubmitModalOpen, setIsSubmitModalOpen, isReviewModalOpen, setIsReviewModalOpen } = useProjectModals()
+  const { isContactModalOpen, setIsContactModalOpen, isEditModalOpen, setIsEditModalOpen, isSubmitModalOpen, setIsSubmitModalOpen, isReviewModalOpen, setIsReviewModalOpen, isRescheduleModalOpen, setIsRescheduleModalOpen } = useProjectModals()
 
   // Extract favorites into hook
   const { isFavorited, favoriteLoading, handleToggleFavorite } = useFavorites(id, currentUser)
@@ -530,6 +530,8 @@ const ProjectDetail = () => {
                 setIsContactModalOpen={setIsContactModalOpen}
                 setIsSubmitModalOpen={setIsSubmitModalOpen}
                 setIsReviewModalOpen={setIsReviewModalOpen}
+                isRescheduleModalOpen={isRescheduleModalOpen}
+                setIsRescheduleModalOpen={setIsRescheduleModalOpen}
                 loadProject={loadProject}
               />
 

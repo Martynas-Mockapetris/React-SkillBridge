@@ -17,6 +17,8 @@ const ProjectActions = ({
   setIsContactModalOpen,
   setIsSubmitModalOpen,
   setIsReviewModalOpen,
+  isRescheduleModalOpen,
+  setIsRescheduleModalOpen,
   loadProject
 }) => {
   const navigate = useNavigate()
