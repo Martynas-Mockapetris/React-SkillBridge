@@ -459,7 +459,7 @@ const ProjectDetail = () => {
             <motion.div className='space-y-5' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
               {/* Collaboration Overview */}
               {project.user && (
-                <div className='theme-card p-6 rounded-lg space-y-5'>
+                <div className='p-6 rounded-lg space-y-5 border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm'>
                   <div className='space-y-3'>
                     <div className='flex flex-wrap items-center justify-between gap-3'>
                       <h3 className='text-xl font-semibold theme-text'>Collaboration Overview</h3>
@@ -469,7 +469,7 @@ const ProjectDetail = () => {
                   </div>
 
                   <div className='space-y-4'>
-                    <div className='rounded-lg border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <div className='rounded-lg border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                       <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary mb-3'>Client</p>
                       <div className='flex items-center gap-3'>
                         <img src={project.user.profilePicture || `https://i.pravatar.cc/150?u=${project.user._id}`} alt={project.user.firstName} className='w-12 h-12 rounded-full object-cover border border-accent/20' />
@@ -487,7 +487,7 @@ const ProjectDetail = () => {
                       </div>
                     </div>
 
-                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                       <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary mb-3'>Freelancer</p>
 
                       {project.assignee ? (
