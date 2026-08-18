@@ -76,7 +76,18 @@ const ProjectDetail = () => {
   const [error, setError] = useState(null)
 
   // Extract modal state into hook
-  const { isContactModalOpen, setIsContactModalOpen, isEditModalOpen, setIsEditModalOpen, isSubmitModalOpen, setIsSubmitModalOpen, isReviewModalOpen, setIsReviewModalOpen, isRescheduleModalOpen, setIsRescheduleModalOpen } = useProjectModals()
+  const {
+    isContactModalOpen,
+    setIsContactModalOpen,
+    isEditModalOpen,
+    setIsEditModalOpen,
+    isSubmitModalOpen,
+    setIsSubmitModalOpen,
+    isReviewModalOpen,
+    setIsReviewModalOpen,
+    isRescheduleModalOpen,
+    setIsRescheduleModalOpen
+  } = useProjectModals()
 
   // Extract favorites into hook
   const { isFavorited, favoriteLoading, handleToggleFavorite } = useFavorites(id, currentUser)
@@ -227,7 +238,7 @@ const ProjectDetail = () => {
   }
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
+    <section className='w-full relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
@@ -270,40 +281,43 @@ const ProjectDetail = () => {
             {/* Main Content */}
             <motion.div className='lg:col-span-2 space-y-6' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
               {/* Project Brief Section */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg space-y-6'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className='p-6 rounded-lg space-y-6 border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm'>
                 <div className='space-y-2'>
                   <h3 className='text-xl font-semibold theme-text'>Project Brief</h3>
                   <p className='text-sm leading-6 theme-text-secondary'>Summary of the project scope, expectations, and delivery requirements.</p>
                 </div>
 
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Experience Level</p>
                     <p className='mt-2 text-base font-semibold theme-text'>{experienceLevelLabel}</p>
                   </div>
 
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Start Preference</p>
                     <p className='mt-2 text-base font-semibold theme-text'>{startPreferenceLabel}</p>
                   </div>
 
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Estimated Duration</p>
                     <p className='mt-2 text-base font-semibold theme-text'>{durationLabel}</p>
                   </div>
 
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Workload</p>
                     <p className='mt-2 text-base font-semibold theme-text'>{workloadLabel}</p>
                   </div>
 
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Budget Model</p>
                     <p className='mt-2 text-base font-semibold theme-text'>{budgetTypeLabel}</p>
                     <p className='mt-1 text-sm theme-text-secondary'>{project.rateNegotiation?.currentOffer ? 'Active rate discussion in progress.' : 'No active rate negotiation.'}</p>
                   </div>
 
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                  <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Skills Required</p>
 
                     {normalizedSkills.length > 0 ? (
@@ -348,7 +362,7 @@ const ProjectDetail = () => {
                 )}
 
                 {projectBrief.applicationInstructions && (
-                  <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-accent/5 p-4 space-y-2'>
+                  <div className='rounded-xl border border-accent/30 bg-gradient-to-br dark:from-accent/5 dark:via-accent/[0.02] from-accent/5 via-accent/[0.02] to-transparent backdrop-blur-sm p-4 space-y-2'>
                     <p className='text-xs font-semibold uppercase tracking-[0.14em] text-accent'>Application Instructions</p>
                     <p className='text-sm leading-7 theme-text'>{projectBrief.applicationInstructions}</p>
                   </div>
@@ -358,7 +372,7 @@ const ProjectDetail = () => {
                   <h3 className='text-xl font-semibold theme-text'>Delivery Snapshot</h3>
 
                   {project.rateNegotiation?.currentOffer ? (
-                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                       <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
                       <div className='mt-2 flex flex-wrap items-center gap-2'>
                         <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>
@@ -371,14 +385,14 @@ const ProjectDetail = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                       <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Commercial Model</p>
                       <p className='mt-2 text-sm theme-text-secondary'>Fixed project budget with no active negotiation.</p>
                     </div>
                   )}
 
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                       <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Timeline</p>
                       <p className='mt-2 text-base font-semibold theme-text'>{project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Flexible deadline'}</p>
                       <p className='mt-1 text-sm theme-text-secondary'>
@@ -392,7 +406,7 @@ const ProjectDetail = () => {
                       </p>
                     </div>
 
-                    <div className='rounded-xl border dark:border-light/10 border-primary/10 bg-primary/5 dark:bg-light/[0.03] p-4'>
+                    <div className='rounded-xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-4'>
                       <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Work Expectations</p>
                       <div className='mt-2 flex flex-col gap-2 text-sm theme-text-secondary'>
                         <p>
@@ -412,7 +426,7 @@ const ProjectDetail = () => {
 
               {/* Review Feedback Section - visible to both */}
               {project.review && project.review.decision && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='theme-card p-6 rounded-lg border-l-4 border-accent space-y-3'>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='p-6 rounded-lg border-l-4 border-accent space-y-3 border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm'>
                   <div className='flex items-center gap-2'>
                     {project.review.decision === 'accepted' ? (
                       <>
@@ -428,7 +442,7 @@ const ProjectDetail = () => {
                   </div>
 
                   {project.review.feedback && (
-                    <div className='bg-primary/5 dark:bg-light/5 rounded-lg p-4 border border-primary/10 dark:border-light/10'>
+                    <div className='rounded-lg p-4 border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm'>
                       <p className='text-xs font-semibold theme-text-secondary mb-2'>Feedback from Client:</p>
                       <p className='text-sm theme-text leading-relaxed'>{project.review.feedback}</p>
                     </div>
