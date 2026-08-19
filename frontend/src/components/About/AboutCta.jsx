@@ -26,7 +26,11 @@ const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondar
         : 'rounded-3xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-8 md:p-10'
 
   return (
-    <motion.div className={`${surfaceClass} ${widthClass}`} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}>
+    <motion.div
+      className={`${surfaceClass} ${widthClass} hover:scale-[1.02] hover:shadow-lg transition-all duration-300`}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: 0.2 }}>
       <div className={textAlignClass}>
         <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-3'>{eyebrow}</p>
         <h2 className='text-2xl md:text-3xl font-semibold theme-text'>{headline}</h2>
@@ -34,7 +38,7 @@ const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondar
       </div>
 
       <div className={buttonWrapClass}>
-        <Link to={primaryHref} className='inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity'>
+        <Link to={primaryHref} className='inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white hover:opacity-90 hover:shadow-lg transition-all duration-300'>
           {primaryLabel}
           <FaArrowRight />
         </Link>
@@ -42,7 +46,7 @@ const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondar
         {showSecondaryButton && (
           <Link
             to={secondaryHref}
-            className='inline-flex items-center justify-center gap-2 rounded-full border theme-border px-5 py-3 text-sm font-semibold theme-text hover:bg-white/40 dark:hover:bg-white/5 transition-colors'>
+            className='inline-flex items-center justify-center gap-2 rounded-full border theme-border px-5 py-3 text-sm font-semibold theme-text hover:bg-white/40 dark:hover:bg-white/5 hover:shadow-lg transition-all duration-300'>
             {secondaryLabel}
           </Link>
         )}

@@ -52,7 +52,7 @@ const Contact = () => {
   }, [publicConfig])
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
+    <section className='w-full relative z-[1] pt-[80px]'>
       <PageBackground variant='minimal' />
 
       {loading && (
