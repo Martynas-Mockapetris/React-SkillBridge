@@ -56,7 +56,7 @@ const BlogPostDetail = () => {
       <section className='w-full relative z-[1] pt-[80px]'>
         <PageBackground variant='profile' />
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
-          <button onClick={() => navigate('/blog')} className='inline-flex items-center gap-2 mb-6 theme-text-secondary hover:text-accent transition-colors'>
+          <button onClick={() => navigate('/blog')} className='inline-flex items-center gap-2 mb-6 theme-text-secondary hover:text-accent transition-all duration-300'>
             <FaArrowLeft />
             Back to Blog
           </button>
@@ -76,7 +76,7 @@ const BlogPostDetail = () => {
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)] max-w-4xl'>
         <motion.button
           onClick={() => navigate('/blog')}
-          className='inline-flex items-center gap-2 mb-8 theme-text-secondary hover:text-accent transition-colors'
+          className='inline-flex items-center gap-2 mb-8 theme-text-secondary hover:text-accent transition-all duration-300'
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.25 }}>

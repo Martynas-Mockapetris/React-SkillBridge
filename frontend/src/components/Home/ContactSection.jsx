@@ -166,7 +166,7 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
             <motion.button
               type='submit'
               className='w-full bg-accent text-primary font-medium py-3 px-6 rounded-lg
-              hover:bg-accent/90 transition-colors duration-300
+              hover:bg-accent/90 hover:shadow-lg transition-all duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50'
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}>

@@ -212,7 +212,7 @@ const ProjectDetail = () => {
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
           <div className='flex flex-col items-center justify-center min-h-[400px]'>
             <p className='text-red-500 text-xl mb-4'>{error}</p>
-            <button onClick={handleBack} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+            <button onClick={handleBack} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300'>
               Go Back
             </button>
           </div>
@@ -228,7 +228,7 @@ const ProjectDetail = () => {
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
           <div className='flex flex-col items-center justify-center min-h-[400px]'>
             <p className='theme-text text-xl mb-4'>Project not found</p>
-            <button onClick={handleBack} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
+            <button onClick={handleBack} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300'>
               Go Back
             </button>
           </div>
@@ -245,7 +245,7 @@ const ProjectDetail = () => {
         {/* Back Button */}
         <motion.button
           onClick={handleBack}
-          className='flex items-center gap-2 mb-6 theme-text-secondary hover:text-accent transition-all'
+          className='flex items-center gap-2 mb-6 theme-text-secondary hover:text-accent transition-all duration-300'
           whileHover={{ x: -5 }}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -263,7 +263,7 @@ const ProjectDetail = () => {
           <motion.div className='flex gap-4 mb-8 border-b dark:border-light/10 border-primary/10' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <button
               onClick={() => setActiveTab('details')}
-              className={`py-4 px-6 transition-all duration-300 font-medium ${activeTab === 'details' ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent'}`}>
+              className={`py-4 px-6 transition-all duration-300 font-medium ${activeTab === 'details' ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent hover:transition-all'}`}>
               Project Details
             </button>
             <button
