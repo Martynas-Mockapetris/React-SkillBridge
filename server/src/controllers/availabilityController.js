@@ -242,15 +242,16 @@ export const getPublicFreelancerCalendar = async (req, res) => {
   try {
     const { freelancerId, year, month } = req.params
 
-    const calendar = await AvailabilityCalendar.findOne({
+    let calendar = await AvailabilityCalendar.findOne({
       freelancer: freelancerId,
       year: parseInt(year),
-      month: parseInt(month),
-      isPublic: true
+      month: parseInt(month)
     }).populate('days.assignedProjects', 'title priority deadline')
 
+    // Create calendar if it doesn't exist
     if (!calendar) {
-      return res.status(404).json({ message: 'Calendar not found or not public' })
+      calendar = await getOrCreateCalendar(freelancerId, parseInt(year), parseInt(month))
+      await calendar.populate('days.assignedProjects', 'title priority deadline')
     }
 
     // Only show public information
