@@ -8,7 +8,7 @@ import { getUserById, getMyConnections, sendConnectionRequest, acceptConnectionR
 import { getAllAnnouncements } from '../services/announcementService'
 import RatingsSection from '../components/Profile/RatingsSection'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
-import molecularPattern from '../assets/molecular-pattern.svg'
+import PageBackground from '../components/shared/PageBackground'
 import DirectContactModal from '../modal/DirectContactModal'
 import HireFreelancerModal from '../modal/HireFreelancerModal'
 import AvailabilityCalendar from '../components/shared/AvailabilityCalendar'
@@ -266,20 +266,12 @@ const UserDetail = () => {
   const announcementCategoryPreview = parseCommaSeparatedList(freelancer.serviceCategories).slice(0, 3)
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      {/* Molecular patterns */}
-      <div className='absolute inset-0 overflow-hidden backdrop-blur-[100px]'>
-        <div className='absolute -left-20 top-10 opacity-10'>
-          <img src={molecularPattern} alt='' className='w-[500px] h-[500px] rotate-[40deg]' />
-        </div>
-        <div className='absolute right-0 bottom-20 opacity-5'>
-          <img src={molecularPattern} alt='' className='w-[400px] h-[400px] rotate-[-50deg]' />
-        </div>
-      </div>
+    <section className='w-full relative z-[1] pt-[80px]'>
+      <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10'>
         {/* Back Button */}
-        <motion.button onClick={handleBack} className='flex items-center gap-2 text-accent hover:text-accent/80 mb-8 transition-colors' whileHover={{ x: -5 }}>
+        <motion.button onClick={handleBack} className='flex items-center gap-2 text-accent hover:text-accent/80 mb-8 transition-all duration-300' whileHover={{ x: -5 }}>
           <FaArrowLeft />
           <span>Back</span>
         </motion.button>
@@ -316,7 +308,7 @@ const UserDetail = () => {
             {/* Action Buttons */}
             <div className='flex flex-wrap gap-3'>
               {canDirectMessage ? (
-                <motion.button onClick={() => setShowContactModal(true)} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all' whileHover={{ scale: 1.05 }}>
+                <motion.button onClick={() => setShowContactModal(true)} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300' whileHover={{ scale: 1.05 }}>
                   Contact Freelancer
                 </motion.button>
               ) : (
@@ -332,7 +324,7 @@ const UserDetail = () => {
                     }
                     setShowHireModal(true)
                   }}
-                  className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all'
+                  className='px-6 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white hover:shadow-lg transition-all duration-300'
                   whileHover={{ scale: 1.05 }}>
                   Hire
                 </motion.button>
@@ -344,14 +336,14 @@ const UserDetail = () => {
                 <motion.button
                   onClick={handleConnectionAction}
                   disabled={connectionLoading || connectionStatus === 'pending' || connectionStatus === 'accepted'}
-                  className={`inline-flex items-center gap-2 px-6 py-2 rounded-lg transition-all ${
+                  className={`inline-flex items-center gap-2 px-6 py-2 rounded-lg transition-all duration-300 ${
                     connectionStatus === 'accepted'
                       ? 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/40 cursor-default'
                       : connectionStatus === 'pending'
                         ? 'bg-primary/10 text-primary/60 dark:bg-light/10 dark:text-light/60 cursor-not-allowed'
                         : connectionStatus === 'incoming'
-                          ? 'bg-green-600 text-white hover:bg-green-500'
-                          : 'bg-accent/10 text-accent hover:bg-accent hover:text-white'
+                          ? 'bg-green-600 text-white hover:bg-green-500 hover:shadow-lg'
+                          : 'bg-accent/10 text-accent hover:bg-accent hover:text-white hover:shadow-lg'
                   }`}
                   whileHover={connectionStatus === 'pending' || connectionStatus === 'accepted' ? {} : { scale: 1.05 }}>
                   {connectionLoading && <LoadingSpinner size='sm' className={connectionStatus === 'incoming' ? 'border-t-2 border-white' : 'border-t-2 border-accent'} />}
@@ -371,7 +363,7 @@ const UserDetail = () => {
         </motion.div>
 
         <motion.div className='mb-12 grid lg:grid-cols-2 gap-6 items-stretch' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}>
-          <div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10'>
+          <div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm border theme-border'>
             <h2 className='text-2xl font-bold theme-text mb-4'>Professional Snapshot</h2>
 
             {freelancer.bio && <p className='theme-text-secondary leading-7 mb-5'>{freelancer.bio}</p>}
@@ -434,7 +426,7 @@ const UserDetail = () => {
             )}
           </div>
 
-          <div className='h-full p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10'>
+          <div className='h-full p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm border theme-border'>
             <h2 className='text-2xl font-bold theme-text mb-3'>Working Style</h2>
             <div className='grid sm:grid-cols-2 gap-3'>
               <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border dark:border-light/10 border-primary/10'>
@@ -480,7 +472,7 @@ const UserDetail = () => {
               {announcements.map((announcement) => (
                 <motion.div
                   key={announcement._id}
-                  className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border dark:border-light/10 border-primary/10 backdrop-blur-sm h-full flex flex-col'>
+                  className='p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm border theme-border h-full flex flex-col'>
                   <div className='flex items-start justify-between gap-4 mb-4'>
                     <div>
                       <p className='text-[11px] uppercase tracking-wide text-accent/80 mb-2'>Freelance Offer</p>
@@ -505,7 +497,7 @@ const UserDetail = () => {
                   )}
 
                   {(announcementServicePreview.length > 0 || announcementCategoryPreview.length > 0) && (
-                    <div className='mt-auto pt-4 border-t dark:border-light/10 border-primary/10 grid sm:grid-cols-2 gap-4'>
+                    <div className='mt-auto pt-4 border-t theme-border grid sm:grid-cols-2 gap-4'>
                       <div>
                         <p className='text-xs uppercase tracking-wide theme-text-muted mb-2'>Services</p>
                         <div className='flex flex-wrap gap-2'>
