@@ -40,7 +40,8 @@ const BlogPostDetail = () => {
 
   if (loading) {
     return (
-      <section className='w-full theme-bg relative z-[1] pt-[80px]'>
+      <section className='w-full relative z-[1] pt-[80px]'>
+        <PageBackground variant='profile' />
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
           <div className='flex items-center justify-center min-h-[320px]'>
             <LoadingSpinner />
@@ -52,7 +53,8 @@ const BlogPostDetail = () => {
 
   if (error || !post) {
     return (
-      <section className='w-full theme-bg relative z-[1] pt-[80px]'>
+      <section className='w-full relative z-[1] pt-[80px]'>
+        <PageBackground variant='profile' />
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
           <button onClick={() => navigate('/blog')} className='inline-flex items-center gap-2 mb-6 theme-text-secondary hover:text-accent transition-colors'>
             <FaArrowLeft />
@@ -68,7 +70,7 @@ const BlogPostDetail = () => {
   const displayAuthor = post?.showAuthor === false ? '' : post?.authorName?.trim() || `${post?.author?.firstName || ''} ${post?.author?.lastName || ''}`.trim()
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
+    <section className='w-full relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)] max-w-4xl'>
@@ -82,7 +84,11 @@ const BlogPostDetail = () => {
           Back to Blog
         </motion.button>
 
-        <motion.article className='rounded-2xl border theme-border bg-white/50 dark:bg-black/20 overflow-hidden' initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        <motion.article
+          className='rounded-2xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm overflow-hidden'
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}>
           {post.coverImage ? (
             <div className='h-72 md:h-96 overflow-hidden'>
               <img src={post.coverImage} alt={post.title} className='w-full h-full object-cover' />

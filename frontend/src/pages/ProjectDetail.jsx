@@ -426,7 +426,10 @@ const ProjectDetail = () => {
 
               {/* Review Feedback Section - visible to both */}
               {project.review && project.review.decision && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='p-6 rounded-lg border-l-4 border-accent space-y-3 border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm'>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className='p-6 rounded-lg border-l-4 border-accent space-y-3 border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm'>
                   <div className='flex items-center gap-2'>
                     {project.review.decision === 'accepted' ? (
                       <>
