@@ -78,7 +78,7 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
         <h4 className='text-sm font-semibold theme-text-secondary'>Active Filters</h4>
         <button
           onClick={onClearAll}
-          className='text-xs px-2 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-colors font-medium'>
+          className='text-xs px-2 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-all duration-300 hover:shadow-lg font-medium'>
           Clear All
         </button>
       </div>
@@ -93,7 +93,7 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
               exit={{ opacity: 0, scale: 0.8 }}
               className='inline-flex items-center gap-2 px-3 py-1 bg-light/10 dark:bg-light/5 border border-primary/10 dark:border-light/10 rounded-full text-sm theme-text-secondary backdrop-blur-sm'>
               <span>{filter.label}</span>
-              <button onClick={filter.onRemove} className='ml-1 theme-text-secondary hover:text-accent transition-colors' aria-label={`Remove ${filter.label} filter`}>
+              <button onClick={filter.onRemove} className='ml-1 theme-text-secondary hover:text-accent transition-all duration-300' aria-label={`Remove ${filter.label} filter`}>
                 <FaTimes size={12} />
               </button>
             </motion.div>

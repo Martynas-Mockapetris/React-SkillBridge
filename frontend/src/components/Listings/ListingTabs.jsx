@@ -516,7 +516,7 @@ const ListingTabs = () => {
           <div className='flex w-full'>
             <button
               onClick={() => setActiveTab('projects')}
-              className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 border-b-2 transition-all duration-300 ${
+              className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 border-b-2 transition-all duration-300 hover:shadow-lg ${
                 activeTab === 'projects'
                   ? 'border-accent text-accent dark:bg-light/5 bg-primary/5'
                   : 'dark:border-light/10 border-primary/10 dark:text-light/60 text-primary/60 dark:hover:text-light/80 hover:text-primary/80 dark:hover:bg-light/5 hover:bg-primary/5'
@@ -526,7 +526,7 @@ const ListingTabs = () => {
             </button>
             <button
               onClick={() => setActiveTab('freelancers')}
-              className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 border-b-2 transition-all duration-300 ${
+              className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 border-b-2 transition-all duration-300 hover:shadow-lg ${
                 activeTab === 'freelancers'
                   ? 'border-accent text-accent dark:bg-light/5 bg-primary/5'
                   : 'dark:border-light/10 border-primary/10 dark:text-light/60 text-primary/60 dark:hover:text-light/80 hover:text-primary/80 dark:hover:bg-light/5 hover:bg-primary/5'
@@ -569,7 +569,7 @@ const ListingTabs = () => {
                         setFreelancerFilters(defaultFreelancerFilters)
                       }
                     }}
-                    className='inline-flex items-center justify-center rounded-full border dark:border-light/10 border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary hover:border-accent hover:text-accent hover:bg-accent/5 transition-all'>
+                    className='inline-flex items-center justify-center rounded-full border dark:border-light/10 border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary hover:border-accent hover:text-accent hover:bg-accent/5 transition-all duration-300 hover:shadow-lg'>
                     Clear filters
                   </button>
                 </div>
@@ -585,19 +585,19 @@ const ListingTabs = () => {
                         onChange={(event) => setSearchInput(event.target.value)}
                         onKeyDown={handleSearchKeyDown}
                         placeholder={activeTab === 'projects' ? 'Search by title, description, or skills' : 'Search by name, specialty, or skills'}
-                        className='h-[50px] w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text outline-none transition-all focus:bg-light/20 dark:focus:bg-light/20 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'
+                        className='h-[50px] w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text outline-none transition-all duration-300 focus:bg-light/20 dark:focus:bg-light/20 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'
                       />
                     </div>
                   </label>
 
                   <div className='flex flex-col gap-3 sm:flex-row'>
-                    <button onClick={handleSearchSubmit} className='inline-flex h-[50px] items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-all hover:bg-accent/90'>
+                    <button onClick={handleSearchSubmit} className='inline-flex h-[50px] items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-all duration-300 hover:bg-accent/90 hover:shadow-lg'>
                       Search
                     </button>
 
                     <button
                       onClick={handleSearchReset}
-                      className='inline-flex h-[50px] items-center justify-center rounded-lg border dark:border-light/10 border-primary/10 px-5 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:text-accent hover:bg-accent/5'>
+                      className='inline-flex h-[50px] items-center justify-center rounded-lg border dark:border-light/10 border-primary/10 px-5 text-sm font-medium theme-text-secondary transition-all duration-300 hover:border-accent hover:text-accent hover:bg-accent/5 hover:shadow-lg'>
                       Reset search
                     </button>
                   </div>
@@ -621,12 +621,12 @@ const ListingTabs = () => {
                     </select>
                   </label>
 
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20'>
+                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all duration-300 hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20 hover:shadow-lg'>
                     <span className='mt-1 block text-sm theme-text-secondary'>Surface the urgency level you want</span>
                     <select
                       value={projectFilters.priority}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, priority: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'>
+                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'>
                       <option value='all'>Any priority</option>
                       <option value='low'>Low</option>
                       <option value='medium'>Medium</option>
@@ -634,12 +634,12 @@ const ListingTabs = () => {
                     </select>
                   </label>
 
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20'>
+                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all duration-300 hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20 hover:shadow-lg'>
                     <span className='mt-1 block text-sm theme-text-secondary'>Screen by commercial fit</span>
                     <select
                       value={projectFilters.budget}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, budget: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'>
+                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'>
                       <option value='all'>Any budget</option>
                       <option value='under-500'>Under 500 EUR</option>
                       <option value='500-2000'>500-2000 EUR</option>
@@ -648,12 +648,12 @@ const ListingTabs = () => {
                     </select>
                   </label>
 
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20'>
+                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all duration-300 hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20 hover:shadow-lg'>
                     <span className='mt-1 block text-sm theme-text-secondary'>Hide projects you have already applied to</span>
                     <select
                       value={projectFilters.applied}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, applied: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'>
+                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'>
                       <option value='all'>All projects</option>
                       <option value='not-applied'>Hide applied projects</option>
                       <option value='applied'>Applied only</option>

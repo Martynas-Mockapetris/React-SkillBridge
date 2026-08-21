@@ -54,7 +54,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
         {hasActiveFilters && (
           <button
             onClick={onClearAll}
-            className='text-sm px-3 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded-md hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-colors font-medium'>
+            className='text-sm px-3 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded-md hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-all duration-300 hover:shadow-lg font-medium'>
             Clear All
           </button>
         )}
@@ -62,7 +62,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
 
       {/* Budget Range */}
       <div className='border-b theme-border mb-4 pb-4'>
-        <button onClick={() => toggleSection('budget')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
+        <button onClick={() => toggleSection('budget')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
           <span>Budget Range</span>
           <span className={`transform transition-transform ${expandedSections.budget ? 'rotate-180' : ''}`}>▼</span>
         </button>
@@ -92,7 +92,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
 
       {/* Status Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
-        <button onClick={() => toggleSection('status')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
+        <button onClick={() => toggleSection('status')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
           <span>Status</span>
           <span className={`transform transition-transform ${expandedSections.status ? 'rotate-180' : ''}`}>▼</span>
         </button>
@@ -114,7 +114,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
 
       {/* Skills Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
-        <button onClick={() => toggleSection('skills')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
+        <button onClick={() => toggleSection('skills')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
           <span>Skills</span>
           <span className={`transform transition-transform ${expandedSections.skills ? 'rotate-180' : ''}`}>▼</span>
         </button>
@@ -140,7 +140,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                   <button
                     key={option.value}
                     onClick={() => onFilterChange('matchType', option.value)}
-                    className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${filters.matchType === option.value ? 'bg-accent text-white' : 'bg-primary/10 dark:bg-light/10 theme-text-secondary hover:bg-primary/20 dark:hover:bg-light/20'}`}>
+                    className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-all duration-300 hover:shadow-lg ${filters.matchType === option.value ? 'bg-accent text-white' : 'bg-primary/10 dark:bg-light/10 theme-text-secondary hover:bg-primary/20 dark:hover:bg-light/20'}`}>
                     {option.label}
                   </button>
                 ))}
@@ -152,7 +152,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
 
       {/* Priority Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
-        <button onClick={() => toggleSection('priority')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-colors'>
+        <button onClick={() => toggleSection('priority')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
           <span>Priority</span>
           <span className={`transform transition-transform ${expandedSections.priority ? 'rotate-180' : ''}`}>▼</span>
         </button>
