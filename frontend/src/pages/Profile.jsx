@@ -291,7 +291,7 @@ const Profile = () => {
   const isLocked = Boolean(currentUser?.isLocked)
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
+    <section className='w-full relative z-[1] pt-[80px]'>
       <PageBackground variant='profile' />
 
       <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
@@ -311,7 +311,7 @@ const Profile = () => {
                   <button
                     type='button'
                     onClick={() => dismissBanner(lockBannerId)}
-                    className='inline-flex items-center justify-center rounded-full p-2 text-red-600 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-900/40 transition-colors'
+                    className='inline-flex items-center justify-center rounded-full p-2 text-red-600 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-900/40 transition-all duration-300'
                     aria-label='Dismiss account locked message'>
                     <FaTimes />
                   </button>
@@ -354,7 +354,7 @@ const Profile = () => {
                       <button
                         type='button'
                         onClick={() => dismissBanner(emailBannerId)}
-                        className='inline-flex items-center justify-center rounded-full p-2 text-green-600 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-900/40 transition-colors'
+                        className='inline-flex items-center justify-center rounded-full p-2 text-green-600 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-900/40 transition-all duration-300'
                         aria-label='Dismiss email verified message'>
                         <FaTimes />
                       </button>
@@ -378,7 +378,7 @@ const Profile = () => {
                       <button
                         type='button'
                         onClick={() => dismissBanner(emailBannerId)}
-                        className='inline-flex items-center justify-center rounded-full p-2 text-amber-600 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors'
+                        className='inline-flex items-center justify-center rounded-full p-2 text-amber-600 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-all duration-300'
                         aria-label='Dismiss email verification message'>
                         <FaTimes />
                       </button>
@@ -389,14 +389,14 @@ const Profile = () => {
                         type='button'
                         onClick={handleResendVerification}
                         disabled={isResendingVerification}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isResendingVerification ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'}`}>
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${isResendingVerification ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90 hover:shadow-lg'}`}>
                         {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
                       </button>
 
                       <button
                         type='button'
                         onClick={() => navigate('/verify-email')}
-                        className='px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors'>
+                        className='px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all duration-300 hover:shadow-lg'>
                         Open Verification Page
                       </button>
                     </div>
@@ -461,7 +461,7 @@ const Profile = () => {
             <motion.button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 font-medium transition-all ${activeTab === tab.id ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent'}`}
+              className={`flex items-center gap-2 px-6 py-3 font-medium transition-all duration-300 hover:shadow-lg ${activeTab === tab.id ? 'border-b-2 border-accent text-accent' : 'theme-text-secondary hover:text-accent'}`}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, y: 20 }}
@@ -501,7 +501,7 @@ const Profile = () => {
                     type='button'
                     onClick={handleRefreshMessages}
                     disabled={messagesLoading}
-                    className='inline-flex items-center gap-2 px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-60'>
+                    className='inline-flex items-center gap-2 px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-all duration-300 hover:shadow-lg disabled:opacity-60'>
                     <FaSyncAlt className={messagesLoading ? 'animate-spin' : ''} />
                     <span>{messagesLoading ? 'Refreshing...' : 'Refresh'}</span>
                   </button>
