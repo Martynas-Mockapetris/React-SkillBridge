@@ -179,7 +179,7 @@ const Register = () => {
   }, [])
 
   return (
-    <div ref={registerRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
+    <div ref={registerRef} className='flex items-center justify-center px-6 relative z-[1]' style={{ minHeight: contentHeight }}>
       <PageBackground variant='auth' />
 
       <div className='container mx-auto px-4 relative z-10'>
@@ -298,7 +298,7 @@ const Register = () => {
               <div className='mb-6'>
                 <label className='block mb-2 dark:text-light text-primary font-medium'>I want to:</label>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <label className={`p-4 rounded-lg border transition-all ${formData.userType === 'client' ? 'border-accent bg-accent/10' : 'dark:border-light/10 border-primary/10'} cursor-pointer hover:border-accent`}>
+                  <label className={`p-4 rounded-lg border transition-all duration-300 hover:shadow-lg ${formData.userType === 'client' ? 'border-accent bg-accent/10' : 'dark:border-light/10 border-primary/10'} cursor-pointer hover:border-accent`}>
                     <input type='radio' name='userType' value='client' onChange={handleChange} className='sr-only' />
                     <div className='flex flex-col items-center text-center'>
                       <span className='text-xl mb-2'>🧠</span>
@@ -308,7 +308,7 @@ const Register = () => {
                   </label>
 
                   <label
-                    className={`p-4 rounded-lg border transition-all ${formData.userType === 'freelancer' ? 'border-accent bg-accent/10' : 'dark:border-light/10 border-primary/10'} cursor-pointer hover:border-accent`}>
+                    className={`p-4 rounded-lg border transition-all duration-300 hover:shadow-lg ${formData.userType === 'freelancer' ? 'border-accent bg-accent/10' : 'dark:border-light/10 border-primary/10'} cursor-pointer hover:border-accent`}>
                     <input type='radio' name='userType' value='freelancer' onChange={handleChange} className='sr-only' />
                     <div className='flex flex-col items-center text-center'>
                       <span className='text-xl mb-2'>💻</span>
@@ -317,7 +317,7 @@ const Register = () => {
                     </div>
                   </label>
 
-                  <label className={`p-4 rounded-lg border transition-all ${formData.userType === 'both' ? 'border-accent bg-accent/10' : 'dark:border-light/10 border-primary/10'} cursor-pointer hover:border-accent`}>
+                  <label className={`p-4 rounded-lg border transition-all duration-300 hover:shadow-lg ${formData.userType === 'both' ? 'border-accent bg-accent/10' : 'dark:border-light/10 border-primary/10'} cursor-pointer hover:border-accent`}>
                     <input type='radio' name='userType' value='both' onChange={handleChange} className='sr-only' />
                     <div className='flex flex-col items-center text-center'>
                       <span className='text-xl mb-2'>🔄</span>
@@ -338,7 +338,7 @@ const Register = () => {
                 whileTap={{ scale: 0.98 }}
                 type='submit'
                 disabled={isLoading}
-                className='w-full p-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all font-medium flex items-center justify-center'>
+                className='w-full p-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 hover:shadow-lg font-medium flex items-center justify-center'>
                 {isLoading ? (
                   <>
                     <svg className='animate-spin -ml-1 mr-3 h-5 w-5 text-white' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>

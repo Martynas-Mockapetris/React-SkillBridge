@@ -95,7 +95,7 @@ const VerifyEmail = () => {
   const isVerified = Boolean(currentUser?.isEmailVerified)
 
   return (
-    <div ref={pageRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
+    <div ref={pageRef} className='flex items-center justify-center px-6 relative z-[1]' style={{ minHeight: contentHeight }}>
       <PageBackground variant='auth' />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className='w-full max-w-md z-10 relative'>
@@ -124,7 +124,7 @@ const VerifyEmail = () => {
                 <p className='mt-2 text-sm theme-text-secondary'>{message}</p>
               </div>
               <div className='flex flex-col gap-3'>
-                <Link to={currentUser ? '/profile' : '/login'} className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-center'>
+                <Link to={currentUser ? '/profile' : '/login'} className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 hover:shadow-lg text-center'>
                   Continue to {currentUser ? 'Profile' : 'Login'}
                 </Link>
               </div>
@@ -146,12 +146,12 @@ const VerifyEmail = () => {
                   type='button'
                   onClick={handleResend}
                   disabled={isResending}
-                  className={`w-full px-4 py-2 rounded-lg transition-colors ${isResending ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'}`}>
+                  className={`w-full px-4 py-2 rounded-lg transition-all duration-300 ${isResending ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90 hover:shadow-lg'}`}>
                   {isResending ? 'Sending...' : 'Send New Verification Email'}
                 </button>
               ) : (
                 <div className='flex flex-col gap-3'>
-                  <Link to='/login' className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-center'>
+                  <Link to='/login' className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 hover:shadow-lg text-center'>
                     Back to login
                   </Link>
                 </div>
@@ -171,7 +171,7 @@ const VerifyEmail = () => {
                     <p className='font-semibold theme-text'>Email already verified</p>
                     <p className='mt-2 text-sm theme-text-secondary'>Your account email is already verified.</p>
                   </div>
-                  <Link to='/profile' className='w-full inline-block px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-center'>
+                  <Link to='/profile' className='w-full inline-block px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 hover:shadow-lg text-center'>
                     Back to profile
                   </Link>
                 </>
@@ -186,7 +186,7 @@ const VerifyEmail = () => {
                     type='button'
                     onClick={handleResend}
                     disabled={isResending}
-                    className={`w-full px-4 py-2 rounded-lg transition-colors ${isResending ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'}`}>
+                    className={`w-full px-4 py-2 rounded-lg transition-all duration-300 ${isResending ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90 hover:shadow-lg'}`}>
                     {isResending ? 'Sending...' : 'Resend Verification Email'}
                   </button>
 
@@ -201,7 +201,7 @@ const VerifyEmail = () => {
                     <p className='mt-2 text-sm theme-text-secondary'>Use the link from your email, or log in to request a new verification message.</p>
                   </div>
                   <div className='flex flex-col gap-3'>
-                    <Link to='/login' className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-center'>
+                    <Link to='/login' className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 hover:shadow-lg text-center'>
                       Go to login
                     </Link>
                     <Link to='/register' className='text-sm text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200'>
