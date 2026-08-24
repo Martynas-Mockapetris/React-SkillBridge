@@ -591,7 +591,9 @@ const ListingTabs = () => {
                   </label>
 
                   <div className='flex flex-col gap-3 sm:flex-row'>
-                    <button onClick={handleSearchSubmit} className='inline-flex h-[50px] items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-all duration-300 hover:bg-accent/90 hover:shadow-lg'>
+                    <button
+                      onClick={handleSearchSubmit}
+                      className='inline-flex h-[50px] items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-all duration-300 hover:bg-accent/90 hover:shadow-lg'>
                       Search
                     </button>
 
