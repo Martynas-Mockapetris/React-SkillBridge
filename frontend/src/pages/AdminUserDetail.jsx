@@ -434,7 +434,7 @@ const AdminUserDetail = () => {
                     <li key={`${item.label}-${index}`} className='flex items-center gap-2'>
                       {index > 0 && <span>/</span>}
                       {item.to && !isLast ? (
-                        <Link to={item.to} className='hover:text-accent transition-colors'>
+                        <Link to={item.to} className='hover:text-accent transition-all duration-300'>
                           {item.label}
                         </Link>
                       ) : (
@@ -450,33 +450,39 @@ const AdminUserDetail = () => {
           </div>
 
           <div className='flex flex-wrap items-center gap-2'>
-            <button onClick={refreshAll} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
+            <button
+              onClick={refreshAll}
+              className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg'>
               Refresh
             </button>
 
             {user && (
               <>
-                <button onClick={() => setIsEditModalOpen(true)} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90'>
+                <button onClick={() => setIsEditModalOpen(true)} className='px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 transition-all duration-300 hover:shadow-lg'>
                   Edit User
                 </button>
 
                 {!user.isLocked ? (
-                  <button onClick={() => setIsLockModalOpen(true)} className='px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700'>
+                  <button onClick={() => setIsLockModalOpen(true)} className='px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-300 hover:shadow-lg'>
                     Lock User
                   </button>
                 ) : (
-                  <button onClick={handleUnlock} className='px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700'>
+                  <button onClick={handleUnlock} className='px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-all duration-300 hover:shadow-lg'>
                     Unlock User
                   </button>
                 )}
 
-                <button onClick={() => setIsMailModalOpen(true)} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
+                <button
+                  onClick={() => setIsMailModalOpen(true)}
+                  className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg'>
                   Mail User
                 </button>
               </>
             )}
 
-            <button onClick={() => navigate('/admin')} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'>
+            <button
+              onClick={() => navigate('/admin')}
+              className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg'>
               Back to Admin
             </button>
           </div>
@@ -489,7 +495,7 @@ const AdminUserDetail = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2 rounded-t-lg text-sm font-medium transition ${
+                  className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-all duration-300 hover:shadow-lg ${
                     activeTab === tab.id ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}>
                   <span className='inline-flex items-center gap-2'>
@@ -649,7 +655,7 @@ const AdminUserDetail = () => {
                     <option value={30}>30 / page</option>
                   </select>
 
-                  <button onClick={resetProjectFilters} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                  <button onClick={resetProjectFilters} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 hover:shadow-lg'>
                     Reset
                   </button>
                 </div>
@@ -661,7 +667,9 @@ const AdminUserDetail = () => {
                   <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                     <p className='text-gray-700 dark:text-gray-200'>No projects found.</p>
                     {hasProjectFilters && (
-                      <button onClick={resetProjectFilters} className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                      <button
+                        onClick={resetProjectFilters}
+                        className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 hover:shadow-lg'>
                         Clear filters
                       </button>
                     )}
@@ -697,21 +705,21 @@ const AdminUserDetail = () => {
                         <button
                           onClick={() => handleToggleProjectLock(project)}
                           disabled={projectActionLoadingId === project._id}
-                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-60'>
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-lg disabled:opacity-60'>
                           {project.isLocked ? 'Unlock' : 'Lock'}
                         </button>
 
                         <button
                           onClick={() => handleRemoveProjectAssignee(project)}
                           disabled={projectActionLoadingId === project._id}
-                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-60'>
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-lg disabled:opacity-60'>
                           Remove Assignee
                         </button>
 
                         <button
                           onClick={() => handleCancelProject(project)}
                           disabled={projectActionLoadingId === project._id}
-                          className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60'>
+                          className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-300 hover:shadow-lg disabled:opacity-60'>
                           Cancel
                         </button>
                       </div>
