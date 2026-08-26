@@ -122,7 +122,7 @@ const Navigation = () => {
 
           {currentUser ? (
             // Show logout button when user is logged in
-            <button onClick={logout} className='text-accent font-semibold transition-colors duration-300 hover:opacity-80'>
+            <button onClick={logout} className='text-accent font-semibold transition-all duration-300 hover:shadow-lg hover:opacity-90'>
               Logout
             </button>
           ) : (
@@ -131,7 +131,7 @@ const Navigation = () => {
               <Link to='/login' className={desktopLinkStyles}>
                 Login
               </Link>
-              <Link to='/register' className='text-accent font-semibold transition-colors duration-300 hover:opacity-80'>
+              <Link to='/register' className='text-accent font-semibold transition-all duration-300 hover:shadow-lg hover:opacity-90'>
                 Register
               </Link>
             </>
@@ -205,7 +205,7 @@ const Navigation = () => {
 
             {currentUser ? (
               // Show logout button when user is logged in
-              <button onClick={logout} className='text-2xl text-accent font-semibold hover:opacity-80'>
+              <button onClick={logout} className='text-2xl text-accent font-semibold transition-all duration-300 hover:shadow-lg hover:opacity-90'>
                 Logout
               </button>
             ) : (
@@ -214,7 +214,7 @@ const Navigation = () => {
                 <Link to='/login' className={mobileLinkStyles}>
                   Login
                 </Link>
-                <Link to='/register' className='text-2xl text-accent font-semibold hover:opacity-80'>
+                <Link to='/register' className='text-2xl text-accent font-semibold transition-all duration-300 hover:shadow-lg hover:opacity-90'>
                   Register
                 </Link>
               </>

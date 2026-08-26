@@ -144,7 +144,7 @@ const NotificationDropdown = ({ isOpen, onClose, unreadCount, onUnreadCountChang
           type='button'
           onClick={handleMarkAllAsRead}
           disabled={markingAllRead || visibleUnreadCount === 0}
-          className='text-xs font-semibold text-accent transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40'>
+          className='text-xs font-semibold text-accent transition-all duration-300 hover:shadow-lg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40'>
           Mark all read
         </button>
       </div>
@@ -190,7 +190,7 @@ const NotificationDropdown = ({ isOpen, onClose, unreadCount, onUnreadCountChang
                   <button
                     type='button'
                     onClick={() => handleMarkOneAsRead(notification._id)}
-                    className='mt-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent transition-opacity hover:opacity-80'>
+                    className='mt-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent transition-all duration-300 hover:shadow-lg hover:opacity-90'>
                     <FaCheckDouble className='text-[10px]' />
                     Mark read
                   </button>

@@ -781,7 +781,9 @@ const AdminUserDetail = () => {
                   <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                     <p className='text-gray-700 dark:text-gray-200'>No announcements found.</p>
                     {hasAnnouncementFilters && (
-                      <button onClick={resetAnnouncementFilters} className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 hover:shadow-lg'>
+                      <button
+                        onClick={resetAnnouncementFilters}
+                        className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 hover:shadow-lg'>
                         Clear filters
                       </button>
                     )}

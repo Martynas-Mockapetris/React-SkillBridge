@@ -113,7 +113,12 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
               {/* Header */}
               <div className='flex items-center justify-between p-6 border-b theme-border sticky top-0 theme-card rounded-t-lg'>
                 <h2 className='text-2xl font-bold theme-text'>Rate {userTypeLabel}</h2>
-                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleClose} disabled={loading} className='theme-text-secondary hover:theme-text transition-all duration-300 hover:shadow-lg disabled:opacity-50'>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleClose}
+                  disabled={loading}
+                  className='theme-text-secondary hover:theme-text transition-all duration-300 hover:shadow-lg disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
               </div>
