@@ -769,7 +769,7 @@ const AdminUserDetail = () => {
                     <option value={30}>30 / page</option>
                   </select>
 
-                  <button onClick={resetAnnouncementFilters} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                  <button onClick={resetAnnouncementFilters} className='px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 hover:shadow-lg'>
                     Reset
                   </button>
                 </div>
@@ -781,7 +781,7 @@ const AdminUserDetail = () => {
                   <div className='rounded-lg border border-gray-200 dark:border-gray-700 p-4'>
                     <p className='text-gray-700 dark:text-gray-200'>No announcements found.</p>
                     {hasAnnouncementFilters && (
-                      <button onClick={resetAnnouncementFilters} className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                      <button onClick={resetAnnouncementFilters} className='mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 hover:shadow-lg'>
                         Clear filters
                       </button>
                     )}
@@ -807,14 +807,14 @@ const AdminUserDetail = () => {
                         <button
                           onClick={() => handleToggleAnnouncement(announcement._id)}
                           disabled={announcementActionLoadingId === announcement._id}
-                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-60'>
+                          className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-lg disabled:opacity-60'>
                           {announcement.isActive ? 'Pause' : 'Resume'}
                         </button>
 
                         <button
                           onClick={() => handleDeleteAnnouncement(announcement._id, announcement.title)}
                           disabled={announcementActionLoadingId === announcement._id}
-                          className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-60'>
+                          className='px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-300 hover:shadow-lg disabled:opacity-60'>
                           Delete
                         </button>
                       </div>

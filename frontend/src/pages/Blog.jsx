@@ -121,7 +121,7 @@ const Blog = () => {
                       </div>
                     )}
 
-                    <Link to={`/blog/${post.slug}`} className='inline-flex items-center gap-2 text-accent font-semibold hover:opacity-80 transition-opacity'>
+                    <Link to={`/blog/${post.slug}`} className='inline-flex items-center gap-2 text-accent font-semibold hover:scale-[1.02] hover:shadow-lg transition-all duration-300'>
                       {blogReadMoreLabel}
                       <FaArrowRight />
                     </Link>
