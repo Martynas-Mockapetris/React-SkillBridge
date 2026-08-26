@@ -139,7 +139,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className='flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 theme-text font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors duration-200'>
+                  className='flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 theme-text font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-all duration-300 hover:shadow-lg'>
                   Cancel
                 </motion.button>
                 <motion.button
@@ -147,7 +147,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                   disabled={isSubmitting || !newDeadline}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className='flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 transition-colors duration-200'>
+                  className='flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 transition-all duration-300 hover:shadow-lg'>
                   {isSubmitting ? (
                     <>
                       <LoadingSpinner size='sm' className='border-t-2 border-white' />

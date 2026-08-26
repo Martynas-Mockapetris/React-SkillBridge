@@ -113,7 +113,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
               {/* Header */}
               <div className='flex items-center justify-between p-6 border-b theme-border sticky top-0 theme-card rounded-t-lg'>
                 <h2 className='text-2xl font-bold theme-text'>Rate {userTypeLabel}</h2>
-                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleClose} disabled={loading} className='theme-text-secondary hover:theme-text transition-colors disabled:opacity-50'>
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleClose} disabled={loading} className='theme-text-secondary hover:theme-text transition-all duration-300 hover:shadow-lg disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
               </div>
@@ -159,7 +159,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
                         onMouseLeave={() => setHoverScore(0)}
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}
-                        className='p-2 rounded-lg transition-colors'
+                        className='p-2 rounded-lg transition-all duration-300 hover:shadow-lg'
                         disabled={loading}>
                         <FaStar size={32} className={`transition-colors ${star <= (hoverScore || score) ? 'text-accent' : 'theme-text-secondary'}`} />
                       </motion.button>
@@ -198,7 +198,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
                     disabled={loading}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className='flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 theme-text hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50'>
+                    className='flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 theme-text hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-lg disabled:opacity-50'>
                     Cancel
                   </motion.button>
 
@@ -207,7 +207,7 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
                     disabled={loading || score === 0}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className='flex-1 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2'>
+                    className='flex-1 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 transition-all duration-300 hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2'>
                     {loading ? (
                       <>
                         <div className='animate-spin rounded-full h-4 w-4 border-t-2 border-white'></div>

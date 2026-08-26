@@ -83,7 +83,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
             {/* Header */}
             <div className='sticky top-0 flex justify-between items-center p-6 border-b theme-border theme-card'>
               <h2 className='text-2xl font-bold theme-text'>Submit Project</h2>
-              <button onClick={onClose} className='theme-text-secondary hover:theme-text transition-colors'>
+              <button onClick={onClose} className='theme-text-secondary hover:theme-text transition-all duration-300 hover:shadow-lg'>
                 <FaTimes size={24} />
               </button>
             </div>
@@ -125,7 +125,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
                         <a href={link} target='_blank' rel='noreferrer' className='text-accent hover:underline text-xs truncate'>
                           {link}
                         </a>
-                        <button onClick={() => removeLink(idx)} className='text-gray-400 hover:text-red-500 transition-colors flex-shrink-0'>
+                        <button onClick={() => removeLink(idx)} className='text-gray-400 hover:text-red-500 transition-all duration-300 hover:shadow-lg flex-shrink-0'>
                           <FaTrash size={12} />
                         </button>
                       </motion.div>
@@ -137,7 +137,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
               {/* Files Section */}
               <div className='space-y-3'>
                 <label className='block text-sm font-semibold theme-text'>Files (Optional)</label>
-                <div className='border-2 border-dashed theme-border rounded-lg p-4 text-center hover:border-accent transition-colors cursor-pointer'>
+                <div className='border-2 border-dashed theme-border rounded-lg p-4 text-center hover:border-accent transition-all duration-300 hover:shadow-lg cursor-pointer'>
                   <input type='file' id='file-input' multiple onChange={handleFileChange} className='hidden' />
                   <label htmlFor='file-input' className='cursor-pointer flex flex-col items-center gap-2'>
                     <FaUpload className='theme-text-secondary text-2xl' />
@@ -156,7 +156,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
                         exit={{ opacity: 0, x: 10 }}
                         className='flex justify-between items-center gap-2 p-2 rounded-lg theme-card/50 border theme-border'>
                         <span className='text-xs theme-text truncate'>{file.name}</span>
-                        <button onClick={() => removeFile(idx)} className='text-gray-400 hover:text-red-500 transition-colors flex-shrink-0'>
+                        <button onClick={() => removeFile(idx)} className='text-gray-400 hover:text-red-500 transition-all duration-300 hover:shadow-lg flex-shrink-0'>
                           <FaTrash size={12} />
                         </button>
                       </motion.div>

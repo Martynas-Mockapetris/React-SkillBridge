@@ -54,7 +54,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
               {/* Header */}
               <div className='sticky top-0 flex justify-between items-center p-6 border-b theme-border theme-card'>
                 <h2 className='text-2xl font-bold theme-text'>Review Submission</h2>
-                <button onClick={onClose} className='theme-text-secondary hover:theme-text transition-colors'>
+                <button onClick={onClose} className='theme-text-secondary hover:theme-text transition-all duration-300 hover:shadow-lg'>
                   <FaTimes size={24} />
                 </button>
               </div>
@@ -99,7 +99,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                                 rel='noreferrer'
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className='block p-2 rounded-lg theme-card/50 border theme-border text-accent hover:bg-accent/10 transition-colors text-xs break-all'>
+                                className='block p-2 rounded-lg theme-card/50 border theme-border text-accent hover:bg-accent/10 transition-all duration-300 hover:shadow-lg text-xs break-all'>
                                 {file.name}
                               </motion.a>
                             ))}
