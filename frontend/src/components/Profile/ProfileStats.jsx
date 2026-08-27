@@ -317,7 +317,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
                 key={action.key}
                 type='button'
                 onClick={action.onClick}
-                className='text-left p-4 rounded-lg border border-primary/10 dark:border-light/10 bg-primary/5 dark:bg-light/[0.02] hover:border-accent/50 hover:bg-primary/10 dark:hover:bg-light/5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200'>
+                className='text-left p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hover:border-accent/50 hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300'>
                 <p className='font-medium theme-text'>{action.label}</p>
                 <p className='text-sm theme-text-secondary mt-1'>{action.description}</p>
               </button>
