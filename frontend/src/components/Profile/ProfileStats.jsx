@@ -327,7 +327,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       )}
 
       <motion.div
-        className='p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10 backdrop-blur-sm'
+        className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}>
