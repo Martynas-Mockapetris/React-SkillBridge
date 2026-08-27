@@ -348,7 +348,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         </div>
 
         <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-3'>
-          <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/[0.02] border border-primary/10 dark:border-light/10'>
+          <div className='p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
             <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Missing required</p>
             {requiredPreview.length > 0 ? (
               <ul className='space-y-1'>
@@ -363,7 +363,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
             )}
           </div>
 
-          <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/[0.02] border border-primary/10 dark:border-light/10'>
+          <div className='p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
             <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Recommended next</p>
             {optionalPreview.length > 0 ? (
               <ul className='space-y-1'>
@@ -381,7 +381,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
 
         {(missingRequired.length > 0 || missingOptional.length > 0) && (
           <div className='mt-4'>
-            <button type='button' onClick={() => onOpenSettings?.()} className='px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>
+            <button type='button' onClick={() => onOpenSettings?.()} className='px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300'>
               Complete Profile in Settings
             </button>
           </div>
