@@ -246,7 +246,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         {stats.map((stat, index) => (
           <motion.div
             key={index}
-            className='p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm border border-primary/10 dark:border-light/10'
+            className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.02] transition-all duration-300'
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.08 }}
@@ -273,7 +273,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       </div>
 
       <motion.div
-        className='p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10 backdrop-blur-sm'
+        className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.08 }}>
