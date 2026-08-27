@@ -287,7 +287,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
 
         <div className='space-y-3'>
           {activityItems.map((item) => (
-            <div key={item.key} className='flex items-start justify-between gap-4 p-4 rounded-lg bg-primary/5 dark:bg-light/[0.02] border border-primary/10 dark:border-light/10'>
+            <div key={item.key} className='flex items-start justify-between gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300'>
               <div>
                 <p className='font-medium theme-text'>{item.title}</p>
                 <p className='text-sm theme-text-secondary mt-1'>{item.meta}</p>
