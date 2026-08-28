@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { FaChartLine, FaUsers, FaEye, FaCheckCircle, FaClipboardList, FaShieldAlt } from 'react-icons/fa'
 import { getFreelancerAnalytics } from '../services/analyticsService'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
-import PageBackground from '../components/shared/PageBackground'
 import AnalyticsOverview from '../components/Analytics/AnalyticsOverview'
 import ApplicationsTrend from '../components/Analytics/ApplicationsTrend'
 import ApplicationStatus from '../components/Analytics/ApplicationStatus'
@@ -35,13 +34,12 @@ const Analytics = () => {
   if (!analyticsData) return <div className='text-center p-8'>No data available</div>
 
   return (
-    <PageBackground>
-      <div className='min-h-screen py-12 px-4 sm:px-6'>
-        <div className='max-w-7xl mx-auto'>
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-12'>
-            <h1 className='text-4xl font-bold mb-2'>Analytics Dashboard</h1>
-            <p className='text-gray-400'>Track your applications, profile performance, and conversion metrics</p>
-          </motion.div>
+    <main className='min-h-screen py-12 px-4 sm:px-6 bg-white dark:bg-primary'>
+      <div className='max-w-7xl mx-auto'>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-12'>
+          <h1 className='text-4xl font-bold mb-2 theme-text'>Analytics Dashboard</h1>
+          <p className='theme-text-secondary'>Track your applications, profile performance, and conversion metrics</p>
+        </motion.div>
 
           {/* Overview Stats */}
           <AnalyticsOverview stats={analyticsData.stats} />
@@ -56,15 +54,15 @@ const Analytics = () => {
           <VerificationMetrics stats={analyticsData.stats} />
 
           {/* Recent Applications */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className='mt-8 bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10'>
-            <h2 className='text-xl font-bold mb-4'>Recent Applications</h2>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className='mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700'>
+            <h2 className='text-xl font-bold mb-4 theme-text'>Recent Applications</h2>
             {analyticsData.recentApplications.length > 0 ? (
               <div className='space-y-3'>
                 {analyticsData.recentApplications.map((app, idx) => (
-                  <div key={idx} className='flex items-center justify-between p-3 bg-white/5 rounded border border-white/5'>
+                  <div key={idx} className='flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700'>
                     <div>
-                      <p className='font-semibold'>{app.projectTitle}</p>
-                      <p className='text-sm text-gray-400'>{new Date(app.applicationDate).toLocaleDateString()}</p>
+                      <p className='font-semibold theme-text'>{app.projectTitle}</p>
+                      <p className='text-sm theme-text-secondary'>{new Date(app.applicationDate).toLocaleDateString()}</p>
                     </div>
                     <span
                       className={`px-3 py-1 rounded text-sm font-semibold ${
@@ -76,12 +74,11 @@ const Analytics = () => {
                 ))}
               </div>
             ) : (
-              <p className='text-gray-400'>No applications yet</p>
+              <p className='theme-text-secondary'>No applications yet</p>
             )}
           </motion.div>
         </div>
-      </div>
-    </PageBackground>
+      </main>
   )
 }
 
