@@ -326,11 +326,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         </motion.div>
       )}
 
-      <motion.div
-        className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}>
+      <motion.div className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
           <div>
             <p className='text-sm theme-text-secondary'>Profile Completion</p>

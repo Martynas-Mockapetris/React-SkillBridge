@@ -7,26 +7,22 @@ const AnalyticsOverview = ({ stats }) => {
     {
       icon: FaChartLine,
       label: 'Total Applications',
-      value: stats.totalApplications,
-      color: 'from-blue-500 to-cyan-500'
+      value: stats.totalApplications
     },
     {
       icon: FaEye,
       label: 'Profile Views',
-      value: stats.profileViews,
-      color: 'from-purple-500 to-pink-500'
+      value: stats.profileViews
     },
     {
       icon: FaCheckCircle,
       label: 'Conversion Rate',
-      value: `${stats.conversionRate}%`,
-      color: 'from-green-500 to-emerald-500'
+      value: `${stats.conversionRate}%`
     },
     {
       icon: FaUsers,
       label: 'Response Rate',
-      value: `${stats.responseRate}%`,
-      color: 'from-orange-500 to-red-500'
+      value: `${stats.responseRate}%`
     }
   ]
 
@@ -35,12 +31,17 @@ const AnalyticsOverview = ({ stats }) => {
       {cards.map((card, idx) => {
         const Icon = card.icon
         return (
-          <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} className={`bg-gradient-to-br ${card.color} p-6 rounded-xl shadow-lg`}>
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+            className='bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300'>
             <div className='flex items-center justify-between mb-2'>
-              <Icon className='text-2xl opacity-80' />
-              <span className='text-xs font-semibold opacity-70 uppercase tracking-wider'>{card.label}</span>
+              <Icon className='text-2xl text-accent' />
+              <span className='text-xs font-semibold theme-text-secondary uppercase tracking-wider'>{card.label}</span>
             </div>
-            <p className='text-4xl font-bold text-white'>{card.value}</p>
+            <p className='text-4xl font-bold theme-text'>{card.value}</p>
           </motion.div>
         )
       })}

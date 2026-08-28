@@ -8,15 +8,13 @@ const VerificationMetrics = ({ stats }) => {
       icon: FaStar,
       label: 'Shortlist Rate',
       value: `${stats.shortlistRate}%`,
-      total: `${stats.shortlisted} of ${stats.totalApplications}`,
-      color: 'from-yellow-500 to-amber-500'
+      total: `${stats.shortlisted} of ${stats.totalApplications}`
     },
     {
       icon: FaShieldAlt,
       label: 'Skills Verification Rate',
       value: `${stats.verificationRate}%`,
-      total: `${stats.skillsVerified} of ${stats.shortlisted}`,
-      color: 'from-green-500 to-teal-500'
+      total: `${stats.skillsVerified} of ${stats.shortlisted}`
     }
   ]
 
@@ -25,15 +23,15 @@ const VerificationMetrics = ({ stats }) => {
       {metrics.map((metric, idx) => {
         const Icon = metric.icon
         return (
-          <motion.div key={idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 + idx * 0.1 }} className={`bg-gradient-to-br ${metric.color} p-6 rounded-xl shadow-lg`}>
+          <motion.div key={idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 + idx * 0.1 }} className='bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300'>
             <div className='flex items-center gap-4 mb-3'>
-              <Icon className='text-3xl opacity-80' />
+              <Icon className='text-3xl text-accent' />
               <div>
-                <p className='text-sm opacity-80 font-semibold'>{metric.label}</p>
-                <p className='text-3xl font-bold text-white'>{metric.value}</p>
+                <p className='text-sm theme-text-secondary font-semibold'>{metric.label}</p>
+                <p className='text-3xl font-bold theme-text'>{metric.value}</p>
               </div>
             </div>
-            <p className='text-sm opacity-70'>{metric.total}</p>
+            <p className='text-sm theme-text-secondary'>{metric.total}</p>
           </motion.div>
         )
       })}
