@@ -410,7 +410,7 @@ const ProfileSettings = () => {
       ) : (
         <>
           <motion.div
-            className='mb-6 p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
+            className='mb-6 p-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}>
@@ -441,7 +441,7 @@ const ProfileSettings = () => {
           <form onSubmit={handleSubmit}>
             <motion.div className='grid lg:grid-cols-2 gap-6 mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               {/* Basic Information */}
-              <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 h-full'>
+              <motion.div className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-full'>
                 <h3 className='text-xl font-semibold theme-text mb-2'>Basic Information</h3>
                 <p className='text-sm theme-text-secondary mb-4'>Details people use to recognize you and understand your background quickly.</p>
                 <div className='grid gap-5'>
@@ -451,8 +451,8 @@ const ProfileSettings = () => {
                     </div>
 
                     <div className='space-y-5'>
-                      <div className='flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'>
-                        <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
+                      <div className='flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
+                        <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 border-gray-300 dark:border-gray-600 shadow-lg mb-4 object-cover' />
 
                         <div className='flex flex-wrap items-center justify-center gap-3'>
                           <motion.button
@@ -556,7 +556,7 @@ const ProfileSettings = () => {
 
               {/* Right Column: Public Presence */}
               <motion.div className='flex flex-col gap-6 h-full' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex-1'>
+                <motion.div className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex-1'>
                   <h3 className='text-xl font-semibold theme-text mb-2'>Public Presence</h3>
                   <p className='text-sm theme-text-secondary mb-4'>Shape how people discover you, review your work, and understand your public profile at a glance.</p>
                   <div className='space-y-4'>
@@ -641,7 +641,7 @@ const ProfileSettings = () => {
 
             {showFreelancerSection && (
               <motion.div
-                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+                className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.65 }}>
@@ -705,7 +705,7 @@ const ProfileSettings = () => {
             )}
 
             <motion.div
-              className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+              className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8'
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.68 }}>
@@ -784,7 +784,7 @@ const ProfileSettings = () => {
 
             {showFreelancerSection && (
               <motion.div
-                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+                className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}>
