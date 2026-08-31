@@ -9,6 +9,9 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+# Exception: track example and production template files
+!.env.example
+!.env.production
 
 # Build
 /build

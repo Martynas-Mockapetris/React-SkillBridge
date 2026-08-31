@@ -409,11 +409,7 @@ const ProfileSettings = () => {
         </div>
       ) : (
         <>
-          <motion.div
-            className='mb-6 p-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}>
+          <motion.div className='mb-6 p-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <div className='flex items-center justify-between gap-4 flex-wrap'>
               <div>
                 <p className='text-sm theme-text-secondary'>Profile completion</p>

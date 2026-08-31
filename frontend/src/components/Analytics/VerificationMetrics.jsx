@@ -23,7 +23,12 @@ const VerificationMetrics = ({ stats }) => {
       {metrics.map((metric, idx) => {
         const Icon = metric.icon
         return (
-          <motion.div key={idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 + idx * 0.1 }} className='bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300'>
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 + idx * 0.1 }}
+            className='bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300'>
             <div className='flex items-center gap-4 mb-3'>
               <Icon className='text-3xl text-accent' />
               <div>
