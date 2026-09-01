@@ -133,11 +133,11 @@ const NotificationDropdown = ({ isOpen, onClose, unreadCount, onUnreadCountChang
   }
 
   return (
-    <div className='absolute right-0 top-14 z-[70] w-[22rem] overflow-hidden rounded-3xl border border-white/10 bg-[#0f1720]/95 shadow-2xl backdrop-blur-xl'>
-      <div className='flex items-center justify-between border-b border-white/10 px-4 py-3'>
+    <div className='absolute right-0 top-14 z-[70] w-[22rem] overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-xl backdrop-blur-sm'>
+      <div className='flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors'>
         <div>
-          <p className='text-sm font-semibold text-white'>Notifications</p>
-          <p className='text-xs text-white/60'>{visibleUnreadCount > 0 ? `${visibleUnreadCount} unread` : 'All caught up'}</p>
+          <p className='text-sm font-semibold theme-text'>Notifications</p>
+          <p className='text-xs theme-text-secondary'>{visibleUnreadCount > 0 ? `${visibleUnreadCount} unread` : 'All caught up'}</p>
         </div>
 
         <button
