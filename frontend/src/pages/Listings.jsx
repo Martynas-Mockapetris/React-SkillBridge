@@ -61,16 +61,16 @@ const Listings = () => {
         </div>
       </div>
 
-      <div className='relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 md:p-8'>
+      <div className='relative z-10 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 p-4 sm:p-6 md:p-8'>
         {/* Filter Panel */}
-        <aside className='lg:col-span-1'>
-          <div className='sticky top-20 lg:static z-20 pt-[100px]'>
+        <aside className='md:col-span-1 lg:col-span-1'>
+          <div className='sticky top-20 md:static lg:static z-20 pt-[100px] sm:pt-[80px] md:pt-0'>
             <ProjectFilterPanel filters={filters} onFilterChange={handleFilterChange} onClearAll={clearAllFilters} hasActiveFilters={hasActiveFilters()} />
           </div>
         </aside>
 
         {/* Main Content */}
-        <div className='lg:col-span-3'>
+        <div className='md:col-span-2 lg:col-span-3'>
           {hasActiveFilters() && <ActiveFilterChips filters={filters} onRemoveFilter={handleRemoveFilter} onClearAll={clearAllFilters} />}
 
           {hasActiveFilters() ? (

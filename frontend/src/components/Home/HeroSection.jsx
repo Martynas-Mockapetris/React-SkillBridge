@@ -52,10 +52,10 @@ const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {}, sectionBa
       {showBackgroundPattern && <PageBackground variant='home' />}
 
       {/* Turinio konteineris*/}
-      <div className='container mx-auto px-4 md:px-6 lg:px-8 relative z-20'>
+      <div className='container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 relative z-20'>
         <div className={`flex ${contentAlign === 'left' ? 'justify-start' : 'justify-center'}`}>
-          <div className={`flex flex-col ${textAlignClass} space-y-6 ${contentWidthClass}`}>
-            <h1 className={`${titleSizeClass} font-bold`}>
+          <div className={`flex flex-col ${textAlignClass} space-y-4 sm:space-y-6 ${contentWidthClass}`}>
+            <h1 className={`${titleSizeClass} font-bold leading-tight`}>
               <span className='theme-text'>{heroTitleLead}</span>
               <span className='text-accent'> {heroTitleAccent}</span>
             </h1>
