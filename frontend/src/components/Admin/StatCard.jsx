@@ -22,7 +22,7 @@ const StatCard = ({ title, value, icon, trend, isLoading }) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-wider uppercase">
+          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium tracking-wider uppercase">
             {title}
           </h3>
           <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
@@ -43,7 +43,7 @@ const StatCard = ({ title, value, icon, trend, isLoading }) => {
           <span className={`text-sm font-bold ${trend > 0 ? 'text-green-500' : 'text-red-500'}`}>
             {Math.abs(trend)}%
           </span>
-          <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">
+          <span className="text-gray-600 dark:text-gray-300 text-sm ml-2">
             vs last month
           </span>
         </div>

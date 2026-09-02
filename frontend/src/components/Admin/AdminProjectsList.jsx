@@ -540,7 +540,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
           </button>
         </div>
 
-        <div className='text-xs text-gray-500 dark:text-gray-400'>Single-project renewal is still available through Edit Project.</div>
+        <div className='text-xs text-gray-600 dark:text-gray-300'>Single-project renewal is still available through Edit Project.</div>
       </div>
     )
   }
@@ -621,7 +621,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
               </span>
             ))}
           </div>
-          <div className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
+          <div className='text-sm text-gray-600 dark:text-gray-300 mt-1'>
             Showing {showingFrom}-{showingTo} of {totalFilteredCount} {totalFilteredCount === 1 ? 'project' : 'projects'}
             {totalFilteredCount !== overallTotalCount && ` (${overallTotalCount} total)`}
           </div>
@@ -712,7 +712,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
             />
             <label className='flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-700'>
               <input type='checkbox' checked={stalledOnly} onChange={(e) => setStalledOnly(e.target.checked)} className='rounded border-gray-300 text-accent focus:ring-accent' />
-              <span className='text-sm text-gray-700 dark:text-gray-200'>Stalled only</span>
+              <span className='text-sm theme-text dark:text-gray-200'>Stalled only</span>
             </label>
           </div>
           <button onClick={clearFilters} className='flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'>
@@ -737,7 +737,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
                 <span>Select all on page</span>
               </label>
 
-              {selectedProjects.length > 0 && <span className='text-gray-500 dark:text-gray-400'>{selectedProjects.length} selected</span>}
+              {selectedProjects.length > 0 && <span className='text-gray-600 dark:text-gray-300'>{selectedProjects.length} selected</span>}
             </>
           )}
         </div>
@@ -772,7 +772,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
         </div>
       </div>
 
-      {loading && <div className='mb-4 rounded-lg bg-white dark:bg-gray-800 p-4 text-sm text-gray-500 dark:text-gray-300'>Loading projects...</div>}
+        <div className='mb-4 rounded-lg bg-white dark:bg-gray-800 p-4 text-sm text-gray-600 dark:text-gray-300'>Loading projects...</div>
       {error && <div className='mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-600 dark:text-red-300'>{error}</div>}
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
@@ -803,15 +803,15 @@ const AdminProjectsList = ({ navigationRequest }) => {
                 <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
               </div>
 
-              <p className='text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3'>{project.description?.length > 180 ? `${project.description.slice(0, 180)}...` : project.description}</p>
+              <p className='text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3'>{project.description?.length > 180 ? `${project.description.slice(0, 180)}...` : project.description}</p>
 
               <div className='mt-auto space-y-2'>
-                <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
+                <div className='flex justify-between items-center text-sm text-gray-600 dark:text-gray-300'>
                   <span>Deadline: {project.deadline}</span>
                   <span>Progress: {project.progress}%</span>
                 </div>
                 <ProgressBar progress={project.progress} />
-                <div className='flex justify-between items-center text-sm text-gray-500 dark:text-gray-400'>
+                <div className='flex justify-between items-center text-sm text-gray-600 dark:text-gray-300'>
                   <span className={`px-2 py-1 text-xs rounded-full ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
                   <TeamAvatars team={project.team} />
                 </div>
