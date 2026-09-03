@@ -170,12 +170,14 @@ export const getCardClasses = (options = {}) => {
  * getInputClasses({ type: 'textarea', error: true })
  */
 export const getInputClasses = (options = {}) => {
-  const { type = 'input', error = false, disabled = false } = options
+  const { type = 'input', error = false, success = false, disabled = false } = options
 
   let baseClass = components[type] || components.input
 
   if (error) {
-    baseClass = combineClasses(baseClass, 'border-red-500 dark:border-red-400 focus:ring-red-500')
+    baseClass = combineClasses(baseClass, 'border-red-500 dark:border-red-400 focus:ring-red-500 bg-red-50 dark:bg-red-950/20 focus:bg-red-50 dark:focus:bg-red-950/30')
+  } else if (success) {
+    baseClass = combineClasses(baseClass, 'border-green-500 dark:border-green-400 focus:ring-green-500 bg-green-50 dark:bg-green-950/20 focus:bg-green-50 dark:focus:bg-green-950/30')
   }
 
   if (disabled) {

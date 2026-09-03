@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { validateField } from '../../utils/formValidation'
 import { getInputClasses } from '../../utils/designTokens'
+import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi'
 
 /**
  * Reusable Form Input Component with Validation
@@ -20,6 +21,7 @@ import { getInputClasses } from '../../utils/designTokens'
  * @param {Function} [props.onBlur] - Blur handler for validation
  * @param {Function} [props.onValidate] - Custom validation callback
  * @param {string} [props.error] - Error message to display
+ * @param {boolean} [props.success] - Show success state styling
  * @param {string} [props.placeholder] - Placeholder text
  * @param {boolean} [props.disabled=false] - Disable input
  * @param {boolean} [props.required=false] - Mark as required
@@ -86,6 +88,7 @@ const FormInput = ({
   onBlur,
   onValidate,
   error,
+  success = false,
   placeholder,
   disabled = false,
   required = false,
@@ -141,6 +144,7 @@ const FormInput = ({
   const inputClasses = getInputClasses({
     type: inputType,
     error: !!error,
+    success: !!success && !error,
     disabled
   })
 
@@ -230,13 +234,22 @@ const FormInput = ({
 
       {/* Error Message */}
       {error && (
-        <motion.p id={`${name}-error`} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className={errorClasses} role='alert'>
-          {error}
-        </motion.p>
+        <motion.div id={`${name}-error`} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className='mt-2 flex items-start gap-2 p-2 rounded-md bg-red-50 dark:bg-red-950/30 border-l-2 border-red-500' role='alert'>
+          <FiAlertCircle className='w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0' />
+          <p className='text-sm text-red-700 dark:text-red-300'>{error}</p>
+        </motion.div>
+      )}
+
+      {/* Success Message */}
+      {success && !error && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className='mt-2 flex items-start gap-2 p-2 rounded-md bg-green-50 dark:bg-green-950/30 border-l-2 border-green-500'>
+          <FiCheckCircle className='w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0' />
+          <p className='text-sm text-green-700 dark:text-green-300'>Field is valid</p>
+        </motion.div>
       )}
 
       {/* Hint Text */}
-      {hint && !error && (
+      {hint && !error && !success && (
         <p id={`${name}-hint`} className='mt-1 text-xs theme-text-muted'>
           {hint}
         </p>
