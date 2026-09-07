@@ -37,3 +37,16 @@ text.txt
 
 # Server scripts
 /server/src/scripts/
+
+# Documentation files (local reference only)
+CHANGELOG.md
+PROJECT_STATUS.md
+frontend/COMPONENT_DOCUMENTATION.md
+frontend/src/components/COMPONENTS.md
+
+# Testing infrastructure (local development only)
+frontend/jest.config.js
+frontend/src/setupTests.js
+frontend/__mocks__/
+frontend/src/utils/__tests__/
+frontend/src/components/__tests__/
