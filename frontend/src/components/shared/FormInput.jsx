@@ -234,7 +234,12 @@ const FormInput = ({
 
       {/* Error Message */}
       {error && (
-        <motion.div id={`${name}-error`} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className='mt-2 flex items-start gap-2 p-2 rounded-md bg-red-50 dark:bg-red-950/30 border-l-2 border-red-500' role='alert'>
+        <motion.div
+          id={`${name}-error`}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className='mt-2 flex items-start gap-2 p-2 rounded-md bg-red-50 dark:bg-red-950/30 border-l-2 border-red-500'
+          role='alert'>
           <FiAlertCircle className='w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0' />
           <p className='text-sm text-red-700 dark:text-red-300'>{error}</p>
         </motion.div>

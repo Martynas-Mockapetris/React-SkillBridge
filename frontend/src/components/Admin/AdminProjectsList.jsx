@@ -772,7 +772,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
         </div>
       </div>
 
-        <div className='mb-4 rounded-lg bg-white dark:bg-gray-800 p-4 text-sm text-gray-600 dark:text-gray-300'>Loading projects...</div>
+      <div className='mb-4 rounded-lg bg-white dark:bg-gray-800 p-4 text-sm text-gray-600 dark:text-gray-300'>Loading projects...</div>
       {error && <div className='mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-600 dark:text-red-300'>{error}</div>}
       {/* Projects Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>

@@ -8,7 +8,10 @@ const PaginationControls = ({ currentPage, totalPages, onPrev, onNext, label }) 
       <div className='text-sm theme-text-secondary'>{label || `Page ${currentPage} of ${totalPages}`}</div>
 
       <div className='flex items-center space-x-2'>
-        <button onClick={onPrev} disabled={currentPage === 1} className='px-3 py-1 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 theme-text hover:border-accent/50 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'>
+        <button
+          onClick={onPrev}
+          disabled={currentPage === 1}
+          className='px-3 py-1 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 theme-text hover:border-accent/50 hover:bg-gray-50 dark:hover:bg-gray-600 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'>
           <FaChevronLeft className='w-4 h-4' />
         </button>
 
