@@ -23,7 +23,7 @@ export const patterns = {
   uppercase: /[A-Z]/,
   lowercase: /[a-z]/,
   number: /\d/,
-  special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
+  special: /[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?-]/,
   username: /^[a-zA-Z0-9_]{3,20}$/,
   slug: /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 }
