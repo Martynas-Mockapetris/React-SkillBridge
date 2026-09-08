@@ -50,3 +50,20 @@ frontend/src/setupTests.js
 frontend/__mocks__/
 frontend/src/utils/__tests__/
 frontend/src/components/__tests__/
+
+# Linting and code quality (local development only)
+.eslintrc*
+.eslintignore
+lint-output.txt
+frontend/lint-output.txt
+.stylelintrc*
+.stylelintignore
+
+# Test coverage reports
+coverage/
+*.lcov
+
+# Code quality reports
+sonarqube-report/
+.sonar/
+frontend/src/components/__tests__/
