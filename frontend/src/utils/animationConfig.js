@@ -1,3 +1,5 @@
+import React from 'react'
+
 // Animation performance optimization utilities
 // Supports prefers-reduced-motion for accessibility
 
