@@ -1,5 +1,5 @@
 import { FaTrash, FaToggleOn, FaToggleOff, FaSearch, FaUser } from 'react-icons/fa'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { getAllAnnouncements, toggleAnnouncementStatusAsAdmin, deleteAnnouncementAsAdmin } from '../../services/announcementService'
 import { toast } from 'react-toastify'
 import PaginationControls from '../shared/PaginationControls'
@@ -19,45 +19,59 @@ const AdminAnnouncementsList = () => {
   const [pageSize, setPageSize] = useState(10)
   const [totalPages, setTotalPages] = useState(1)
 
-  const fetchAnnouncements = async () => {
-    try {
-      setLoading(true)
-      setError(null)
+  const prevFiltersRef = useRef({ searchQuery, selectedStatus, sortConfig, pageSize })
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-      const data = await getAllAnnouncements({
-        search: searchQuery,
-        status: selectedStatus,
-        page: currentPage,
-        limit: pageSize,
-        sort: sortConfig,
-        includeInactive: true
-      })
+  const fetchAnnouncements = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1)
+  }, [])
 
-      setAnnouncements(data.announcements || data)
-      setTotal(data.total || data.length)
-      setTotalPages(Math.max(1, data.pages || Math.ceil(data.length / pageSize)))
-    } catch (err) {
-      console.error('Error fetching announcements:', err)
-      setError('Failed to load announcements')
-      toast.error('Failed to load announcements')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    // Check if filters changed and reset to page 1 if needed
+    const filtersChanged =
+      searchQuery !== prevFiltersRef.current.searchQuery || selectedStatus !== prevFiltersRef.current.selectedStatus || sortConfig !== prevFiltersRef.current.sortConfig || pageSize !== prevFiltersRef.current.pageSize
+
+    if (filtersChanged) {
+      prevFiltersRef.current = { searchQuery, selectedStatus, sortConfig, pageSize }
+      setCurrentPage(1)
+      return
     }
-  }
 
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, selectedStatus, sortConfig, pageSize])
+    // Fetch announcements for current page
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-  useEffect(() => {
-    if (totalPages >= 1 && currentPage > totalPages) {
-      setCurrentPage(totalPages)
+        const data = await getAllAnnouncements({
+          search: searchQuery,
+          status: selectedStatus,
+          page: currentPage,
+          limit: pageSize,
+          sort: sortConfig,
+          includeInactive: true
+        })
+
+        setAnnouncements(data.announcements || data)
+        setTotal(data.total || data.length)
+        const pages = Math.max(1, data.pages || Math.ceil(data.length / pageSize))
+        setTotalPages(pages)
+
+        // Ensure currentPage doesn't exceed totalPages
+        if (currentPage > pages && pages > 0) {
+          setCurrentPage(pages)
+        }
+      } catch (err) {
+        console.error('Error fetching announcements:', err)
+        setError('Failed to load announcements')
+        toast.error('Failed to load announcements')
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [currentPage, totalPages])
 
-  useEffect(() => {
-    fetchAnnouncements()
-  }, [currentPage, searchQuery, selectedStatus, sortConfig, pageSize])
+    fetchData()
+  }, [currentPage, searchQuery, selectedStatus, sortConfig, pageSize, refreshTrigger])
 
   const handleToggleStatus = async (announcement) => {
     const action = announcement.isActive ? 'deactivate' : 'activate'
