@@ -35,4 +35,10 @@ export default [
       ],
     },
   },
+  {
+    files: ['**/*.spec.js', '**/*.test.js', 'setupTests.js'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.jest },
+    },
+  },
 ]

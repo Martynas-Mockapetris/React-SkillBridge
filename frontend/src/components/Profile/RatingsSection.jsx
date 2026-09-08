@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { FaStar, FaUser } from 'react-icons/fa'
 import LoadingSpinner from '../shared/LoadingSpinner'

@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { FaChartLine, FaUsers, FaEye, FaCheckCircle } from 'react-icons/fa'
 
