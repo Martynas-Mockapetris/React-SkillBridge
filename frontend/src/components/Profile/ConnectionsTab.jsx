@@ -322,15 +322,6 @@ const ConnectionsTab = () => {
     setShowHireModal(true)
   }
 
-  const handleOpenFreelancerSection = (userId, focusSection) => {
-    navigate(`/freelancer/${userId}`, {
-      state: {
-        returnTo: '/profile',
-        focusSection
-      }
-    })
-  }
-
   const handleTogglePinnedConnection = (connectionId) => {
     setPinnedConnectionIds((currentIds) => (currentIds.includes(connectionId) ? currentIds.filter((id) => id !== connectionId) : [...currentIds, connectionId]))
   }

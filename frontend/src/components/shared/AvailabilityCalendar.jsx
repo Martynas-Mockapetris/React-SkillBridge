@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash, FaSpinner, FaWindowMaximize, FaWindowMinimize } from 'react-icons/fa'
+import { FaWindowMaximize, FaWindowMinimize } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import AvailabilityEditPanel from './AvailabilityEditPanel'
 import AvailabilityCalendarSkeleton from './AvailabilityCalendarSkeleton'

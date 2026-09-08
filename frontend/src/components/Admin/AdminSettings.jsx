@@ -456,13 +456,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     updateSiteBuilderValue('aboutCta', { ...DEFAULT_ABOUT_CTA_BUILDER })
   }
 
-  const handleAboutSectionVisibilityChange = (key, value) => {
-    updateSiteBuilderValue('aboutSections', (currentValue = {}) => ({
-      ...currentValue,
-      [key]: value
-    }))
-  }
-
   const moveAboutSectionOrderItem = (key, direction) => {
     updateSiteBuilderValue('aboutSectionOrder', (savedOrder) => {
       const currentOrder = Array.isArray(savedOrder) && savedOrder.length ? [...savedOrder] : [...DEFAULT_ABOUT_SECTION_ORDER]
@@ -498,10 +491,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
   const resetAboutHeroBuilder = () => {
     updateSiteBuilderValue('aboutHero', { ...DEFAULT_ABOUT_HERO_BUILDER })
-  }
-
-  const resetAboutSectionVisibility = () => {
-    updateSiteBuilderValue('aboutSections', { ...DEFAULT_ABOUT_SECTION_VISIBILITY })
   }
 
   const resetAboutSectionBackgrounds = () => {

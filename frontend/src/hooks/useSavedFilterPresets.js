@@ -99,7 +99,6 @@ export const useSavedFilterPresets = () => {
         return false
       }
 
-      const oldPreset = presets.find((p) => p.id === presetId)
       updatePreset(presetId, { name: newName })
       toast.success(`Filter preset renamed to "${newName}"`)
       return true

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaTimes, FaStar } from 'react-icons/fa'
+import { FaTimes } from 'react-icons/fa'
 import { assignUserToProject, toggleShortlistApplicant, toggleSkillsVerified } from '../services/projectService'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 

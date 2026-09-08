@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaChevronUp, FaPlus, FaTimes } from 'react-icons/fa'
+import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaPlus } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { sendMessage, markMessageAsRead, sendMessageWithAttachments } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'

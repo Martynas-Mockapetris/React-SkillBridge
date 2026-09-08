@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaChartLine, FaUsers, FaEye, FaCheckCircle, FaClipboardList, FaShieldAlt } from 'react-icons/fa'
+import { FaClipboardList, FaShieldAlt } from 'react-icons/fa'
 import { getFreelancerAnalytics } from '../services/analyticsService'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import AnalyticsOverview from '../components/Analytics/AnalyticsOverview'

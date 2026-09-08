@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaTimes } from 'react-icons/fa'
+// Removed unused icon imports
 import { components, patterns } from '../../utils/designTokens'
 
 export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasActiveFilters }) => {
