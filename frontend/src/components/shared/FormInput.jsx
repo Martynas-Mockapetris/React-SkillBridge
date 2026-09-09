@@ -150,7 +150,6 @@ const FormInput = ({
 
   const containerClasses = containerClassName || 'mb-4'
   const labelClasses = labelClassName || 'block text-sm font-medium theme-text mb-2'
-  const errorClasses = errorClassName || 'mt-1 text-sm text-red-600 dark:text-red-400'
 
   return (
     <div className={containerClasses}>

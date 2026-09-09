@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaWindowMaximize, FaWindowMinimize } from 'react-icons/fa'
 import { toast } from 'react-toastify'
-import AvailabilityEditPanel from './AvailabilityEditPanel'
 import AvailabilityCalendarSkeleton from './AvailabilityCalendarSkeleton'
-import CompactCalendarView from './CompactCalendarView'
-import DetailedCalendarView from './DetailedCalendarView'
-import useAvailability from '../../hooks/useAvailability'
-import StatusFilterChips from './StatusFilterChips'
-import { patterns } from '../../utils/designTokens'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -122,7 +116,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       return
     }
 
-    const { [dateKey]: _, ...rest } = selectedDays
+    const rest = Object.fromEntries(Object.entries(selectedDays).filter(([key]) => key !== dateKey))
     if (selectedDays[dateKey]) {
       setSelectedDays(rest)
     } else {

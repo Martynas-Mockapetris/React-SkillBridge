@@ -1,9 +1,6 @@
-import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
-import { toast } from 'react-toastify'
 import AvailabilityEditPanel from './AvailabilityEditPanel'
-import StatusFilterChips from './StatusFilterChips'
 
 const DetailedCalendarView = ({
   calendarData,
