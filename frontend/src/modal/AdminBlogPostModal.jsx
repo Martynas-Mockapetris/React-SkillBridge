@@ -42,6 +42,7 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
 
   const loggedInAuthorValue = useMemo(() => getLoggedInAuthorValue(currentUser), [currentUser])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!isOpen) {
       setFormData(emptyForm)

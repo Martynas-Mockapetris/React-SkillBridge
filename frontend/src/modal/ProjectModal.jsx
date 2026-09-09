@@ -386,6 +386,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
     }
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!isOpen) return
 

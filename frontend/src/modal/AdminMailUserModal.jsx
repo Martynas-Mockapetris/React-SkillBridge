@@ -8,6 +8,7 @@ const AdminMailUserModal = ({ isOpen, onClose, recipient, onSent }) => {
   const [subject, setSubject] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!isOpen) {
       setMessage('')
