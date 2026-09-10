@@ -176,31 +176,6 @@ const ProjectsList = () => {
     }
   }
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'active':
-        return <FaClock className='text-blue-500' />
-      case 'in_progress':
-        return <FaSpinner className='text-purple-500' />
-      case 'under_review':
-        return <FaSearch className='text-orange-500' />
-      case 'completed':
-        return <FaCheck className='text-green-500' />
-      case 'paused':
-        return <FaPause className='text-yellow-500' />
-      case 'cancelled':
-        return <FaTimes className='text-red-500' />
-      case 'cancelled_by_admin':
-        return <FaTimes className='text-red-600' />
-      case 'archived':
-        return <FaArchive className='text-primary/60 dark:text-light/60' />
-      case 'draft':
-        return <FaPause className='text-yellow-500' />
-      default:
-        return null
-    }
-  }
-
   const isCreator = (project) => project.user._id === currentUser._id || project.user === currentUser._id
 
   const isFavorited = (projectId) => {

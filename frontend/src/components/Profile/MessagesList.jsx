@@ -103,10 +103,6 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
       return bTime - aTime
     })
   }
-  const getDisplayName = (user) => {
-    if (!user) return 'Unknown'
-    return user.userType === 'admin' ? 'Administrator' : `${user.firstName} ${user.lastName}`
-  }
 
   const canReplyToUser = (user) => {
     return user?.userType !== 'admin'
@@ -203,7 +199,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
   return (
     <div className='space-y-6'>
       {groupedMessages.map((group, groupIndex) => {
-        const { project, otherUser, messages: groupMessages, isDirectMessage, projectTitle } = group
+        const { project, otherUser, messages: groupMessages, isDirectMessage } = group
 
         // HANDLE DIRECT MESSAGES
         if (isDirectMessage) {
