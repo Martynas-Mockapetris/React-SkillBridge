@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive, FaStar } from 'react-icons/fa'
+import { FaEye, FaBriefcase, FaLightbulb, FaHeart, FaStar } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import RatingModal from '../../modal/RatingModal'
@@ -31,7 +31,6 @@ const ProjectsList = () => {
   const [selectedProjectForRating, setSelectedProjectForRating] = useState(null)
   const [freelancerRatingsCache, setFreelancerRatingsCache] = useState({})
   const [ratingUserType, setRatingUserType] = useState('freelancer')
-  const [myRatings, setMyRatings] = useState([])
 
   const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -82,8 +81,7 @@ const ProjectsList = () => {
 
     const loadMyRatings = async () => {
       try {
-        const ratingsData = await getFreelancerRatings(currentUser._id)
-        setMyRatings(ratingsData)
+        await getFreelancerRatings(currentUser._id)
       } catch (error) {
         console.error('Error loading ratings:', error)
       }
