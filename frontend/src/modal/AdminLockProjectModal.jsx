@@ -14,7 +14,6 @@ const AdminLockProjectModal = ({ isOpen, onClose, onConfirm, project, loading })
   const [duration, setDuration] = useState(14)
   const [customDuration, setCustomDuration] = useState('')
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!isOpen) {
       setReason('')
