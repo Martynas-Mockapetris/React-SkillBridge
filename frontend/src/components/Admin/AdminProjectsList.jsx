@@ -75,7 +75,6 @@ const AdminProjectsList = ({ navigationRequest }) => {
     categories: [],
     priorities: []
   })
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   // Delete modal state
@@ -122,7 +121,6 @@ const AdminProjectsList = ({ navigationRequest }) => {
     const fetchId = ++latestProjectsFetchRef.current
 
     try {
-      setLoading(true)
       setError(null)
 
       const response = await getAdminAllProjects({
@@ -186,9 +184,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
       console.error('Error fetching admin projects:', err)
       setError('Failed to load projects')
     } finally {
-      if (fetchId === latestProjectsFetchRef.current) {
-        setLoading(false)
-      }
+      // fetch completed
     }
   }
 

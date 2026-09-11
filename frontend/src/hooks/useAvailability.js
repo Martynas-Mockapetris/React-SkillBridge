@@ -17,7 +17,8 @@ const useAvailability = (freelancerId, isPublicView = true) => {
 
   const rollbackOptimisticUpdate = useCallback((dateKey) => {
     setOptimisticUpdates((prev) => {
-      const { [dateKey]: _, ...rest } = prev
+      // eslint-disable-next-line no-unused-vars
+      const { [dateKey]: unused, ...rest } = prev
       return rest
     })
   }, [])
