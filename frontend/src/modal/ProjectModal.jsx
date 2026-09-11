@@ -37,7 +37,6 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
   // Replace the current formData state initialization
   const [formData, setFormData] = useState(initialFormState)
-  const { currentUser } = useContext(AuthContext)
   const [submitting, setSubmitting] = useState(false) // Add submitting state
 
   const resetForm = () => {
