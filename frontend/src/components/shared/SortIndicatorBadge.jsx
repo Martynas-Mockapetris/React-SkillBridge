@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaArrowUp, FaArrowDown, FaClock } from 'react-icons/fa'
 
-export const SortIndicatorBadge = ({ currentSort, onSortChange }) => {
+export const SortIndicatorBadge = ({ currentSort }) => {
   const getSortInfo = (sortValue) => {
     const sortMap = {
       newest: { label: 'Newest', icon: <FaClock size={14} />, color: 'bg-blue-100 text-blue-800' },

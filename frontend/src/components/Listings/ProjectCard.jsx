@@ -6,7 +6,7 @@ import LoadingSpinner from '../shared/LoadingSpinner'
 import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 import { normalizeSkills } from '../../utils/skillUtils'
 
-const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
+const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
   const location = useLocation()
   const returnTo = `${location.pathname}${location.search}`
   const normalizedSkills = normalizeSkills(project.skills)

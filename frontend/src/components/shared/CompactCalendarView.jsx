@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
-const CompactCalendarView = ({ calendarData, currentDate, onPreviousMonth, onNextMonth, getStatusColor, getStatusLabel }) => {
+const CompactCalendarView = ({ calendarData, onPreviousMonth, onNextMonth, getStatusColor, getStatusLabel }) => {
   if (!calendarData || !calendarData.days) {
     return <div className='p-4 text-center theme-text-secondary text-sm'>No calendar data available</div>
   }

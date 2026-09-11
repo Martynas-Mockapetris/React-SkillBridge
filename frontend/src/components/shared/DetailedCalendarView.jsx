@@ -4,7 +4,6 @@ import AvailabilityEditPanel from './AvailabilityEditPanel'
 
 const DetailedCalendarView = ({
   calendarData,
-  currentDate,
   isOwnProfile,
   isPublicView,
   isPublic,
