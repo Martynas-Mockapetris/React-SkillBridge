@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { authAxios } from '../utils/axiosConfig'
 
 // Send a message about a project or direct message to another user

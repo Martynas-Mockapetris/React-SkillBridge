@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaStar } from 'react-icons/fa'
 import { submitRating } from '../services/ratingService'
 import { useAuth } from '../context/AuthContext'
-import { patterns } from '../utils/designTokens'
 
 const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted, ratedUserType = 'freelancer' }) => {
   const { logout } = useAuth()

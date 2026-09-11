@@ -30,20 +30,6 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
     { value: 'all', label: 'All Skills Match' }
   ]
 
-  const getStatusColor = (status) => {
-    const colors = {
-      draft: 'bg-primary/10 dark:bg-light/10 text-primary dark:text-light',
-      active: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
-      assigned: 'bg-accent/10 text-accent',
-      in_progress: 'bg-purple-500/10 text-purple-600 dark:text-purple-300',
-      under_review: 'bg-orange-500/10 text-orange-600 dark:text-orange-300',
-      completed: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
-      cancelled: 'bg-red-500/10 text-red-600 dark:text-red-300',
-      negotiating: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-300'
-    }
-    return colors[status] || 'bg-primary/10 dark:bg-light/10 text-primary dark:text-light'
-  }
-
   return (
     <div className='rounded-lg p-4 md:p-6 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
       {/* Header with Clear Button */}

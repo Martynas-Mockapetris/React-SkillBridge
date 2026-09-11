@@ -4,8 +4,6 @@ import { FaTimes, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { reviewProject } from '../services/projectService'
 import { toast } from 'react-toastify'
 import RatingModal from './RatingModal'
-import LoadingSpinner from '../components/shared/LoadingSpinner'
-import { patterns } from '../utils/designTokens'
 
 const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
   const [feedback, setFeedback] = useState('')
@@ -38,7 +36,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
         onClose()
         setFeedback('')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to review project. Please try again.')
     } finally {
       setReviewing(false)

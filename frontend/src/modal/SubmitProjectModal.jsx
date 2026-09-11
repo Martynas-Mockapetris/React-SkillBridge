@@ -4,7 +4,6 @@ import { FaTimes, FaLink, FaUpload, FaTrash } from 'react-icons/fa'
 import { submitProject } from '../services/projectService'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
-import { patterns } from '../utils/designTokens'
 
 const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
   const [linkInput, setLinkInput] = useState('')
@@ -68,7 +67,7 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
       setFiles([])
       setNote('')
       setLinkInput('')
-    } catch (error) {
+    } catch {
       toast.error('Failed to submit project. Please try again.')
     } finally {
       setSubmitting(false)

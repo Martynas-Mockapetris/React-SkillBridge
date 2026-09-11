@@ -4,8 +4,6 @@ import LoadingSpinner from '../components/shared/LoadingSpinner'
 import AboutHero from '../components/About/AboutHero'
 import AboutHighlights from '../components/About/AboutHighlights'
 import AboutCta from '../components/About/AboutCta'
-import { getPublicSystemConfig } from '../services/configService'
-import { getSectionBackgroundClass } from '../components/Home/homeSectionLayout'
 
 const DEFAULT_ABOUT_SECTION_ORDER = ['hero', 'highlights', 'cta']
 
@@ -69,11 +67,6 @@ const About = () => {
     const missingKeys = DEFAULT_ABOUT_SECTION_ORDER.filter((key) => !sanitizedOrder.includes(key))
 
     return [...sanitizedOrder, ...missingKeys]
-  }, [publicConfig])
-
-  const aboutSectionBackgrounds = useMemo(() => {
-    if (!publicConfig?.siteBuilder?.enabled) return {}
-    return publicConfig.siteBuilder.values?.aboutSectionBackgrounds || {}
   }, [publicConfig])
 
   const headline = aboutContent.headline || 'Build your freelance career with confidence'
