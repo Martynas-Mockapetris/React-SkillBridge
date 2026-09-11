@@ -116,7 +116,7 @@ const ProjectDetail = () => {
     }
   }
 
-  const { rateAmount, setRateAmount, rateType, setRateType, rateLoading, rateError, setRateError, handleProposeRate, handleCounterRate, handleAcceptRate } = useRateNegotiation(id, loadProject)
+  const { rateAmount, setRateAmount, rateType, setRateType, rateLoading, rateError, handleProposeRate, handleCounterRate, handleAcceptRate } = useRateNegotiation(id, loadProject)
 
   const isOwner = currentUser && project && currentUser._id === project.user?._id
   const isAssignee = currentUser && project && (project.assignee?._id ? project.assignee._id === currentUser._id : project.assignee === currentUser._id)

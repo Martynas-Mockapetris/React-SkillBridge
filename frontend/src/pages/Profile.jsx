@@ -20,7 +20,7 @@ import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { requestEmailVerification as requestEmailVerificationService } from '../services/authService'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { hasAdminPanelAccess, getAdminRoleLabel, isFullAdmin } from '../utils/accessRoles'
+import { hasAdminPanelAccess, getAdminRoleLabel } from '../utils/accessRoles'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')

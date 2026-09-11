@@ -10,13 +10,11 @@ import CardLoader from '../components/Listings/CardLoader'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
 import molecularPattern from '../assets/molecular-pattern.svg'
-import { trackFilterSearch, trackExport } from '../utils/filterAnalytics'
+import { trackFilterSearch } from '../utils/filterAnalytics'
 
 const FilteredProjectsView = () => {
   const { isDarkMode } = useTheme()
-  const navigate = useNavigate()
   const { filters, loading, updateFilter, addStatusFilter, addSkillFilter, addPriorityFilter, removeFilter, clearAllFilters, hasActiveFilters, fetchFilteredProjects, results } = useProjectFilters()
 
   // Fetch projects when filters change
