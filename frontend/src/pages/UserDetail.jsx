@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaStar, FaArrowLeft, FaPhone, FaEnvelope, FaBriefcase, FaClock, FaEuroSign, FaMapMarkerAlt, FaGlobe, FaTools, FaCheckCircle, FaUserPlus } from 'react-icons/fa'
+import { FaStar, FaArrowLeft, FaBriefcase, FaClock, FaEuroSign, FaMapMarkerAlt, FaGlobe, FaCheckCircle, FaUserPlus } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
 import { getFreelancerRatings, getRatingStats } from '../services/ratingService'
 import { getUserById, getMyConnections, sendConnectionRequest, acceptConnectionRequest } from '../services/userService'

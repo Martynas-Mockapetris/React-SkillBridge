@@ -1,10 +1,8 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect, useRef } from 'react'
 import PageBackground from '../components/shared/PageBackground'
-import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { useNavigate, Link } from 'react-router-dom'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 import { useAuth } from '../context/AuthContext'
 
 const Register = () => {
