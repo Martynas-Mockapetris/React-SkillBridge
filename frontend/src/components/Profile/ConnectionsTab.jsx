@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaRegStickyNote, FaSearch, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'

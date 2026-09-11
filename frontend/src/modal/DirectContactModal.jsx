@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheck, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
