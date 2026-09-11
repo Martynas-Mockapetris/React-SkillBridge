@@ -1,8 +1,6 @@
-import { useContext } from 'react'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
-import AuthContext from '../context/AuthContext'
 import { createProject, saveProjectDraft, updateProject } from '../services/projectService'
 import { showSuccessToast, showErrorToast } from '../utils/toastHelper'
 
