@@ -8,8 +8,6 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
   const [newDeadline, setNewDeadline] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const currentDeadline = project?.deadline ? new Date(project.deadline).toISOString().split('T')[0] : ''
-
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 1)
   const minDateStr = minDate.toISOString().split('T')[0]

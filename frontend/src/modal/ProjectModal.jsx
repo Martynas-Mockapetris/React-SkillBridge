@@ -33,12 +33,11 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
   }
 
   const isEditMode = mode === 'edit'
-  const isDraftEdit = isEditMode && initialData?.status === 'draft'
   const isDeadlineOnly = isEditMode && initialData?.status !== 'draft'
 
   // Replace the current formData state initialization
   const [formData, setFormData] = useState(initialFormState)
-  const { currentUser, loading } = useContext(AuthContext)
+  const { currentUser } = useContext(AuthContext)
   const [submitting, setSubmitting] = useState(false) // Add submitting state
 
   const resetForm = () => {
@@ -329,7 +328,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         return
       }
 
-      const createdProject = await createProject(projectData)
+      await createProject(projectData)
 
       resetForm()
       onClose()
@@ -339,7 +338,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
       }
 
       showSuccessToast('Project published successfully!')
-    } catch (error) {
+    } catch {
       showErrorToast('Failed to create project. Please try again.')
     } finally {
       setSubmitting(false)
@@ -369,7 +368,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         projectBrief: formData.projectBrief
       }
 
-      const savedDraft = await saveProjectDraft(projectData)
+      await saveProjectDraft(projectData)
 
       resetForm()
       onClose()
@@ -379,7 +378,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
       }
 
       showSuccessToast('Draft saved successfully!')
-    } catch (err) {
+    } catch {
       showErrorToast('Failed to save draft. Please try again.')
     } finally {
       setSubmitting(false)
