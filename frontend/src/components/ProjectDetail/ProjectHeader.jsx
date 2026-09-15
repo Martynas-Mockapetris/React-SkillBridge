@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { FaCalendarAlt, FaDollarSign, FaTags, FaUser, FaUserCheck } from 'react-icons/fa'
-import { formatProjectPriorityLabel, formatProjectStatusLabel, getProjectPriorityBadgeClass, getProjectStatusBadgeClass } from '../../utils/projectStatusUI'
+import PriorityBadge from '../shared/PriorityBadge'
+import { formatProjectStatusLabel, getProjectStatusBadgeClass } from '../../utils/projectStatusUI'
 
 const ProjectHeader = ({ project }) => {
   const currentOffer = project.rateNegotiation?.currentOffer
@@ -27,7 +28,7 @@ const ProjectHeader = ({ project }) => {
               <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>
                 {formatProjectStatusLabel(project.status || 'active')}
               </span>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+              <PriorityBadge priority={project.priority} size='sm' />
             </div>
 
             <div>
