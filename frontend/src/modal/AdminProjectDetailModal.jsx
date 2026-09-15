@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../utils/projectStatusUI'
+import PriorityBadge from '../shared/PriorityBadge'
+import { getProjectStatusBadgeClass, formatProjectStatusLabel } from '../utils/projectStatusUI'
 
 const formatDateTime = (value) => {
   if (!value) return 'N/A'
@@ -27,7 +28,7 @@ const AdminProjectDetailModal = ({ isOpen, onClose, project }) => {
 
         <div className='flex flex-wrap gap-2 mb-4'>
           <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
-          <span className={`px-2 py-1 text-xs rounded-full ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+          <PriorityBadge priority={project.priority} size='sm' />
         </div>
 
         <p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>{project.description}</p>
