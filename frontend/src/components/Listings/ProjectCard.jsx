@@ -3,7 +3,8 @@ import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import VerificationBadge from '../shared/VerificationBadge'
 import LoadingSpinner from '../shared/LoadingSpinner'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
+import PriorityBadge from '../shared/PriorityBadge'
+import { getProjectStatusBadgeClass, formatProjectStatusLabel } from '../../utils/projectStatusUI'
 import { normalizeSkills } from '../../utils/skillUtils'
 
 const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
@@ -44,7 +45,7 @@ const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavori
         <div className='flex items-center gap-2 mb-4 flex-wrap'>
           <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>{formatProjectStatusLabel(project.status || 'active')}</span>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+          <PriorityBadge priority={project.priority} size='sm' />
         </div>
 
         {/* Description */}
