@@ -8,7 +8,8 @@ import AdminProjectDetailModal from '../../modal/AdminProjectDetailModal'
 import AdminLockProjectModal from '../../modal/AdminLockProjectModal'
 import PaginationControls from '../shared/PaginationControls'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, bulkRenewProjectDeadlinesAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
+import PriorityBadge from '../shared/PriorityBadge'
+import { getProjectStatusBadgeClass, formatProjectStatusLabel } from '../../utils/projectStatusUI'
 import { useAuth } from '../../context/AuthContext'
 import { ADMIN_PERMISSIONS, hasAdminPermission, isFullAdmin } from '../../utils/accessRoles'
 
@@ -689,7 +690,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
             title='Filter by priority'>
             {priorityOptions.map((priority) => (
               <option key={priority} value={priority}>
-                {priority === 'All' ? 'All Priorities' : formatProjectPriorityLabel(priority)}
+                {priority === 'All' ? 'All Priorities' : priority}
               </option>
             ))}
           </select>
@@ -808,7 +809,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
                 </div>
                 <ProgressBar progress={project.progress} />
                 <div className='flex justify-between items-center text-sm text-gray-600 dark:text-gray-300'>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+                  <PriorityBadge priority={project.priority} size='sm' />
                   <TeamAvatars team={project.team} />
                 </div>
               </div>
