@@ -9,7 +9,8 @@ import AdminLockProjectModal from '../../modal/AdminLockProjectModal'
 import PaginationControls from '../shared/PaginationControls'
 import { getAdminAllProjects, deleteProjectAsAdmin, updateProjectAsAdmin, bulkRenewProjectDeadlinesAsAdmin, toggleProjectLockAsAdmin, removeAssigneeAsAdmin } from '../../services/projectService'
 import PriorityBadge from '../shared/PriorityBadge'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel } from '../../utils/projectStatusUI'
+import ProjectStatusBadge from '../shared/ProjectStatusBadge'
+import { formatProjectStatusLabel } from '../../utils/projectStatusUI'
 import { useAuth } from '../../context/AuthContext'
 import { ADMIN_PERMISSIONS, hasAdminPermission, isFullAdmin } from '../../utils/accessRoles'
 
@@ -797,7 +798,7 @@ const AdminProjectsList = ({ navigationRequest }) => {
                   )}
                   <h3 className='font-semibold text-gray-900 dark:text-white'>{project.name}</h3>
                 </div>
-                <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
+                <ProjectStatusBadge status={project.status} size='sm' />
               </div>
 
               <p className='text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3'>{project.description?.length > 180 ? `${project.description.slice(0, 180)}...` : project.description}</p>
