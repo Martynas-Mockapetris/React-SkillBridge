@@ -5,6 +5,7 @@ import VerificationBadge from '../shared/VerificationBadge'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import PriorityBadge from '../shared/PriorityBadge'
 import ProjectStatusBadge from '../shared/ProjectStatusBadge'
+import SkillsList from '../shared/SkillsList'
 import { normalizeSkills } from '../../utils/skillUtils'
 
 const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
@@ -52,16 +53,7 @@ const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavori
         <p className='theme-text-secondary text-sm mb-4 line-clamp-2'>{project.description}</p>
 
         {/* Skills */}
-        {normalizedSkills.length > 0 && (
-          <div className='flex flex-wrap gap-2 mb-4'>
-            {normalizedSkills.slice(0, 3).map((skill, idx) => (
-              <span key={`${skill}-${idx}`} className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>
-                {skill}
-              </span>
-            ))}
-            {normalizedSkills.length > 3 && <span className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>+{normalizedSkills.length - 3}</span>}
-          </div>
-        )}
+{normalizedSkills.length > 0 && <SkillsList skills={normalizedSkills} className='mb-4' />}
 
         {/* Client info */}
         {project.user && (
