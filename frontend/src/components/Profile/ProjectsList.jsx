@@ -9,10 +9,9 @@ import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject, deleteProject } from '../../services/projectService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import { getFreelancerRatings } from '../../services/ratingService'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel } from '../../utils/projectStatusUI'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import PriorityBadge from '../shared/PriorityBadge'
-
+import ProjectStatusBadge from '../shared/ProjectStatusBadge'
 const ProjectsList = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -397,7 +396,7 @@ const ProjectsList = () => {
                   <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
                   <div className='flex items-center gap-4'>
                     <div className='flex items-center gap-2'>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
+                      <ProjectStatusBadge status={project.status} />
                       <PriorityBadge priority={project.priority} size='sm' />
                     </div>
 
