@@ -5,6 +5,7 @@ import CreateAnnouncementModal from '../../modal/CreateAnnouncementModal'
 import { getUserAnnouncements, deleteAnnouncement, toggleAnnouncementStatus } from '../../services/announcementService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import AvailabilityCalendar from '../shared/AvailabilityCalendar'
+import SkillsList from '../shared/SkillsList'
 
 const FreelanceTab = ({ user }) => {
   const isVerified = Boolean(user?.isEmailVerified)
@@ -134,11 +135,9 @@ const FreelanceTab = ({ user }) => {
                   <div className='flex-1'>
                     <h3 className='flex text-xl font-bold mb-2 theme-text'>{announcement.title}</h3>
                     <div className='flex gap-2 flex-wrap'>
-                      {announcement.skills.slice(0, 2).map((skill, idx) => (
-                        <span key={idx} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent'>
-                          {skill}
-                        </span>
-                      ))}
+                      {announcement.skills && announcement.skills.length > 0 && (
+                        <SkillsList skills={announcement.skills} maxDisplay={2} />
+                      )}
                     </div>
                   </div>
                 </div>
