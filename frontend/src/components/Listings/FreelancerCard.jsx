@@ -3,6 +3,7 @@ import { FaCheckCircle, FaClock, FaEuroSign, FaMapMarkerAlt, FaUser } from 'reac
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import VerificationBadge from '../shared/VerificationBadge'
+import SkillsList from '../shared/SkillsList'
 
 const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
   const navigate = useNavigate()
@@ -127,13 +128,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
           <p className='text-xs theme-text-secondary line-clamp-3 mb-4 flex-1'>{truncateText(announcement.background, 120)}</p>
 
           {freelancerInfo.primarySkills && freelancerInfo.primarySkills.length > 0 && (
-            <div className='flex flex-wrap gap-1.5'>
-              {freelancerInfo.primarySkills.slice(0, 4).map((skill, skillIdx) => (
-                <span key={skillIdx} className='text-xs bg-accent/20 text-accent px-2 py-0.5 rounded'>
-                  {skill}
-                </span>
-              ))}
-            </div>
+            <SkillsList skills={freelancerInfo.primarySkills} className='mb-4' />
           )}
         </div>
       </div>
