@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 
 const ProjectStatusBadge = ({ status, size = 'md' }) => {
@@ -25,6 +26,11 @@ const ProjectStatusBadge = ({ status, size = 'md' }) => {
       {config.label}
     </motion.span>
   )
+}
+
+ProjectStatusBadge.propTypes = {
+  status: PropTypes.string.isRequired,
+  size: PropTypes.oneOf(['sm', 'md', 'lg'])
 }
 
 export default ProjectStatusBadge
