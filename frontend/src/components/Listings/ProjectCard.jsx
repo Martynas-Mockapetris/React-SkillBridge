@@ -3,6 +3,8 @@ import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import VerificationBadge from '../shared/VerificationBadge'
 import LoadingSpinner from '../shared/LoadingSpinner'
+import CategoryBadge from '../shared/CategoryBadge'
+import CategoryBadge from '../shared/CategoryBadge'
 import PriorityBadge from '../shared/PriorityBadge'
 import ProjectStatusBadge from '../shared/ProjectStatusBadge'
 import SkillsList from '../shared/SkillsList'
@@ -44,7 +46,7 @@ const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavori
 
         {/* Category + Status + Priority badges */}
         <div className='flex items-center gap-2 mb-4 flex-wrap'>
-          <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
+          <CategoryBadge category={project.category} />
           <ProjectStatusBadge status={project.status || 'active'} />
           <PriorityBadge priority={project.priority} size='sm' />
         </div>

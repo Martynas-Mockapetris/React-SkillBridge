@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { FaCalendarAlt, FaDollarSign, FaTags, FaUser, FaUserCheck } from 'react-icons/fa'
+import { FaCalendarAlt, FaDollarSign, FaUser, FaUserCheck } from 'react-icons/fa'
 import PriorityBadge from '../shared/PriorityBadge'
+import CategoryBadge from '../shared/CategoryBadge'
 import ProjectStatusBadge from '../shared/ProjectStatusBadge'
 
 const ProjectHeader = ({ project }) => {
@@ -21,10 +22,7 @@ const ProjectHeader = ({ project }) => {
         <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
           <div className='space-y-4'>
             <div className='flex flex-wrap items-center gap-2'>
-              <span className='inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-accent'>
-                <FaTags className='text-[10px]' />
-                {project.category}
-              </span>
+              <CategoryBadge category={project.category} showIcon={true} />
               <ProjectStatusBadge status={project.status || 'active'} />
               <PriorityBadge priority={project.priority} size='sm' />
             </div>
