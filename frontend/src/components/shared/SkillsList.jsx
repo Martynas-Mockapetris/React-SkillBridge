@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 const SkillsList = ({ skills = [], maxDisplay = 3, className = '' }) => {
   if (!skills || skills.length === 0) {
     return null
@@ -18,6 +20,12 @@ const SkillsList = ({ skills = [], maxDisplay = 3, className = '' }) => {
       )}
     </div>
   )
+}
+
+SkillsList.propTypes = {
+  skills: PropTypes.arrayOf(PropTypes.string).isRequired,
+  maxDisplay: PropTypes.number,
+  className: PropTypes.string
 }
 
 export default SkillsList
