@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { FaFlag } from 'react-icons/fa'
 
@@ -26,6 +27,12 @@ const PriorityBadge = ({ priority, size = 'md', showIcon = false }) => {
       {priority.charAt(0).toUpperCase() + priority.slice(1)} Priority
     </motion.span>
   )
+}
+
+PriorityBadge.propTypes = {
+  priority: PropTypes.string.isRequired,
+  size: PropTypes.oneOf(['sm', 'md', 'lg']),
+  showIcon: PropTypes.bool
 }
 
 export default PriorityBadge
