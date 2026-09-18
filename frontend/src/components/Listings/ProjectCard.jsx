@@ -4,10 +4,10 @@ import { motion } from 'framer-motion'
 import VerificationBadge from '../shared/VerificationBadge'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import CategoryBadge from '../shared/CategoryBadge'
-import CategoryBadge from '../shared/CategoryBadge'
 import PriorityBadge from '../shared/PriorityBadge'
 import ProjectStatusBadge from '../shared/ProjectStatusBadge'
 import SkillsList from '../shared/SkillsList'
+import AppliedBadge from '../shared/AppliedBadge'
 import { normalizeSkills } from '../../utils/skillUtils'
 
 const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
@@ -37,11 +37,7 @@ const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavori
         {/* Project title */}
         <div className='mb-2 pr-8 flex items-start gap-2'>
           <h3 className='text-xl font-bold theme-text line-clamp-2 min-w-0'>{project.title}</h3>
-          {isApplied && (
-            <span className='shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/20'>
-              Applied
-            </span>
-          )}
+          {isApplied && <AppliedBadge />}
         </div>
 
         {/* Category + Status + Priority badges */}
@@ -55,7 +51,7 @@ const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavori
         <p className='theme-text-secondary text-sm mb-4 line-clamp-2'>{project.description}</p>
 
         {/* Skills */}
-{normalizedSkills.length > 0 && <SkillsList skills={normalizedSkills} className='mb-4' />}
+        {normalizedSkills.length > 0 && <SkillsList skills={normalizedSkills} className='mb-4' />}
 
         {/* Client info */}
         {project.user && (
