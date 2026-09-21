@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import VerificationBadge from '../shared/VerificationBadge'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import CategoryBadge from '../shared/CategoryBadge'
@@ -82,6 +83,32 @@ const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavori
       </motion.div>
     </Link>
   )
+}
+
+ProjectCard.propTypes = {
+  project: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    category: PropTypes.string,
+    status: PropTypes.string,
+    priority: PropTypes.string,
+    skills: PropTypes.array,
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    deadline: PropTypes.string,
+    user: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string,
+      profilePicture: PropTypes.string,
+      isEmailVerified: PropTypes.bool,
+      email: PropTypes.string
+    })
+  }).isRequired,
+  isApplied: PropTypes.bool,
+  isFavorited: PropTypes.bool,
+  isFavoriting: PropTypes.bool,
+  onToggleFavorite: PropTypes.func
 }
 
 export default ProjectCard

@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FaCheckCircle, FaClock, FaEuroSign, FaMapMarkerAlt, FaUser } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { useAuth } from '../../context/AuthContext'
 import VerificationBadge from '../shared/VerificationBadge'
 import SkillsList from '../shared/SkillsList'
@@ -162,5 +163,35 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
     </CardShell>
   )
 }
+
+FreelancerCard.propTypes = {
+  freelancer: PropTypes.shape({
+    _id: PropTypes.string,
+    userId: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string,
+      email: PropTypes.string
+    }),
+    freelancer: PropTypes.shape({
+      _id: PropTypes.string,
+      userType: PropTypes.string,
+      name: PropTypes.string,
+      specialty: PropTypes.string,
+      profilePicture: PropTypes.string,
+      isEmailVerified: PropTypes.bool,
+      availabilityLabel: PropTypes.string,
+      hourlyRateLabel: PropTypes.string,
+      location: PropTypes.string,
+      primarySkills: PropTypes.array,
+      yearsOfExperience: PropTypes.number
+    })
+  }).isRequired,
+  index: PropTypes.number,
+  connectionStatus: PropTypes.string
+}
+
+// Inner component props (defined inside FreelancerCard)
+// CardShell and CardContent would ideally be extracted to separate components
 
 export default FreelancerCard
