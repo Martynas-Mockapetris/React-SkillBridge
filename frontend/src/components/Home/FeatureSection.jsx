@@ -1,5 +1,6 @@
 import { FaHandshake, FaShieldAlt, FaRocket, FaChartLine, FaClock, FaGlobe } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { HOME_FEATURES } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
@@ -66,6 +67,21 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
       </div>
     </section>
   )
+}
+
+FeaturesSection.propTypes = {
+  content: PropTypes.shape({
+    featuresTitleLead: PropTypes.string,
+    featuresTitleAccent: PropTypes.string,
+    featuresSubtitle: PropTypes.string
+  }),
+  systemValues: PropTypes.shape({
+    platformName: PropTypes.string
+  }),
+  layout: PropTypes.shape({
+    spacing: PropTypes.object,
+    background: PropTypes.string
+  })
 }
 
 export default FeaturesSection

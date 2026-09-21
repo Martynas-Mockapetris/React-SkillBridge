@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
@@ -177,6 +178,25 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
       </div>
     </section>
   )
+}
+
+ContactSection.propTypes = {
+  content: PropTypes.shape({
+    contactTitleLead: PropTypes.string,
+    contactTitleAccent: PropTypes.string,
+    contactSubtitle: PropTypes.string
+  }),
+  contactValues: PropTypes.shape({
+    supportEmail: PropTypes.string,
+    businessEmail: PropTypes.string,
+    phone: PropTypes.string,
+    address: PropTypes.string,
+    workingHours: PropTypes.string
+  }),
+  layout: PropTypes.shape({
+    spacing: PropTypes.object,
+    background: PropTypes.string
+  })
 }
 
 export default ContactSection

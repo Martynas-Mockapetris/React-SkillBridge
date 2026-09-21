@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import PageBackground from '../shared/PageBackground'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
@@ -87,6 +88,27 @@ const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {}, sectionBa
       )}
     </section>
   )
+}
+
+HeroSection.propTypes = {
+  content: PropTypes.shape({
+    heroTitleLead: PropTypes.string,
+    heroTitleAccent: PropTypes.string,
+    heroDescriptionLine1: PropTypes.string,
+    heroDescriptionLine2: PropTypes.string,
+    heroTalentButton: PropTypes.string,
+    heroWorkButton: PropTypes.string
+  }),
+  layout: PropTypes.shape({
+    layoutPreset: PropTypes.string,
+    contentAlign: PropTypes.string,
+    ctaLayout: PropTypes.string,
+    heroHeight: PropTypes.string,
+    showScrollIndicator: PropTypes.bool,
+    showBackgroundPattern: PropTypes.bool
+  }),
+  sectionSpacing: PropTypes.object,
+  sectionBackground: PropTypes.string
 }
 
 export default HeroSection

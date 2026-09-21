@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { FaUser, FaBriefcase, FaUserCircle, FaSearch, FaHandshake, FaFileAlt, FaUserCheck, FaCheckCircle } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { HOME_CLIENT_STEPS, HOME_TALENT_STEPS } from '../../constants/homePageData'
@@ -121,6 +122,20 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
       </div>
     </section>
   )
+}
+
+HowItWorksSection.propTypes = {
+  content: PropTypes.shape({
+    howTitleLead: PropTypes.string,
+    howTitleAccent: PropTypes.string,
+    howSubtitle: PropTypes.string,
+    talentTabLabel: PropTypes.string,
+    clientTabLabel: PropTypes.string
+  }),
+  layout: PropTypes.shape({
+    spacing: PropTypes.object,
+    background: PropTypes.string
+  })
 }
 
 export default HowItWorksSection
