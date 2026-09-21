@@ -12,6 +12,8 @@ import { getFreelancerRatings } from '../../services/ratingService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 import PriorityBadge from '../shared/PriorityBadge'
 import ProjectStatusBadge from '../shared/ProjectStatusBadge'
+import AppliedBadge from '../shared/AppliedBadge'
+
 const ProjectsList = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -398,6 +400,7 @@ const ProjectsList = () => {
                     <div className='flex items-center gap-2'>
                       <ProjectStatusBadge status={project.status} />
                       <PriorityBadge priority={project.priority} size='sm' />
+                      {projectType === 'interested' && <AppliedBadge text='Applied' size='sm' />}
                     </div>
 
                     {project.assignee && (isCreator(project) || isAssignee(project)) && (
