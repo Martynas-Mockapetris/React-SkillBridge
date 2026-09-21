@@ -103,7 +103,6 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
         </div>
       </div>
 
-    
       <div className='container mx-auto px-4 relative z-10'>
         <div className={headingWrapClass}>
           <h2 className='text-4xl font-heading font-bold mb-4'>

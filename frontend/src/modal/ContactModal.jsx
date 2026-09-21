@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
 import { toast } from 'react-toastify'
+import AppliedBadge from '../components/shared/AppliedBadge'
 
 const ContactModal = ({ isOpen, onClose, project }) => {
   const [content, setContent] = useState('')
@@ -63,7 +64,10 @@ const ContactModal = ({ isOpen, onClose, project }) => {
 
             {/* Header */}
             <div className='mb-6'>
-              <h2 className='text-2xl font-bold theme-text mb-2'>{hasApplied ? 'Send a Follow-up Message' : 'Apply for This Project'}</h2>
+              <div className='flex items-center gap-3 mb-2'>
+                <h2 className='text-2xl font-bold theme-text'>{hasApplied ? 'Send a Follow-up Message' : 'Apply for This Project'}</h2>
+                {hasApplied && <AppliedBadge size='sm' />}
+              </div>
               <p className='theme-text-secondary'>
                 {hasApplied ? 'Send an updated note to' : 'Send your introduction and project interest to'}{' '}
                 <span className='font-semibold text-accent'>
