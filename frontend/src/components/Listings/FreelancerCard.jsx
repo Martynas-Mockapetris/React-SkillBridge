@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import VerificationBadge from '../shared/VerificationBadge'
 import SkillsList from '../shared/SkillsList'
+import RoleTagBadge from '../shared/RoleTagBadge'
 
 const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
   const navigate = useNavigate()
@@ -102,7 +103,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
             </div>
 
             <div className='flex flex-col items-end gap-2 shrink-0'>
-              <span className='inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-accent/20 text-accent whitespace-nowrap'>{roleLabel}</span>
+              <RoleTagBadge role={roleLabel} size='sm' />
               {connectionBadge && <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap ${connectionBadge.className}`}>{connectionBadge.label}</span>}
               <VerificationBadge isVerified={freelancerInfo.isEmailVerified} className='whitespace-nowrap px-2.5 py-1' />
             </div>
@@ -127,9 +128,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
           <h4 className='text-sm font-semibold text-accent mb-2 line-clamp-2'>{announcement.title}</h4>
           <p className='text-xs theme-text-secondary line-clamp-3 mb-4 flex-1'>{truncateText(announcement.background, 120)}</p>
 
-          {freelancerInfo.primarySkills && freelancerInfo.primarySkills.length > 0 && (
-            <SkillsList skills={freelancerInfo.primarySkills} className='mb-4' />
-          )}
+          {freelancerInfo.primarySkills && freelancerInfo.primarySkills.length > 0 && <SkillsList skills={freelancerInfo.primarySkills} className='mb-4' />}
         </div>
       </div>
 
