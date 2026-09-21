@@ -18,12 +18,8 @@ const PriorityBadge = ({ priority, size = 'md', showIcon = false }) => {
   const config = priorityConfig[priority] || priorityConfig.medium
 
   return (
-    <motion.span
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`inline-flex items-center gap-1 rounded-full font-medium ${config} ${sizeClasses[size]}`}
-    >
-      {showIcon && <FaFlag className="mr-1" />}
+    <motion.span initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className={`inline-flex items-center gap-1 rounded-full font-medium ${config} ${sizeClasses[size]}`}>
+      {showIcon && <FaFlag className='mr-1' />}
       {priority.charAt(0).toUpperCase() + priority.slice(1)} Priority
     </motion.span>
   )
