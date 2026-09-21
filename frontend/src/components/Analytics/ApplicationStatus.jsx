@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts'
 
 const ApplicationStatus = ({ data }) => {
@@ -17,6 +18,16 @@ const ApplicationStatus = ({ data }) => {
         </PieChart>
       </ResponsiveContainer>
     </motion.div>
+  )
+}
+
+ApplicationStatus.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string,
+      value: PropTypes.number,
+      color: PropTypes.string
+    })
   )
 }
 

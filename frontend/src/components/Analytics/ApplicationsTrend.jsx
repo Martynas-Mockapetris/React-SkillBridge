@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 const ApplicationsTrend = ({ data }) => {
@@ -15,6 +16,15 @@ const ApplicationsTrend = ({ data }) => {
         </LineChart>
       </ResponsiveContainer>
     </motion.div>
+  )
+}
+
+ApplicationsTrend.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      date: PropTypes.string,
+      applications: PropTypes.number
+    })
   )
 }
 

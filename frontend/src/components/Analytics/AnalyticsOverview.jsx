@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaChartLine, FaUsers, FaEye, FaCheckCircle } from 'react-icons/fa'
 
 const AnalyticsOverview = ({ stats }) => {
@@ -46,6 +47,15 @@ const AnalyticsOverview = ({ stats }) => {
       })}
     </div>
   )
+}
+
+AnalyticsOverview.propTypes = {
+  stats: PropTypes.shape({
+    totalApplications: PropTypes.number,
+    profileViews: PropTypes.number,
+    conversionRate: PropTypes.number,
+    responseRate: PropTypes.number
+  })
 }
 
 export default AnalyticsOverview

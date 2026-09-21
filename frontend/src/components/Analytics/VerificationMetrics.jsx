@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaStar, FaShieldAlt } from 'react-icons/fa'
 
 const VerificationMetrics = ({ stats }) => {
@@ -41,6 +42,16 @@ const VerificationMetrics = ({ stats }) => {
       })}
     </div>
   )
+}
+
+VerificationMetrics.propTypes = {
+  stats: PropTypes.shape({
+    shortlistRate: PropTypes.number,
+    shortlisted: PropTypes.number,
+    totalApplications: PropTypes.number,
+    verificationRate: PropTypes.number,
+    skillsVerified: PropTypes.number
+  })
 }
 
 export default VerificationMetrics
