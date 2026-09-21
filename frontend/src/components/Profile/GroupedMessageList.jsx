@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { FaEnvelope } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import SenderBlock from './SenderBlock'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
@@ -81,6 +82,15 @@ const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, o
       ))}
     </motion.div>
   )
+}
+
+GroupedMessagesList.propTypes = {
+  messages: PropTypes.array,
+  loading: PropTypes.bool,
+  projectId: PropTypes.string,
+  isProjectCreator: PropTypes.bool,
+  onRefresh: PropTypes.func,
+  systemEvents: PropTypes.array
 }
 
 export default GroupedMessagesList

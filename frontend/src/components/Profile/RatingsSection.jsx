@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { FaStar, FaUser } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const RatingsSection = ({ ratings, stats, loading }) => {
@@ -107,6 +108,30 @@ const RatingsSection = ({ ratings, stats, loading }) => {
       )}
     </div>
   )
+}
+
+RatingsSection.propTypes = {
+  ratings: PropTypes.shape({
+    ratings: PropTypes.arrayOf(
+      PropTypes.shape({
+        _id: PropTypes.string,
+        score: PropTypes.number,
+        feedback: PropTypes.string,
+        createdAt: PropTypes.string,
+        ratedBy: PropTypes.shape({
+          firstName: PropTypes.string,
+          lastName: PropTypes.string,
+          profilePicture: PropTypes.string
+        })
+      })
+    )
+  }),
+  stats: PropTypes.shape({
+    averageRating: PropTypes.number,
+    totalRatings: PropTypes.number,
+    distribution: PropTypes.object
+  }),
+  loading: PropTypes.bool
 }
 
 export default RatingsSection

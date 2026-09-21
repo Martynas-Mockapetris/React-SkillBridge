@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaPlus } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { sendMessage, markMessageAsRead, sendMessageWithAttachments } from '../../services/messageService'
@@ -635,6 +636,12 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
       })}
     </div>
   )
+}
+
+MessagesList.propTypes = {
+  messages: PropTypes.array,
+  loading: PropTypes.bool,
+  onReplySent: PropTypes.func
 }
 
 export default MessagesList

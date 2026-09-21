@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaProjectDiagram, FaCheckCircle, FaClock, FaStar, FaWallet, FaBullhorn, FaEnvelopeOpenText, FaUserFriends, FaHistory } from 'react-icons/fa'
 import { getUserStats, getMyConnections } from '../../services/userService'
 import { getUserAnnouncements } from '../../services/announcementService'
@@ -385,6 +386,18 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       </motion.div>
     </motion.div>
   )
+}
+
+ProfileStats.propTypes = {
+  user: PropTypes.shape({
+    _id: PropTypes.string
+  }),
+  profileCompleteness: PropTypes.number,
+  onOpenSettings: PropTypes.func,
+  onOpenProjects: PropTypes.func,
+  onOpenMessages: PropTypes.func,
+  onOpenFreelance: PropTypes.func,
+  onOpenConnections: PropTypes.func
 }
 
 export default ProfileStats

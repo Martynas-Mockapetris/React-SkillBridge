@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaClock } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import { assignUserToProject } from '../../services/projectService'
 import { sendMessage } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
@@ -135,6 +136,21 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
       )}
     </motion.div>
   )
+}
+
+SenderBlock.propTypes = {
+  sender: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    email: PropTypes.string,
+    profilePicture: PropTypes.string
+  }),
+  messages: PropTypes.array,
+  index: PropTypes.number,
+  projectId: PropTypes.string,
+  isProjectCreator: PropTypes.bool,
+  onAssignSuccess: PropTypes.func
 }
 
 export default SenderBlock

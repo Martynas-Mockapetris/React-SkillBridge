@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaEye, FaBriefcase, FaLightbulb, FaHeart, FaStar } from 'react-icons/fa'
+import { FaEye, FaBriefcase, FaLightbulb, FaHeart, FaStar, FaCheck, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import RatingModal from '../../modal/RatingModal'
@@ -43,6 +43,54 @@ const ProjectsList = () => {
     setIsModalOpen(false)
     setModalMode('create')
     setSelectedProject(null)
+  }
+
+  // Function to fetch projects and favorites
+  const fetchProjects = async () => {
+    try {
+      setLoading(true)
+
+      // Fetch created, interested, and favorite projects
+      const [createdProjects, interestedProjects] = await Promise.all([getUserProjects(), getInterestedProjects()])
+
+      // Combine and remove duplicates
+      const allProjects = [...createdProjects]
+
+      // Add interested projects
+      interestedProjects.forEach((interestedProject) => {
+        if (!allProjects.some((p) => p._id === interestedProject._id)) {
+          allProjects.push(interestedProject)
+        }
+      })
+
+      // Also fetch and merge favorite projects
+      if (currentUser) {
+        try {
+          const favProjects = await getFavoriteProjects()
+          const favoriteIds = favProjects.map((fav) => fav._id)
+          setFavorites(favoriteIds)
+
+          // Add favorite project objects to allProjects if not already there
+          favProjects.forEach((favProject) => {
+            if (!allProjects.some((p) => p._id === favProject._id)) {
+              allProjects.push(favProject)
+            }
+          })
+        } catch (error) {
+          console.error('Error loading favorites:', error)
+        }
+      }
+
+      const sortedProjects = [...allProjects].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+
+      setProjects(sortedProjects)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching projects:', err)
+      setError('Failed to load projects. Please try again later.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Fetch projects when component mounts
@@ -125,54 +173,6 @@ const ProjectsList = () => {
 
     loadFreelancerRatings()
   }, [projects])
-
-  // Function to fetch projects and favorites
-  const fetchProjects = async () => {
-    try {
-      setLoading(true)
-
-      // Fetch created, interested, and favorite projects
-      const [createdProjects, interestedProjects] = await Promise.all([getUserProjects(), getInterestedProjects()])
-
-      // Combine and remove duplicates
-      const allProjects = [...createdProjects]
-
-      // Add interested projects
-      interestedProjects.forEach((interestedProject) => {
-        if (!allProjects.some((p) => p._id === interestedProject._id)) {
-          allProjects.push(interestedProject)
-        }
-      })
-
-      // Also fetch and merge favorite projects
-      if (currentUser) {
-        try {
-          const favProjects = await getFavoriteProjects()
-          const favoriteIds = favProjects.map((fav) => fav._id)
-          setFavorites(favoriteIds)
-
-          // Add favorite project objects to allProjects if not already there
-          favProjects.forEach((favProject) => {
-            if (!allProjects.some((p) => p._id === favProject._id)) {
-              allProjects.push(favProject)
-            }
-          })
-        } catch (error) {
-          console.error('Error loading favorites:', error)
-        }
-      }
-
-      const sortedProjects = [...allProjects].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-
-      setProjects(sortedProjects)
-      setError(null)
-    } catch (err) {
-      console.error('Error fetching projects:', err)
-      setError('Failed to load projects. Please try again later.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const isCreator = (project) => project.user._id === currentUser._id || project.user === currentUser._id
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaBriefcase, FaPlus, FaEdit, FaTrash, FaPlay, FaPause, FaCalendar } from 'react-icons/fa'
 import CreateAnnouncementModal from '../../modal/CreateAnnouncementModal'
 import { getUserAnnouncements, deleteAnnouncement, toggleAnnouncementStatus } from '../../services/announcementService'
@@ -17,11 +18,6 @@ const FreelanceTab = ({ user }) => {
   const [error, setError] = useState('')
   const [editingAnnouncement, setEditingAnnouncement] = useState(null)
 
-  // Fetch announcements when component mounts
-  useEffect(() => {
-    fetchAnnouncements()
-  }, [])
-
   const fetchAnnouncements = async () => {
     try {
       setLoading(true)
@@ -35,6 +31,11 @@ const FreelanceTab = ({ user }) => {
       setLoading(false)
     }
   }
+
+  // Fetch announcements when component mounts
+  useEffect(() => {
+    fetchAnnouncements()
+  }, [])
 
   const handleDeleteAnnouncement = async (announcementId) => {
     if (window.confirm('Are you sure you want to delete this announcement?')) {
@@ -134,11 +135,7 @@ const FreelanceTab = ({ user }) => {
                 <div className='flex items-start gap-4 mb-4'>
                   <div className='flex-1'>
                     <h3 className='flex text-xl font-bold mb-2 theme-text'>{announcement.title}</h3>
-                    <div className='flex gap-2 flex-wrap'>
-                      {announcement.skills && announcement.skills.length > 0 && (
-                        <SkillsList skills={announcement.skills} maxDisplay={2} />
-                      )}
-                    </div>
+                    <div className='flex gap-2 flex-wrap'>{announcement.skills && announcement.skills.length > 0 && <SkillsList skills={announcement.skills} maxDisplay={2} />}</div>
                   </div>
                 </div>
 
@@ -228,6 +225,13 @@ const FreelanceTab = ({ user }) => {
       </motion.div>
     </motion.div>
   )
+}
+
+FreelanceTab.propTypes = {
+  user: PropTypes.shape({
+    _id: PropTypes.string,
+    isEmailVerified: PropTypes.bool
+  })
 }
 
 export default FreelanceTab

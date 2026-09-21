@@ -1,6 +1,6 @@
 /**
  * Project Status & Priority Utility Functions
- * 
+ *
  * Used for formatting labels in dropdowns, filters, and other UI elements.
  * Badge components (ProjectStatusBadge, PriorityBadge) handle visual rendering.
  */
