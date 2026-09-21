@@ -4,6 +4,7 @@ import { getAllAnnouncements, toggleAnnouncementStatusAsAdmin, deleteAnnouncemen
 import { toast } from 'react-toastify'
 import PaginationControls from '../shared/PaginationControls'
 import { useNavigate } from 'react-router-dom'
+import PublishedBadge from '../shared/PublishedBadge'
 
 const AdminAnnouncementsList = () => {
   const [announcements, setAnnouncements] = useState([])
@@ -102,10 +103,6 @@ const AdminAnnouncementsList = () => {
 
   const handleViewUser = (userId) => {
     navigate(`/admin/users/${userId}`)
-  }
-
-  const getStatusBadgeClasses = (isActive) => {
-    return isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
   }
 
   const formatDate = (date) => {
@@ -235,7 +232,7 @@ const AdminAnnouncementsList = () => {
                         <div className='text-sm font-medium text-gray-900 dark:text-white'>€{announcement.hourlyRate}/hr</div>
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClasses(announcement.isActive)}`}>{announcement.isActive ? 'Active' : 'Inactive'}</span>
+                        <PublishedBadge isPublished={announcement.isActive} size='sm' />
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{formatDate(announcement.createdAt)}</td>
                       <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
