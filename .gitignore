@@ -42,6 +42,7 @@ text.txt
 CHANGELOG.md
 PROJECT_STATUS.md
 frontend/COMPONENT_DOCUMENTATION.md
+frontend/COMPONENTS_GUIDE.md
 frontend/src/components/COMPONENTS.md
 
 # Testing infrastructure (local development only)
