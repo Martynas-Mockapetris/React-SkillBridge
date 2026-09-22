@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaCheckCircle, FaClock, FaKey } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
@@ -11,6 +12,11 @@ const InfoRow = ({ label, value }) => (
     <p className={fieldClass}>{value || '—'}</p>
   </div>
 )
+
+InfoRow.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+}
 
 const VerificationBadge = ({ isVerified }) => {
   if (isVerified) {
@@ -28,6 +34,10 @@ const VerificationBadge = ({ isVerified }) => {
       <span>Pending</span>
     </div>
   )
+}
+
+VerificationBadge.propTypes = {
+  isVerified: PropTypes.bool
 }
 
 const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
@@ -159,6 +169,35 @@ const AdminUserDetailsModal = ({ isOpen, onClose, user }) => {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+AdminUserDetailsModal.propTypes = {
+  isOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+  user: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    email: PropTypes.string,
+    userType: PropTypes.string,
+    createdAt: PropTypes.string,
+    lastLogin: PropTypes.string,
+    phone: PropTypes.string,
+    location: PropTypes.string,
+    hourlyRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    experienceLevel: PropTypes.string,
+    skills: PropTypes.string,
+    isEmailVerified: PropTypes.bool,
+    emailVerifiedAt: PropTypes.string,
+    forcePasswordReset: PropTypes.bool,
+    forcePasswordResetSetAt: PropTypes.string,
+    isLocked: PropTypes.bool,
+    lockReason: PropTypes.string,
+    lockExpiresAt: PropTypes.string,
+    adminTags: PropTypes.array,
+    adminNotes: PropTypes.string,
+    bio: PropTypes.string
+  })
 }
 
 export default AdminUserDetailsModal
