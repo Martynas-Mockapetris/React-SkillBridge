@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import PriorityBadge from '../shared/PriorityBadge'
 import ProjectStatusBadge from '../shared/ProjectStatusBadge'
 
@@ -148,6 +149,56 @@ const AdminProjectDetailModal = ({ isOpen, onClose, project }) => {
       </div>
     </div>
   )
+}
+
+AdminProjectDetailModal.propTypes = {
+  isOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+  project: PropTypes.shape({
+    title: PropTypes.string,
+    name: PropTypes.string,
+    status: PropTypes.string,
+    priority: PropTypes.string,
+    description: PropTypes.string,
+    id: PropTypes.string,
+    category: PropTypes.string,
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    progress: PropTypes.number,
+    deadline: PropTypes.string,
+    createdAt: PropTypes.string,
+    updatedAt: PropTypes.string,
+    isRated: PropTypes.bool,
+    user: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string
+    }),
+    assignee: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string
+    }),
+    submission: PropTypes.shape({
+      note: PropTypes.string,
+      submittedAt: PropTypes.string,
+      links: PropTypes.array,
+      files: PropTypes.array
+    }),
+    review: PropTypes.shape({
+      decision: PropTypes.string,
+      reviewedAt: PropTypes.string,
+      feedback: PropTypes.string
+    }),
+    rateNegotiation: PropTypes.shape({
+      status: PropTypes.string,
+      currentOffer: PropTypes.shape({
+        amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        type: PropTypes.string
+      }),
+      history: PropTypes.array,
+      agreedAt: PropTypes.string
+    })
+  })
 }
 
 export default AdminProjectDetailModal
