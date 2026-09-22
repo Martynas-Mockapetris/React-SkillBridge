@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheck } from 'react-icons/fa'
 import { createAnnouncement, updateAnnouncement } from '../services/announcementService'
@@ -294,6 +295,20 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editi
       )}
     </AnimatePresence>
   )
+}
+
+CreateAnnouncementModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onAnnouncementCreated: PropTypes.func,
+  editingAnnouncement: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    hourlyRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    skills: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
+    background: PropTypes.string
+  }),
+  isVerified: PropTypes.bool
 }
 
 export default CreateAnnouncementModal
