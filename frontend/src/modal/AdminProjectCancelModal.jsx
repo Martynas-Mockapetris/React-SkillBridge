@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const AdminProjectCancelModal = ({ isOpen, onClose, onConfirm, projectName, loading }) => {
@@ -23,6 +24,14 @@ const AdminProjectCancelModal = ({ isOpen, onClose, onConfirm, projectName, load
       </div>
     </div>
   )
+}
+
+AdminProjectCancelModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  projectName: PropTypes.string.isRequired,
+  loading: PropTypes.bool
 }
 
 export default AdminProjectCancelModal
