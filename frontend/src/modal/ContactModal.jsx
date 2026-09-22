@@ -149,7 +149,9 @@ ContactModal.propTypes = {
       _id: PropTypes.string,
       firstName: PropTypes.string,
       lastName: PropTypes.string
-    })
+    }),
+    interestedUsers: PropTypes.arrayOf(PropTypes.any),
+    currentViewerId: PropTypes.any
   })
 }
 
