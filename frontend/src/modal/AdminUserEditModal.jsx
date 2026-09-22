@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const roleOptions = [
@@ -142,6 +143,24 @@ const AdminUserEditModal = ({ isOpen, onClose, user, onSave }) => {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+AdminUserEditModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  user: PropTypes.shape({
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    email: PropTypes.string,
+    userType: PropTypes.string,
+    hourlyRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    location: PropTypes.string,
+    phone: PropTypes.string,
+    bio: PropTypes.string,
+    adminNotes: PropTypes.string,
+    adminTags: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string])
+  }),
+  onSave: PropTypes.func.isRequired
 }
 
 export default AdminUserEditModal
