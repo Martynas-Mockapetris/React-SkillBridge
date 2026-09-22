@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaLink, FaUpload, FaTrash } from 'react-icons/fa'
 import { submitProject } from '../services/projectService'
@@ -198,6 +199,15 @@ const SubmitProjectModal = ({ isOpen, onClose, project, onSubmitSuccess }) => {
       )}
     </AnimatePresence>
   )
+}
+
+SubmitProjectModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string
+  }),
+  onSubmitSuccess: PropTypes.func
 }
 
 export default SubmitProjectModal

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheck, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
@@ -208,6 +209,16 @@ const DirectContactModal = ({ isOpen, onClose, freelancer }) => {
       )}
     </AnimatePresence>
   )
+}
+
+DirectContactModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  freelancer: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string
+  })
 }
 
 export default DirectContactModal

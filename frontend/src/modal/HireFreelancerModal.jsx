@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes } from 'react-icons/fa'
 import { createProject, saveProjectDraft } from '../services/projectService'
@@ -362,6 +363,18 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
       )}
     </AnimatePresence>
   )
+}
+
+HireFreelancerModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  freelancer: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    hourlyRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  }),
+  onSuccess: PropTypes.func
 }
 
 export default HireFreelancerModal

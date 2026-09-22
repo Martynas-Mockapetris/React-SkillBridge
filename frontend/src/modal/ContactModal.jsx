@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
@@ -136,6 +137,20 @@ const ContactModal = ({ isOpen, onClose, project }) => {
       )}
     </AnimatePresence>
   )
+}
+
+ContactModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    user: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string
+    })
+  })
 }
 
 export default ContactModal

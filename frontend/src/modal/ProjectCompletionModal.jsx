@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaCheckCircle, FaTimes } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useState } from 'react'
@@ -106,6 +107,16 @@ const ProjectCompletionModal = ({ isOpen, project, onClose, onComplete }) => {
       )}
     </AnimatePresence>
   )
+}
+
+ProjectCompletionModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string
+  }),
+  onClose: PropTypes.func.isRequired,
+  onComplete: PropTypes.func
 }
 
 export default ProjectCompletionModal

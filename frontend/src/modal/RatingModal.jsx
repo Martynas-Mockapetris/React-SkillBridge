@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaStar } from 'react-icons/fa'
 import { submitRating } from '../services/ratingService'
@@ -232,6 +233,21 @@ const RatingModal = ({ isOpen, onClose, freelancer, projectId, onRatingSubmitted
       )}
     </AnimatePresence>
   )
+}
+
+RatingModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  freelancer: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    profilePicture: PropTypes.string,
+    skills: PropTypes.string
+  }),
+  projectId: PropTypes.string.isRequired,
+  onRatingSubmitted: PropTypes.func,
+  ratedUserType: PropTypes.oneOf(['freelancer', 'client'])
 }
 
 export default RatingModal
