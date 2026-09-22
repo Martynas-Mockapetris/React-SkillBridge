@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { sendMessage } from '../services/messageService'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
@@ -91,6 +92,17 @@ const AdminMailUserModal = ({ isOpen, onClose, recipient, onSent }) => {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+AdminMailUserModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  recipient: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string
+  }),
+  onSent: PropTypes.func
 }
 
 export default AdminMailUserModal

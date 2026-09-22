@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 
@@ -112,6 +113,18 @@ const AdminLockProjectModal = ({ isOpen, onClose, onConfirm, project, loading })
       </motion.div>
     </AnimatePresence>
   )
+}
+
+AdminLockProjectModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    name: PropTypes.string
+  }),
+  loading: PropTypes.bool
 }
 
 export default AdminLockProjectModal
