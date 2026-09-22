@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaCalendar, FaTimes, FaCheck } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useState } from 'react'
@@ -165,6 +166,17 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
       )}
     </AnimatePresence>
   )
+}
+
+RescheduleModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    deadline: PropTypes.string
+  }),
+  onClose: PropTypes.func.isRequired,
+  onReschedule: PropTypes.func
 }
 
 export default RescheduleModal

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { FaTimes } from 'react-icons/fa'
 import { assignUserToProject, toggleShortlistApplicant, toggleSkillsVerified } from '../services/projectService'
@@ -175,6 +176,29 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
       </motion.div>
     </div>
   )
+}
+
+AssignModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    interestedUsers: PropTypes.arrayOf(PropTypes.shape({
+      userId: PropTypes.shape({
+        _id: PropTypes.string,
+        firstName: PropTypes.string,
+        lastName: PropTypes.string,
+        email: PropTypes.string,
+        profilePicture: PropTypes.string
+      }),
+      contactedAt: PropTypes.string,
+      proposalPreview: PropTypes.string,
+      isShortlisted: PropTypes.bool,
+      skillsVerified: PropTypes.bool
+    }))
+  }),
+  onAssignSuccess: PropTypes.func
 }
 
 export default AssignModal
