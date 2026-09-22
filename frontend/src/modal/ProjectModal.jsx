@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
 import { createProject, saveProjectDraft, updateProject } from '../services/projectService'
@@ -947,6 +948,38 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
       )}
     </AnimatePresence>
   )
+}
+
+ProjectModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onProjectCreated: PropTypes.func,
+  mode: PropTypes.oneOf(['create', 'edit']),
+  initialData: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    description: PropTypes.string,
+    category: PropTypes.string,
+    priority: PropTypes.string,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    deadline: PropTypes.string,
+    type: PropTypes.string,
+    status: PropTypes.string,
+    attachments: PropTypes.arrayOf(PropTypes.any),
+    projectBrief: PropTypes.shape({
+      objective: PropTypes.string,
+      deliverables: PropTypes.arrayOf(PropTypes.string),
+      scopeNotes: PropTypes.string,
+      experienceLevel: PropTypes.string,
+      duration: PropTypes.string,
+      workload: PropTypes.string,
+      startPreference: PropTypes.string,
+      budgetType: PropTypes.string,
+      applicationInstructions: PropTypes.string
+    })
+  }),
+  onProjectUpdated: PropTypes.func
 }
 
 export default ProjectModal
