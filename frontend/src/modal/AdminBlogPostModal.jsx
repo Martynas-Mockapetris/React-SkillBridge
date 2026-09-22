@@ -258,11 +258,14 @@ AdminBlogPostModal.propTypes = {
     content: PropTypes.string,
     coverImage: PropTypes.string,
     tags: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
-    author: PropTypes.oneOfType([PropTypes.string, PropTypes.shape({
-      firstName: PropTypes.string,
-      lastName: PropTypes.string,
-      email: PropTypes.string
-    })]),
+    author: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.shape({
+        firstName: PropTypes.string,
+        lastName: PropTypes.string,
+        email: PropTypes.string
+      })
+    ]),
     authorName: PropTypes.string,
     showAuthor: PropTypes.bool,
     isPublished: PropTypes.bool

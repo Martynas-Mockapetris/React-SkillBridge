@@ -188,10 +188,12 @@ ReviewProjectModal.propTypes = {
     _id: PropTypes.string,
     submission: PropTypes.shape({
       links: PropTypes.arrayOf(PropTypes.string),
-      files: PropTypes.arrayOf(PropTypes.shape({
-        name: PropTypes.string,
-        path: PropTypes.string
-      })),
+      files: PropTypes.arrayOf(
+        PropTypes.shape({
+          name: PropTypes.string,
+          path: PropTypes.string
+        })
+      ),
       note: PropTypes.string
     }),
     assignee: PropTypes.any

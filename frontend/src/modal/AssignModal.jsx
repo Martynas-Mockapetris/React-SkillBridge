@@ -184,19 +184,21 @@ AssignModal.propTypes = {
   project: PropTypes.shape({
     _id: PropTypes.string,
     title: PropTypes.string,
-    interestedUsers: PropTypes.arrayOf(PropTypes.shape({
-      userId: PropTypes.shape({
-        _id: PropTypes.string,
-        firstName: PropTypes.string,
-        lastName: PropTypes.string,
-        email: PropTypes.string,
-        profilePicture: PropTypes.string
-      }),
-      contactedAt: PropTypes.string,
-      proposalPreview: PropTypes.string,
-      isShortlisted: PropTypes.bool,
-      skillsVerified: PropTypes.bool
-    }))
+    interestedUsers: PropTypes.arrayOf(
+      PropTypes.shape({
+        userId: PropTypes.shape({
+          _id: PropTypes.string,
+          firstName: PropTypes.string,
+          lastName: PropTypes.string,
+          email: PropTypes.string,
+          profilePicture: PropTypes.string
+        }),
+        contactedAt: PropTypes.string,
+        proposalPreview: PropTypes.string,
+        isShortlisted: PropTypes.bool,
+        skillsVerified: PropTypes.bool
+      })
+    )
   }),
   onAssignSuccess: PropTypes.func
 }
