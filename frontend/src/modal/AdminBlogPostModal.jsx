@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import PublishedBadge from '../shared/PublishedBadge'
 
@@ -246,6 +247,34 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
       </motion.div>
     </AnimatePresence>
   )
+}
+
+AdminBlogPostModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  mode: PropTypes.oneOf(['create', 'edit']),
+  post: PropTypes.shape({
+    title: PropTypes.string,
+    excerpt: PropTypes.string,
+    content: PropTypes.string,
+    coverImage: PropTypes.string,
+    tags: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
+    author: PropTypes.oneOfType([PropTypes.string, PropTypes.shape({
+      firstName: PropTypes.string,
+      lastName: PropTypes.string,
+      email: PropTypes.string
+    })]),
+    authorName: PropTypes.string,
+    showAuthor: PropTypes.bool,
+    isPublished: PropTypes.bool
+  }),
+  currentUser: PropTypes.shape({
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    email: PropTypes.string
+  }),
+  isSubmitting: PropTypes.bool,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired
 }
 
 export default AdminBlogPostModal
