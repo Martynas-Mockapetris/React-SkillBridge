@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { reviewProject } from '../services/projectService'
@@ -178,6 +179,24 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
       />
     </>
   )
+}
+
+ReviewProjectModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    submission: PropTypes.shape({
+      links: PropTypes.arrayOf(PropTypes.string),
+      files: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string,
+        path: PropTypes.string
+      })),
+      note: PropTypes.string
+    }),
+    assignee: PropTypes.any
+  }),
+  onReviewSuccess: PropTypes.func
 }
 
 export default ReviewProjectModal
