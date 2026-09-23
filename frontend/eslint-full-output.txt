@@ -1,0 +1,606 @@
+﻿
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Admin\AdminAlertsPanel.jsx
+  11:29  error  'label' is missing in props validation        react/prop-types
+  11:36  error  'value' is missing in props validation        react/prop-types
+  11:43  error  'tone' is missing in props validation         react/prop-types
+  11:61  error  'onClick' is missing in props validation      react/prop-types
+  33:23  error  'label' is missing in props validation        react/prop-types
+  33:30  error  'value' is missing in props validation        react/prop-types
+  33:37  error  'icon' is missing in props validation         react/prop-types
+  33:43  error  'actionLabel' is missing in props validation  react/prop-types
+  33:56  error  'onAction' is missing in props validation     react/prop-types
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Admin\AdminAuditLogPanel.jsx
+  52:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  50 |
+  51 |   useEffect(() => {
+> 52 |     setCurrentPage(1)
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  53 |   }, [search, selectedAction, selectedTargetType])
+  54 |
+  55 |   useEffect(() => {                                                                                                                           react-hooks/set-state-in-effect
+  56:5  error    Error: Cannot access variable before it is declared
+
+`fetchAuditLogs` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  54 |
+  55 |   useEffect(() => {
+> 56 |     fetchAuditLogs()
+     |     ^^^^^^^^^^^^^^ `fetchAuditLogs` accessed before it is declared
+  57 |   }, [currentPage, search, selectedAction, selectedTargetType])
+  58 |
+  59 |   const fetchAuditLogs = async () => {
+
+  57 |   }, [currentPage, search, selectedAction, selectedTargetType])
+  58 |
+> 59 |   const fetchAuditLogs = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     try {
+     | ^^^^^^^^^
+> 61 |       setLoading(true)
+     ΓÇª
+     | ^^^^^^^^^
+> 84 |     }
+     | ^^^^^^^^^
+> 85 |   }
+     | ^^^^ `fetchAuditLogs` is declared here
+  86 |
+  87 |   return (
+  88 |     <motion.section className='mt-8 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6' initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>  react-hooks/immutability
+  57:6  warning  React Hook useEffect has a missing dependency: 'fetchAuditLogs'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Admin\AdminBlogPostsList.jsx
+  36:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  34 |
+  35 |   useEffect(() => {
+> 36 |     fetchPosts()
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |   }, [])
+  38 |
+  39 |   const handleTogglePublish = async (post) => {  react-hooks/set-state-in-effect
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Admin\AdminProjectsList.jsx
+   18:24  error    'progress' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react/prop-types
+   24:24  error    'team' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react/prop-types
+   26:11  error    'team.map' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react/prop-types
+  577:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  575 |
+  576 |   useEffect(() => {
+> 577 |     setCurrentPage(1)
+      |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  578 |   }, [selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, stalledOnly, searchQuery, sortBy, pageSize])
+  579 |
+  580 |   useEffect(() => {                                                                                                                                                                                                               react-hooks/set-state-in-effect
+  581:49  error    'navigationRequest.section' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/prop-types
+  583:39  error    'navigationRequest.filters' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/prop-types
+  585:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  583 |     const filters = navigationRequest.filters || {}
+  584 |
+> 585 |     setSearchQuery(filters.search || '')
+      |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  586 |     setSelectedStatus(filters.status || 'All')
+  587 |     setSelectedCategory(filters.category || 'All')
+  588 |     setPriority(filters.priority || 'All')                                                                                                                                                                          react-hooks/set-state-in-effect
+  594:6   warning  React Hook useEffect has a missing dependency: 'navigationRequest'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  594:26  error    'navigationRequest.requestId' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react/prop-types
+  594:56  error    'navigationRequest.section' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/prop-types
+  598:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  596 |   useEffect(() => {
+  597 |     if (currentPage > totalPages) {
+> 598 |       setCurrentPage(totalPages)
+      |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  599 |     }
+  600 |   }, [currentPage, totalPages])
+  601 |                                                                                                                                                                                                                                                                                   react-hooks/set-state-in-effect
+  603:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  601 |
+  602 |   useEffect(() => {
+> 603 |     setSelectedProjects((prev) => prev.filter((projectId) => projectsData.some((project) => project.id === projectId)))
+      |     ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  604 |   }, [projectsData])
+  605 |
+  606 |   useEffect(() => {                                                                                                                                                                                                                          react-hooks/set-state-in-effect
+  607:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  605 |
+  606 |   useEffect(() => {
+> 607 |     fetchProjects()
+      |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  608 |   }, [currentPage, pageSize, selectedStatus, selectedCategory, selectedPriority, dateRange.start, dateRange.end, stalledOnly, searchQuery, sortBy])
+  609 |
+  610 |   return (                                                                                                                                                                                                              react-hooks/set-state-in-effect
+  608:6   warning  React Hook useEffect has a missing dependency: 'fetchProjects'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  649:8   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  647 |       )}
+  648 |
+> 649 |       <BulkProjectActions />
+      |        ^^^^^^^^^^^^^^^^^^ This component is created during render
+  650 |
+  651 |       {canCreateProjects && <ProjectModal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)} onProjectCreated={fetchProjects} mode='create' />}
+  652 |
+
+  490 |   }
+  491 |
+> 492 |   const BulkProjectActions = () => {
+      |                              ^^^^^^^
+> 493 |     if (selectedProjects.length === 0 || !canUpdateProjects) return null
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 494 |
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 544 |     )
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 545 |   }
+      | ^^^^ The component is created during render here
+  546 |
+  547 |   const showingFrom = totalFilteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1
+  548 |   const showingTo = Math.min(currentPage * pageSize, totalFilteredCount)  react-hooks/static-components
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Admin\AdminStats.jsx
+  49:5  error  Error: Cannot access variable before it is declared
+
+`fetchDashboardStats` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  47 |
+  48 |   useEffect(() => {
+> 49 |     fetchDashboardStats()
+     |     ^^^^^^^^^^^^^^^^^^^ `fetchDashboardStats` accessed before it is declared
+  50 |   }, [])
+  51 |
+  52 |   const fetchDashboardStats = async () => {
+
+  50 |   }, [])
+  51 |
+> 52 |   const fetchDashboardStats = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 53 |     setIsLoading(true)
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 54 |     setError('')
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 85 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^
+> 86 |   }
+     | ^^^^ `fetchDashboardStats` is declared here
+  87 |
+  88 |   const statCards = [
+  89 |     {  react-hooks/immutability
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Admin\AdminUsersList.jsx
+   94:32  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  92 |
+  93 |     const lastLoginDate = new Date(user.lastLogin)
+> 94 |     const threshold = new Date(Date.now() - INACTIVE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000)
+     |                                ^^^^^^^^^^ Cannot call impure function
+  95 |
+  96 |     return lastLoginDate < threshold ? 'Inactive' : 'Active'
+  97 |   }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/purity
+  153:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  151 |
+  152 |   useEffect(() => {
+> 153 |     setCurrentPage(1)
+      |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  154 |   }, [searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, selectedAdminTag, selectedNotesState, sortConfig, pageSize])
+  155 |
+  156 |   useEffect(() => {                                                                                                                                            react-hooks/set-state-in-effect
+  157:49  error    'navigationRequest.section' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react/prop-types
+  159:39  error    'navigationRequest.filters' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react/prop-types
+  161:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  159 |     const filters = navigationRequest.filters || {}
+  160 |
+> 161 |     setSearchQuery(filters.search || '')
+      |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  162 |     setSelectedRole(filters.role || '')
+  163 |     setSelectedStatus(filters.status || '')
+  164 |     setSelectedVerification(filters.verification || '')                                                                                                                                    react-hooks/set-state-in-effect
+  171:6   warning  React Hook useEffect has a missing dependency: 'navigationRequest'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+  171:26  error    'navigationRequest.requestId' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react/prop-types
+  171:56  error    'navigationRequest.section' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react/prop-types
+  175:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  173 |   useEffect(() => {
+  174 |     if (totalPages >= 1 && currentPage > totalPages) {
+> 175 |       setCurrentPage(totalPages)
+      |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  176 |     }
+  177 |   }, [currentPage, totalPages])
+  178 |                                                                                                                                                                                                                         react-hooks/set-state-in-effect
+  180:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  178 |
+  179 |   useEffect(() => {
+> 180 |     fetchUsers()
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  181 |   }, [currentPage, searchQuery, selectedRole, selectedStatus, selectedVerification, selectedPasswordResetRequired, selectedAdminTag, selectedNotesState, sortConfig, pageSize])
+  182 |
+  183 |   const openLockModal = (user) => {                                                                                                                        react-hooks/set-state-in-effect
+  181:6   warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  713:8   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  711 |     <div>
+  712 |       <h2 className='text-xl font-semibold mb-4 text-gray-900 dark:text-white'>Users Management</h2>
+> 713 |       <BulkActions />
+      |        ^^^^^^^^^^^ This component is created during render
+  714 |       {/* Filters Section */}
+  715 |
+  716 |       <div className='mb-4 flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm'>
+
+  556 |
+  557 |   // Bulk actions toolbar
+> 558 |   const BulkActions = () => {
+      |                       ^^^^^^^
+> 559 |     if (selectedUsers.length === 0) return null
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 560 |     if (!canLockUsers && !canDeleteUsers && !canResetUsers && !canVerifyUsers) return null
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 656 |     )
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 657 |   }
+      | ^^^^ The component is created during render here
+  658 |
+  659 |   const openEditModal = (user) => {
+  660 |     setEditingUser(user)  react-hooks/static-components
+  994:50  error    'handleVerificationResend' is not defined                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    no-undef
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Listings\FreelancerCard.jsx
+   64:24  error  'children' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react/prop-types
+   64:34  error  'locked' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react/prop-types
+   94:26  error  'blurred' is missing in props validation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/prop-types
+  149:8   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  147 |   if (currentUser) {
+  148 |     return (
+> 149 |       <CardShell>
+      |        ^^^^^^^^^ This component is created during render
+  150 |         <CardContent />
+  151 |       </CardShell>
+  152 |     )
+
+  62 |   ].filter(Boolean)
+  63 |
+> 64 |   const CardShell = ({ children, locked = false }) => (
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 65 |     <motion.div
+     | ^^^^^^^^^^^^^^^
+> 66 |       initial={{ opacity: 0, y: 20 }}
+     ΓÇª
+     | ^^^^^^^^^^^^^^^
+> 91 |     </motion.div>
+     | ^^^^^^^^^^^^^^^
+> 92 |   )
+     | ^^^^ The component is created during render here
+  93 |
+  94 |   const CardContent = ({ blurred = false }) => (
+  95 |     <div className={`${blurred ? 'opacity-50 pointer-events-none ' : ''}flex flex-col h-full`}>                                                                                                                                                                                                                                react-hooks/static-components
+  150:10  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  148 |     return (
+  149 |       <CardShell>
+> 150 |         <CardContent />
+      |          ^^^^^^^^^^^ This component is created during render
+  151 |       </CardShell>
+  152 |     )
+  153 |   }
+
+   92 |   )
+   93 |
+>  94 |   const CardContent = ({ blurred = false }) => (
+      |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  95 |     <div className={`${blurred ? 'opacity-50 pointer-events-none ' : ''}flex flex-col h-full`}>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  96 |       <div className='flex items-start gap-4 mb-4'>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 144 |     </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 145 |   )
+      | ^^^^ The component is created during render here
+  146 |
+  147 |   if (currentUser) {
+  148 |     return (                                   react-hooks/static-components
+  156:6   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  154 |
+  155 |   return (
+> 156 |     <CardShell locked>
+      |      ^^^^^^^^^ This component is created during render
+  157 |       <div className='absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center flex-col gap-2 backdrop-blur-sm z-10'>
+  158 |         <FaUser className='text-accent text-3xl' />
+  159 |         <span className='text-sm font-semibold text-white text-center px-4'>Login to View Profile</span>
+
+  62 |   ].filter(Boolean)
+  63 |
+> 64 |   const CardShell = ({ children, locked = false }) => (
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 65 |     <motion.div
+     | ^^^^^^^^^^^^^^^
+> 66 |       initial={{ opacity: 0, y: 20 }}
+     ΓÇª
+     | ^^^^^^^^^^^^^^^
+> 91 |     </motion.div>
+     | ^^^^^^^^^^^^^^^
+> 92 |   )
+     | ^^^^ The component is created during render here
+  93 |
+  94 |   const CardContent = ({ blurred = false }) => (
+  95 |     <div className={`${blurred ? 'opacity-50 pointer-events-none ' : ''}flex flex-col h-full`}>  react-hooks/static-components
+  162:8   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  160 |       </div>
+  161 |
+> 162 |       <CardContent blurred />
+      |        ^^^^^^^^^^^ This component is created during render
+  163 |     </CardShell>
+  164 |   )
+  165 | }
+
+   92 |   )
+   93 |
+>  94 |   const CardContent = ({ blurred = false }) => (
+      |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  95 |     <div className={`${blurred ? 'opacity-50 pointer-events-none ' : ''}flex flex-col h-full`}>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  96 |       <div className='flex items-start gap-4 mb-4'>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 144 |     </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 145 |   )
+      | ^^^^ The component is created during render here
+  146 |
+  147 |   if (currentUser) {
+  148 |     return (                                                       react-hooks/static-components
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Listings\ListingTabs.jsx
+  222:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  220 |
+  221 |     if (nextTab !== activeTab) {
+> 222 |       setActiveTab(nextTab)
+      |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  223 |     }
+  224 |
+  225 |     if (nextPage !== currentPage) {  react-hooks/set-state-in-effect
+  244:6  warning  React Hook useEffect has missing dependencies: 'activeTab', 'currentPage', 'freelancerFilters', 'projectFilters', 'searchInput', 'searchTerm', and 'updateSearch'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  352:6  warning  React Hook useEffect has a missing dependency: 'currentUser'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+  371:6  warning  React Hook useEffect has a missing dependency: 'currentUser'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+  407:6  warning  React Hook useEffect has a missing dependency: 'currentUser'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Profile\ConnectionsTab.jsx
+  275:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  273 |
+  274 |   useEffect(() => {
+> 275 |     loadConnections()
+      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  276 |   }, [])
+  277 |
+  278 |   useEffect(() => {  react-hooks/set-state-in-effect
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Profile\FreelanceTab.jsx
+  37:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  35 |   // Fetch announcements when component mounts
+  36 |   useEffect(() => {
+> 37 |     fetchAnnouncements()
+     |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  38 |   }, [])
+  39 |
+  40 |   const handleDeleteAnnouncement = async (announcementId) => {  react-hooks/set-state-in-effect
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Profile\ProfileSettings.jsx
+  143:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  141 |   useEffect(() => {
+  142 |     if (!currentUser) {
+> 143 |       setIsLoading(true)
+      |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  144 |       return
+  145 |     }
+  146 |  react-hooks/set-state-in-effect
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Profile\ProjectsList.jsx
+  100:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+   98 |   // Fetch projects when component mounts
+   99 |   useEffect(() => {
+> 100 |     fetchProjects()
+      |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  101 |   }, [])
+  102 |
+  103 |   // Fetch favorites when component mounts  react-hooks/set-state-in-effect
+  101:6  warning  React Hook useEffect has a missing dependency: 'fetchProjects'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+  124:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  122 |   useEffect(() => {
+  123 |     if (currentUser) {
+> 124 |       fetchProjects()
+      |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  125 |     }
+  126 |   }, [location.pathname, currentUser])
+  127 |                        react-hooks/set-state-in-effect
+  126:6  warning  React Hook useEffect has a missing dependency: 'fetchProjects'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+  177:6  warning  React Hook useEffect has a missing dependency: 'freelancerRatingsCache'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\Profile\SecuritySettings.jsx
+  155:3   error  Error: This value cannot be modified
+
+This modifies a variable that React considers immutable.
+
+  153 |   }
+  154 |
+> 155 |   PasswordRequirements.propTypes = {
+      |   ^^^^^^^^^^^^^^^^^^^^ value cannot be modified
+  156 |     password: PropTypes.string.isRequired
+  157 |   }
+  158 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/immutability
+  405:24  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  403 |                       </div>
+  404 |
+> 405 |                       <PasswordRequirements password={passwordData.newPassword} />
+      |                        ^^^^^^^^^^^^^^^^^^^^ This component is created during render
+  406 |                     </>
+  407 |                   ) : (
+  408 |                     <p className='text-sm theme-text-secondary mt-3'>Start typing a new password to see strength feedback and requirements.</p>
+
+  132 |
+  133 |   // Password requirements
+> 134 |   const PasswordRequirements = ({ password }) => {
+      |                                ^^^^^^^^^^^^^^^^^^^
+> 135 |     const requirements = [
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 136 |       { label: 'At least 8 characters', test: (pwd) => pwd.length >= 8 },
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 152 |     )
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 153 |   }
+      | ^^^^ The component is created during render here
+  154 |
+  155 |   PasswordRequirements.propTypes = {
+  156 |     password: PropTypes.string.isRequired  react-hooks/static-components
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\shared\AvailabilityCalendar.jsx
+   32:7   error  'useAvailability' is not defined                                                                                              no-undef
+   40:3   error  React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  322:14  error  'CompactCalendarView' is not defined                                                                                          react/jsx-no-undef
+  334:14  error  'DetailedCalendarView' is not defined                                                                                         react/jsx-no-undef
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\shared\DetailedCalendarView.jsx
+  120:12  error  'StatusFilterChips' is not defined  react/jsx-no-undef
+
+D:\VisualStudioCodes\8. Github\React-SkillBridge\frontend\src\components\shared\FilterSidebar.jsx
+  51:11  error  Parsing error: Unexpected token className
+
+Γ£û 70 problems (58 errors, 12 warnings)
+
