@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { FaCalendarAlt, FaDollarSign, FaUser, FaUserCheck } from 'react-icons/fa'
 import PriorityBadge from '../shared/PriorityBadge'
@@ -93,6 +94,21 @@ const ProjectHeader = ({ project }) => {
       </div>
     </motion.div>
   )
+}
+
+ProjectHeader.propTypes = {
+  project: PropTypes.shape({
+    rateNegotiation: PropTypes.object,
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    deadline: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    user: PropTypes.object,
+    assignee: PropTypes.object,
+    category: PropTypes.string,
+    status: PropTypes.string,
+    priority: PropTypes.string,
+    title: PropTypes.string,
+    description: PropTypes.string
+  }).isRequired
 }
 
 export default ProjectHeader

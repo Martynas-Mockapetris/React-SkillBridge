@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
 
@@ -117,6 +118,31 @@ const RateNegotiationCard = ({ project, currentUser, rateAmount, setRateAmount, 
       )}
     </motion.div>
   )
+}
+
+RateNegotiationCard.propTypes = {
+  project: PropTypes.shape({
+    user: PropTypes.shape({
+      _id: PropTypes.string
+    }),
+    assignee: PropTypes.shape({
+      _id: PropTypes.string
+    }),
+    status: PropTypes.string,
+    rateNegotiation: PropTypes.object
+  }).isRequired,
+  currentUser: PropTypes.shape({
+    _id: PropTypes.string
+  }).isRequired,
+  rateAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  setRateAmount: PropTypes.func.isRequired,
+  rateType: PropTypes.string,
+  setRateType: PropTypes.func.isRequired,
+  rateLoading: PropTypes.bool,
+  rateError: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf([null])]),
+  handleProposeRate: PropTypes.func.isRequired,
+  handleCounterRate: PropTypes.func.isRequired,
+  handleAcceptRate: PropTypes.func.isRequired
 }
 
 export default RateNegotiationCard

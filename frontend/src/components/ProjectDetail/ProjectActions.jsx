@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { archiveProject } from '../../services/projectService'
@@ -136,6 +137,33 @@ const ProjectActions = ({
       </button>
     </motion.div>
   )
+}
+
+ProjectActions.propTypes = {
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    status: PropTypes.string,
+    user: PropTypes.shape({
+      _id: PropTypes.string
+    }),
+    assignee: PropTypes.shape({
+      _id: PropTypes.string
+    })
+  }).isRequired,
+  currentUser: PropTypes.oneOfType([PropTypes.object, PropTypes.oneOf([null])]),
+  isOwner: PropTypes.bool,
+  isAssignee: PropTypes.bool,
+  hasApplied: PropTypes.bool,
+  isFavorited: PropTypes.bool,
+  favoriteLoading: PropTypes.bool,
+  handleToggleFavorite: PropTypes.func.isRequired,
+  setIsEditModalOpen: PropTypes.func.isRequired,
+  setIsContactModalOpen: PropTypes.func.isRequired,
+  setIsSubmitModalOpen: PropTypes.func.isRequired,
+  setIsReviewModalOpen: PropTypes.func.isRequired,
+  isRescheduleModalOpen: PropTypes.bool,
+  setIsRescheduleModalOpen: PropTypes.func.isRequired,
+  loadProject: PropTypes.func.isRequired
 }
 
 export default ProjectActions

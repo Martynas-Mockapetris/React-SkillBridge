@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import GroupedMessagesList from '../Profile/GroupedMessageList'
 import { getProjectById } from '../../services/projectService'
@@ -25,6 +26,22 @@ const MessagesTab = ({ project, currentUser, messages, messagesLoading, negotiat
       <GroupedMessagesList messages={messages} loading={messagesLoading} projectId={id} isProjectCreator={true} systemEvents={negotiationTimeline} onRefresh={handleRefresh} />
     </motion.div>
   )
+}
+
+MessagesTab.propTypes = {
+  project: PropTypes.shape({
+    user: PropTypes.shape({
+      _id: PropTypes.string
+    }),
+    assignee: PropTypes.object
+  }).isRequired,
+  currentUser: PropTypes.shape({
+    _id: PropTypes.string
+  }).isRequired,
+  messages: PropTypes.array.isRequired,
+  messagesLoading: PropTypes.bool,
+  negotiationTimeline: PropTypes.array,
+  id: PropTypes.string.isRequired
 }
 
 export default MessagesTab
