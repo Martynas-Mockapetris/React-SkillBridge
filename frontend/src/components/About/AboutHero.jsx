@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 
 const AboutHero = ({ eyebrow, headline, subheadline, layout = {} }) => {
   const contentAlign = layout.contentAlign || 'left'
@@ -15,6 +16,17 @@ const AboutHero = ({ eyebrow, headline, subheadline, layout = {} }) => {
       <p className={`theme-text-secondary mt-4 text-lg max-w-3xl ${contentAlign === 'center' ? 'mx-auto' : ''}`}>{subheadline}</p>
     </motion.div>
   )
+}
+
+AboutHero.propTypes = {
+  eyebrow: PropTypes.string,
+  headline: PropTypes.string,
+  subheadline: PropTypes.string,
+  layout: PropTypes.shape({
+    contentAlign: PropTypes.string,
+    contentWidth: PropTypes.string,
+    showEyebrow: PropTypes.bool
+  })
 }
 
 export default AboutHero

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaBullseye, FaCompass, FaUsers } from 'react-icons/fa'
 
 const AboutHighlights = ({ mission, vision, layout = {} }) => {
@@ -69,6 +70,17 @@ const AboutHighlights = ({ mission, vision, layout = {} }) => {
       </motion.div>
     </div>
   )
+}
+
+AboutHighlights.propTypes = {
+  mission: PropTypes.string,
+  vision: PropTypes.string,
+  layout: PropTypes.shape({
+    contentAlign: PropTypes.string,
+    contentWidth: PropTypes.string,
+    cardLayout: PropTypes.string,
+    showIcons: PropTypes.bool
+  })
 }
 
 export default AboutHighlights

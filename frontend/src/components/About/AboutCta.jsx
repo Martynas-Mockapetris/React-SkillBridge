@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaArrowRight } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
@@ -53,6 +54,23 @@ const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondar
       </div>
     </motion.div>
   )
+}
+
+AboutCta.propTypes = {
+  eyebrow: PropTypes.string,
+  headline: PropTypes.string,
+  body: PropTypes.string,
+  primaryLabel: PropTypes.string,
+  primaryHref: PropTypes.string,
+  secondaryLabel: PropTypes.string,
+  secondaryHref: PropTypes.string,
+  layout: PropTypes.shape({
+    contentAlign: PropTypes.string,
+    contentWidth: PropTypes.string,
+    buttonLayout: PropTypes.string,
+    emphasisStyle: PropTypes.string,
+    showSecondaryButton: PropTypes.bool
+  })
 }
 
 export default AboutCta
