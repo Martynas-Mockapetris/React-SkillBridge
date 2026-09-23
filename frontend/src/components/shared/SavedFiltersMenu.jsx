@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaBookmark, FaSave, FaTimes, FaEdit2, FaTrash, FaClock, FaFire } from 'react-icons/fa'
 import { useSavedFilterPresets } from '../../hooks/useSavedFilterPresets'
@@ -203,6 +204,12 @@ export const SavedFiltersMenu = ({ currentFilters, onLoadPreset, onSavePreset })
       </AnimatePresence>
     </div>
   )
+}
+
+SavedFiltersMenu.propTypes = {
+  currentFilters: PropTypes.object.isRequired,
+  onLoadPreset: PropTypes.func,
+  onSavePreset: PropTypes.func
 }
 
 // Preset item component

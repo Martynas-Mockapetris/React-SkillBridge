@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 const PaginationControls = ({ currentPage, totalPages, onPrev, onNext, label }) => {
@@ -26,6 +27,14 @@ const PaginationControls = ({ currentPage, totalPages, onPrev, onNext, label }) 
       </div>
     </div>
   )
+}
+
+PaginationControls.propTypes = {
+  currentPage: PropTypes.number.isRequired,
+  totalPages: PropTypes.number.isRequired,
+  onPrev: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
+  label: PropTypes.string
 }
 
 export default PaginationControls

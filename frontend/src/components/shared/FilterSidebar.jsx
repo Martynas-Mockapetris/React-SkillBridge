@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaChevronLeft, FaTimes } from 'react-icons/fa'
 import { ProjectFilterPanel } from './ProjectFilterPanel'
 
@@ -72,6 +73,17 @@ const FilterSidebar = ({ isOpen, onToggle, onClose, filters, onFilterChange, onC
       </motion.div>
     </>
   )
+}
+
+FilterSidebar.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  filters: PropTypes.object.isRequired,
+  onFilterChange: PropTypes.func.isRequired,
+  onClearAll: PropTypes.func.isRequired,
+  hasActiveFilters: PropTypes.bool,
+  isDarkMode: PropTypes.bool
 }
 
 export default FilterSidebar

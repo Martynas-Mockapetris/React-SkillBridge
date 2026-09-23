@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaCheckCircle } from 'react-icons/fa'
 import { useState } from 'react'
 import ProjectCompletionModal from '../../modal/ProjectCompletionModal'
@@ -55,6 +56,13 @@ const ProjectCompletionButton = ({ project, onComplete, variant = 'button', size
       <ProjectCompletionModal isOpen={showModal} project={project} onClose={() => setShowModal(false)} onComplete={onComplete} />
     </>
   )
+}
+
+ProjectCompletionButton.propTypes = {
+  project: PropTypes.object.isRequired,
+  onComplete: PropTypes.func.isRequired,
+  variant: PropTypes.string,
+  size: PropTypes.string
 }
 
 export default ProjectCompletionButton

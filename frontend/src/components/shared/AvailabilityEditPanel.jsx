@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaCheck, FaTimes } from 'react-icons/fa'
 
 const AvailabilityEditPanel = ({ selectedDays, onStatusChange, onSave, onCancel, saving }) => {
@@ -72,6 +73,14 @@ const AvailabilityEditPanel = ({ selectedDays, onStatusChange, onSave, onCancel,
       </motion.div>
     </>
   )
+}
+
+AvailabilityEditPanel.propTypes = {
+  selectedDays: PropTypes.object.isRequired,
+  onStatusChange: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  saving: PropTypes.bool
 }
 
 export default AvailabilityEditPanel

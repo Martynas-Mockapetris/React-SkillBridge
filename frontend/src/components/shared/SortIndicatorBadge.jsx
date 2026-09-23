@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaArrowUp, FaArrowDown, FaClock } from 'react-icons/fa'
 
 export const SortIndicatorBadge = ({ currentSort }) => {
@@ -28,4 +29,8 @@ export const SortIndicatorBadge = ({ currentSort }) => {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+SortIndicatorBadge.propTypes = {
+  currentSort: PropTypes.string.isRequired
 }

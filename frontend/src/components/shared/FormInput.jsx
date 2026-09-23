@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { validateField } from '../../utils/formValidation'
 import { getInputClasses } from '../../utils/designTokens'
 import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi'
@@ -258,6 +259,38 @@ const FormInput = ({
       )}
     </div>
   )
+}
+
+FormInput.propTypes = {
+  name: PropTypes.string.isRequired,
+  type: PropTypes.string,
+  inputType: PropTypes.string,
+  label: PropTypes.string,
+  value: PropTypes.any,
+  onChange: PropTypes.func.isRequired,
+  onBlur: PropTypes.func,
+  onValidate: PropTypes.func,
+  error: PropTypes.string,
+  success: PropTypes.bool,
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool,
+  required: PropTypes.bool,
+  validationType: PropTypes.string,
+  validationOptions: PropTypes.object,
+  className: PropTypes.string,
+  containerClassName: PropTypes.string,
+  labelClassName: PropTypes.string,
+  errorClassName: PropTypes.string,
+  hint: PropTypes.string,
+  showCharCount: PropTypes.bool,
+  maxLength: PropTypes.number,
+  rows: PropTypes.number,
+  options: PropTypes.arrayOf(PropTypes.shape({
+    value: PropTypes.any.isRequired,
+    label: PropTypes.string.isRequired
+  })),
+  icon: PropTypes.node,
+  iconPosition: PropTypes.string
 }
 
 export default FormInput

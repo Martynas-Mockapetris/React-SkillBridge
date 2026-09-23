@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasActiveFilters }) => {
@@ -181,4 +182,11 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       </div>
     </div>
   )
+}
+
+ProjectFilterPanel.propTypes = {
+  filters: PropTypes.object.isRequired,
+  onFilterChange: PropTypes.func.isRequired,
+  onClearAll: PropTypes.func.isRequired,
+  hasActiveFilters: PropTypes.bool
 }

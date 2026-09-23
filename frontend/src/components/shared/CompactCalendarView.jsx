@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 const CompactCalendarView = ({ calendarData, onPreviousMonth, onNextMonth, getStatusColor, getStatusLabel }) => {
@@ -136,6 +137,14 @@ const CompactCalendarView = ({ calendarData, onPreviousMonth, onNextMonth, getSt
       </div>
     </motion.div>
   )
+}
+
+CompactCalendarView.propTypes = {
+  calendarData: PropTypes.object.isRequired,
+  onPreviousMonth: PropTypes.func.isRequired,
+  onNextMonth: PropTypes.func.isRequired,
+  getStatusColor: PropTypes.func.isRequired,
+  getStatusLabel: PropTypes.func.isRequired
 }
 
 export default CompactCalendarView

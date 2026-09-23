@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
 import AvailabilityEditPanel from './AvailabilityEditPanel'
 
@@ -249,6 +250,35 @@ const DetailedCalendarView = ({
       {editMode && <AvailabilityEditPanel selectedDays={selectedDays} onStatusChange={onStatusChange} onSave={onSaveChanges} onCancel={onCancel} saving={saving} />}
     </motion.div>
   )
+}
+
+DetailedCalendarView.propTypes = {
+  calendarData: PropTypes.object.isRequired,
+  isOwnProfile: PropTypes.bool,
+  isPublicView: PropTypes.bool,
+  isPublic: PropTypes.bool,
+  editMode: PropTypes.bool,
+  selectedDays: PropTypes.object,
+  saving: PropTypes.bool,
+  togglingVisibility: PropTypes.bool,
+  statusFilter: PropTypes.string,
+  filterLoading: PropTypes.bool,
+  optimisticUpdates: PropTypes.object,
+  hoveredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onPreviousMonth: PropTypes.func.isRequired,
+  onNextMonth: PropTypes.func.isRequired,
+  onEditMode: PropTypes.func,
+  onHandleToggleVisibility: PropTypes.func,
+  onStatusFilterChange: PropTypes.func,
+  onClearFilter: PropTypes.func,
+  onDayClick: PropTypes.func,
+  onStatusChange: PropTypes.func,
+  onSaveChanges: PropTypes.func,
+  onCancel: PropTypes.func,
+  onHoveredDay: PropTypes.func,
+  getStatusColor: PropTypes.func.isRequired,
+  getStatusLabel: PropTypes.func.isRequired,
+  getDayCapacityLabel: PropTypes.func
 }
 
 export default DetailedCalendarView

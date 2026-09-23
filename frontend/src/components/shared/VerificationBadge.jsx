@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { FaCheckCircle } from 'react-icons/fa'
 
 const VerificationBadge = ({ isVerified, className = '' }) => {
@@ -9,6 +10,11 @@ const VerificationBadge = ({ isVerified, className = '' }) => {
       Verified
     </span>
   )
+}
+
+VerificationBadge.propTypes = {
+  isVerified: PropTypes.bool.isRequired,
+  className: PropTypes.string
 }
 
 export default VerificationBadge

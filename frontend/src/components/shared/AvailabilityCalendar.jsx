@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaWindowMaximize, FaWindowMinimize } from 'react-icons/fa'
 import { toast } from 'react-toastify'
@@ -364,6 +365,12 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
       </AnimatePresence>
     </div>
   )
+}
+
+AvailabilityCalendar.propTypes = {
+  freelancerId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  isOwnProfile: PropTypes.bool,
+  isPublicView: PropTypes.bool
 }
 
 export default AvailabilityCalendar

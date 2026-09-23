@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaTimes } from 'react-icons/fa'
 
 const StatusFilterChips = ({ selectedStatus, onStatusChange, onClear }) => {
@@ -43,6 +44,12 @@ const StatusFilterChips = ({ selectedStatus, onStatusChange, onClear }) => {
       )}
     </motion.div>
   )
+}
+
+StatusFilterChips.propTypes = {
+  selectedStatus: PropTypes.string.isRequired,
+  onStatusChange: PropTypes.func.isRequired,
+  onClear: PropTypes.func.isRequired
 }
 
 export default StatusFilterChips

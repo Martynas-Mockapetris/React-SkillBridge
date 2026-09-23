@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import { useAuth } from '../../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
@@ -17,6 +18,10 @@ const ProtectedRoute = ({ children }) => {
 
   // Render children if authenticated
   return children
+}
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired
 }
 
 export default ProtectedRoute

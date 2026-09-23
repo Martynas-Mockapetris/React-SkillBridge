@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaFilter, FaSearch, FaWallet, FaTools, FaChartBar, FaFlag } from 'react-icons/fa'
 
 const EmptyFilterState = ({ isDarkMode, onApplyFilter }) => {
@@ -72,6 +73,11 @@ const EmptyFilterState = ({ isDarkMode, onApplyFilter }) => {
       </motion.div>
     </motion.div>
   )
+}
+
+EmptyFilterState.propTypes = {
+  isDarkMode: PropTypes.bool.isRequired,
+  onApplyFilter: PropTypes.func.isRequired
 }
 
 export default EmptyFilterState

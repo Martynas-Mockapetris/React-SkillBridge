@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaTimes } from 'react-icons/fa'
 
 export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
@@ -102,4 +103,10 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
       </div>
     </motion.div>
   )
+}
+
+ActiveFilterChips.propTypes = {
+  filters: PropTypes.object.isRequired,
+  onRemoveFilter: PropTypes.func.isRequired,
+  onClearAll: PropTypes.func.isRequired
 }

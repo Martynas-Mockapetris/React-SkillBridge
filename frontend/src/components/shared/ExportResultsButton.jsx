@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaDownload, FaChevronDown, FaFileCSV, FaFileJson, FaFileAlt } from 'react-icons/fa'
 import { exportToCSV, exportToJSON, exportToMarkdown, getExportSummary } from '../../utils/exportResults'
@@ -136,6 +137,12 @@ const ExportResultsButton = ({ projects, filters, isDarkMode }) => {
       </AnimatePresence>
     </div>
   )
+}
+
+ExportResultsButton.propTypes = {
+  projects: PropTypes.array.isRequired,
+  filters: PropTypes.object.isRequired,
+  isDarkMode: PropTypes.bool
 }
 
 export default ExportResultsButton

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa'
 
 export const SortResultsHeader = ({ totalResults, currentSort, onSortChange }) => {
@@ -40,4 +41,10 @@ export const SortResultsHeader = ({ totalResults, currentSort, onSortChange }) =
       </div>
     </motion.div>
   )
+}
+
+SortResultsHeader.propTypes = {
+  totalResults: PropTypes.number.isRequired,
+  currentSort: PropTypes.string.isRequired,
+  onSortChange: PropTypes.func.isRequired
 }

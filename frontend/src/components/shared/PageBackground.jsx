@@ -1,4 +1,5 @@
 import molecularPattern from '../../assets/molecular-pattern.svg'
+import PropTypes from 'prop-types'
 
 /**
  * Reusable background pattern component for consistent page styling
@@ -118,6 +119,10 @@ const PageBackground = ({ variant = 'default' }) => {
   }
 
   return variants[variant] || variants.default
+}
+
+PageBackground.propTypes = {
+  variant: PropTypes.string
 }
 
 export default PageBackground

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaCheckDouble, FaSpinner } from 'react-icons/fa'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
@@ -68,6 +69,12 @@ const BulkCompleteButton = ({ selectedProjectIds = [], onComplete, disabled = fa
       )}
     </motion.button>
   )
+}
+
+BulkCompleteButton.propTypes = {
+  selectedProjectIds: PropTypes.array,
+  onComplete: PropTypes.func.isRequired,
+  disabled: PropTypes.bool
 }
 
 export default BulkCompleteButton
