@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { toast } from 'react-toastify'
@@ -149,6 +150,10 @@ const SecuritySettings = () => {
         ))}
       </div>
     )
+  }
+
+  PasswordRequirements.propTypes = {
+    password: PropTypes.string.isRequired
   }
 
   // Updates strength when password changes

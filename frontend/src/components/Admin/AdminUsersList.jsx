@@ -1029,7 +1029,11 @@ const AdminUsersList = ({ navigationRequest }) => {
 }
 
 AdminUsersList.propTypes = {
-  navigationRequest: PropTypes.shape({})
+  navigationRequest: PropTypes.shape({
+    section: PropTypes.string,
+    filters: PropTypes.object,
+    requestId: PropTypes.string
+  })
 }
 
 export default AdminUsersList

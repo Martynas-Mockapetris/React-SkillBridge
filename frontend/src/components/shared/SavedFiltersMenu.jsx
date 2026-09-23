@@ -256,3 +256,19 @@ const PresetItem = ({ preset, isEditing, editingName, onEdit, onSave, onCancel, 
     </motion.div>
   )
 }
+
+PresetItem.propTypes = {
+  preset: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    usageCount: PropTypes.number
+  }).isRequired,
+  isEditing: PropTypes.bool.isRequired,
+  editingName: PropTypes.string.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onLoad: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEditNameChange: PropTypes.func.isRequired
+}

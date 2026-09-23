@@ -34,6 +34,14 @@ const TeamAvatars = ({ team }) => (
   </div>
 )
 
+ProgressBar.propTypes = {
+  progress: PropTypes.number.isRequired
+}
+
+TeamAvatars.propTypes = {
+  team: PropTypes.arrayOf(PropTypes.string).isRequired
+}
+
 const AdminProjectsList = ({ navigationRequest }) => {
   // State
   const [selectedStatus, setSelectedStatus] = useState('All')
@@ -943,7 +951,11 @@ const AdminProjectsList = ({ navigationRequest }) => {
 }
 
 AdminProjectsList.propTypes = {
-  navigationRequest: PropTypes.shape({})
+  navigationRequest: PropTypes.shape({
+    section: PropTypes.string,
+    filters: PropTypes.object,
+    requestId: PropTypes.string
+  })
 }
 
 export default AdminProjectsList

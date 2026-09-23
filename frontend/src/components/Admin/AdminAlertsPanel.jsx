@@ -46,6 +46,21 @@ const HealthCard = ({ label, value, icon, actionLabel, onAction }) => (
   </div>
 )
 
+QueueSummaryCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired,
+  tone: PropTypes.oneOf(['neutral', 'critical', 'warning']),
+  onClick: PropTypes.func
+}
+
+HealthCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  icon: PropTypes.node.isRequired,
+  actionLabel: PropTypes.string,
+  onAction: PropTypes.func
+}
+
 const getAlertAction = (alertId, onOpenSection) => {
   if (!onOpenSection) return null
 

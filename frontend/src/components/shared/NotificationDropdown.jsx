@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import { FaBell, FaCheckCircle, FaUserFriends, FaEnvelope, FaCheckDouble, FaBriefcase, FaClipboardCheck, FaTasks } from 'react-icons/fa'
 import { getMyNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../../services/userService'
 
@@ -202,6 +203,13 @@ const NotificationDropdown = ({ isOpen, onClose, unreadCount, onUnreadCountChang
       </div>
     </div>
   )
+}
+
+NotificationDropdown.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  unreadCount: PropTypes.number.isRequired,
+  onUnreadCountChange: PropTypes.func.isRequired
 }
 
 export default NotificationDropdown

@@ -91,6 +91,11 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
     </motion.div>
   )
 
+  CardShell.propTypes = {
+    children: PropTypes.node.isRequired,
+    locked: PropTypes.bool
+  }
+
   const CardContent = ({ blurred = false }) => (
     <div className={`${blurred ? 'opacity-50 pointer-events-none ' : ''}flex flex-col h-full`}>
       <div className='flex items-start gap-4 mb-4'>
@@ -143,6 +148,10 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
       </div>
     </div>
   )
+
+  CardContent.propTypes = {
+    blurred: PropTypes.bool
+  }
 
   if (currentUser) {
     return (
