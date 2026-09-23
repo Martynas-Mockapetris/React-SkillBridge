@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import PropTypes from 'prop-types'
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
@@ -2116,6 +2117,10 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       )}
     </div>
   )
+}
+
+AdminSettings.propTypes = {
+  activeSectionId: PropTypes.string
 }
 
 export default AdminSettings

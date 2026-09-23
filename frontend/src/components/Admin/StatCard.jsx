@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa'
 
 const StatCard = ({ title, value, icon, trend, isLoading }) => {
@@ -36,6 +37,19 @@ const StatCard = ({ title, value, icon, trend, isLoading }) => {
       )}
     </motion.div>
   )
+}
+
+StatCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  icon: PropTypes.element,
+  trend: PropTypes.number,
+  isLoading: PropTypes.bool
+}
+
+StatCard.defaultProps = {
+  isLoading: false,
+  trend: 0
 }
 
 export default StatCard

@@ -1,4 +1,5 @@
 import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaLock, FaEye, FaCalendarAlt } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import ProjectModal from '../../modal/ProjectModal'
@@ -939,6 +940,10 @@ const AdminProjectsList = ({ navigationRequest }) => {
       <AdminLockProjectModal isOpen={isLockModalOpen} onClose={closeLockModal} onConfirm={handleConfirmLockProject} project={projectToLock} loading={lockLoadingProjectId === projectToLock?.id} />
     </div>
   )
+}
+
+AdminProjectsList.propTypes = {
+  navigationRequest: PropTypes.shape({})
 }
 
 export default AdminProjectsList

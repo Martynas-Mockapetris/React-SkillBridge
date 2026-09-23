@@ -1,4 +1,5 @@
 import { FaTrash, FaLock, FaEnvelope, FaUserCog, FaSearch, FaFileExport, FaKey, FaCheckCircle, FaClock } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import { useState, useEffect, useRef } from 'react'
 import { getAdminUsers, toggleUserLock, updateAdminUser, requestAdminPasswordReset, requestAdminEmailVerification, reactivateAdminUser, verifyAdminUserDirect, deleteAdminUser } from '../../services/userService'
 import AdminUserEditModal from '../../modal/AdminUserEditModal'
@@ -1025,6 +1026,10 @@ const AdminUsersList = ({ navigationRequest }) => {
       <AdminMailUserModal isOpen={isMailModalOpen} onClose={closeMailModal} recipient={mailRecipient} onSent={fetchUsers} />
     </div>
   )
+}
+
+AdminUsersList.propTypes = {
+  navigationRequest: PropTypes.shape({})
 }
 
 export default AdminUsersList

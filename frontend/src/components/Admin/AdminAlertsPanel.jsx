@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaExclamationTriangle, FaShieldAlt, FaUserLock, FaUserClock, FaProjectDiagram, FaCheckCircle, FaKey, FaArrowRight } from 'react-icons/fa'
 
 const severityStyles = {
@@ -237,6 +238,14 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals, onOp
       </div>
     </motion.section>
   )
+}
+
+AdminAlertsPanel.propTypes = {
+  isLoading: PropTypes.bool,
+  alertSummary: PropTypes.shape({}),
+  alerts: PropTypes.array,
+  healthSignals: PropTypes.shape({}),
+  onOpenSection: PropTypes.func
 }
 
 export default AdminAlertsPanel
