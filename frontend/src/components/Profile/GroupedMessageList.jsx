@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { FaEnvelope } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import SenderBlock from './SenderBlock'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
@@ -56,7 +57,7 @@ const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, o
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className='space-y-8'>
       {/* Summary */}
-      <div className='p-4 bg-accent/10 rounded-lg'>
+      <div className='p-4 bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
         <p className='theme-text font-semibold'>
           {interestedCount} {interestedCount === 1 ? 'person' : 'people'} interested in this project
         </p>
@@ -81,6 +82,15 @@ const GroupedMessagesList = ({ messages, loading, projectId, isProjectCreator, o
       ))}
     </motion.div>
   )
+}
+
+GroupedMessagesList.propTypes = {
+  messages: PropTypes.array,
+  loading: PropTypes.bool,
+  projectId: PropTypes.string,
+  isProjectCreator: PropTypes.bool,
+  onRefresh: PropTypes.func,
+  systemEvents: PropTypes.array
 }
 
 export default GroupedMessagesList

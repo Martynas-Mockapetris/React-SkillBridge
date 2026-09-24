@@ -8,8 +8,7 @@ export const useProjectFilters = () => {
     status: [],
     skills: [],
     priority: [],
-    matchType: 'any',
-    sort: 'newest'
+    matchType: 'any'
   })
 
   const [loading, setLoading] = useState(false)
@@ -94,8 +93,7 @@ export const useProjectFilters = () => {
       status: [],
       skills: [],
       priority: [],
-      matchType: 'any',
-      sort: 'newest'
+      matchType: 'any'
     })
     setResults({
       projects: [],
@@ -105,7 +103,7 @@ export const useProjectFilters = () => {
   }, [])
 
   const hasActiveFilters = useCallback(() => {
-    return filters.minBudget || filters.maxBudget || filters.status.length > 0 || filters.skills.length > 0 || filters.priority.length > 0 || filters.sort !== 'newest'
+    return filters.minBudget || filters.maxBudget || filters.status.length > 0 || filters.skills.length > 0 || filters.priority.length > 0
   }, [filters])
 
   const fetchFilteredProjects = useCallback(
@@ -124,7 +122,6 @@ export const useProjectFilters = () => {
         if (filters.priority.length > 0) params.append('priority', filters.priority.join(','))
 
         params.append('matchType', filters.matchType)
-        params.append('sort', filters.sort)
         params.append('page', page)
         params.append('limit', 10)
 

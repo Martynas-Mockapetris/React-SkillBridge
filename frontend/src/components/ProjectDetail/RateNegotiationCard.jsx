@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
 
@@ -72,7 +73,7 @@ const RateNegotiationCard = ({ project, currentUser, rateAmount, setRateAmount, 
             <button
               onClick={handleProposeRate}
               disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
-              className='w-full py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all disabled:opacity-50'>
+              className='w-full py-2 bg-accent text-white rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300 disabled:opacity-50'>
               Propose Rate
             </button>
           )}
@@ -82,7 +83,7 @@ const RateNegotiationCard = ({ project, currentUser, rateAmount, setRateAmount, 
             <button
               onClick={handleCounterRate}
               disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
-              className='w-full py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all disabled:opacity-50'>
+              className='w-full py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white hover:shadow-lg transition-all duration-300 disabled:opacity-50'>
               Counter Offer
             </button>
           )}
@@ -92,7 +93,7 @@ const RateNegotiationCard = ({ project, currentUser, rateAmount, setRateAmount, 
             <button
               onClick={handleAcceptRate}
               disabled={rateLoading || ['in_progress', 'under_review'].includes(project.status)}
-              className='w-full py-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all disabled:opacity-50 font-semibold'>
+              className='w-full py-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white hover:shadow-lg transition-all duration-300 disabled:opacity-50 font-semibold'>
               Accept Offer
             </button>
           )}
@@ -117,6 +118,31 @@ const RateNegotiationCard = ({ project, currentUser, rateAmount, setRateAmount, 
       )}
     </motion.div>
   )
+}
+
+RateNegotiationCard.propTypes = {
+  project: PropTypes.shape({
+    user: PropTypes.shape({
+      _id: PropTypes.string
+    }),
+    assignee: PropTypes.shape({
+      _id: PropTypes.string
+    }),
+    status: PropTypes.string,
+    rateNegotiation: PropTypes.object
+  }).isRequired,
+  currentUser: PropTypes.shape({
+    _id: PropTypes.string
+  }).isRequired,
+  rateAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  setRateAmount: PropTypes.func.isRequired,
+  rateType: PropTypes.string,
+  setRateType: PropTypes.func.isRequired,
+  rateLoading: PropTypes.bool,
+  rateError: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf([null])]),
+  handleProposeRate: PropTypes.func.isRequired,
+  handleCounterRate: PropTypes.func.isRequired,
+  handleAcceptRate: PropTypes.func.isRequired
 }
 
 export default RateNegotiationCard

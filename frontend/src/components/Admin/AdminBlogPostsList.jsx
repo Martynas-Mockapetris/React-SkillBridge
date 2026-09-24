@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import { useAuth } from '../../context/AuthContext'
 import { createBlogPost, deleteBlogPost, getAdminBlogPosts, toggleBlogPostPublish, updateBlogPost } from '../../services/blogService'
 import AdminBlogPostModal from '../../modal/AdminBlogPostModal'
+import PublishedBadge from '../shared/PublishedBadge'
 
 const AdminBlogPostsList = () => {
   const { currentUser } = useAuth()
@@ -228,12 +229,7 @@ const AdminBlogPostsList = () => {
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white'>{getDisplayAuthor(post)}</td>
 
                       <td className='px-6 py-4 whitespace-nowrap'>
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            post.isPublished ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
-                          }`}>
-                          {post.isPublished ? 'Published' : 'Draft'}
-                        </span>
+                        <PublishedBadge isPublished={post.isPublished} />
                       </td>
 
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>{formatDate(post.publishedAt)}</td>

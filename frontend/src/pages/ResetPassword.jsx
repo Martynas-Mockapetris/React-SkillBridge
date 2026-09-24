@@ -126,7 +126,7 @@ const ResetPassword = () => {
   }
 
   return (
-    <div ref={pageRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
+    <div ref={pageRef} className='flex items-center justify-center px-6 relative z-[1]' style={{ minHeight: contentHeight }}>
       <PageBackground variant='auth' />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className='w-full max-w-md z-10 relative'>
@@ -144,7 +144,7 @@ const ResetPassword = () => {
 
               <p className='text-sm theme-text-secondary'>You can now return to the login page and sign in with your new password.</p>
 
-              <Link to='/login' className='block w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-center'>
+              <Link to='/login' className='block w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 hover:shadow-lg text-center'>
                 Back to login
               </Link>
             </div>
@@ -223,8 +223,8 @@ const ResetPassword = () => {
                 disabled={isLoading || !token}
                 whileHover={{ scale: isLoading || !token ? 1 : 1.02 }}
                 whileTap={{ scale: isLoading || !token ? 1 : 0.98 }}
-                className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center ${
-                  isLoading || !token ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'
+                className={`w-full px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center ${
+                  isLoading || !token ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90 hover:shadow-lg'
                 }`}>
                 {isLoading ? (
                   <>

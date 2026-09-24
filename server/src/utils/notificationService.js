@@ -1,4 +1,7 @@
 import Notification from '../models/Notification.js'
+import Logger from './logger.js'
+
+const logger = new Logger('NotificationService')
 
 const truncateText = (value, limit) => {
   const normalizedValue = typeof value === 'string' ? value.trim() : ''
@@ -30,7 +33,7 @@ export const createNotification = async ({ recipient, actor = null, type, title,
       metadata: metadata && typeof metadata === 'object' ? metadata : {}
     })
   } catch (error) {
-    console.error('Failed to create notification:', error)
+    logger.error('Failed to create notification:', error)
     return null
   }
 }

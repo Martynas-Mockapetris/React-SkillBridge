@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaPaperPlane } from 'react-icons/fa'
 import { sendMessage } from '../services/messageService'
 import { toast } from 'react-toastify'
+import AppliedBadge from '../components/shared/AppliedBadge'
 
-const ContactModal = ({ isOpen, onClose, project, hasApplied = false }) => {
+const ContactModal = ({ isOpen, onClose, project }) => {
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -30,7 +32,6 @@ const ContactModal = ({ isOpen, onClose, project, hasApplied = false }) => {
       setContent('')
       onClose()
     } catch (error) {
-      console.error('Error sending message:', error)
       if (error.response?.status === 401) {
         toast.error('Please login to send messages')
       } else {
@@ -64,7 +65,10 @@ const ContactModal = ({ isOpen, onClose, project, hasApplied = false }) => {
 
             {/* Header */}
             <div className='mb-6'>
-              <h2 className='text-2xl font-bold theme-text mb-2'>{hasApplied ? 'Send a Follow-up Message' : 'Apply for This Project'}</h2>
+              <div className='flex items-center gap-3 mb-2'>
+                <h2 className='text-2xl font-bold theme-text'>{hasApplied ? 'Send a Follow-up Message' : 'Apply for This Project'}</h2>
+                {hasApplied && <AppliedBadge size='sm' />}
+              </div>
               <p className='theme-text-secondary'>
                 {hasApplied ? 'Send an updated note to' : 'Send your introduction and project interest to'}{' '}
                 <span className='font-semibold text-accent'>
@@ -133,6 +137,22 @@ const ContactModal = ({ isOpen, onClose, project, hasApplied = false }) => {
       )}
     </AnimatePresence>
   )
+}
+
+ContactModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    user: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string
+    }),
+    interestedUsers: PropTypes.arrayOf(PropTypes.any),
+    currentViewerId: PropTypes.any
+  })
 }
 
 export default ContactModal

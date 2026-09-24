@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
@@ -121,7 +121,7 @@ const Login = () => {
   }
 
   return (
-    <div ref={loginRef} className='flex items-center justify-center px-6 theme-bg relative z-[1]' style={{ minHeight: contentHeight }}>
+    <div ref={loginRef} className='flex items-center justify-center px-6 relative z-[1]' style={{ minHeight: contentHeight }}>
       <PageBackground variant='auth' />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className='w-full max-w-md z-10 relative'>
@@ -184,7 +184,7 @@ const Login = () => {
               disabled={isLoading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center'>
+              className='w-full px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 hover:shadow-lg flex items-center justify-center'>
               {isLoading ? (
                 <>
                   <svg className='animate-spin -ml-1 mr-3 h-5 w-5 text-white' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>

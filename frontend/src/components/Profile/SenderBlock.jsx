@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaClock } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import { assignUserToProject } from '../../services/projectService'
 import { sendMessage } from '../../services/messageService'
+import LoadingSpinner from '../shared/LoadingSpinner'
 
 const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onAssignSuccess }) => {
   const [assigning, setAssigning] = useState(false)
@@ -72,9 +74,10 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
           <motion.button
             onClick={handleAssign}
             disabled={assigning}
-            className='px-3 py-1 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded text-sm transition-all'
+            className='px-3 py-1 bg-accent/10 text-accent hover:bg-accent hover:text-white rounded text-sm transition-all flex items-center justify-center gap-1'
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}>
+            {assigning && <LoadingSpinner size='sm' className='border-t-2 border-accent' />}
             {assigning ? 'Assigning...' : 'Assign'}
           </motion.button>
         )}
@@ -83,7 +86,12 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
       {/* Messages from this sender */}
       <div className='space-y-3 pl-16'>
         {messages.map((message, msgIndex) => (
-          <motion.div key={message._id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: msgIndex * 0.05 }} className='theme-card p-4 rounded-lg'>
+          <motion.div
+            key={message._id}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
+            className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-4 rounded-lg border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
             {/* Message content */}
             <p className='theme-text leading-relaxed mb-2'>{message.content}</p>
 
@@ -105,7 +113,7 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder='Type your reply...'
-              className='flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 border-gray-300 theme-bg theme-text focus:outline-none focus:border-accent'
+              className='flex-1 px-4 py-2 rounded-lg border border-primary/50 dark:border-light/10 theme-bg theme-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20'
               onKeyPress={(e) => {
                 // Send on Enter key
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -117,9 +125,10 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
             <motion.button
               onClick={handleReply}
               disabled={!replyText.trim() || sending}
-              className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
+              className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}>
+              {sending && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
               {sending ? 'Sending...' : 'Reply'}
             </motion.button>
           </div>
@@ -127,6 +136,21 @@ const SenderBlock = ({ sender, messages, index, projectId, isProjectCreator, onA
       )}
     </motion.div>
   )
+}
+
+SenderBlock.propTypes = {
+  sender: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    email: PropTypes.string,
+    profilePicture: PropTypes.string
+  }),
+  messages: PropTypes.array,
+  index: PropTypes.number,
+  projectId: PropTypes.string,
+  isProjectCreator: PropTypes.bool,
+  onAssignSuccess: PropTypes.func
 }
 
 export default SenderBlock

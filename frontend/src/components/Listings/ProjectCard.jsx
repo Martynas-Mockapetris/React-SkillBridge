@@ -1,11 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
 import { FaCalendarAlt, FaHeart } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import VerificationBadge from '../shared/VerificationBadge'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
+import LoadingSpinner from '../shared/LoadingSpinner'
+import CategoryBadge from '../shared/CategoryBadge'
+import PriorityBadge from '../shared/PriorityBadge'
+import ProjectStatusBadge from '../shared/ProjectStatusBadge'
+import SkillsList from '../shared/SkillsList'
+import AppliedBadge from '../shared/AppliedBadge'
 import { normalizeSkills } from '../../utils/skillUtils'
 
-const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
+const ProjectCard = ({ project, isApplied = false, isFavorited = false, isFavoriting = false, onToggleFavorite }) => {
   const location = useLocation()
   const returnTo = `${location.pathname}${location.search}`
   const normalizedSkills = normalizeSkills(project.skills)
@@ -26,40 +32,27 @@ const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, i
         className='bg-gradient-to-br dark:from-light/10 dark:via-light/5 from-primary/10 via-primary/5 to-transparent backdrop-blur-sm rounded-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-accent/5 relative'>
         {/* Favorite button - top right corner */}
         <motion.button onClick={handleFavoriteClick} disabled={isFavoriting} className='absolute top-4 right-4 z-10' whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-          <FaHeart className={`text-2xl ${isFavorited ? 'text-red-500' : 'text-gray-400'}`} />
+          {isFavoriting ? <LoadingSpinner size='sm' /> : <FaHeart className={`text-2xl ${isFavorited ? 'text-red-500' : 'theme-text-secondary'}`} />}
         </motion.button>
 
         {/* Project title */}
         <div className='mb-2 pr-8 flex items-start gap-2'>
           <h3 className='text-xl font-bold theme-text line-clamp-2 min-w-0'>{project.title}</h3>
-          {isApplied && (
-            <span className='shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-semibold bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/40'>
-              Applied
-            </span>
-          )}
+          {isApplied && <AppliedBadge />}
         </div>
 
         {/* Category + Status + Priority badges */}
         <div className='flex items-center gap-2 mb-4 flex-wrap'>
-          <span className='inline-block px-3 py-1 rounded-full text-sm font-medium bg-accent/20 text-accent'>{project.category}</span>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>{formatProjectStatusLabel(project.status || 'active')}</span>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+          <CategoryBadge category={project.category} />
+          <ProjectStatusBadge status={project.status || 'active'} />
+          <PriorityBadge priority={project.priority} size='sm' />
         </div>
 
         {/* Description */}
         <p className='theme-text-secondary text-sm mb-4 line-clamp-2'>{project.description}</p>
 
         {/* Skills */}
-        {normalizedSkills.length > 0 && (
-          <div className='flex flex-wrap gap-2 mb-4'>
-            {normalizedSkills.slice(0, 3).map((skill, idx) => (
-              <span key={`${skill}-${idx}`} className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>
-                {skill}
-              </span>
-            ))}
-            {normalizedSkills.length > 3 && <span className='px-2 py-1 bg-accent/10 text-accent rounded text-xs'>+{normalizedSkills.length - 3}</span>}
-          </div>
-        )}
+        {normalizedSkills.length > 0 && <SkillsList skills={normalizedSkills} className='mb-4' />}
 
         {/* Client info */}
         {project.user && (
@@ -90,6 +83,32 @@ const ProjectCard = ({ project, index, isApplied = false, isFavorited = false, i
       </motion.div>
     </Link>
   )
+}
+
+ProjectCard.propTypes = {
+  project: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    category: PropTypes.string,
+    status: PropTypes.string,
+    priority: PropTypes.string,
+    skills: PropTypes.array,
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    deadline: PropTypes.string,
+    user: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string,
+      profilePicture: PropTypes.string,
+      isEmailVerified: PropTypes.bool,
+      email: PropTypes.string
+    })
+  }).isRequired,
+  isApplied: PropTypes.bool,
+  isFavorited: PropTypes.bool,
+  isFavoriting: PropTypes.bool,
+  onToggleFavorite: PropTypes.func
 }
 
 export default ProjectCard

@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 const LoadingSpinner = ({ size = 'md', fullScreen = false, className = '' }) => {
   const sizeClasses = {
     sm: 'h-6 w-6',
@@ -12,6 +14,12 @@ const LoadingSpinner = ({ size = 'md', fullScreen = false, className = '' }) => 
   }
 
   return spinner
+}
+
+LoadingSpinner.propTypes = {
+  size: PropTypes.string,
+  fullScreen: PropTypes.bool,
+  className: PropTypes.string
 }
 
 export default LoadingSpinner

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import PropTypes from 'prop-types'
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavigation'
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
@@ -456,13 +457,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     updateSiteBuilderValue('aboutCta', { ...DEFAULT_ABOUT_CTA_BUILDER })
   }
 
-  const handleAboutSectionVisibilityChange = (key, value) => {
-    updateSiteBuilderValue('aboutSections', (currentValue = {}) => ({
-      ...currentValue,
-      [key]: value
-    }))
-  }
-
   const moveAboutSectionOrderItem = (key, direction) => {
     updateSiteBuilderValue('aboutSectionOrder', (savedOrder) => {
       const currentOrder = Array.isArray(savedOrder) && savedOrder.length ? [...savedOrder] : [...DEFAULT_ABOUT_SECTION_ORDER]
@@ -498,10 +492,6 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
 
   const resetAboutHeroBuilder = () => {
     updateSiteBuilderValue('aboutHero', { ...DEFAULT_ABOUT_HERO_BUILDER })
-  }
-
-  const resetAboutSectionVisibility = () => {
-    updateSiteBuilderValue('aboutSections', { ...DEFAULT_ABOUT_SECTION_VISIBILITY })
   }
 
   const resetAboutSectionBackgrounds = () => {
@@ -1982,7 +1972,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
               { label: 'Content Width', value: aboutHeroBuilder.contentWidth || 'wide' },
               { label: 'Eyebrow', value: (aboutHeroBuilder.showEyebrow ?? true) ? 'Shown' : 'Hidden' },
               { label: 'Visible Sections', value: String(visibleSectionsCount) },
-              { label: 'Hidden Sections', value: String(hiddenSectionsCount) },         
+              { label: 'Hidden Sections', value: String(hiddenSectionsCount) },
               { label: 'Hero Background', value: BACKGROUND_PRESET_LABELS[sectionBackgrounds.hero || 'default'] || 'Default Theme' },
               { label: 'Highlights Width', value: aboutHighlightsBuilder.contentWidth || 'wide' },
               { label: 'Highlights Layout', value: ABOUT_HIGHLIGHTS_LAYOUT_LABELS[aboutHighlightsBuilder.cardLayout || 'stacked'] || 'Stacked' },
@@ -2127,6 +2117,10 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
       )}
     </div>
   )
+}
+
+AdminSettings.propTypes = {
+  activeSectionId: PropTypes.string
 }
 
 export default AdminSettings

@@ -1,9 +1,27 @@
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
+
+// Rating component for displaying star ratings
+const Rating = ({ rating, className }) => {
+  return (
+    <div className={`flex gap-1 ${className}`}>
+      {[...Array(5)].map((_, index) => {
+        const starValue = index + 1
+        return <span key={index}>{rating >= starValue ? <FaStar className='text-accent' /> : rating >= starValue - 0.5 ? <FaStarHalfAlt className='text-accent' /> : <FaRegStar className='text-accent/50' />}</span>
+      })}
+    </div>
+  )
+}
+
+Rating.propTypes = {
+  rating: PropTypes.number,
+  className: PropTypes.string
+}
 
 const TestimonialsSection = ({ content = {}, layout = {} }) => {
   const [expandedId, setExpandedId] = useState(null)
@@ -62,18 +80,6 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
 
   const quoteIconClass = testimonialsLayout.sectionEmphasis === 'featured' ? 'text-accent/30 text-5xl absolute top-4 right-4' : 'text-accent/20 text-4xl absolute top-4 right-4'
 
-  {/* Rating component */}
-  const Rating = ({ rating, className }) => {
-    return (
-      <div className={`flex gap-1 ${className}`}>
-        {[...Array(5)].map((_, index) => {
-          const starValue = index + 1
-          return <span key={index}>{rating >= starValue ? <FaStar className='text-accent' /> : rating >= starValue - 0.5 ? <FaStarHalfAlt className='text-accent' /> : <FaRegStar className='text-accent/50' />}</span>
-        })}
-      </div>
-    )
-  }
-
   return (
     <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative`}>
       {/* Molecular Patterns Background */}
@@ -97,7 +103,6 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
         </div>
       </div>
 
-    
       <div className='container mx-auto px-4 relative z-10'>
         <div className={headingWrapClass}>
           <h2 className='text-4xl font-heading font-bold mb-4'>
@@ -156,6 +161,21 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
       </div>
     </section>
   )
+}
+
+TestimonialsSection.propTypes = {
+  content: PropTypes.shape({
+    testimonialsTitleLead: PropTypes.string,
+    testimonialsTitleAccent: PropTypes.string,
+    testimonialsSubtitle: PropTypes.string,
+    testimonials: PropTypes.array
+  }),
+  layout: PropTypes.shape({
+    spacing: PropTypes.object,
+    background: PropTypes.string,
+    visibleCount: PropTypes.number,
+    cardStyle: PropTypes.string
+  })
 }
 
 export default TestimonialsSection

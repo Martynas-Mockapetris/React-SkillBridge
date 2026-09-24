@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaBriefcase, FaPlus, FaEdit, FaTrash, FaPlay, FaPause } from 'react-icons/fa'
+import PropTypes from 'prop-types'
+import { FaBriefcase, FaPlus, FaEdit, FaTrash, FaPlay, FaPause, FaCalendar } from 'react-icons/fa'
 import CreateAnnouncementModal from '../../modal/CreateAnnouncementModal'
 import { getUserAnnouncements, deleteAnnouncement, toggleAnnouncementStatus } from '../../services/announcementService'
 import LoadingSpinner from '../shared/LoadingSpinner'
+import AvailabilityCalendar from '../shared/AvailabilityCalendar'
+import SkillsList from '../shared/SkillsList'
 
 const FreelanceTab = ({ user }) => {
   const isVerified = Boolean(user?.isEmailVerified)
@@ -14,11 +17,6 @@ const FreelanceTab = ({ user }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [editingAnnouncement, setEditingAnnouncement] = useState(null)
-
-  // Fetch announcements when component mounts
-  useEffect(() => {
-    fetchAnnouncements()
-  }, [])
 
   const fetchAnnouncements = async () => {
     try {
@@ -33,6 +31,11 @@ const FreelanceTab = ({ user }) => {
       setLoading(false)
     }
   }
+
+  // Fetch announcements when component mounts
+  useEffect(() => {
+    fetchAnnouncements()
+  }, [])
 
   const handleDeleteAnnouncement = async (announcementId) => {
     if (window.confirm('Are you sure you want to delete this announcement?')) {
@@ -91,7 +94,7 @@ const FreelanceTab = ({ user }) => {
       )}
 
       {/* Announcements List or Empty State */}
-      <div className='theme-card p-8 rounded-lg text-center'>
+      <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-8 rounded-lg text-center border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
         {loading ? (
           <div className='flex justify-center py-8'>
             <LoadingSpinner />
@@ -100,7 +103,7 @@ const FreelanceTab = ({ user }) => {
           <div className='bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 p-4 rounded-lg'>{error}</div>
         ) : announcements.length === 0 ? (
           <div className='space-y-4 text-center'>
-            <FaBriefcase className='text-5xl text-gray-300 dark:text-gray-600 mx-auto' />
+            <FaBriefcase className='text-5xl text-primary/40 dark:text-light/40 mx-auto' />
             <p className='theme-text-secondary text-lg'>No announcements yet. Create your first freelance announcement to get started!</p>
             <motion.button
               onClick={() => {
@@ -127,18 +130,12 @@ const FreelanceTab = ({ user }) => {
                   transition: { duration: 0.1 }
                 }}
                 transition={{ duration: 0.2, delay: index * 0.1 }}
-                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 group backdrop-blur-sm'>
+                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group backdrop-blur-sm border border-primary/10 dark:border-light/10'>
                 {/* Title Section */}
                 <div className='flex items-start gap-4 mb-4'>
                   <div className='flex-1'>
                     <h3 className='flex text-xl font-bold mb-2 theme-text'>{announcement.title}</h3>
-                    <div className='flex gap-2 flex-wrap'>
-                      {announcement.skills.slice(0, 2).map((skill, idx) => (
-                        <span key={idx} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent'>
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
+                    <div className='flex gap-2 flex-wrap'>{announcement.skills && announcement.skills.length > 0 && <SkillsList skills={announcement.skills} maxDisplay={2} />}</div>
                   </div>
                 </div>
 
@@ -159,7 +156,7 @@ const FreelanceTab = ({ user }) => {
                 <div className='mt-4 flex items-center justify-between'>
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                      announcement.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      announcement.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-primary/10 dark:bg-light/10 text-primary/70 dark:text-light/70'
                     }`}>
                     {announcement.isActive ? '● Active' : '○ Paused'}
                   </span>
@@ -215,8 +212,26 @@ const FreelanceTab = ({ user }) => {
           }
         }}
       />
+
+      {/* Availability Calendar Section */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className='space-y-4'>
+        <div className='flex items-center gap-3'>
+          <FaCalendar className='text-accent text-xl' />
+          <h2 className='text-2xl font-bold theme-text'>My Availability</h2>
+        </div>
+        <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent rounded-lg overflow-hidden border border-primary/10 dark:border-light/10'>
+          <AvailabilityCalendar freelancerId={user?._id} isOwnProfile={true} isPublicView={false} />
+        </div>
+      </motion.div>
     </motion.div>
   )
+}
+
+FreelanceTab.propTypes = {
+  user: PropTypes.shape({
+    _id: PropTypes.string,
+    isEmailVerified: PropTypes.bool
+  })
 }
 
 export default FreelanceTab

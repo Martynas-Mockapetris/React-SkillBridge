@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaChevronUp, FaPlus, FaTimes } from 'react-icons/fa'
+import PropTypes from 'prop-types'
+import { FaEnvelope, FaEnvelopeOpen, FaClock, FaBriefcase, FaArrowRight, FaPaperPlane, FaChevronDown, FaPlus } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { sendMessage, markMessageAsRead, sendMessageWithAttachments } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
@@ -103,10 +104,6 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
       return bTime - aTime
     })
   }
-  const getDisplayName = (user) => {
-    if (!user) return 'Unknown'
-    return user.userType === 'admin' ? 'Administrator' : `${user.firstName} ${user.lastName}`
-  }
 
   const canReplyToUser = (user) => {
     return user?.userType !== 'admin'
@@ -203,7 +200,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
   return (
     <div className='space-y-6'>
       {groupedMessages.map((group, groupIndex) => {
-        const { project, otherUser, messages: groupMessages, isDirectMessage, projectTitle } = group
+        const { project, otherUser, messages: groupMessages, isDirectMessage } = group
 
         // HANDLE DIRECT MESSAGES
         if (isDirectMessage) {
@@ -221,7 +218,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: groupIndex * 0.05 }}
-              className='theme-card p-6 rounded-lg hover:shadow-lg transition-all'>
+              className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
               {/* Direct Message Header */}
               <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(conversationKey, groupMessages)}>
                 <div className='flex items-center justify-between'>
@@ -282,7 +279,12 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
                             className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
+                            <div
+                              className={`max-w-[70%] p-4 rounded-lg ${
+                                isOwnMessage
+                                  ? 'bg-gradient-to-br dark:from-accent/20 dark:to-accent/10 from-accent/10 to-accent/5 border border-accent/20'
+                                  : 'bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10'
+                              }`}>
                               {!isOwnMessage && (
                                 <div className='flex items-center gap-2 mb-2'>
                                   <img
@@ -322,7 +324,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                                         className='flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm break-all'>
                                         <span className='text-xs'>📄</span>
                                         <span className='text-gray-700 dark:text-gray-300 flex-1 truncate'>{attachment.originalName}</span>
-                                        <span className='text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap'>{attachment.size < 1024 ? attachment.size + 'B' : (attachment.size / 1024).toFixed(1) + 'KB'}</span>
+                                        <span className='text-xs text-primary/60 dark:text-light/60 whitespace-nowrap'>{attachment.size < 1024 ? attachment.size + 'B' : (attachment.size / 1024).toFixed(1) + 'KB'}</span>
                                       </a>
                                     ))}
                                   </div>
@@ -353,7 +355,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                       value={currentReplyText}
                       onChange={(e) => setReplyTexts({ ...replyTexts, [conversationKey]: e.target.value })}
                       placeholder='Type your reply...'
-                      className='flex-1 px-4 py-2 rounded-lg border dark:border-gray-700 border-gray-300 theme-bg theme-text focus:outline-none focus:border-accent'
+                      className='flex-1 px-4 py-2 rounded-lg border border-primary/50 dark:border-light/10 theme-bg theme-text focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent'
                       onKeyPress={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault()
@@ -398,7 +400,7 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: groupIndex * 0.05 }}
-            className='theme-card p-6 rounded-lg hover:shadow-lg transition-all'>
+            className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
             {/* Project Header - Clickable Accordion */}
             <div className='mb-4 pb-4 border-b dark:border-light/10 border-primary/10 cursor-pointer' onClick={() => toggleConversation(project._id, groupMessages)}>
               <div className='flex items-center justify-between'>
@@ -482,7 +484,8 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.2, delay: msgIndex * 0.05 }}
                           className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[70%] p-4 rounded-lg ${isOwnMessage ? 'bg-accent/10 border border-accent/20' : 'theme-card border dark:border-light/10 border-primary/10'}`}>
+                          <div
+                            className={`max-w-[70%] p-4 rounded-lg backdrop-blur-sm ${isOwnMessage ? 'bg-gradient-to-br dark:from-accent/20 dark:to-accent/10 from-accent/10 to-accent/5 border border-accent/20' : 'bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent border border-primary/10 dark:border-light/10'}`}>
                             {!isOwnMessage && (
                               <div className='flex items-center gap-2 mb-2'>
                                 <img
@@ -633,6 +636,12 @@ const MessagesList = ({ messages, loading, onReplySent }) => {
       })}
     </div>
   )
+}
+
+MessagesList.propTypes = {
+  messages: PropTypes.array,
+  loading: PropTypes.bool,
+  onReplySent: PropTypes.func
 }
 
 export default MessagesList

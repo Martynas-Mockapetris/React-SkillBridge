@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
@@ -74,8 +75,7 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (validateForm()) {
-      console.log('Forma pateikta:', formData)
-      // API
+      // API call will be added in next commit with toast notifications
     }
   }
 
@@ -167,7 +167,7 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
             <motion.button
               type='submit'
               className='w-full bg-accent text-primary font-medium py-3 px-6 rounded-lg
-              hover:bg-accent/90 transition-colors duration-300
+              hover:bg-accent/90 hover:shadow-lg transition-all duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50'
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}>
@@ -178,6 +178,25 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
       </div>
     </section>
   )
+}
+
+ContactSection.propTypes = {
+  content: PropTypes.shape({
+    contactTitleLead: PropTypes.string,
+    contactTitleAccent: PropTypes.string,
+    contactSubtitle: PropTypes.string
+  }),
+  contactValues: PropTypes.shape({
+    supportEmail: PropTypes.string,
+    businessEmail: PropTypes.string,
+    phone: PropTypes.string,
+    address: PropTypes.string,
+    workingHours: PropTypes.string
+  }),
+  layout: PropTypes.shape({
+    spacing: PropTypes.object,
+    background: PropTypes.string
+  })
 }
 
 export default ContactSection

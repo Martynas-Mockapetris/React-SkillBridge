@@ -1,10 +1,13 @@
 import Project from '../models/Project.js'
 import User from '../models/User.js'
+import AvailabilityCalendar from '../models/AvailabilityCalendar.js'
 import { buildFieldChanges, logAdminAction } from '../utils/adminActionLogger.js'
 import { sendProjectAssignedEmail, sendProjectSubmittedEmail, sendProjectReviewDecisionEmail } from '../utils/activityEmailService.js'
 import { notifyProjectAssigned, notifyProjectSubmitted, notifyProjectReviewed } from '../utils/notificationService.js'
-import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability } from '../utils/availabilityCalendarService.js'
-import { completeProjectPhase } from '../utils/projectPhaseService.js'
+import { populateAvailabilityOnProjectAssignment, removeProjectFromAvailability, validateDayCapacity, checkHighPriorityConflicts } from '../utils/availabilityCalendarService.js'
+import Logger from '../utils/logger.js'
+
+const logger = new Logger('ProjectController')
 
 const isImmutableProjectStatus = (status) => ['cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -171,8 +174,8 @@ const createProject = async (req, res) => {
       return res.status(403).json({ message: 'Your account is locked. You cannot create projects.' })
     }
 
-    console.log('Creating project with data:', req.body)
-    console.log('Files received:', req.files)
+    logger.debug('Creating project with data:', req.body)
+    logger.debug('Files received:', req.files)
 
     const { title, description, category, skills, budget, priority, deadline, status, assigneeId, rateNegotiation, projectBrief } = req.body
 
@@ -219,11 +222,11 @@ const createProject = async (req, res) => {
     const shouldSetBudget = !normalizedRateNegotiation || normalizedRateNegotiation.status !== 'proposed'
     const finalBudget = shouldSetBudget ? Number(budget) : undefined
 
-    console.log('=== CREATE PROJECT DEBUG ===')
-    console.log('RateNegotiation status:', normalizedRateNegotiation?.status)
-    console.log('Should set budget:', shouldSetBudget)
-    console.log('Final budget value:', finalBudget)
-    console.log('Original budget from request:', budget)
+    logger.debug('=== CREATE PROJECT DEBUG ===')
+    logger.debug('RateNegotiation status:', normalizedRateNegotiation?.status)
+    logger.debug('Should set budget:', shouldSetBudget)
+    logger.debug('Final budget value:', finalBudget)
+    logger.debug('Original budget from request:', budget)
 
     const project = new Project({
       user: req.user._id,
@@ -241,12 +244,58 @@ const createProject = async (req, res) => {
       rateNegotiation: processedRateNegotiation || undefined
     })
 
-    console.log('Saving project to database:', project)
+    logger.debug('Saving project to database:', project)
 
     const createdProject = await project.save()
-    console.log('Project saved successfully:', createdProject)
+    logger.debug('Project saved successfully:', createdProject)
 
     if (assigneeId) {
+      // Validate capacity before assignment
+      const calendars = await AvailabilityCalendar.find({
+        freelancer: assigneeId
+      }).populate('days.assignedProjects', 'priority')
+
+      let hasCapacityIssue = false
+      let conflictMessage = ''
+
+      for (const calendar of calendars) {
+        for (const day of calendar.days) {
+          const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+          const deadlineDate = new Date(createdProject.deadline)
+          deadlineDate.setHours(0, 0, 0, 0)
+
+          if (dayDate <= deadlineDate && dayDate >= new Date()) {
+            const validation = validateDayCapacity(day.assignedProjects, createdProject, new Map())
+            if (!validation.canAssign) {
+              hasCapacityIssue = true
+              conflictMessage = validation.conflictReason
+              break
+            }
+          }
+        }
+        if (hasCapacityIssue) break
+      }
+
+      // Check High Priority conflicts
+      if (createdProject.priority === 'high') {
+        const { hasConflict, conflictingDates } = await checkHighPriorityConflicts(assigneeId, createdProject)
+        if (hasConflict) {
+          await Project.deleteOne({ _id: createdProject._id })
+          return res.status(409).json({
+            message: 'Cannot assign High Priority project: Other projects already exist on those dates',
+            conflictingDates
+          })
+        }
+      }
+
+      if (hasCapacityIssue) {
+        await Project.deleteOne({ _id: createdProject._id })
+        return res.status(409).json({
+          message: 'Cannot assign project: Freelancer capacity exceeded',
+          conflictReason: conflictMessage
+        })
+      }
+
       // Auto-populate availability calendar
       await populateAvailabilityOnProjectAssignment(assigneeId, createdProject)
 
@@ -270,7 +319,7 @@ const createProject = async (req, res) => {
 
     res.status(201).json(createdProject)
   } catch (error) {
-    console.error('Error creating project:', error)
+    logger.error('Error creating project:', error)
     res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
@@ -305,7 +354,7 @@ const publishProject = async (req, res) => {
     const updated = await project.save()
     res.json(updated)
   } catch (error) {
-    console.error('Error publishing project:', error)
+    logger.error('Error publishing project:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -320,7 +369,7 @@ const getAllProjects = async (req, res) => {
 
     res.json(projects)
   } catch (error) {
-    console.error('Error fetching all projects:', error)
+    logger.error('Error fetching all projects:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -393,7 +442,7 @@ const filterProjectsByBudget = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error filtering projects by budget:', err)
+    logger.error('Error filtering projects by budget:', err)
     res.status(500).json({ message: 'Error filtering projects', error: err.message })
   }
 }
@@ -468,7 +517,7 @@ const filterProjectsByStatus = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error filtering projects by status:', err)
+    logger.error('Error filtering projects by status:', err)
     res.status(500).json({ message: 'Error filtering projects', error: err.message })
   }
 }
@@ -545,7 +594,7 @@ const filterProjectsBySkills = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error filtering projects by skills:', err)
+    logger.error('Error filtering projects by skills:', err)
     res.status(500).json({ message: 'Error filtering projects', error: err.message })
   }
 }
@@ -623,7 +672,7 @@ const filterProjectsByPriority = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error filtering projects by priority:', err)
+    logger.error('Error filtering projects by priority:', err)
     res.status(500).json({ message: 'Error filtering projects', error: err.message })
   }
 }
@@ -718,16 +767,21 @@ const filterProjects = async (req, res) => {
     const total = await Project.countDocuments(query)
 
     // Determine sort order
-    let sortOrder = { createdAt: -1 }
-    if (sort === 'oldest') sortOrder = { createdAt: 1 }
-    else if (sort === 'budget-asc') sortOrder = { budget: 1 }
-    else if (sort === 'budget-desc') sortOrder = { budget: -1 }
+    const sortOptions = {
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      'budget-asc': { budget: 1 },
+      'budget-desc': { budget: -1 },
+      'deadline-asc': { deadline: 1 },
+      'deadline-desc': { deadline: -1 }
+    }
+
+    const sortOrder = sortOptions[sort] || sortOptions.newest
 
     // Fetch projects
     const projects = await Project.find(query)
-      .populate('owner', 'firstName lastName profileImage skills rating')
-      .populate('category', 'name')
-      .select('title description budget priority deadline status skills category owner createdAt')
+      .populate('user', 'firstName lastName email profilePicture isEmailVerified')
+      .select('title description budget priority deadline status skills category user createdAt')
       .sort(sortOrder)
       .skip(skip)
       .limit(limitNum)
@@ -752,7 +806,7 @@ const filterProjects = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error filtering projects:', err)
+    logger.error('Error filtering projects:', err)
     res.status(500).json({ message: 'Error filtering projects', error: err.message })
   }
 }
@@ -890,7 +944,7 @@ const filterProjectsByKeyword = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error searching projects:', err)
+    logger.error('Error searching projects:', err)
     res.status(500).json({ message: 'Error searching projects', error: err.message })
   }
 }
@@ -1007,7 +1061,7 @@ const getAdminAllProjects = async (req, res) => {
       }
     })
   } catch (error) {
-    console.error('Error fetching admin projects:', error)
+    logger.error('Error fetching admin projects:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1048,7 +1102,7 @@ const deleteProjectAsAdmin = async (req, res) => {
 
     res.json({ message: 'Project cancelled by admin', status: project.status })
   } catch (error) {
-    console.error('Error cancelling project as admin:', error)
+    logger.error('Error cancelling project as admin:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1145,7 +1199,7 @@ const updateProjectAsAdmin = async (req, res) => {
 
     res.json(updatedProject)
   } catch (error) {
-    console.error('Error updating project as admin:', error)
+    logger.error('Error updating project as admin:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1238,7 +1292,7 @@ const bulkRenewProjectDeadlinesAsAdmin = async (req, res) => {
       projectIds: updatedProjects.map((project) => project._id)
     })
   } catch (error) {
-    console.error('Error renewing project deadlines as admin:', error)
+    logger.error('Error renewing project deadlines as admin:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1277,7 +1331,7 @@ const getUserProjects = async (req, res) => {
 
     res.json(refreshedProjects)
   } catch (error) {
-    console.error('Error fetching user projects:', error)
+    logger.error('Error fetching user projects:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1393,7 +1447,7 @@ const toggleProjectLockAsAdmin = async (req, res) => {
       lockExpiresAt: project.lockExpiresAt
     })
   } catch (error) {
-    console.error('Error toggling project lock as admin:', error)
+    logger.error('Error toggling project lock as admin:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1440,7 +1494,7 @@ const removeAssigneeAsAdmin = async (req, res) => {
       project: updatedProject
     })
   } catch (error) {
-    console.error('Error removing assignee as admin:', error)
+    logger.error('Error removing assignee as admin:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1458,17 +1512,17 @@ const getProjectById = async (req, res) => {
     const project = await Project.findById(req.params.id).populate('user', PROJECT_DETAIL_USER_FIELDS).populate('assignee', PROJECT_DETAIL_USER_FIELDS)
 
     if (!project) {
-      console.log(`[GET PROJECT] Project ${req.params.id} not found in DB`)
+      logger.debug(`[GET PROJECT] Project ${req.params.id} not found in DB`)
       return res.status(404).json({ message: 'Project not found' })
     }
 
     await project.ensureUnlockedIfExpired()
 
-    console.log(`[GET PROJECT] Found project ${req.params.id}`)
-    console.log(`[GET PROJECT] Project status: ${project.status}`)
-    console.log(`[GET PROJECT] Project owner: ${project.user?._id || project.user}`)
-    console.log(`[GET PROJECT] Project assignee: ${project.assignee?._id || project.assignee}`)
-    console.log(`[GET PROJECT] Current user from req.user: ${req.user?._id}`)
+    logger.debug(`[GET PROJECT] Found project ${req.params.id}`)
+    logger.debug(`[GET PROJECT] Project status: ${project.status}`)
+    logger.debug(`[GET PROJECT] Project owner: ${project.user?._id || project.user}`)
+    logger.debug(`[GET PROJECT] Project assignee: ${project.assignee?._id || project.assignee}`)
+    logger.debug(`[GET PROJECT] Current user from req.user: ${req.user?._id}`)
 
     if (project.status === 'deleted_by_owner') {
       return res.status(404).json({ message: 'Project not found' })
@@ -1476,7 +1530,7 @@ const getProjectById = async (req, res) => {
 
     // Public can see only active
     if (project.status === 'active') {
-      console.log(`[GET PROJECT] Project is active, returning to any user`)
+      logger.debug(`[GET PROJECT] Project is active, returning to any user`)
       return res.json(project)
     }
 
@@ -1485,22 +1539,22 @@ const getProjectById = async (req, res) => {
     const ownerId = project.user?._id ? project.user._id.toString() : project.user.toString()
     const assigneeId = project.assignee?._id ? project.assignee._id.toString() : project.assignee?.toString()
 
-    console.log(`[GET PROJECT] Non-active project - checking permissions`)
-    console.log(`  currentUserId: ${currentUserId}`)
-    console.log(`  ownerId: ${ownerId}`)
-    console.log(`  assigneeId: ${assigneeId}`)
-    console.log(`  isOwner: ${currentUserId === ownerId}`)
-    console.log(`  isAssignee: ${currentUserId === assigneeId}`)
+    logger.debug(`[GET PROJECT] Non-active project - checking permissions`)
+    logger.debug(`  currentUserId: ${currentUserId}`)
+    logger.debug(`  ownerId: ${ownerId}`)
+    logger.debug(`  assigneeId: ${assigneeId}`)
+    logger.debug(`  isOwner: ${currentUserId === ownerId}`)
+    logger.debug(`  isAssignee: ${currentUserId === assigneeId}`)
 
     if (currentUserId && (currentUserId === ownerId || currentUserId === assigneeId)) {
-      console.log(`[GET PROJECT] User has permission, returning project`)
+      logger.debug(`[GET PROJECT] User has permission, returning project`)
       return res.json(project)
     }
 
-    console.log(`[GET PROJECT] User does not have permission to access this project`)
+    logger.debug(`[GET PROJECT] User does not have permission to access this project`)
     return res.status(404).json({ message: 'Project not found' })
   } catch (error) {
-    console.error('Error fetching project:', error)
+    logger.error('Error fetching project:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1533,7 +1587,7 @@ const getProjectByIdOwner = async (req, res) => {
 
     res.json(project)
   } catch (error) {
-    console.error('Error fetching project (owner):', error)
+    logger.error('Error fetching project (owner):', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1620,7 +1674,7 @@ const updateProject = async (req, res) => {
     const updatedProject = await project.save()
     res.json(updatedProject)
   } catch (error) {
-    console.error('Error updating project:', error)
+    logger.error('Error updating project:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1653,7 +1707,7 @@ const deleteProject = async (req, res) => {
 
     res.json({ message: 'Project removed from your profile', status: project.status })
   } catch (error) {
-    console.error('Error deleting project:', error)
+    logger.error('Error deleting project:', error)
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Project not found' })
     }
@@ -1701,7 +1755,7 @@ const toggleApplicantShortlist = async (req, res) => {
 
     res.json(populatedProject)
   } catch (error) {
-    console.error('Error updating applicant shortlist state:', error)
+    logger.error('Error updating applicant shortlist state:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1746,7 +1800,7 @@ const toggleApplicantSkillsVerified = async (req, res) => {
 
     res.json(populatedProject)
   } catch (error) {
-    console.error('Error updating applicant skills verification state:', error)
+    logger.error('Error updating applicant skills verification state:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1813,7 +1867,7 @@ const assignUserToProject = async (req, res) => {
 
     res.json(populatedProject)
   } catch (error) {
-    console.error('Error assigning user to project:', error)
+    logger.error('Error assigning user to project:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1878,7 +1932,7 @@ const reassignProject = async (req, res) => {
 
     res.json(populatedProject)
   } catch (error) {
-    console.error('Error reassigning project:', error)
+    logger.error('Error reassigning project:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1916,7 +1970,7 @@ const removeAssignee = async (req, res) => {
 
     res.json(updatedProject)
   } catch (error) {
-    console.error('Error removing assignee:', error)
+    logger.error('Error removing assignee:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -1967,7 +2021,7 @@ const proposeRate = async (req, res) => {
     const updated = await project.save()
     res.json(updated)
   } catch (error) {
-    console.error('Error proposing rate:', error)
+    logger.error('Error proposing rate:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2015,7 +2069,7 @@ const counterRate = async (req, res) => {
     const updated = await project.save()
     res.json(updated)
   } catch (error) {
-    console.error('Error countering rate:', error)
+    logger.error('Error countering rate:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2049,34 +2103,34 @@ const acceptRate = async (req, res) => {
       return res.status(400).json({ message: 'No rate proposal to accept' })
     }
 
-    console.log('=== ACCEPT RATE DEBUG ===')
-    console.log('Project ID:', projectId)
-    console.log('Before accept:')
-    console.log('  - Budget:', project.budget)
-    console.log('  - RateNegotiation.status:', project.rateNegotiation.status)
-    console.log('  - CurrentOffer:', project.rateNegotiation.currentOffer)
-    console.log('  - CurrentOffer.amount:', project.rateNegotiation.currentOffer.amount)
+    logger.debug('=== ACCEPT RATE DEBUG ===')
+    logger.debug('Project ID:', projectId)
+    logger.debug('Before accept:')
+    logger.debug('  - Budget:', project.budget)
+    logger.debug('  - RateNegotiation.status:', project.rateNegotiation.status)
+    logger.debug('  - CurrentOffer:', project.rateNegotiation.currentOffer)
+    logger.debug('  - CurrentOffer.amount:', project.rateNegotiation.currentOffer.amount)
 
     project.rateNegotiation.status = 'accepted'
     project.rateNegotiation.agreedAt = new Date()
     // Update project budget with the agreed rate amount
     const agreedAmount = Number(project.rateNegotiation.currentOffer.amount)
-    console.log('Setting budget to agreedAmount:', agreedAmount)
+    logger.debug('Setting budget to agreedAmount:', agreedAmount)
     project.budget = agreedAmount
     project.status = 'in_progress'
 
-    console.log('After setting:')
-    console.log('  - Budget:', project.budget)
+    logger.debug('After setting:')
+    logger.debug('  - Budget:', project.budget)
 
     const updated = await project.save()
 
-    console.log('After save:')
-    console.log('  - Budget:', updated.budget)
-    console.log('=== END DEBUG ===')
+    logger.debug('After save:')
+    logger.debug('  - Budget:', updated.budget)
+    logger.debug('=== END DEBUG ===')
 
     res.json(updated)
   } catch (error) {
-    console.error('Error accepting rate:', error)
+    logger.error('Error accepting rate:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2097,7 +2151,7 @@ const getInterestedProjects = async (req, res) => {
       .sort({ createdAt: -1 })
     res.json(projects)
   } catch (error) {
-    console.error('Error fetching interested projects:', error)
+    logger.error('Error fetching interested projects:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2125,7 +2179,7 @@ const removeFromInterested = async (req, res) => {
     const updatedProject = await project.save()
     res.json(updatedProject)
   } catch (error) {
-    console.error('Error removing from interested:', error)
+    logger.error('Error removing from interested:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2211,7 +2265,7 @@ const submitProject = async (req, res) => {
 
     res.json(updatedProject)
   } catch (error) {
-    console.error('Error submitting project:', error)
+    logger.error('Error submitting project:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2280,7 +2334,7 @@ const reviewProject = async (req, res) => {
 
     res.json(updatedProject)
   } catch (error) {
-    console.error('Error reviewing project:', error)
+    logger.error('Error reviewing project:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2315,7 +2369,7 @@ const archiveProject = async (req, res) => {
     const updatedProject = await project.save()
     res.json(updatedProject)
   } catch (error) {
-    console.error('Error archiving project:', error)
+    logger.error('Error archiving project:', error)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -2358,7 +2412,7 @@ const markProjectComplete = async (req, res) => {
       try {
         await removeProjectFromAvailability(project.assignee, projectId)
       } catch (availErr) {
-        console.error('Error removing project from availability:', availErr)
+        logger.error('Error removing project from availability:', availErr)
         // Don't fail the completion if availability update fails
       }
     }
@@ -2377,7 +2431,7 @@ const markProjectComplete = async (req, res) => {
       data: project
     })
   } catch (err) {
-    console.error('Error marking project complete:', err)
+    logger.error('Error marking project complete:', err)
     res.status(500).json({ message: 'Error marking project complete', error: err.message })
   }
 }
@@ -2419,7 +2473,7 @@ const getProjectCompletionStats = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error fetching completion stats:', err)
+    logger.error('Error fetching completion stats:', err)
     res.status(500).json({ message: 'Error fetching stats', error: err.message })
   }
 }
@@ -2476,14 +2530,14 @@ const bulkCompleteProjects = async (req, res) => {
           try {
             await removeProjectFromAvailability(project.assignee, project._id)
           } catch (availErr) {
-            console.error('Error removing from availability:', availErr)
+            logger.error('Error removing from availability:', availErr)
           }
         }
 
         await project.save()
         completedProjects.push(project)
       } catch (err) {
-        console.error(`Error completing project ${project._id}:`, err)
+        logger.error(`Error completing project ${project._id}:`, err)
         failedIds.push(project._id)
       }
     }
@@ -2498,7 +2552,7 @@ const bulkCompleteProjects = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error bulk completing projects:', err)
+    logger.error('Error bulk completing projects:', err)
     res.status(500).json({ message: 'Error completing projects', error: err.message })
   }
 }
@@ -2555,7 +2609,7 @@ const rescheduleProject = async (req, res) => {
         // Add to new date range
         await populateAvailabilityOnProjectAssignment(project.assignee, projectId, project.deadline, project.priority)
       } catch (availErr) {
-        console.error('Error updating availability on reschedule:', availErr)
+        logger.error('Error updating availability on reschedule:', availErr)
         // Don't fail the reschedule if availability update fails
       }
     }
@@ -2578,7 +2632,7 @@ const rescheduleProject = async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Error rescheduling project:', err)
+    logger.error('Error rescheduling project:', err)
     res.status(500).json({ message: 'Error rescheduling project', error: err.message })
   }
 }
@@ -2595,7 +2649,7 @@ export {
   filterProjectsByBudget,
   filterProjectsByStatus,
   filterProjectsBySkills,
-  filterProjectesByPriority,
+  filterProjectsByPriority,
   filterProjects,
   filterProjectsByKeyword,
   getAdminAllProjects,

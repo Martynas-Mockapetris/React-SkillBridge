@@ -6,7 +6,7 @@ import molecularPattern from '../../assets/molecular-pattern.svg'
 
 const SearchSection = () => {
   // Get search context functions
-  const { searchTerm, updateSearch } = useContext(SearchContext)
+  const { updateSearch } = useContext(SearchContext)
 
   // Local state for input field (temporary until user clicks search)
   const [inputValue, setInputValue] = useState('')

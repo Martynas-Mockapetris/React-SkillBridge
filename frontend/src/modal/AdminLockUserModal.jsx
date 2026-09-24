@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const presets = [
@@ -108,6 +109,17 @@ const AdminLockUserModal = ({ isOpen, onClose, onConfirm, user }) => {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+AdminLockUserModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  user: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string
+  })
 }
 
 export default AdminLockUserModal

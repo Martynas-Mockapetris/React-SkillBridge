@@ -1,13 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaArrowUp, FaArrowDown, FaClock } from 'react-icons/fa'
 
-export const SortIndicatorBadge = ({ currentSort, onSortChange }) => {
+export const SortIndicatorBadge = ({ currentSort }) => {
   const getSortInfo = (sortValue) => {
     const sortMap = {
       newest: { label: 'Newest', icon: <FaClock size={14} />, color: 'bg-blue-100 text-blue-800' },
       oldest: { label: 'Oldest', icon: <FaClock size={14} />, color: 'bg-gray-100 text-gray-800' },
       'budget-asc': { label: 'Budget: Low→High', icon: <FaArrowUp size={14} />, color: 'bg-green-100 text-green-800' },
-      'budget-desc': { label: 'Budget: High→Low', icon: <FaArrowDown size={14} />, color: 'bg-red-100 text-red-800' }
+      'budget-desc': { label: 'Budget: High→Low', icon: <FaArrowDown size={14} />, color: 'bg-red-100 text-red-800' },
+      'deadline-asc': { label: 'Deadline: Soonest', icon: <FaArrowUp size={14} />, color: 'bg-green-100 text-green-800' },
+      'deadline-desc': { label: 'Deadline: Latest', icon: <FaArrowDown size={14} />, color: 'bg-red-100 text-red-800' }
     }
     return sortMap[sortValue] || sortMap.newest
   }
@@ -28,4 +31,8 @@ export const SortIndicatorBadge = ({ currentSort, onSortChange }) => {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+SortIndicatorBadge.propTypes = {
+  currentSort: PropTypes.string.isRequired
 }

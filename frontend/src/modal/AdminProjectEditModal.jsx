@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm, assigneeName, ownerName, canRemoveAssignee, onRemoveAssignee, removeAssigneeLoading }) => {
   if (!isOpen) return null
 
@@ -145,6 +147,29 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
       </div>
     </div>
   )
+}
+
+AdminProjectEditModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
+  form: PropTypes.shape({
+    title: PropTypes.string,
+    description: PropTypes.string,
+    category: PropTypes.string,
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    skills: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
+    priority: PropTypes.string,
+    deadline: PropTypes.string,
+    status: PropTypes.string
+  }).isRequired,
+  setForm: PropTypes.func.isRequired,
+  assigneeName: PropTypes.string,
+  ownerName: PropTypes.string,
+  canRemoveAssignee: PropTypes.bool,
+  onRemoveAssignee: PropTypes.func,
+  removeAssigneeLoading: PropTypes.bool
 }
 
 export default AdminProjectEditModal

@@ -150,7 +150,7 @@ const Admin = () => {
                     <li key={`${item.label}-${index}`} className='flex items-center gap-2'>
                       {index > 0 && <span>/</span>}
                       {item.to && !isLast ? (
-                        <Link to={item.to} className='hover:text-accent transition-colors'>
+                        <Link to={item.to} className='hover:text-accent transition-all duration-300'>
                           {item.label}
                         </Link>
                       ) : (

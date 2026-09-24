@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { getPublicSystemConfig } from '../services/configService'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import AboutHero from '../components/About/AboutHero'
 import AboutHighlights from '../components/About/AboutHighlights'
 import AboutCta from '../components/About/AboutCta'
-import { getPublicSystemConfig } from '../services/configService'
-import { getSectionBackgroundClass } from '../components/Home/homeSectionLayout'
 
 const DEFAULT_ABOUT_SECTION_ORDER = ['hero', 'highlights', 'cta']
 
@@ -22,7 +21,6 @@ const About = () => {
         const data = await getPublicSystemConfig()
         setPublicConfig(data || null)
       } catch (err) {
-        console.error('Failed to load About page config:', err)
         setError(err.response?.data?.message || 'Failed to load About page.')
       } finally {
         setLoading(false)
@@ -72,11 +70,6 @@ const About = () => {
     return [...sanitizedOrder, ...missingKeys]
   }, [publicConfig])
 
-  const aboutSectionBackgrounds = useMemo(() => {
-    if (!publicConfig?.siteBuilder?.enabled) return {}
-    return publicConfig.siteBuilder.values?.aboutSectionBackgrounds || {}
-  }, [publicConfig])
-
   const headline = aboutContent.headline || 'Build your freelance career with confidence'
   const subheadline = aboutContent.subheadline || 'Connect clients and freelancers in one place'
   const mission = aboutContent.mission || 'SkillBridge helps people find the right collaboration faster. We bring serious clients and capable freelancers into one workflow that feels clear, practical, and trustworthy.'
@@ -93,8 +86,8 @@ const About = () => {
   const showCta = aboutSectionVisibility.showCta ?? true
 
   return (
-    <section className='w-full theme-bg relative z-[1] pt-[80px]'>
-      <PageBackground variant='minimal' />
+    <section className='w-full relative z-[1] pt-[80px]'>
+      <PageBackground />
 
       {loading && (
         <div className='container mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-336px)]'>
@@ -117,7 +110,7 @@ const About = () => {
               switch (sectionKey) {
                 case 'hero':
                   return showHero ? (
-                    <section key='hero' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.hero || 'default')} relative z-10`}>
+                    <section key='hero' className='relative z-10'>
                       <div className='container mx-auto px-4'>
                         <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
                       </div>
@@ -126,7 +119,7 @@ const About = () => {
 
                 case 'highlights':
                   return showHighlights ? (
-                    <section key='highlights' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.highlights || 'default')} relative z-10`}>
+                    <section key='highlights' className='relative z-10'>
                       <div className='container mx-auto px-4'>
                         <AboutHighlights mission={mission} vision={vision} layout={aboutHighlightsBuilder} />
                       </div>
@@ -135,7 +128,7 @@ const About = () => {
 
                 case 'cta':
                   return showCta ? (
-                    <section key='cta' className={`${getSectionBackgroundClass(aboutSectionBackgrounds.cta || 'default')} relative z-10`}>
+                    <section key='cta' className='relative z-10'>
                       <div className='container mx-auto px-4'>
                         <AboutCta
                           eyebrow={ctaEyebrow}

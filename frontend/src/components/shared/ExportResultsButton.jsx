@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaDownload, FaChevronDown, FaFileCSV, FaFileJson, FaFileAlt } from 'react-icons/fa'
 import { exportToCSV, exportToJSON, exportToMarkdown, getExportSummary } from '../../utils/exportResults'
@@ -40,7 +41,7 @@ const ExportResultsButton = ({ projects, filters, isDarkMode }) => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${isDarkMode ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}>
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg ${isDarkMode ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}>
         <FaDownload size={16} />
         <span>Export</span>
         <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
@@ -136,6 +137,12 @@ const ExportResultsButton = ({ projects, filters, isDarkMode }) => {
       </AnimatePresence>
     </div>
   )
+}
+
+ExportResultsButton.propTypes = {
+  projects: PropTypes.array.isRequired,
+  filters: PropTypes.object.isRequired,
+  isDarkMode: PropTypes.bool
 }
 
 export default ExportResultsButton

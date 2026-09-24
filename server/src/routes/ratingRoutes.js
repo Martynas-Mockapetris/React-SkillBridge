@@ -4,17 +4,16 @@ import { submitRating, getFreelancerRatings, getRatingStats } from '../controlle
 
 const router = express.Router()
 
-// Submit a rating for a freelancer (protected - client only)
-// POST /api/ratings
-// Body: { freelancerId, projectId, score: 1-5, feedback: "optional" }
+// Test route
+router.get('/test', (req, res) => {
+  res.json({ message: 'Rating routes are working' })
+})
+
+// Submit rating route (protected - requires authentication)
 router.post('/', protect, submitRating)
 
-// Get all ratings for a freelancer (public - anyone can view)
-// GET /api/ratings/freelancer/:freelancerId
+// Rating retrieval routes (public - anyone can view)
 router.get('/freelancer/:freelancerId', getFreelancerRatings)
-
-// Get rating statistics for a freelancer (public - anyone can view)
-// GET /api/ratings/stats/:freelancerId
 router.get('/stats/:freelancerId', getRatingStats)
 
 export default router

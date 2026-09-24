@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
-import { FaTimes, FaStar } from 'react-icons/fa'
+import { FaTimes } from 'react-icons/fa'
 import { assignUserToProject, toggleShortlistApplicant, toggleSkillsVerified } from '../services/projectService'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const formatContactedAt = (value) => {
   if (!value) return 'Recently applied'
@@ -33,8 +35,6 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
       const interested = interestedUsers.find((u) => u.userId._id === userId)
       await toggleShortlistApplicant(project._id, userId, !interested?.isShortlisted)
       onAssignSuccess?.() // Refresh project data
-    } catch (error) {
-      console.error('Failed to toggle shortlist:', error)
     } finally {
       setTogglingUserId(null)
     }
@@ -46,8 +46,6 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
       const interested = interestedUsers.find((u) => u.userId._id === userId)
       await toggleSkillsVerified(project._id, userId, !interested?.skillsVerified)
       onAssignSuccess?.() // Refresh project data
-    } catch (error) {
-      console.error('Failed to toggle skills verification:', error)
     } finally {
       setTogglingUserId(null)
     }
@@ -61,8 +59,6 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
       await assignUserToProject(project._id, selectedUserId)
       onAssignSuccess?.()
       onClose()
-    } catch (error) {
-      console.error('Failed to assign user:', error)
     } finally {
       setAssigning(false)
     }
@@ -170,15 +166,41 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
           <motion.button
             onClick={handleAssign}
             disabled={!selectedUserId || assigning}
-            className='flex-1 py-2 bg-accent text-white rounded hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+            className='flex-1 py-2 bg-accent text-white rounded hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}>
+            {assigning && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
             {assigning ? 'Assigning...' : 'Assign'}
           </motion.button>
         </div>
       </motion.div>
     </div>
   )
+}
+
+AssignModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    interestedUsers: PropTypes.arrayOf(
+      PropTypes.shape({
+        userId: PropTypes.shape({
+          _id: PropTypes.string,
+          firstName: PropTypes.string,
+          lastName: PropTypes.string,
+          email: PropTypes.string,
+          profilePicture: PropTypes.string
+        }),
+        contactedAt: PropTypes.string,
+        proposalPreview: PropTypes.string,
+        isShortlisted: PropTypes.bool,
+        skillsVerified: PropTypes.bool
+      })
+    )
+  }),
+  onAssignSuccess: PropTypes.func
 }
 
 export default AssignModal

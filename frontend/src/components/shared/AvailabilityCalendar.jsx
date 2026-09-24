@@ -1,11 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaChevronLeft, FaChevronRight, FaEdit, FaCheck, FaTimes, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa'
+import { FaWindowMaximize, FaWindowMinimize } from 'react-icons/fa'
 import { toast } from 'react-toastify'
-import AvailabilityEditPanel from './AvailabilityEditPanel'
 import AvailabilityCalendarSkeleton from './AvailabilityCalendarSkeleton'
-import useAvailability from '../../hooks/useAvailability'
-import StatusFilterChips from './StatusFilterChips'
 
 const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView = true }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -16,6 +14,7 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   const [togglingVisibility, setTogglingVisibility] = useState(false)
   const [statusFilter, setStatusFilter] = useState(null)
   const [filterLoading, setFilterLoading] = useState(false)
+  const [viewMode, setViewMode] = useState('detailed') // 'compact' or 'detailed'
 
   const {
     calendarData,
@@ -32,12 +31,13 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     clearOptimisticUpdates
   } = useAvailability(freelancerId, isPublicView)
 
-  // Fetch calendar data when component mounts or freelancerId changes
-  React.useEffect(() => {
-    fetchCalendarData()
-  }, [currentDate, freelancerId])
+  // Guard: Don't render if no freelancerId
+  if (!freelancerId) {
+    return <div className='p-4 text-center theme-text-secondary'>No freelancer ID provided</div>
+  }
 
-  React.useEffect(() => {
+  // Fetch calendar data when component mounts or freelancerId changes
+  useEffect(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth() + 1
     fetchCalendarData(year, month).catch((err) => {
@@ -108,22 +108,22 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
   }
 
   const handleDayClick = (day) => {
-    if (!editMode || !day.date) return
+    if (!editMode || !day?.date) return
 
-    const dateKey = `${calendarData.year}-${calendarData.month}-${day.date}`
+    const dateKey = `${calendarData.year}-${calendarData.month}-${day?.date}`
 
     if (!canModifyDate(dateKey)) {
       toast.error('Cannot modify past dates')
       return
     }
 
-    const { [dateKey]: _, ...rest } = selectedDays
+    const rest = Object.fromEntries(Object.entries(selectedDays).filter(([key]) => key !== dateKey))
     if (selectedDays[dateKey]) {
       setSelectedDays(rest)
     } else {
       setSelectedDays({
         ...selectedDays,
-        [dateKey]: day.status
+        [dateKey]: day?.status
       })
     }
   }
@@ -281,183 +281,96 @@ const AvailabilityCalendar = ({ freelancerId, isOwnProfile = false, isPublicView
     )
   }
 
-  if (!calendarData) {
+  if (!calendarData || !calendarData.days) {
     return <div className='p-4 text-center theme-text-secondary'>No calendar data available</div>
   }
 
-  const monthName = new Date(calendarData.year, calendarData.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })
-  const firstDayOfMonth = new Date(calendarData.year, calendarData.month - 1, 1).getDay()
-  const calendarGrid = [...Array(firstDayOfMonth), ...calendarData.days]
-
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='p-6 theme-card rounded-lg border dark:border-light/10 border-primary/10'>
-      {/* Header */}
-      <div className='flex items-center justify-between mb-6'>
-        <h3 className='text-lg font-semibold theme-text'>{monthName}</h3>
-        <div className='flex gap-2 items-center'>
-          <motion.button onClick={previousMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200' aria-label='Previous month'>
-            <FaChevronLeft className='theme-text' />
-          </motion.button>
-          <motion.button onClick={nextMonth} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200' aria-label='Next month'>
-            <FaChevronRight className='theme-text' />
-          </motion.button>
-          {isOwnProfile && !editMode && (
-            <>
-              <motion.button
-                onClick={() => setEditMode(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200 text-accent'
-                aria-label='Edit availability'>
-                <FaEdit />
-              </motion.button>
-              <motion.button
-                onClick={handleToggleVisibility}
-                disabled={togglingVisibility}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className='p-2 hover:bg-accent/10 rounded-lg transition-colors duration-200 text-accent disabled:opacity-50'
-                title={isPublic ? 'Make calendar private' : 'Make calendar public'}
-                aria-label='Toggle calendar visibility'>
-                {togglingVisibility ? <FaSpinner className='animate-spin' /> : isPublic ? <FaEye /> : <FaEyeSlash />}
-              </motion.button>
-            </>
-          )}
-        </div>
+    <div className='space-y-4 my-0 pb-6'>
+      {/* View Toggle Button */}
+      <div className='flex justify-end gap-2 px-6 mt-6'>
+        <motion.button
+          onClick={() => setViewMode('compact')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm font-medium ${
+            viewMode === 'compact' ? 'bg-accent text-white shadow-lg' : 'bg-primary/10 dark:bg-light/10 theme-text hover:shadow hover:bg-primary/20 dark:hover:bg-light/20'
+          }`}
+          aria-label='Switch to compact view'
+          title='Compact view'>
+          <FaWindowMinimize className='text-xs' />
+          <span className='hidden sm:inline'>Compact</span>
+        </motion.button>
+        <motion.button
+          onClick={() => setViewMode('detailed')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm font-medium ${
+            viewMode === 'detailed' ? 'bg-accent text-white shadow-lg' : 'bg-primary/10 dark:bg-light/10 theme-text hover:shadow hover:bg-primary/20 dark:hover:bg-light/20'
+          }`}
+          aria-label='Switch to detailed view'
+          title='Detailed view'>
+          <FaWindowMaximize className='text-xs' />
+          <span className='hidden sm:inline'>Detailed</span>
+        </motion.button>
       </div>
 
-      {/* Edit Mode Banner */}
-      {editMode && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className='mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg'>
-          <p className='text-blue-700 dark:text-blue-400 text-sm font-medium'>Click on a day to select it, then choose its status. {Object.keys(selectedDays).length} day(s) selected.</p>
-        </motion.div>
-      )}
-
-      {/* Legend */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 text-sm'>
-        {[
-          { status: 'green', label: 'Available' },
-          { status: 'yellow', label: 'Partially Busy' },
-          { status: 'orange', label: '50% Busy' },
-          { status: 'red', label: '100% Busy' }
-        ].map((item) => (
-          <div key={item.status} className='flex items-center gap-2'>
-            <div className='w-2 h-2 md:w-3 md:h-3 rounded flex-shrink-0' style={{ backgroundColor: getStatusColor(item.status) }}></div>
-            <span className='theme-text-secondary text-xs md:text-sm'>{item.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Status Filter - only for own profile */}
-      {isOwnProfile && !editMode && (
-        <div className='mb-6 pb-6 border-b dark:border-light/10 border-primary/10'>
-          <StatusFilterChips selectedStatus={statusFilter} onStatusChange={handleStatusFilterChange} onClear={handleClearFilter} />
-          {filterLoading && (
-            <div className='mt-3 flex items-center gap-2 text-sm theme-text-secondary'>
-              <div className='animate-spin'>
-                <div className='w-4 h-4 border-2 border-accent border-t-transparent rounded-full'></div>
-              </div>
-              <span>Filtering calendar...</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Day headers */}
-      <div className='grid grid-cols-7 gap-1 md:gap-2 mb-2'>
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className='text-center text-xs md:text-sm font-semibold theme-text-secondary py-1 md:py-2'>
-            <span className='hidden sm:inline'>{day}</span>
-            <span className='sm:hidden'>{day.slice(0, 1)}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Calendar Grid - Responsive */}
-      <div className='grid grid-cols-7 gap-1 md:gap-2'>
-        <AnimatePresence>
-          {calendarGrid.map((day, idx) => {
-            const isEmpty = !day.date
-            const isToday = !isEmpty && new Date(calendarData.year, calendarData.month - 1, day.date).toDateString() === new Date().toDateString()
-            const dateKey = `${calendarData.year}-${calendarData.month}-${day.date}`
-            const isSelected = selectedDays[dateKey]
-            const currentStatus = optimisticUpdates[dateKey] || isSelected || day.status
-
-            return (
-              <motion.div
-                key={`${calendarData.month}-${idx}`}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.02 }}
-                onMouseEnter={() => !isEmpty && setHoveredDay(idx)}
-                onMouseLeave={() => setHoveredDay(null)}
-                onClick={() => handleDayClick(day)}
-                className={`relative aspect-square rounded-lg flex flex-col items-center justify-center transition-all duration-200 cursor-pointer text-xs md:text-sm ${!isEmpty && editMode ? 'hover:shadow-lg hover:scale-110 ring-2' : !isEmpty ? 'hover:shadow-lg hover:scale-105' : ''} ${isSelected ? 'ring-4 ring-blue-500' : editMode && !isEmpty ? 'ring-2 ring-gray-300 dark:ring-gray-600' : ''}`}
-                style={{
-                  backgroundColor: isEmpty ? 'transparent' : getStatusColor(currentStatus)
-                }}>
-                {!isEmpty && (
-                  <>
-                    {/* Day number */}
-                    <span className={`font-semibold ${['red', 'orange'].includes(currentStatus) ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{day.date}</span>
-
-                    {/* Today indicator */}
-                    {isToday && <div className='absolute inset-0 rounded-lg border-2 border-white dark:border-gray-900 opacity-60'></div>}
-
-                    {/* Selected indicator */}
-                    {isSelected && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className='absolute top-1 right-1 w-3 h-3 md:w-4 md:h-4 bg-blue-500 rounded-full flex items-center justify-center'>
-                        <FaCheck className='text-white text-xs' />
-                      </motion.div>
-                    )}
-
-                    {/* Hover tooltip - hidden on mobile */}
-                    <AnimatePresence>
-                      {hoveredDay === idx && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className='hidden md:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-xs whitespace-nowrap z-50 pointer-events-none shadow-lg'>
-                          <div className='font-semibold'>{getStatusLabel(currentStatus)}</div>
-                          <div className='text-xs opacity-90'>{getDayCapacityLabel(day.capacity)}</div>
-                          {day.projectsCount > 0 && (
-                            <div className='text-xs opacity-90 mt-1'>
-                              {day.projectsCount} project{day.projectsCount !== 1 ? 's' : ''}
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </>
-                )}
-              </motion.div>
-            )
-          })}
-        </AnimatePresence>
-      </div>
-
-      {/* Summary Stats - only for own profile, hidden in edit mode */}
-      {!isPublicView && !editMode && (
-        <div className='mt-6 pt-6 border-t dark:border-light/10 border-primary/10 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4'>
-          {[
-            { label: 'Available', value: calendarData.daysBreakdown?.green || 0, color: 'bg-green-100 dark:bg-green-900/30' },
-            { label: 'Partially Busy', value: calendarData.daysBreakdown?.yellow || 0, color: 'bg-yellow-100 dark:bg-yellow-900/30' },
-            { label: 'Busy', value: calendarData.daysBreakdown?.orange || 0, color: 'bg-orange-100 dark:bg-orange-900/30' },
-            { label: 'Fully Busy', value: calendarData.daysBreakdown?.red || 0, color: 'bg-red-100 dark:bg-red-900/30' }
-          ].map((stat) => (
-            <div key={stat.label} className={`p-2 md:p-3 rounded-lg ${stat.color}`}>
-              <div className='text-xs theme-text-secondary'>{stat.label}</div>
-              <div className='text-lg md:text-xl font-bold theme-text'>{stat.value}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Edit Panel - only in edit mode */}
-      {editMode && <AvailabilityEditPanel selectedDays={selectedDays} onStatusChange={handleStatusChange} onSave={handleSaveChanges} onCancel={handleCancel} saving={saving} />}
-    </motion.div>
+      {/* Calendar View */}
+      <AnimatePresence mode='wait'>
+        {viewMode === 'compact' ? (
+          <motion.div key='compact' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='px-6 mb-6'>
+            <CompactCalendarView
+              calendarData={calendarData}
+              currentDate={currentDate}
+              onPreviousMonth={previousMonth}
+              onNextMonth={nextMonth}
+              getStatusColor={getStatusColor}
+              getStatusLabel={getStatusLabel}
+              getDayCapacityLabel={getDayCapacityLabel}
+            />
+          </motion.div>
+        ) : (
+          <motion.div key='detailed' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='px-6 mb-6'>
+            <DetailedCalendarView
+              calendarData={calendarData}
+              currentDate={currentDate}
+              isOwnProfile={isOwnProfile}
+              isPublicView={isPublicView}
+              isPublic={isPublic}
+              editMode={editMode}
+              selectedDays={selectedDays}
+              saving={saving}
+              togglingVisibility={togglingVisibility}
+              statusFilter={statusFilter}
+              filterLoading={filterLoading}
+              optimisticUpdates={optimisticUpdates}
+              hoveredDay={hoveredDay}
+              onPreviousMonth={previousMonth}
+              onNextMonth={nextMonth}
+              onEditMode={() => setEditMode(true)}
+              onHandleToggleVisibility={handleToggleVisibility}
+              onStatusFilterChange={handleStatusFilterChange}
+              onClearFilter={handleClearFilter}
+              onDayClick={handleDayClick}
+              onStatusChange={handleStatusChange}
+              onSaveChanges={handleSaveChanges}
+              onCancel={handleCancel}
+              onHoveredDay={setHoveredDay}
+              getStatusColor={getStatusColor}
+              getStatusLabel={getStatusLabel}
+              getDayCapacityLabel={getDayCapacityLabel}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
+}
+
+AvailabilityCalendar.propTypes = {
+  freelancerId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  isOwnProfile: PropTypes.bool,
+  isPublicView: PropTypes.bool
 }
 
 export default AvailabilityCalendar

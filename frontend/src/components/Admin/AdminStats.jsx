@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { getAdminDashboardStats } from '../../services/userService'
 import AdminAlertsPanel from './AdminAlertsPanel'
 import AdminAuditLogPanel from './AdminAuditLogPanel'
@@ -171,6 +172,10 @@ const AdminStats = ({ onOpenSection }) => {
       <AdminAuditLogPanel />
     </div>
   )
+}
+
+AdminStats.propTypes = {
+  onOpenSection: PropTypes.func.isRequired
 }
 
 export default AdminStats

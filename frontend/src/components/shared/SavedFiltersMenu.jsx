@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaBookmark, FaSave, FaTimes, FaEdit2, FaTrash, FaClock, FaFire } from 'react-icons/fa'
 import { useSavedFilterPresets } from '../../hooks/useSavedFilterPresets'
@@ -205,6 +206,12 @@ export const SavedFiltersMenu = ({ currentFilters, onLoadPreset, onSavePreset })
   )
 }
 
+SavedFiltersMenu.propTypes = {
+  currentFilters: PropTypes.object.isRequired,
+  onLoadPreset: PropTypes.func,
+  onSavePreset: PropTypes.func
+}
+
 // Preset item component
 const PresetItem = ({ preset, isEditing, editingName, onEdit, onSave, onCancel, onLoad, onDelete, onEditNameChange }) => {
   if (isEditing) {
@@ -248,4 +255,20 @@ const PresetItem = ({ preset, isEditing, editingName, onEdit, onSave, onCancel, 
       </div>
     </motion.div>
   )
+}
+
+PresetItem.propTypes = {
+  preset: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    usageCount: PropTypes.number
+  }).isRequired,
+  isEditing: PropTypes.bool.isRequired,
+  editingName: PropTypes.string.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onLoad: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEditNameChange: PropTypes.func.isRequired
 }

@@ -1,10 +1,9 @@
-import { useContext } from 'react'
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaUpload, FaEuroSign, FaCalendarAlt, FaTag, FaFile } from 'react-icons/fa'
-import AuthContext from '../context/AuthContext'
 import { createProject, saveProjectDraft, updateProject } from '../services/projectService'
-import { toast } from 'react-toastify' // Import toast for notifications
+import { showSuccessToast, showErrorToast } from '../utils/toastHelper'
 
 const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', initialData = null, onProjectUpdated }) => {
   // Form state
@@ -33,12 +32,10 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
   }
 
   const isEditMode = mode === 'edit'
-  const isDraftEdit = isEditMode && initialData?.status === 'draft'
   const isDeadlineOnly = isEditMode && initialData?.status !== 'draft'
 
   // Replace the current formData state initialization
   const [formData, setFormData] = useState(initialFormState)
-  const { currentUser, loading } = useContext(AuthContext)
   const [submitting, setSubmitting] = useState(false) // Add submitting state
 
   const resetForm = () => {
@@ -306,8 +303,6 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         projectBrief: formData.projectBrief
       }
 
-      console.log('Sending project data:', projectData)
-
       if (isEditMode && initialData) {
         const updatePayload = isDeadlineOnly
           ? { deadline: formData.deadline }
@@ -327,12 +322,11 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
 
         onClose()
         if (onProjectUpdated) onProjectUpdated()
-        toast.success('Project updated successfully!')
+        showSuccessToast('Project updated successfully!')
         return
       }
 
-      const createdProject = await createProject(projectData)
-      console.log('Project created:', createdProject)
+      await createProject(projectData)
 
       resetForm()
       onClose()
@@ -341,10 +335,9 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         onProjectCreated()
       }
 
-      toast.success('Project published successfully!')
-    } catch (error) {
-      console.error('Error creating project:', error)
-      toast.error('Failed to create project. Please try again.')
+      showSuccessToast('Project published successfully!')
+    } catch {
+      showErrorToast('Failed to create project. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -373,10 +366,7 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         projectBrief: formData.projectBrief
       }
 
-      console.log('Saving draft:', projectData)
-
-      const savedDraft = await saveProjectDraft(projectData)
-      console.log('Draft saved:', savedDraft)
+      await saveProjectDraft(projectData)
 
       resetForm()
       onClose()
@@ -385,10 +375,9 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
         onProjectCreated()
       }
 
-      toast.success('Draft saved successfully!')
-    } catch (err) {
-      console.error('Error saving draft:', err)
-      toast.error('Failed to save draft. Please try again.')
+      showSuccessToast('Draft saved successfully!')
+    } catch {
+      showErrorToast('Failed to save draft. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -446,20 +435,20 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div className='fixed inset-0 bg-black/50 z-40 backdrop-blur-sm' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.div className='fixed inset-0 bg-black/40 z-40 backdrop-blur-sm' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
 
           {/* Modal */}
           <motion.div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={(e) => e.stopPropagation()}>
             <motion.div
-              className='bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto'
+              className='bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-3xl max-h-[90vh] overflow-y-auto'
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}>
               {/* Modal Header */}
-              <div className='flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700'>
+              <div className='flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors'>
                 <h2 className='text-2xl font-bold theme-text'>{isEditMode ? 'Edit Project' : 'Create New Project'}</h2>
-                <button onClick={onClose} className='text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors'>
+                <button onClick={onClose} className='p-1 rounded-lg theme-text hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-300'>
                   <FaTimes size={24} />
                 </button>
               </div>
@@ -959,6 +948,38 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
       )}
     </AnimatePresence>
   )
+}
+
+ProjectModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onProjectCreated: PropTypes.func,
+  mode: PropTypes.oneOf(['create', 'edit']),
+  initialData: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    description: PropTypes.string,
+    category: PropTypes.string,
+    priority: PropTypes.string,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    deadline: PropTypes.string,
+    type: PropTypes.string,
+    status: PropTypes.string,
+    attachments: PropTypes.arrayOf(PropTypes.any),
+    projectBrief: PropTypes.shape({
+      objective: PropTypes.string,
+      deliverables: PropTypes.arrayOf(PropTypes.string),
+      scopeNotes: PropTypes.string,
+      experienceLevel: PropTypes.string,
+      duration: PropTypes.string,
+      workload: PropTypes.string,
+      startPreference: PropTypes.string,
+      budgetType: PropTypes.string,
+      applicationInstructions: PropTypes.string
+    })
+  }),
+  onProjectUpdated: PropTypes.func
 }
 
 export default ProjectModal

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaProjectDiagram, FaCheckCircle, FaClock, FaStar, FaWallet, FaBullhorn, FaEnvelopeOpenText, FaUserFriends, FaHistory } from 'react-icons/fa'
 import { getUserStats, getMyConnections } from '../../services/userService'
 import { getUserAnnouncements } from '../../services/announcementService'
@@ -246,7 +247,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         {stats.map((stat, index) => (
           <motion.div
             key={index}
-            className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 hover:shadow-lg transition-all duration-300 backdrop-blur-sm'
+            className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.02] transition-all duration-300'
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.08 }}
@@ -272,7 +273,11 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         ))}
       </div>
 
-      <motion.div className='p-6 rounded-lg bg-white/40 dark:bg-black/20 border theme-border' initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.08 }}>
+      <motion.div
+        className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.08 }}>
         <div className='flex items-center gap-3 mb-4'>
           <FaHistory className='text-accent' />
           <div>
@@ -283,7 +288,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
 
         <div className='space-y-3'>
           {activityItems.map((item) => (
-            <div key={item.key} className='flex items-start justify-between gap-4 p-4 rounded-lg bg-white/40 dark:bg-black/20 border theme-border'>
+            <div key={item.key} className='flex items-start justify-between gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300'>
               <div>
                 <p className='font-medium theme-text'>{item.title}</p>
                 <p className='text-sm theme-text-secondary mt-1'>{item.meta}</p>
@@ -295,7 +300,11 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       </motion.div>
 
       {quickActions.length > 0 && (
-        <motion.div className='p-6 rounded-lg bg-white/40 dark:bg-black/20 border theme-border' initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}>
+        <motion.div
+          className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.05 }}>
           <div className='flex items-center justify-between gap-4 mb-4'>
             <div>
               <p className='text-xs uppercase tracking-wide theme-text-secondary'>Quick Actions</p>
@@ -309,7 +318,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
                 key={action.key}
                 type='button'
                 onClick={action.onClick}
-                className='text-left p-4 rounded-lg border theme-border bg-white/40 dark:bg-black/20 hover:border-accent hover:bg-white/60 dark:hover:bg-black/30 transition-colors'>
+                className='text-left p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hover:border-accent/50 hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md hover:scale-[1.02] transition-all duration-300'>
                 <p className='font-medium theme-text'>{action.label}</p>
                 <p className='text-sm theme-text-secondary mt-1'>{action.description}</p>
               </button>
@@ -318,11 +327,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         </motion.div>
       )}
 
-      <motion.div
-        className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}>
+      <motion.div className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
           <div>
             <p className='text-sm theme-text-secondary'>Profile Completion</p>
@@ -335,12 +340,12 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
           </div>
         </div>
 
-        <div className='mt-4 w-full h-3 rounded-full bg-light/30 dark:bg-light/20 overflow-hidden'>
-          <motion.div className='h-full bg-accent' initial={{ width: 0 }} animate={{ width: `${completion}%` }} transition={{ duration: 0.6 }} />
+        <div className='mt-4 w-full h-3 rounded-full bg-primary/20 dark:bg-light/10 overflow-hidden'>
+          <motion.div className='h-full bg-gradient-to-r from-accent to-accent/70' initial={{ width: 0 }} animate={{ width: `${completion}%` }} transition={{ duration: 0.6 }} />
         </div>
 
         <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-3'>
-          <div className='p-3 rounded-lg bg-white/30 dark:bg-black/20'>
+          <div className='p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
             <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Missing required</p>
             {requiredPreview.length > 0 ? (
               <ul className='space-y-1'>
@@ -355,7 +360,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
             )}
           </div>
 
-          <div className='p-3 rounded-lg bg-white/30 dark:bg-black/20'>
+          <div className='p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
             <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Recommended next</p>
             {optionalPreview.length > 0 ? (
               <ul className='space-y-1'>
@@ -373,7 +378,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
 
         {(missingRequired.length > 0 || missingOptional.length > 0) && (
           <div className='mt-4'>
-            <button type='button' onClick={() => onOpenSettings?.()} className='px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors'>
+            <button type='button' onClick={() => onOpenSettings?.()} className='px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300'>
               Complete Profile in Settings
             </button>
           </div>
@@ -381,6 +386,18 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       </motion.div>
     </motion.div>
   )
+}
+
+ProfileStats.propTypes = {
+  user: PropTypes.shape({
+    _id: PropTypes.string
+  }),
+  profileCompleteness: PropTypes.number,
+  onOpenSettings: PropTypes.func,
+  onOpenProjects: PropTypes.func,
+  onOpenMessages: PropTypes.func,
+  onOpenFreelance: PropTypes.func,
+  onOpenConnections: PropTypes.func
 }
 
 export default ProfileStats

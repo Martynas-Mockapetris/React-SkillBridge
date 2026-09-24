@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../utils/projectStatusUI'
+import PropTypes from 'prop-types'
+import PriorityBadge from '../components/shared/PriorityBadge'
+import ProjectStatusBadge from '../components/shared/ProjectStatusBadge'
 
 const formatDateTime = (value) => {
   if (!value) return 'N/A'
@@ -26,8 +28,8 @@ const AdminProjectDetailModal = ({ isOpen, onClose, project }) => {
         </div>
 
         <div className='flex flex-wrap gap-2 mb-4'>
-          <span className={`px-2 py-1 text-xs rounded-full ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
-          <span className={`px-2 py-1 text-xs rounded-full ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+          <ProjectStatusBadge status={project.status} size='sm' />
+          <PriorityBadge priority={project.priority} size='sm' />
         </div>
 
         <p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>{project.description}</p>
@@ -147,6 +149,56 @@ const AdminProjectDetailModal = ({ isOpen, onClose, project }) => {
       </div>
     </div>
   )
+}
+
+AdminProjectDetailModal.propTypes = {
+  isOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+  project: PropTypes.shape({
+    title: PropTypes.string,
+    name: PropTypes.string,
+    status: PropTypes.string,
+    priority: PropTypes.string,
+    description: PropTypes.string,
+    id: PropTypes.string,
+    category: PropTypes.string,
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    progress: PropTypes.number,
+    deadline: PropTypes.string,
+    createdAt: PropTypes.string,
+    updatedAt: PropTypes.string,
+    isRated: PropTypes.bool,
+    user: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string
+    }),
+    assignee: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string
+    }),
+    submission: PropTypes.shape({
+      note: PropTypes.string,
+      submittedAt: PropTypes.string,
+      links: PropTypes.array,
+      files: PropTypes.array
+    }),
+    review: PropTypes.shape({
+      decision: PropTypes.string,
+      reviewedAt: PropTypes.string,
+      feedback: PropTypes.string
+    }),
+    rateNegotiation: PropTypes.shape({
+      status: PropTypes.string,
+      currentOffer: PropTypes.shape({
+        amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        type: PropTypes.string
+      }),
+      history: PropTypes.array,
+      agreedAt: PropTypes.string
+    })
+  })
 }
 
 export default AdminProjectDetailModal

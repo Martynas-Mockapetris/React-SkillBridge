@@ -1,5 +1,8 @@
 import mongoose from 'mongoose'
 import AdminActionLog from '../models/AdminActionLog.js'
+import Logger from './logger.js'
+
+const logger = new Logger('AdminActionLogger')
 
 const normalizeObjectId = (value) => {
   if (!value) {
@@ -93,7 +96,7 @@ export const logAdminAction = async ({ req, actor = null, action, targetType, ta
       context: getAuditRequestContext(req)
     })
   } catch (error) {
-    console.error('Failed to write admin action log:', error)
+    logger.error('Failed to write admin action log:', error)
     return null
   }
 }

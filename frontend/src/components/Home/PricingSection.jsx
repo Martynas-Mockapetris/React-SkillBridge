@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
@@ -163,6 +164,22 @@ const PricingSection = ({ content = {}, layout = {} }) => {
       </div>
     </section>
   )
+}
+
+PricingSection.propTypes = {
+  content: PropTypes.shape({
+    pricingTitleLead: PropTypes.string,
+    pricingTitleAccent: PropTypes.string,
+    pricingSubtitle: PropTypes.string,
+    pricingPlans: PropTypes.array
+  }),
+  layout: PropTypes.shape({
+    spacing: PropTypes.object,
+    background: PropTypes.string,
+    cardDensity: PropTypes.string,
+    emphasisStyle: PropTypes.string,
+    featuredPlanPresentation: PropTypes.string
+  })
 }
 
 export default PricingSection

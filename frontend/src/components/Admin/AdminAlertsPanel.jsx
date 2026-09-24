@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaExclamationTriangle, FaShieldAlt, FaUserLock, FaUserClock, FaProjectDiagram, FaCheckCircle, FaKey, FaArrowRight } from 'react-icons/fa'
 
 const severityStyles = {
@@ -44,6 +45,21 @@ const HealthCard = ({ label, value, icon, actionLabel, onAction }) => (
     )}
   </div>
 )
+
+QueueSummaryCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired,
+  tone: PropTypes.oneOf(['neutral', 'critical', 'warning']),
+  onClick: PropTypes.func
+}
+
+HealthCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  icon: PropTypes.node.isRequired,
+  actionLabel: PropTypes.string,
+  onAction: PropTypes.func
+}
 
 const getAlertAction = (alertId, onOpenSection) => {
   if (!onOpenSection) return null
@@ -237,6 +253,14 @@ const AdminAlertsPanel = ({ isLoading, alertSummary, alerts, healthSignals, onOp
       </div>
     </motion.section>
   )
+}
+
+AdminAlertsPanel.propTypes = {
+  isLoading: PropTypes.bool,
+  alertSummary: PropTypes.shape({}),
+  alerts: PropTypes.array,
+  healthSignals: PropTypes.shape({}),
+  onOpenSection: PropTypes.func
 }
 
 export default AdminAlertsPanel

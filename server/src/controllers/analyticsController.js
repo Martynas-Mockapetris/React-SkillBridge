@@ -1,7 +1,9 @@
 import Project from '../models/Project.js'
 import User from '../models/User.js'
 
-// Get freelancer analytics dashboard data
+// @desc    Get freelancer analytics dashboard data
+// @route   GET /api/analytics/freelancer
+// @access  Private
 export const getFreelancerAnalytics = async (req, res) => {
   try {
     const freelancerId = req.user._id
@@ -90,7 +92,9 @@ export const getFreelancerAnalytics = async (req, res) => {
   }
 }
 
-// Record profile view
+// @desc    Record a profile view for a user
+// @route   POST /api/analytics/profile-view/:userId
+// @access  Private
 export const recordProfileView = async (req, res) => {
   try {
     const viewedUserId = req.params.userId

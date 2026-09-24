@@ -1,8 +1,10 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes } from 'react-icons/fa'
 import { createProject, saveProjectDraft } from '../services/projectService'
 import { toast } from 'react-toastify'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -343,10 +345,15 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
               </form>
 
               <div className='flex justify-end gap-3 p-6 border-t dark:border-light/10 border-primary/10'>
-                <motion.button onClick={handleSaveDraft} disabled={loading} className='px-4 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all disabled:opacity-50'>
+                <motion.button
+                  onClick={handleSaveDraft}
+                  disabled={loading}
+                  className='px-4 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2'>
+                  {loading && <LoadingSpinner size='sm' className='border-t-2 border-accent' />}
                   Save as Draft
                 </motion.button>
-                <motion.button onClick={handleAssign} disabled={loading} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all disabled:opacity-50'>
+                <motion.button onClick={handleAssign} disabled={loading} className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2'>
+                  {loading && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                   Assign & Notify
                 </motion.button>
               </div>
@@ -356,6 +363,18 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
       )}
     </AnimatePresence>
   )
+}
+
+HireFreelancerModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  freelancer: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    hourlyRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  }),
+  onSuccess: PropTypes.func
 }
 
 export default HireFreelancerModal

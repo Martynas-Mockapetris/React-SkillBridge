@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClock, FaCheck, FaPause, FaEye, FaBriefcase, FaLightbulb, FaHeart, FaSpinner, FaSearch, FaTimes, FaArchive, FaStar } from 'react-icons/fa'
+import { FaEye, FaBriefcase, FaLightbulb, FaHeart, FaStar, FaCheck, FaArchive } from 'react-icons/fa'
 import ProjectModal from '../../modal/ProjectModal'
 import AssignModal from '../../modal/AssignModal'
 import RatingModal from '../../modal/RatingModal'
@@ -9,8 +9,10 @@ import { useAuth } from '../../context/AuthContext' // Import useAuth hook
 import { getUserProjects, getInterestedProjects, removeFromInterested, removeAssignee, publishProject, deleteProject } from '../../services/projectService'
 import { getFavoriteProjects, addToFavorites, removeFromFavorites } from '../../services/userService'
 import { getFreelancerRatings } from '../../services/ratingService'
-import { getProjectStatusBadgeClass, formatProjectStatusLabel, getProjectPriorityBadgeClass, formatProjectPriorityLabel } from '../../utils/projectStatusUI'
 import LoadingSpinner from '../shared/LoadingSpinner'
+import PriorityBadge from '../shared/PriorityBadge'
+import ProjectStatusBadge from '../shared/ProjectStatusBadge'
+import AppliedBadge from '../shared/AppliedBadge'
 
 const ProjectsList = () => {
   const navigate = useNavigate()
@@ -31,7 +33,6 @@ const ProjectsList = () => {
   const [selectedProjectForRating, setSelectedProjectForRating] = useState(null)
   const [freelancerRatingsCache, setFreelancerRatingsCache] = useState({})
   const [ratingUserType, setRatingUserType] = useState('freelancer')
-  const [myRatings, setMyRatings] = useState([])
 
   const isLockedStatus = (status) => ['under_review', 'completed', 'archived', 'cancelled', 'cancelled_by_admin', 'deleted_by_owner'].includes(status)
 
@@ -45,88 +46,6 @@ const ProjectsList = () => {
     setModalMode('create')
     setSelectedProject(null)
   }
-
-  // Fetch projects when component mounts
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
-  // Fetch favorites when component mounts
-  useEffect(() => {
-    if (!currentUser) return // Skip if no user
-
-    const loadFavorites = async () => {
-      try {
-        const favProjects = await getFavoriteProjects()
-        // Extract just the IDs
-        const favoriteIds = favProjects.map((fav) => fav._id)
-        setFavorites(favoriteIds)
-      } catch (error) {
-        console.error('Error loading favorites:', error)
-      }
-    }
-
-    loadFavorites()
-  }, [currentUser])
-
-  // Reload projects and favorites when user navigates back to this page
-  useEffect(() => {
-    if (currentUser) {
-      fetchProjects()
-    }
-  }, [location.pathname, currentUser])
-
-  // Load freelancer ratings to check which projects have been rated
-  useEffect(() => {
-    if (!currentUser?._id) return
-
-    const loadMyRatings = async () => {
-      try {
-        const ratingsData = await getFreelancerRatings(currentUser._id)
-        setMyRatings(ratingsData)
-      } catch (error) {
-        console.error('Error loading ratings:', error)
-      }
-    }
-
-    loadMyRatings()
-  }, [currentUser])
-
-  // Load freelancer ratings for all freelancers in projects
-  useEffect(() => {
-    if (!projects || projects.length === 0) return
-
-    const loadFreelancerRatings = async () => {
-      const freelancerIds = new Set()
-
-      // Collect all unique freelancer IDs from projects
-      projects.forEach((project) => {
-        if (project.assignee?._id) {
-          freelancerIds.add(project.assignee._id)
-        }
-      })
-
-      // Fetch ratings for each freelancer
-      const newCache = { ...freelancerRatingsCache }
-
-      for (const freelancerId of freelancerIds) {
-        if (newCache[freelancerId]) {
-          continue
-        }
-
-        try {
-          const ratingsData = await getFreelancerRatings(freelancerId)
-          newCache[freelancerId] = ratingsData
-        } catch (error) {
-          console.error(`Error loading ratings for freelancer ${freelancerId}:`, error)
-        }
-      }
-
-      setFreelancerRatingsCache(newCache)
-    }
-
-    loadFreelancerRatings()
-  }, [projects])
 
   // Function to fetch projects and favorites
   const fetchProjects = async () => {
@@ -176,30 +95,86 @@ const ProjectsList = () => {
     }
   }
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'active':
-        return <FaClock className='text-blue-500' />
-      case 'in_progress':
-        return <FaSpinner className='text-purple-500' />
-      case 'under_review':
-        return <FaSearch className='text-orange-500' />
-      case 'completed':
-        return <FaCheck className='text-green-500' />
-      case 'paused':
-        return <FaPause className='text-yellow-500' />
-      case 'cancelled':
-        return <FaTimes className='text-red-500' />
-      case 'cancelled_by_admin':
-        return <FaTimes className='text-red-600' />
-      case 'archived':
-        return <FaArchive className='text-gray-500' />
-      case 'draft':
-        return <FaPause className='text-yellow-500' />
-      default:
-        return null
+  // Fetch projects when component mounts
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  // Fetch favorites when component mounts
+  useEffect(() => {
+    if (!currentUser) return // Skip if no user
+
+    const loadFavorites = async () => {
+      try {
+        const favProjects = await getFavoriteProjects()
+        // Extract just the IDs
+        const favoriteIds = favProjects.map((fav) => fav._id)
+        setFavorites(favoriteIds)
+      } catch (error) {
+        console.error('Error loading favorites:', error)
+      }
     }
-  }
+
+    loadFavorites()
+  }, [currentUser])
+
+  // Reload projects and favorites when user navigates back to this page
+  useEffect(() => {
+    if (currentUser) {
+      fetchProjects()
+    }
+  }, [location.pathname, currentUser])
+
+  // Load freelancer ratings to check which projects have been rated
+  useEffect(() => {
+    if (!currentUser?._id) return
+
+    const loadMyRatings = async () => {
+      try {
+        await getFreelancerRatings(currentUser._id)
+      } catch (error) {
+        console.error('Error loading ratings:', error)
+      }
+    }
+
+    loadMyRatings()
+  }, [currentUser])
+
+  // Load freelancer ratings for all freelancers in projects
+  useEffect(() => {
+    if (!projects || projects.length === 0) return
+
+    const loadFreelancerRatings = async () => {
+      const freelancerIds = new Set()
+
+      // Collect all unique freelancer IDs from projects
+      projects.forEach((project) => {
+        if (project.assignee?._id) {
+          freelancerIds.add(project.assignee._id)
+        }
+      })
+
+      // Fetch ratings for each freelancer
+      const newCache = { ...freelancerRatingsCache }
+
+      for (const freelancerId of freelancerIds) {
+        if (newCache[freelancerId]) {
+          continue
+        }
+
+        try {
+          const ratingsData = await getFreelancerRatings(freelancerId)
+          newCache[freelancerId] = ratingsData
+        } catch (error) {
+          console.error(`Error loading ratings for freelancer ${freelancerId}:`, error)
+        }
+      }
+
+      setFreelancerRatingsCache(newCache)
+    }
+
+    loadFreelancerRatings()
+  }, [projects])
 
   const isCreator = (project) => project.user._id === currentUser._id || project.user === currentUser._id
 
@@ -356,7 +331,7 @@ const ProjectsList = () => {
       {/* Empty State */}
       {!loading && !error && filteredProjects.length === 0 && (
         <div className='text-center py-10'>
-          <FaLightbulb className='mx-auto text-4xl text-gray-400 mb-4' />
+          <FaLightbulb className='mx-auto text-4xl text-primary/40 dark:text-light/40 mb-4' />
           <h3 className='text-xl font-medium theme-text mb-2'>No projects found</h3>
           <p className='theme-text-secondary'>
             {projectType === 'all'
@@ -416,15 +391,16 @@ const ProjectsList = () => {
                         className='ml-2'
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}>
-                        <FaHeart className={`text-2xl ${isFavorited(project._id) ? 'text-red-500' : 'text-gray-400'}`} />
+                        <FaHeart className={`text-2xl ${isFavorited(project._id) ? 'text-red-500' : 'text-primary/40 dark:text-light/40'}`} />
                       </motion.button>
                     </div>
                   </div>
                   <p className='theme-text-secondary text-sm mb-3'>{project.description}</p>
                   <div className='flex items-center gap-4'>
                     <div className='flex items-center gap-2'>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getProjectStatusBadgeClass(project.status)}`}>{formatProjectStatusLabel(project.status)}</span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+                      <ProjectStatusBadge status={project.status} />
+                      <PriorityBadge priority={project.priority} size='sm' />
+                      {projectType === 'interested' && <AppliedBadge text='Applied' size='sm' />}
                     </div>
 
                     {project.assignee && (isCreator(project) || isAssignee(project)) && (

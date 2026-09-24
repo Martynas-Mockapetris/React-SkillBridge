@@ -1,13 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaCalendar, FaTimes, FaCheck } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useState } from 'react'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
   const [newDeadline, setNewDeadline] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const currentDeadline = project?.deadline ? new Date(project.deadline).toISOString().split('T')[0] : ''
 
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 1)
@@ -52,7 +52,6 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
       onClose()
     } catch (err) {
       toast.error(`Error rescheduling: ${err.message}`)
-      console.error('Error rescheduling project:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -139,7 +138,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className='flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 theme-text font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors duration-200'>
+                  className='flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 theme-text font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-all duration-300 hover:shadow-lg'>
                   Cancel
                 </motion.button>
                 <motion.button
@@ -147,12 +146,10 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                   disabled={isSubmitting || !newDeadline}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className='flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 transition-colors duration-200'>
+                  className='flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 transition-all duration-300 hover:shadow-lg'>
                   {isSubmitting ? (
                     <>
-                      <div className='animate-spin'>
-                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full'></div>
-                      </div>
+                      <LoadingSpinner size='sm' className='border-t-2 border-white' />
                       <span>Rescheduling...</span>
                     </>
                   ) : (
@@ -169,6 +166,17 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
       )}
     </AnimatePresence>
   )
+}
+
+RescheduleModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    deadline: PropTypes.string
+  }),
+  onClose: PropTypes.func.isRequired,
+  onReschedule: PropTypes.func
 }
 
 export default RescheduleModal

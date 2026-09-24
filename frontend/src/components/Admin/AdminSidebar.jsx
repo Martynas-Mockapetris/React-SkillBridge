@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { FaChartBar, FaUsers, FaProjectDiagram, FaBullhorn, FaNewspaper, FaCog, FaBars, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
@@ -167,6 +168,13 @@ const AdminSidebar = ({ activeSection, setActiveSection, activeSettingsSection, 
       {isMobileMenuOpen && <div className='fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden' onClick={() => setIsMobileMenuOpen(false)} />}
     </>
   )
+}
+
+AdminSidebar.propTypes = {
+  activeSection: PropTypes.string.isRequired,
+  setActiveSection: PropTypes.func.isRequired,
+  activeSettingsSection: PropTypes.string,
+  setActiveSettingsSection: PropTypes.func
 }
 
 export default AdminSidebar

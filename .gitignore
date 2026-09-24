@@ -9,6 +9,9 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+# Exception: track example and production template files
+!.env.example
+!.env.production
 
 # Build
 /build
@@ -34,3 +37,34 @@ text.txt
 
 # Server scripts
 /server/src/scripts/
+
+# Documentation files (local reference only)
+CHANGELOG.md
+PROJECT_STATUS.md
+frontend/COMPONENT_DOCUMENTATION.md
+frontend/COMPONENTS_GUIDE.md
+frontend/src/components/COMPONENTS.md
+
+# Testing infrastructure (local development only)
+frontend/jest.config.js
+frontend/src/setupTests.js
+frontend/__mocks__/
+frontend/src/utils/__tests__/
+frontend/src/components/__tests__/
+
+# Linting and code quality (local development only)
+.eslintrc*
+.eslintignore
+lint-output.txt
+frontend/lint-output.txt
+.stylelintrc*
+.stylelintignore
+
+# Test coverage reports
+coverage/
+*.lcov
+
+# Code quality reports
+sonarqube-report/
+.sonar/
+frontend/src/components/__tests__/

@@ -1,5 +1,6 @@
 import AvailabilityCalendar from '../models/AvailabilityCalendar.js'
 import Project from '../models/Project.js'
+import { validateDayCapacity, calculateTotalCapacityUsed, hasHighPriorityConflict } from '../utils/availabilityCalendarService.js'
 
 // Priority to capacity consumption mapping
 const PRIORITY_CAPACITY = {
@@ -16,7 +17,9 @@ const getStatusByCapacity = (capacityUsed) => {
   return 'green'
 }
 
-// Get or create calendar for a month
+// @desc    Get or create availability calendar for a month
+// @route   Internal helper
+// @access  Private
 export const getOrCreateCalendar = async (freelancerId, year, month) => {
   try {
     let calendar = await AvailabilityCalendar.findOne({
@@ -55,7 +58,9 @@ export const getOrCreateCalendar = async (freelancerId, year, month) => {
   }
 }
 
-// Get calendar for freelancer
+// @desc    Get freelancer's availability calendar for a specific month
+// @route   GET /api/availability/:freelancerId
+// @access  Private
 export const getFreelancerCalendar = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -67,9 +72,51 @@ export const getFreelancerCalendar = async (req, res) => {
 
     const calendar = await getOrCreateCalendar(freelancerId, parseInt(year), parseInt(month))
 
+    // Add projectsCount and projectTitles to each day for frontend rendering
+    const enrichedDays = calendar.days.map((day) => {
+      const enrichedDay = {
+        date: day.date,
+        status: day.status,
+        capacity: day.capacity,
+        manualStatus: day.manualStatus,
+        notes: day.notes,
+        assignedProjects: day.assignedProjects || [],
+        projectsCount: (day.assignedProjects || []).length,
+        projectTitles: (day.assignedProjects || []).map((p) => ({ title: p.title, priority: p.priority, deadline: p.deadline }))
+      }
+      return enrichedDay
+    })
+
+    // Calculate days breakdown by status
+    const statusCounts = { green: 0, yellow: 0, orange: 0, red: 0 }
+    enrichedDays.forEach((day) => {
+      const status = day.status
+      if (statusCounts.hasOwnProperty(status)) {
+        statusCounts[status]++
+      } else {
+        console.warn(`[WARNING] Unexpected status: ${status}`)
+      }
+    })
+
+    const daysBreakdown = statusCounts
+
+    // Calculate capacity breakdown
+    const daysCapacityBreakdown = {
+      fullCapacity: enrichedDays.filter((d) => d.capacity === 100).length,
+      partialCapacity: enrichedDays.filter((d) => d.capacity > 0 && d.capacity < 100).length,
+      noCapacity: enrichedDays.filter((d) => d.capacity === 0).length
+    }
+
+    const enrichedData = {
+      ...calendar.toObject(),
+      days: enrichedDays,
+      daysBreakdown,
+      daysCapacityBreakdown
+    }
+
     res.status(200).json({
       success: true,
-      data: calendar
+      data: enrichedData
     })
   } catch (error) {
     console.error('Error fetching calendar:', error)
@@ -77,7 +124,9 @@ export const getFreelancerCalendar = async (req, res) => {
   }
 }
 
-// Get freelancer availability status
+// @desc    Get current availability status and capacity overview
+// @route   GET /api/availability/:freelancerId/status
+// @access  Private
 export const getFreelancerAvailability = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -114,7 +163,9 @@ export const getFreelancerAvailability = async (req, res) => {
   }
 }
 
-// Update manual availability for a day
+// @desc    Update manual availability status and notes for a specific day
+// @route   PATCH /api/availability/:freelancerId/:year/:month/:date
+// @access  Private
 export const updateDayAvailability = async (req, res) => {
   try {
     const { freelancerId, year, month, date } = req.params
@@ -161,7 +212,9 @@ export const updateDayAvailability = async (req, res) => {
   }
 }
 
-// Get all calendars for a freelancer (all months)
+// @desc    Get all availability calendars for a freelancer
+// @route   GET /api/availability/:freelancerId/all
+// @access  Private
 export const getFreelancerAllCalendars = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -182,32 +235,54 @@ export const getFreelancerAllCalendars = async (req, res) => {
   }
 }
 
-// Get public calendar (for viewing profile)
+// @desc    Get public availability calendar for freelancer profile viewing
+// @route   GET /api/availability/public/:freelancerId/:year/:month
+// @access  Public
 export const getPublicFreelancerCalendar = async (req, res) => {
   try {
     const { freelancerId, year, month } = req.params
 
-    const calendar = await AvailabilityCalendar.findOne({
+    let calendar = await AvailabilityCalendar.findOne({
       freelancer: freelancerId,
       year: parseInt(year),
-      month: parseInt(month),
-      isPublic: true
+      month: parseInt(month)
     }).populate('days.assignedProjects', 'title priority deadline')
 
+    // Create calendar if it doesn't exist
     if (!calendar) {
-      return res.status(404).json({ message: 'Calendar not found or not public' })
+      calendar = await getOrCreateCalendar(freelancerId, parseInt(year), parseInt(month))
+      await calendar.populate('days.assignedProjects', 'title priority deadline')
     }
 
     // Only show public information
+    const publicDays = calendar.days.map((day) => ({
+      date: day.date,
+      status: day.status,
+      capacity: day.capacity,
+      projectsCount: day.assignedProjects.length,
+      projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority }))
+    }))
+
+    // Calculate days breakdown by status
+    const daysBreakdown = {
+      green: publicDays.filter((d) => d.status === 'green').length,
+      yellow: publicDays.filter((d) => d.status === 'yellow').length,
+      orange: publicDays.filter((d) => d.status === 'orange').length,
+      red: publicDays.filter((d) => d.status === 'red').length
+    }
+
+    // Calculate capacity breakdown
+    const daysCapacityBreakdown = {
+      fullCapacity: publicDays.filter((d) => d.capacity === 100).length,
+      partialCapacity: publicDays.filter((d) => d.capacity > 0 && d.capacity < 100).length,
+      noCapacity: publicDays.filter((d) => d.capacity === 0).length
+    }
+
     const publicData = {
       ...calendar.toObject(),
-      days: calendar.days.map((day) => ({
-        date: day.date,
-        status: day.status,
-        capacity: day.capacity,
-        projectsCount: day.assignedProjects.length,
-        projectTitles: day.assignedProjects.map((p) => ({ title: p.title, priority: p.priority }))
-      }))
+      days: publicDays,
+      daysBreakdown,
+      daysCapacityBreakdown
     }
 
     res.status(200).json({
@@ -220,7 +295,9 @@ export const getPublicFreelancerCalendar = async (req, res) => {
   }
 }
 
-// Toggle calendar visibility
+// @desc    Toggle calendar between public and private visibility
+// @route   PATCH /api/availability/:freelancerId/visibility
+// @access  Private
 export const toggleCalendarVisibility = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -248,7 +325,9 @@ export const toggleCalendarVisibility = async (req, res) => {
   }
 }
 
-// Calculate freelancer capacity for project filtering
+// @desc    Calculate freelancer capacity and availability matrix for projects
+// @route   POST /api/availability/:freelancerId/calculate-capacity
+// @access  Private
 export const calculateFreelancerCapacity = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -357,7 +436,9 @@ export const calculateFreelancerCapacity = async (req, res) => {
   }
 }
 
-// Batch calculate capacity for multiple freelancers (for project filtering UI)
+// @desc    Batch calculate capacity for multiple freelancers at once
+// @route   POST /api/availability/batch/calculate-capacity
+// @access  Private
 export const batchCalculateCapacity = async (req, res) => {
   try {
     const { freelancerIds, startDate, endDate } = req.body
@@ -417,6 +498,84 @@ export const batchCalculateCapacity = async (req, res) => {
   }
 }
 
+// @desc    Validate if project can be assigned within freelancer capacity
+// @route   POST /api/availability/:freelancerId/validate-assignment
+// @access  Private
+export const validateProjectAssignmentCapacity = async (req, res) => {
+  try {
+    const { freelancerId } = req.params
+    const { projectId, priority, deadline } = req.body
+
+    if (!freelancerId || !projectId || !priority || !deadline) {
+      return res.status(400).json({
+        message: 'Missing required fields: freelancerId, projectId, priority, deadline'
+      })
+    }
+
+    // Get all calendars for this freelancer
+    const calendars = await AvailabilityCalendar.find({
+      freelancer: freelancerId
+    }).populate('days.assignedProjects', 'priority')
+
+    // Check each day in date range for conflicts
+    const conflicts = []
+    const deadlineDate = new Date(deadline)
+    deadlineDate.setHours(0, 0, 0, 0)
+
+    for (const calendar of calendars) {
+      for (const day of calendar.days) {
+        const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+
+        if (dayDate <= deadlineDate && dayDate >= new Date()) {
+          // Check High Priority conflict
+          if (priority === 'high' && day.assignedProjects.length > 0) {
+            conflicts.push({
+              date: `${calendar.year}-${calendar.month}-${day.date}`,
+              reason: 'High Priority project needs exclusive access'
+            })
+            continue
+          }
+
+          // Check if High Priority already exists
+          const hasHighPriority = day.assignedProjects.some((p) => p.priority === 'high')
+          if (hasHighPriority) {
+            conflicts.push({
+              date: `${calendar.year}-${calendar.month}-${day.date}`,
+              reason: 'High Priority project already occupies this date'
+            })
+            continue
+          }
+
+          // Check capacity
+          const newWeight = getCapacityWeight(priority)
+          const currentCapacity = calculateTotalCapacityUsed(day.assignedProjects, priority)
+
+          if (currentCapacity + newWeight > 100) {
+            conflicts.push({
+              date: `${calendar.year}-${calendar.month}-${day.date}`,
+              reason: `Insufficient capacity (need ${newWeight}%, have ${100 - currentCapacity}% available)`
+            })
+          }
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      canAssign: conflicts.length === 0,
+      conflictCount: conflicts.length,
+      conflicts,
+      message: conflicts.length === 0 ? 'Project can be assigned' : `Assignment blocked by ${conflicts.length} capacity conflict(s)`
+    })
+  } catch (error) {
+    console.error('Error validating assignment capacity:', error)
+    res.status(500).json({ message: 'Error validating capacity', error: error.message })
+  }
+}
+
+// @desc    Get filtered availability calendar by project status
+// @route   GET /api/availability/:freelancerId/filtered
+// @access  Private
 export const getFilteredAvailability = async (req, res) => {
   try {
     const { freelancerId } = req.params
@@ -465,11 +624,28 @@ export const getFilteredAvailability = async (req, res) => {
         .filter((day) => day.projectsCount > 0)
     }
 
+    // Calculate days breakdown by status
+    const daysBreakdown = {
+      green: filteredDays.filter((d) => d.status === 'green').length,
+      yellow: filteredDays.filter((d) => d.status === 'yellow').length,
+      orange: filteredDays.filter((d) => d.status === 'orange').length,
+      red: filteredDays.filter((d) => d.status === 'red').length
+    }
+
+    // Calculate capacity breakdown
+    const daysCapacityBreakdown = {
+      fullCapacity: filteredDays.filter((d) => d.capacity === 100).length,
+      partialCapacity: filteredDays.filter((d) => d.capacity > 0 && d.capacity < 100).length,
+      noCapacity: filteredDays.filter((d) => d.capacity === 0).length
+    }
+
     res.status(200).json({
       message: 'Filtered availability retrieved',
       data: {
         ...calendar.toObject(),
         days: filteredDays,
+        daysBreakdown,
+        daysCapacityBreakdown,
         appliedFilters: {
           status: statusFilter
         }

@@ -1,8 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FaCheckCircle, FaClock, FaEuroSign, FaMapMarkerAlt, FaUser } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { useAuth } from '../../context/AuthContext'
 import VerificationBadge from '../shared/VerificationBadge'
+import SkillsList from '../shared/SkillsList'
+import RoleTagBadge from '../shared/RoleTagBadge'
 
 const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
   const navigate = useNavigate()
@@ -24,17 +27,17 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
     connectionStatus === 'accepted'
       ? {
           label: 'Connected',
-          className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+          className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/20'
         }
       : connectionStatus === 'pending'
         ? {
             label: 'Request Sent',
-            className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+            className: 'bg-orange-500/10 text-orange-600 dark:text-orange-300 border border-orange-500/30 dark:border-orange-500/20'
           }
         : connectionStatus === 'incoming'
           ? {
               label: 'Incoming Request',
-              className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+              className: 'bg-accent/10 text-accent border border-accent/30 dark:border-accent/20'
             }
           : null
 
@@ -88,6 +91,11 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
     </motion.div>
   )
 
+  CardShell.propTypes = {
+    children: PropTypes.node.isRequired,
+    locked: PropTypes.bool
+  }
+
   const CardContent = ({ blurred = false }) => (
     <div className={`${blurred ? 'opacity-50 pointer-events-none ' : ''}flex flex-col h-full`}>
       <div className='flex items-start gap-4 mb-4'>
@@ -101,7 +109,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
             </div>
 
             <div className='flex flex-col items-end gap-2 shrink-0'>
-              <span className='inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-accent/20 text-accent whitespace-nowrap'>{roleLabel}</span>
+              <RoleTagBadge role={roleLabel} size='sm' />
               {connectionBadge && <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap ${connectionBadge.className}`}>{connectionBadge.label}</span>}
               <VerificationBadge isVerified={freelancerInfo.isEmailVerified} className='whitespace-nowrap px-2.5 py-1' />
             </div>
@@ -126,15 +134,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
           <h4 className='text-sm font-semibold text-accent mb-2 line-clamp-2'>{announcement.title}</h4>
           <p className='text-xs theme-text-secondary line-clamp-3 mb-4 flex-1'>{truncateText(announcement.background, 120)}</p>
 
-          {freelancerInfo.primarySkills && freelancerInfo.primarySkills.length > 0 && (
-            <div className='flex flex-wrap gap-1.5'>
-              {freelancerInfo.primarySkills.slice(0, 4).map((skill, skillIdx) => (
-                <span key={skillIdx} className='text-xs bg-accent/20 text-accent px-2 py-0.5 rounded'>
-                  {skill}
-                </span>
-              ))}
-            </div>
-          )}
+          {freelancerInfo.primarySkills && freelancerInfo.primarySkills.length > 0 && <SkillsList skills={freelancerInfo.primarySkills} className='mb-4' />}
         </div>
       </div>
 
@@ -148,6 +148,10 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
       </div>
     </div>
   )
+
+  CardContent.propTypes = {
+    blurred: PropTypes.bool
+  }
 
   if (currentUser) {
     return (
@@ -168,5 +172,35 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
     </CardShell>
   )
 }
+
+FreelancerCard.propTypes = {
+  freelancer: PropTypes.shape({
+    _id: PropTypes.string,
+    userId: PropTypes.shape({
+      _id: PropTypes.string,
+      firstName: PropTypes.string,
+      lastName: PropTypes.string,
+      email: PropTypes.string
+    }),
+    freelancer: PropTypes.shape({
+      _id: PropTypes.string,
+      userType: PropTypes.string,
+      name: PropTypes.string,
+      specialty: PropTypes.string,
+      profilePicture: PropTypes.string,
+      isEmailVerified: PropTypes.bool,
+      availabilityLabel: PropTypes.string,
+      hourlyRateLabel: PropTypes.string,
+      location: PropTypes.string,
+      primarySkills: PropTypes.array,
+      yearsOfExperience: PropTypes.number
+    })
+  }).isRequired,
+  index: PropTypes.number,
+  connectionStatus: PropTypes.string
+}
+
+// Inner component props (defined inside FreelancerCard)
+// CardShell and CardContent would ideally be extracted to separate components
 
 export default FreelancerCard

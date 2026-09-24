@@ -1,3 +1,6 @@
+import PropTypes from 'prop-types'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
+
 const AdminProjectCancelModal = ({ isOpen, onClose, onConfirm, projectName, loading }) => {
   if (!isOpen) return null
 
@@ -13,13 +16,22 @@ const AdminProjectCancelModal = ({ isOpen, onClose, onConfirm, projectName, load
           <button type='button' onClick={onClose} disabled={loading} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'>
             Cancel
           </button>
-          <button type='button' onClick={onConfirm} disabled={loading} className='px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60'>
+          <button type='button' onClick={onConfirm} disabled={loading} className='px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 flex items-center justify-center gap-2'>
+            {loading && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
             {loading ? 'Applying...' : 'Yes, Cancel Project'}
           </button>
         </div>
       </div>
     </div>
   )
+}
+
+AdminProjectCancelModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  projectName: PropTypes.string.isRequired,
+  loading: PropTypes.bool
 }
 
 export default AdminProjectCancelModal

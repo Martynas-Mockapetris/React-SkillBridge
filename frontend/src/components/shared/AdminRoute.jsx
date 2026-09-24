@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import { useAuth } from '../../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 import { hasAdminPanelAccess } from '../../utils/accessRoles'
@@ -18,6 +19,10 @@ const AdminRoute = ({ children }) => {
 
   // Render children if authenticated and allowed into admin panel
   return children
+}
+
+AdminRoute.propTypes = {
+  children: PropTypes.node.isRequired
 }
 
 export default AdminRoute

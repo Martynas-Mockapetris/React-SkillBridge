@@ -409,11 +409,7 @@ const ProfileSettings = () => {
         </div>
       ) : (
         <>
-          <motion.div
-            className='mb-6 p-4 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}>
+          <motion.div className='mb-6 p-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <div className='flex items-center justify-between gap-4 flex-wrap'>
               <div>
                 <p className='text-sm theme-text-secondary'>Profile completion</p>
@@ -441,7 +437,7 @@ const ProfileSettings = () => {
           <form onSubmit={handleSubmit}>
             <motion.div className='grid lg:grid-cols-2 gap-6 mb-8' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               {/* Basic Information */}
-              <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 h-full'>
+              <motion.div className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-full'>
                 <h3 className='text-xl font-semibold theme-text mb-2'>Basic Information</h3>
                 <p className='text-sm theme-text-secondary mb-4'>Details people use to recognize you and understand your background quickly.</p>
                 <div className='grid gap-5'>
@@ -451,8 +447,8 @@ const ProfileSettings = () => {
                     </div>
 
                     <div className='space-y-5'>
-                      <div className='flex flex-col items-center text-center p-4 rounded-xl bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border'>
-                        <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 theme-border shadow-lg mb-4 object-cover' />
+                      <div className='flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
+                        <img key={currentAvatarUrl} src={currentAvatarUrl} alt='Profile' className='w-24 h-24 rounded-full border-2 border-gray-300 dark:border-gray-600 shadow-lg mb-4 object-cover' />
 
                         <div className='flex flex-wrap items-center justify-center gap-3'>
                           <motion.button
@@ -462,7 +458,7 @@ const ProfileSettings = () => {
                               const newAvatarUrl = `https://i.pravatar.cc/150?u=${randomSeed}`
                               setFormData((prev) => ({ ...prev, profilePicture: newAvatarUrl }))
                             }}
-                            className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300'
+                            className='flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300'
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}>
                             <FaSyncAlt className='text-sm' />
@@ -478,7 +474,7 @@ const ProfileSettings = () => {
                                   profilePicture: savedFormData.profilePicture
                                 }))
                               }
-                              className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 transition-colors duration-300'
+                              className='px-4 py-2 rounded-lg border dark:border-light/10 border-primary/10 theme-text hover:text-accent hover:border-accent/40 hover:shadow-md transition-all duration-300'
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}>
                               Use Current Avatar
@@ -556,7 +552,7 @@ const ProfileSettings = () => {
 
               {/* Right Column: Public Presence */}
               <motion.div className='flex flex-col gap-6 h-full' initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                <motion.div className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 border theme-border flex-1'>
+                <motion.div className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex-1'>
                   <h3 className='text-xl font-semibold theme-text mb-2'>Public Presence</h3>
                   <p className='text-sm theme-text-secondary mb-4'>Shape how people discover you, review your work, and understand your public profile at a glance.</p>
                   <div className='space-y-4'>
@@ -641,7 +637,7 @@ const ProfileSettings = () => {
 
             {showFreelancerSection && (
               <motion.div
-                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+                className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.65 }}>
@@ -668,7 +664,7 @@ const ProfileSettings = () => {
                   </div>
 
                   <div className='grid md:grid-cols-2 gap-4'>
-                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                       <input type='checkbox' name='showLocationPublic' checked={formData.showLocationPublic} onChange={handleChange} className={toggleClasses} />
                       <div>
                         <p className='text-sm font-medium theme-text'>Show location publicly</p>
@@ -676,7 +672,7 @@ const ProfileSettings = () => {
                       </div>
                     </label>
 
-                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                       <input type='checkbox' name='showHourlyRate' checked={formData.showHourlyRate} onChange={handleChange} className={toggleClasses} />
                       <div>
                         <p className='text-sm font-medium theme-text'>Show hourly rate</p>
@@ -684,7 +680,7 @@ const ProfileSettings = () => {
                       </div>
                     </label>
 
-                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                       <input type='checkbox' name='allowDirectMessages' checked={formData.allowDirectMessages} onChange={handleChange} className={toggleClasses} />
                       <div>
                         <p className='text-sm font-medium theme-text'>Allow direct messages</p>
@@ -692,7 +688,7 @@ const ProfileSettings = () => {
                       </div>
                     </label>
 
-                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                    <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                       <input type='checkbox' name='allowProjectInvites' checked={formData.allowProjectInvites} onChange={handleChange} className={toggleClasses} />
                       <div>
                         <p className='text-sm font-medium theme-text'>Allow project invites</p>
@@ -705,7 +701,7 @@ const ProfileSettings = () => {
             )}
 
             <motion.div
-              className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+              className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8'
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.68 }}>
@@ -713,7 +709,7 @@ const ProfileSettings = () => {
               <p className='text-sm theme-text-secondary mb-4'>Choose which platform activity should also reach your inbox, beyond in-app notifications.</p>
 
               <div className='grid gap-4'>
-                <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                   <input type='checkbox' name='emailNotificationsEnabled' checked={formData.emailNotificationsEnabled} onChange={handleChange} className={toggleClasses} />
                   <div>
                     <p className='text-sm font-medium theme-text'>Enable email notifications</p>
@@ -728,7 +724,7 @@ const ProfileSettings = () => {
                 </label>
 
                 <div className={`grid md:grid-cols-3 gap-4 transition-opacity duration-300 ${formData.emailNotificationsEnabled ? 'opacity-100' : 'opacity-60'}`}>
-                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                     <input
                       type='checkbox'
                       name='emailNotificationsMessages'
@@ -743,7 +739,7 @@ const ProfileSettings = () => {
                     </div>
                   </label>
 
-                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                     <input
                       type='checkbox'
                       name='emailNotificationsConnections'
@@ -758,7 +754,7 @@ const ProfileSettings = () => {
                     </div>
                   </label>
 
-                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 transition-colors duration-300'>
+                  <label className='flex items-start gap-3 p-4 rounded-xl theme-input border theme-border cursor-pointer hover:border-accent/30 hover:shadow-md transition-all duration-300'>
                     <input
                       type='checkbox'
                       name='emailNotificationsProjects'
@@ -784,7 +780,7 @@ const ProfileSettings = () => {
 
             {showFreelancerSection && (
               <motion.div
-                className='p-6 rounded-lg bg-gradient-to-br dark:from-light/10 dark:to-light/5 from-primary/10 to-primary/5 mb-8'
+                className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-8'
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}>
@@ -1113,9 +1109,9 @@ const ProfileSettings = () => {
                 <motion.button
                   type='button'
                   onClick={handleReset}
-                  className='flex-1 bg-gray-500 text-white font-medium py-3 px-6 rounded-lg
-              hover:bg-gray-600 transition-colors duration-300
-              focus:outline-none focus:ring-2 focus:ring-gray-500/50
+                  className='flex-1 bg-primary/20 dark:bg-light/10 text-primary dark:text-light font-medium py-3 px-6 rounded-lg
+              hover:bg-primary/30 dark:hover:bg-light/20 hover:shadow-lg transition-all duration-300
+              focus:outline-none focus:ring-2 focus:ring-primary/50
               disabled:opacity-50 disabled:cursor-not-allowed'
                   whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
                   whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
@@ -1126,12 +1122,14 @@ const ProfileSettings = () => {
                 <motion.button
                   type='submit'
                   className='flex-1 bg-accent text-white font-medium py-3 px-6 rounded-lg
-              hover:bg-accent/90 transition-colors duration-300
+              hover:bg-accent/90 hover:shadow-lg transition-all duration-300
               focus:outline-none focus:ring-2 focus:ring-accent/50
-              disabled:opacity-50 disabled:cursor-not-allowed'
+              disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2'
                   whileHover={hasUnsavedChanges && !isSubmitting ? { scale: 1.02 } : undefined}
                   whileTap={hasUnsavedChanges && !isSubmitting ? { scale: 0.98 } : undefined}
                   disabled={isSubmitting || !hasUnsavedChanges}>
+                  {isSubmitting && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                   {isSubmitting ? 'Saving Changes...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
                 </motion.button>
               </div>

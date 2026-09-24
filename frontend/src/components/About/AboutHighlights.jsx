@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaBullseye, FaCompass, FaUsers } from 'react-icons/fa'
 
 const AboutHighlights = ({ mission, vision, layout = {} }) => {
@@ -31,10 +32,10 @@ const AboutHighlights = ({ mission, vision, layout = {} }) => {
 
   const introCardClass =
     cardLayout === 'grid'
-      ? 'rounded-3xl border theme-border bg-white/50 dark:bg-black/20 p-8 lg:col-span-3'
+      ? 'rounded-3xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-8 lg:col-span-3'
       : cardLayout === 'feature-first'
-        ? 'rounded-3xl border theme-border bg-white/50 dark:bg-black/20 p-8 lg:col-span-2'
-        : 'rounded-3xl border theme-border bg-white/50 dark:bg-black/20 p-8'
+        ? 'rounded-3xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-8 lg:col-span-2'
+        : 'rounded-3xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-8'
 
   const asideGridClass = cardLayout === 'grid' ? 'grid grid-cols-1 md:grid-cols-3 gap-4' : cardLayout === 'feature-first' ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 gap-4'
 
@@ -60,7 +61,7 @@ const AboutHighlights = ({ mission, vision, layout = {} }) => {
 
       <motion.div className={asideGridClass} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.14 }}>
         {cards.map((card) => (
-          <div key={card.title} className={`rounded-2xl border theme-border bg-white/50 dark:bg-black/20 p-5 ${alignClass}`}>
+          <div key={card.title} className={`rounded-2xl border theme-border bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-5 ${alignClass}`}>
             {showIcons && <div className={`mb-3 text-xl ${contentAlign === 'center' ? 'flex justify-center' : ''}`}>{card.icon}</div>}
             <h3 className='text-lg font-semibold theme-text'>{card.title}</h3>
             <p className='mt-2 text-sm leading-relaxed theme-text-secondary'>{card.description}</p>
@@ -69,6 +70,17 @@ const AboutHighlights = ({ mission, vision, layout = {} }) => {
       </motion.div>
     </div>
   )
+}
+
+AboutHighlights.propTypes = {
+  mission: PropTypes.string,
+  vision: PropTypes.string,
+  layout: PropTypes.shape({
+    contentAlign: PropTypes.string,
+    contentWidth: PropTypes.string,
+    cardLayout: PropTypes.string,
+    showIcons: PropTypes.bool
+  })
 }
 
 export default AboutHighlights

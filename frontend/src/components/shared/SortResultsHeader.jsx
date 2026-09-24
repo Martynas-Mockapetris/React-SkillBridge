@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa'
 
 export const SortResultsHeader = ({ totalResults, currentSort, onSortChange }) => {
@@ -6,10 +7,10 @@ export const SortResultsHeader = ({ totalResults, currentSort, onSortChange }) =
     { value: 'newest', label: 'Newest', icon: null },
     { value: 'oldest', label: 'Oldest', icon: null },
     { value: 'budget-asc', label: 'Budget ↑', icon: <FaArrowUp className='text-xs' /> },
-    { value: 'budget-desc', label: 'Budget ↓', icon: <FaArrowDown className='text-xs' /> }
+    { value: 'budget-desc', label: 'Budget ↓', icon: <FaArrowDown className='text-xs' /> },
+    { value: 'deadline-asc', label: 'Deadline ↑', icon: <FaArrowUp className='text-xs' /> },
+    { value: 'deadline-desc', label: 'Deadline ↓', icon: <FaArrowDown className='text-xs' /> }
   ]
-
-  const currentSortLabel = sortOptions.find((opt) => opt.value === currentSort)?.label || 'Newest'
 
   return (
     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className='bg-white border-b border-gray-200 rounded-t-lg p-4'>
@@ -42,4 +43,10 @@ export const SortResultsHeader = ({ totalResults, currentSort, onSortChange }) =
       </div>
     </motion.div>
   )
+}
+
+SortResultsHeader.propTypes = {
+  totalResults: PropTypes.number.isRequired,
+  currentSort: PropTypes.string.isRequired,
+  onSortChange: PropTypes.func.isRequired
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { reviewProject } from '../services/projectService'
@@ -36,8 +37,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
         onClose()
         setFeedback('')
       }
-    } catch (error) {
-      console.error('Error reviewing project:', error)
+    } catch {
       toast.error('Failed to review project. Please try again.')
     } finally {
       setReviewing(false)
@@ -49,15 +49,11 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
       <AnimatePresence>
         {isOpen && (
           <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className='bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto'>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className='theme-card rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto'>
               {/* Header */}
-              <div className='sticky top-0 flex justify-between items-center p-6 border-b dark:border-gray-700 border-gray-200 bg-white dark:bg-gray-800'>
+              <div className='sticky top-0 flex justify-between items-center p-6 border-b theme-border theme-card'>
                 <h2 className='text-2xl font-bold theme-text'>Review Submission</h2>
-                <button onClick={onClose} className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'>
+                <button onClick={onClose} className='theme-text-secondary hover:theme-text transition-all duration-300 hover:shadow-lg'>
                   <FaTimes size={24} />
                 </button>
               </div>
@@ -79,7 +75,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                               rel='noreferrer'
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
-                              className='block p-2 rounded-lg bg-primary/5 dark:bg-light/5 border border-primary/10 dark:border-light/10 text-accent hover:bg-accent/10 transition-colors text-xs break-all'>
+                              className='block p-2 rounded-lg theme-card/50 border theme-border text-accent hover:bg-accent/10 transition-colors text-xs break-all'>
                               {link}
                             </motion.a>
                           ))}
@@ -102,7 +98,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                                 rel='noreferrer'
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className='block p-2 rounded-lg bg-primary/5 dark:bg-light/5 border border-primary/10 dark:border-light/10 text-accent hover:bg-accent/10 transition-colors text-xs break-all'>
+                                className='block p-2 rounded-lg theme-card/50 border theme-border text-accent hover:bg-accent/10 transition-all duration-300 hover:shadow-lg text-xs break-all'>
                                 {file.name}
                               </motion.a>
                             ))}
@@ -114,7 +110,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                     {submission.note && (
                       <div className='space-y-2'>
                         <h3 className='text-sm font-semibold theme-text'>📝 Submission Note</h3>
-                        <div className='p-3 rounded-lg bg-primary/5 dark:bg-light/5 border border-primary/10 dark:border-light/10'>
+                        <div className='p-3 rounded-lg theme-card/50 border theme-border'>
                           <p className='text-sm theme-text-secondary leading-relaxed'>{submission.note}</p>
                         </div>
                       </div>
@@ -125,7 +121,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                 )}
 
                 {/* Divider */}
-                <div className='h-px bg-gray-300 dark:bg-gray-700'></div>
+                <div className='h-px theme-border'></div>
 
                 {/* Feedback Section */}
                 <div className='space-y-3'>
@@ -134,7 +130,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
                     rows={4}
-                    className='w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 theme-text placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent text-sm resize-none'
+                    className='w-full px-3 py-2 rounded-lg border theme-border theme-input theme-text placeholder-theme-text-secondary focus:outline-none focus:ring-2 focus:ring-accent text-sm resize-none'
                     placeholder='Provide constructive feedback for the freelancer...'
                   />
                 </div>
@@ -147,6 +143,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className='flex items-center justify-center gap-2 py-3 px-4 bg-red-500/90 hover:bg-red-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm'>
+                    {reviewing && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                     <FaTimesCircle size={16} /> Decline
                   </motion.button>
                   <motion.button
@@ -155,6 +152,7 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className='flex items-center justify-center gap-2 py-3 px-4 bg-green-500/90 hover:bg-green-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm'>
+                    {reviewing && <LoadingSpinner size='sm' className='border-t-2 border-white' />}
                     <FaCheckCircle size={16} /> Accept
                   </motion.button>
                 </div>
@@ -181,6 +179,26 @@ const ReviewProjectModal = ({ isOpen, onClose, project, onReviewSuccess }) => {
       />
     </>
   )
+}
+
+ReviewProjectModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    _id: PropTypes.string,
+    submission: PropTypes.shape({
+      links: PropTypes.arrayOf(PropTypes.string),
+      files: PropTypes.arrayOf(
+        PropTypes.shape({
+          name: PropTypes.string,
+          path: PropTypes.string
+        })
+      ),
+      note: PropTypes.string
+    }),
+    assignee: PropTypes.any
+  }),
+  onReviewSuccess: PropTypes.func
 }
 
 export default ReviewProjectModal

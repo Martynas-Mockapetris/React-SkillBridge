@@ -1,4 +1,7 @@
 import AvailabilityCalendar from '../models/AvailabilityCalendar.js'
+import Logger from './logger.js'
+
+const logger = new Logger('AvailabilityCalendarService')
 
 const PRIORITY_CAPACITY = {
   low: 25,
@@ -14,6 +17,140 @@ const getStatusByCapacity = (capacityUsed) => {
 }
 
 /**
+ * Get capacity weight for a priority level
+ * @param {string} priority - 'low', 'medium', or 'high'
+ * @returns {number} Capacity weight (25, 50, or 100)
+ */
+export const getCapacityWeight = (priority) => {
+  return PRIORITY_CAPACITY[priority] || PRIORITY_CAPACITY.low
+}
+
+/**
+ * Calculate total capacity used by projects on a specific day
+ * @param {Array} assignedProjectIds - Array of project ObjectIds
+ * @param {Map} projectMap - Map of projectId -> project object with priority
+ * @returns {number} Total capacity used (0-100+)
+ */
+export const calculateTotalCapacityUsed = (assignedProjectIds, projectMap) => {
+  return assignedProjectIds.reduce((total, projectId) => {
+    const projectKey = projectId.toString()
+    const project = projectMap.get(projectKey)
+    const priority = project?.priority || 'low'
+    return total + getCapacityWeight(priority)
+  }, 0)
+}
+
+/**
+ * Check if assigning a project would create a High Priority conflict
+ * High Priority projects need exclusive access (no other projects allowed)
+ * @param {Array} assignedProjectIds - Current projects on day
+ * @param {Map} projectMap - Map of all projects
+ * @returns {boolean} True if there's a conflict
+ */
+export const hasHighPriorityConflict = (assignedProjectIds, projectMap) => {
+  return assignedProjectIds.some((projectId) => {
+    const projectKey = projectId.toString()
+    const project = projectMap.get(projectKey)
+    return project?.priority === 'high'
+  })
+}
+
+/**
+ * Check if a new project can be assigned to a date range without exceeding capacity
+ * @param {Array} assignedProjectIds - Current projects on a specific day
+ * @param {Object} newProject - Project to be assigned {priority, _id}
+ * @param {Map} projectMap - Map of all existing projects
+ * @returns {Object} {canAssign: boolean, capacityUsed: number, capacityAvailable: number, conflictReason: string|null}
+ */
+export const validateDayCapacity = (assignedProjectIds, newProject, projectMap) => {
+  const newProjectWeight = getCapacityWeight(newProject.priority)
+
+  // Check High Priority exclusivity
+  if (newProject.priority === 'high' && assignedProjectIds.length > 0) {
+    return {
+      canAssign: false,
+      capacityUsed: calculateTotalCapacityUsed(assignedProjectIds, projectMap),
+      capacityAvailable: 0,
+      conflictReason: 'Cannot assign High Priority project when other projects exist on this date'
+    }
+  }
+
+  if (hasHighPriorityConflict(assignedProjectIds, projectMap)) {
+    return {
+      canAssign: false,
+      capacityUsed: 100,
+      capacityAvailable: 0,
+      conflictReason: 'Cannot assign project: High Priority project already occupies this date'
+    }
+  }
+
+  // Calculate current capacity
+  const currentCapacityUsed = calculateTotalCapacityUsed(assignedProjectIds, projectMap)
+  const capacityAfterAssignment = currentCapacityUsed + newProjectWeight
+
+  // Check if assignment would exceed 100%
+  if (capacityAfterAssignment > 100) {
+    return {
+      canAssign: false,
+      capacityUsed: currentCapacityUsed,
+      capacityAvailable: 100 - currentCapacityUsed,
+      conflictReason: `Cannot assign project (${newProjectWeight}% needed). Only ${100 - currentCapacityUsed}% capacity available`
+    }
+  }
+
+  return {
+    canAssign: true,
+    capacityUsed: capacityAfterAssignment,
+    capacityAvailable: 100 - capacityAfterAssignment,
+    conflictReason: null
+  }
+}
+
+/**
+ * Check if High Priority project conflicts with existing projects on date range
+ * High Priority projects need exclusive calendar access
+ * @param {string} freelancerId - Freelancer ID
+ * @param {Object} projectData - {priority, deadline, _id}
+ * @returns {Object} {hasConflict: boolean, conflictingDates: Array}
+ */
+export const checkHighPriorityConflicts = async (freelancerId, projectData) => {
+  try {
+    if (projectData.priority !== 'high') {
+      return { hasConflict: false, conflictingDates: [] }
+    }
+
+    const calendars = await AvailabilityCalendar.find({
+      freelancer: freelancerId
+    }).populate('days.assignedProjects')
+
+    const conflictingDates = []
+    const deadlineDate = new Date(projectData.deadline)
+    deadlineDate.setHours(0, 0, 0, 0)
+
+    for (const calendar of calendars) {
+      for (const day of calendar.days) {
+        const dayDate = new Date(calendar.year, calendar.month - 1, day.date)
+
+        if (dayDate <= deadlineDate && dayDate >= new Date() && day.assignedProjects.length > 0) {
+          conflictingDates.push({
+            date: `${calendar.year}-${String(calendar.month).padStart(2, '0')}-${String(day.date).padStart(2, '0')}`,
+            projectCount: day.assignedProjects.length
+          })
+        }
+      }
+    }
+
+    return {
+      hasConflict: conflictingDates.length > 0,
+      conflictingDates
+    }
+  } catch (error) {
+    logger.error('Error checking High Priority conflicts:', error)
+    return { hasConflict: false, conflictingDates: [] }
+  }
+}
+
+/**
  * Automatically populate availability calendar when project is assigned
  * @param {string} freelancerId - ID of freelancer being assigned
  * @param {object} projectData - Project object with deadline, priority, and _id
@@ -23,7 +160,7 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
     const { _id: projectId, deadline, priority = 'low' } = projectData
 
     if (!deadline) {
-      console.warn('Project has no deadline, skipping calendar population')
+      logger.warn('Project has no deadline, skipping calendar population')
       return
     }
 
@@ -100,10 +237,9 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
             day.assignedProjects.push(projectId)
           }
 
-          // Recalculate capacity
+          // Recalculate capacity using weighted calculation
           const totalCapacity = day.assignedProjects.reduce((sum, proj) => {
-            // Get priority from actual project or estimate based on order
-            return sum + (PRIORITY_CAPACITY[priority] || 0)
+            return sum + getCapacityWeight(priority)
           }, 0)
 
           day.capacity = Math.max(0, 100 - totalCapacity)
@@ -116,9 +252,9 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
       await calendar.save()
     }
 
-    console.log(`Availability calendar updated for freelancer ${freelancerId} for project ${projectId}`)
+    logger.debug(`Availability calendar updated for freelancer ${freelancerId} for project ${projectId}`)
   } catch (error) {
-    console.error('Error populating availability on project assignment:', error)
+    logger.error('Error populating availability on project assignment:', error)
     // Don't throw - this is secondary operation
   }
 }
@@ -130,17 +266,25 @@ export const populateAvailabilityOnProjectAssignment = async (freelancerId, proj
  */
 export const removeProjectFromAvailability = async (freelancerId, projectId) => {
   try {
+    const Project = require('../models/Project.js').default || require('../models/Project.js')
+    
     const calendars = await AvailabilityCalendar.find({
       freelancer: freelancerId
-    })
+    }).populate('days.assignedProjects', 'priority')
 
     for (const calendar of calendars) {
       calendar.days = calendar.days.map((day) => {
         // Remove project from assignedProjects
-        day.assignedProjects = day.assignedProjects.filter((id) => id.toString() !== projectId.toString())
+        day.assignedProjects = day.assignedProjects.filter((proj) => proj._id.toString() !== projectId.toString())
 
-        // Recalculate capacity and status
-        const totalCapacity = day.assignedProjects.length > 0 ? day.assignedProjects.length * 50 : 0
+        // Recalculate capacity using actual project priorities
+        let totalCapacity = 0
+        if (day.assignedProjects.length > 0) {
+          totalCapacity = day.assignedProjects.reduce((sum, proj) => {
+            return sum + getCapacityWeight(proj.priority || 'low')
+          }, 0)
+        }
+
         day.capacity = Math.max(0, 100 - totalCapacity)
         day.status = getStatusByCapacity(totalCapacity)
 
@@ -151,9 +295,9 @@ export const removeProjectFromAvailability = async (freelancerId, projectId) => 
       await calendar.save()
     }
 
-    console.log(`Project ${projectId} removed from availability for freelancer ${freelancerId}`)
+    logger.debug(`Project ${projectId} removed from availability for freelancer ${freelancerId}`)
   } catch (error) {
-    console.error('Error removing project from availability:', error)
+    logger.error('Error removing project from availability:', error)
     // Don't throw - this is secondary operation
   }
 }

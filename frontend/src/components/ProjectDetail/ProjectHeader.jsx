@@ -1,6 +1,9 @@
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
-import { FaCalendarAlt, FaDollarSign, FaTags, FaUser, FaUserCheck } from 'react-icons/fa'
-import { formatProjectPriorityLabel, formatProjectStatusLabel, getProjectPriorityBadgeClass, getProjectStatusBadgeClass } from '../../utils/projectStatusUI'
+import { FaCalendarAlt, FaDollarSign, FaUser, FaUserCheck } from 'react-icons/fa'
+import PriorityBadge from '../shared/PriorityBadge'
+import CategoryBadge from '../shared/CategoryBadge'
+import ProjectStatusBadge from '../shared/ProjectStatusBadge'
 
 const ProjectHeader = ({ project }) => {
   const currentOffer = project.rateNegotiation?.currentOffer
@@ -20,14 +23,9 @@ const ProjectHeader = ({ project }) => {
         <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
           <div className='space-y-4'>
             <div className='flex flex-wrap items-center gap-2'>
-              <span className='inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-accent'>
-                <FaTags className='text-[10px]' />
-                {project.category}
-              </span>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getProjectStatusBadgeClass(project.status || 'active')}`}>
-                {formatProjectStatusLabel(project.status || 'active')}
-              </span>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getProjectPriorityBadgeClass(project.priority)}`}>{formatProjectPriorityLabel(project.priority)} Priority</span>
+              <CategoryBadge category={project.category} showIcon={true} />
+              <ProjectStatusBadge status={project.status || 'active'} />
+              <PriorityBadge priority={project.priority} size='sm' />
             </div>
 
             <div>
@@ -96,6 +94,21 @@ const ProjectHeader = ({ project }) => {
       </div>
     </motion.div>
   )
+}
+
+ProjectHeader.propTypes = {
+  project: PropTypes.shape({
+    rateNegotiation: PropTypes.object,
+    budget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    deadline: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    user: PropTypes.object,
+    assignee: PropTypes.object,
+    category: PropTypes.string,
+    status: PropTypes.string,
+    priority: PropTypes.string,
+    title: PropTypes.string,
+    description: PropTypes.string
+  }).isRequired
 }
 
 export default ProjectHeader

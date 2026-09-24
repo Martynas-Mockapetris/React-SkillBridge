@@ -3,7 +3,7 @@
  * Supports CSV, JSON, and PDF formats
  */
 
-export const exportToCSV = (projects, filters = {}) => {
+export const exportToCSV = (projects) => {
   if (!projects || projects.length === 0) {
     alert('No projects to export')
     return
@@ -97,7 +97,7 @@ const downloadFile = (content, filename, mimeType) => {
   window.URL.revokeObjectURL(url)
 }
 
-export const getExportSummary = (projects, filters) => {
+export const getExportSummary = (projects) => {
   return {
     totalProjects: projects.length,
     totalBudget: projects.reduce((sum, p) => sum + (p.budget || 0), 0),

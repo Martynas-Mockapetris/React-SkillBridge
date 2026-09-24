@@ -1,4 +1,5 @@
 import { FaBell, FaSearch, FaUser } from 'react-icons/fa'
+import PropTypes from 'prop-types'
 
 const AdminHeader = ({ activeSection }) => {
   const getSectionTitle = (section) => {
@@ -33,6 +34,10 @@ const AdminHeader = ({ activeSection }) => {
       </div>
     </header>
   )
+}
+
+AdminHeader.propTypes = {
+  activeSection: PropTypes.string.isRequired
 }
 
 export default AdminHeader

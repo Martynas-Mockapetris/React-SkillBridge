@@ -7,7 +7,6 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode)
-    console.log('Theme changed:', isDarkMode ? 'dark' : 'light')
   }, [isDarkMode])
 
   const toggleTheme = () => {
