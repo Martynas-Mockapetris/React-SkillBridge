@@ -33,7 +33,7 @@ const Analytics = () => {
   if (!analyticsData) return <div className='text-center p-8'>No data available</div>
 
   return (
-    <main className='min-h-screen py-12 px-4 sm:px-6 bg-white dark:bg-primary'>
+<main className='min-h-screen pt-[80px] pb-12 px-4 sm:px-6 bg-white dark:bg-primary'>
       <div className='max-w-7xl mx-auto'>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-12'>
           <h1 className='text-4xl font-bold mb-2 theme-text'>Analytics Dashboard</h1>
