@@ -124,6 +124,8 @@ const matchesBudgetRange = (budget, range) => {
   }
 }
 
+const PAGE_SIZE_OPTIONS = [6, 12, 24, 36]
+
 const matchesRateRange = (rate, range) => {
   if (range === 'all') return true
   if (range === 'unspecified') return rate === null || rate === undefined || Number.isNaN(Number(rate))
@@ -180,10 +182,12 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
   const [searchParams, setSearchParams] = useSearchParams()
 
   const initialPage = Math.max(Number(searchParams.get('page')) || 1, 1)
+  const initialPageSize = PAGE_SIZE_OPTIONS.includes(Number(searchParams.get('perPage'))) ? Number(searchParams.get('perPage')) : 6
   const initialSearch = searchParams.get('search') || ''
 
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(initialPage)
+  const [itemsPerPage, setItemsPerPage] = useState(initialPageSize)
   const [projects, setProjects] = useState([])
   const [freelancers, setFreelancers] = useState([])
   const [error, setError] = useState(null)
@@ -198,6 +202,8 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
   useEffect(() => {
     const nextTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
     const nextPage = Math.max(Number(searchParams.get('page')) || 1, 1)
+    const requestedPageSize = Number(searchParams.get('perPage'))
+    const nextPageSize = PAGE_SIZE_OPTIONS.includes(requestedPageSize) ? requestedPageSize : 6
     const nextSearch = searchParams.get('search') || ''
     const nextFilters = getFiltersFromSearchParams(searchParams)
 
@@ -208,6 +214,10 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
 
       if (nextPage !== currentPage) {
         setCurrentPage(nextPage)
+      }
+
+      if (nextPageSize !== itemsPerPage) {
+        setItemsPerPage(nextPageSize)
       }
 
       if (nextSearch !== searchTerm) {
@@ -237,6 +247,12 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
       nextParams.set('page', String(currentPage))
     } else {
       nextParams.delete('page')
+    }
+
+    if (itemsPerPage !== 6) {
+      nextParams.set('perPage', String(itemsPerPage))
+    } else {
+      nextParams.delete('perPage')
     }
 
     if (searchTerm) {
@@ -269,7 +285,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true })
     }
-  }, [activeTab, currentPage, searchTerm, projectFilters, freelancerFilters, searchParams, setSearchParams])
+  }, [activeTab, currentPage, itemsPerPage, searchTerm, projectFilters, freelancerFilters, searchParams, setSearchParams])
 
   const handleSearchSubmit = () => {
     updateSearch(searchInput.trim())
@@ -485,7 +501,6 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
   }
 
   // Pagination
-  const itemsPerPage = 6
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const filteredProjects = filterProjects(projects)
@@ -573,7 +588,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                     </div>
                   </label>
 
-                  <div className='flex flex-col gap-3 sm:flex-row'>
+                  <div className='flex flex-col gap-3 sm:flex-row sm:items-end'>
                     <button
                       onClick={handleSearchSubmit}
                       className='inline-flex h-[50px] items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-all duration-300 hover:bg-accent/90 hover:shadow-lg'>
@@ -638,7 +653,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
             {((!error || activeTab === 'freelancers') && isLoading) || currentItems.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {isLoading
-                  ? Array(6)
+                  ? Array(itemsPerPage)
                       .fill(0)
                       .map((_, index) => <CardLoader key={index} />)
                   : activeTab === 'projects'
@@ -658,6 +673,25 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                       ))}
               </div>
             ) : null}
+
+            <div className='mt-8 flex justify-end'>
+              <label className='block w-full min-w-[150px] sm:w-auto'>
+                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Cards per page</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(event) => {
+                    setItemsPerPage(Number(event.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className='h-[44px] w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 text-sm text-primary dark:text-light theme-select sm:w-[150px]'>
+                  {PAGE_SIZE_OPTIONS.map((pageSize) => (
+                    <option key={pageSize} value={pageSize} className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
+                      {pageSize}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
             {/* Pagination */}
             {!isLoading && totalPages > 1 && (
