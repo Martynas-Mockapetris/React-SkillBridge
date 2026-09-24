@@ -2,7 +2,10 @@ import axios from 'axios'
 
 // Create authenticated axios instance with auth token
 const createAuthAxios = () => {
-  const instance = axios.create()
+  const apiBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+  const instance = axios.create({
+    baseURL: apiBaseUrl
+  })
 
   // Add request interceptor to attach token
   instance.interceptors.request.use(

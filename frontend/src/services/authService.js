@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { authAxios } from '../utils/axiosConfig'
 
-const API_URL = 'http://localhost:5000/api/auth'
+const apiBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const API_URL = `${apiBaseUrl}/api/auth`
 
 // Register user
 export const register = async (userData) => {
