@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
-import PublishedBadge from '../shared/PublishedBadge'
+import PublishedBadge from '../components/shared/PublishedBadge'
 
 const inputClasses = 'w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent transition'
 const labelClasses = 'block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'

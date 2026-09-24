@@ -285,10 +285,12 @@ FormInput.propTypes = {
   showCharCount: PropTypes.bool,
   maxLength: PropTypes.number,
   rows: PropTypes.number,
-  options: PropTypes.arrayOf(PropTypes.shape({
-    value: PropTypes.any.isRequired,
-    label: PropTypes.string.isRequired
-  })),
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      label: PropTypes.string.isRequired
+    })
+  ),
   icon: PropTypes.node,
   iconPosition: PropTypes.string
 }

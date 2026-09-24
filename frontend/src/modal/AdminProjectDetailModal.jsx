@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import PriorityBadge from '../shared/PriorityBadge'
-import ProjectStatusBadge from '../shared/ProjectStatusBadge'
+import PriorityBadge from '../components/shared/PriorityBadge'
+import ProjectStatusBadge from '../components/shared/ProjectStatusBadge'
 
 const formatDateTime = (value) => {
   if (!value) return 'N/A'
