@@ -585,7 +585,7 @@ const ListingTabs = () => {
                         onChange={(event) => setSearchInput(event.target.value)}
                         onKeyDown={handleSearchKeyDown}
                         placeholder={activeTab === 'projects' ? 'Search by title, description, or skills' : 'Search by name, specialty, or skills'}
-                        className='h-[50px] w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text outline-none transition-all duration-300 focus:bg-light/20 dark:focus:bg-light/20 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'
+                        className='h-[50px] w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text outline-none transition-all duration-300 focus:bg-light/20 dark:focus:bg-light/20 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'
                       />
                     </div>
                   </label>
@@ -613,7 +613,7 @@ const ListingTabs = () => {
                     <select
                       value={projectFilters.category}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, category: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'>
+                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
                       <option value='all'>All categories</option>
                       {projectCategories.map((category) => (
                         <option key={category} value={category}>
@@ -628,7 +628,7 @@ const ListingTabs = () => {
                     <select
                       value={projectFilters.priority}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, priority: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'>
+                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'>
                       <option value='all'>Any priority</option>
                       <option value='low'>Low</option>
                       <option value='medium'>Medium</option>
@@ -641,7 +641,7 @@ const ListingTabs = () => {
                     <select
                       value={projectFilters.budget}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, budget: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'>
+                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'>
                       <option value='all'>Any budget</option>
                       <option value='under-500'>Under 500 EUR</option>
                       <option value='500-2000'>500-2000 EUR</option>
@@ -655,7 +655,7 @@ const ListingTabs = () => {
                     <select
                       value={projectFilters.applied}
                       onChange={(event) => setProjectFilters((current) => ({ ...current, applied: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02] hover:shadow-lg'>
+                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'>
                       <option value='all'>All projects</option>
                       <option value='not-applied'>Hide applied projects</option>
                       <option value='applied'>Applied only</option>
