@@ -1,22 +1,30 @@
 import { useTheme } from '../context/ThemeContext'
-import { motion } from 'framer-motion'
 import { useProjectFilters } from '../hooks/useProjectFilters'
 import { ProjectFilterPanel } from '../components/shared/ProjectFilterPanel'
 import { ActiveFilterChips } from '../components/shared/ActiveFilterChips'
 import ListingTabs from '../components/Listings/ListingTabs'
 import molecularPattern from '../assets/molecular-pattern.svg'
-import { useEffect } from 'react'
+import { useState } from 'react'
+
+const defaultProjectFilters = {
+  category: 'all',
+  priority: 'all',
+  budget: 'all',
+  applied: 'all'
+}
+
+const defaultFreelancerFilters = {
+  availability: 'all',
+  verified: 'all',
+  rate: 'all'
+}
 
 const Listings = () => {
   const { isDarkMode } = useTheme()
-  const { filters, updateFilter, addStatusFilter, addSkillFilter, addPriorityFilter, removeFilter, clearAllFilters, hasActiveFilters, fetchFilteredProjects, results } = useProjectFilters()
-
-  // Fetch projects when filters change
-  useEffect(() => {
-    if (hasActiveFilters()) {
-      fetchFilteredProjects()
-    }
-  }, [filters])
+  const [activeTab, setActiveTab] = useState('projects')
+  const [projectFilters, setProjectFilters] = useState(defaultProjectFilters)
+  const [freelancerFilters, setFreelancerFilters] = useState(defaultFreelancerFilters)
+  const { filters, updateFilter, addStatusFilter, addSkillFilter, addPriorityFilter, removeFilter, clearAllFilters, hasActiveFilters } = useProjectFilters()
 
   const handleFilterChange = (filterName, value) => {
     if (filterName === 'addStatus') {
@@ -41,6 +49,12 @@ const Listings = () => {
     }
   }
 
+  const handleClearAllFilters = () => {
+    clearAllFilters()
+    setProjectFilters(defaultProjectFilters)
+    setFreelancerFilters(defaultFreelancerFilters)
+  }
+
   return (
     <main className={`relative transition-colors duration-300 ${isDarkMode ? 'bg-primary text-light' : 'bg-light text-primary'}`}>
       {/* Background Patterns */}
@@ -57,29 +71,33 @@ const Listings = () => {
         {/* Filter Panel */}
         <aside className='md:col-span-1 lg:col-span-1'>
           <div className='sticky top-20 md:static lg:static z-20 pt-[100px]'>
-            <ProjectFilterPanel filters={filters} onFilterChange={handleFilterChange} onClearAll={clearAllFilters} hasActiveFilters={hasActiveFilters()} />
+            <ProjectFilterPanel
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearAll={handleClearAllFilters}
+              hasActiveFilters={hasActiveFilters()}
+              activeTab={activeTab}
+              projectFilters={projectFilters}
+              onProjectFiltersChange={setProjectFilters}
+              freelancerFilters={freelancerFilters}
+              onFreelancerFiltersChange={setFreelancerFilters}
+            />
           </div>
         </aside>
 
         {/* Main Content */}
         <div className='md:col-span-2 lg:col-span-3'>
-          {hasActiveFilters() && <ActiveFilterChips filters={filters} onRemoveFilter={handleRemoveFilter} onClearAll={clearAllFilters} />}
+          {hasActiveFilters() && <ActiveFilterChips filters={filters} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAllFilters} />}
 
-          {hasActiveFilters() ? (
-            <div className='mb-6'>
-              <div className='flex items-center justify-between mb-4 p-4 rounded-lg border border-primary/10 dark:border-light/10'>
-                <div className='text-right'>
-                  <p className='text-xs font-medium theme-text-secondary uppercase tracking-wide'>Results</p>
-                  <motion.span key={results.pagination?.total} initial={{ scale: 0.8 }} animate={{ scale: 1 }} className='inline-block text-2xl font-bold text-accent'>
-                    {results.pagination?.total || 0}
-                  </motion.span>
-                </div>
-              </div>
-              <ListingTabs filteredProjects={results.projects} isFiltered={true} />
-            </div>
-          ) : (
-            <ListingTabs />
-          )}
+          <ListingTabs
+            activeTab={activeTab}
+            onActiveTabChange={setActiveTab}
+            filters={filters}
+            projectFilters={projectFilters}
+            onProjectFiltersChange={setProjectFilters}
+            freelancerFilters={freelancerFilters}
+            onFreelancerFiltersChange={setFreelancerFilters}
+          />
         </div>
       </div>
     </main>

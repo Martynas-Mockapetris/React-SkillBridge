@@ -1,5 +1,6 @@
-import { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext, useRef, startTransition } from 'react'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { FaUser, FaBriefcase, FaSearch } from 'react-icons/fa'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { SearchContext } from '../../context/SearchContext'
@@ -89,19 +90,6 @@ const normalizeListingTab = (value) => {
   return 'projects'
 }
 
-const defaultProjectFilters = {
-  category: 'all',
-  priority: 'all',
-  budget: 'all',
-  applied: 'all'
-}
-
-const defaultFreelancerFilters = {
-  availability: 'all',
-  verified: 'all',
-  rate: 'all'
-}
-
 const getFiltersFromSearchParams = (searchParams) => ({
   project: {
     category: searchParams.get('projectCategory') || 'all',
@@ -186,24 +174,19 @@ const buildConnectionStatusMap = (connectionsData) => {
   return nextMap
 }
 
-const ListingTabs = () => {
+const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, onProjectFiltersChange, freelancerFilters, onFreelancerFiltersChange }) => {
   const location = useLocation()
   const { currentUser } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const initialFilters = getFiltersFromSearchParams(searchParams)
-  const initialTab = normalizeListingTab(searchParams.get('tab') || location.state?.activeTab)
   const initialPage = Math.max(Number(searchParams.get('page')) || 1, 1)
   const initialSearch = searchParams.get('search') || ''
 
-  const [activeTab, setActiveTab] = useState(initialTab)
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [projects, setProjects] = useState([])
   const [freelancers, setFreelancers] = useState([])
   const [error, setError] = useState(null)
-  const [projectFilters, setProjectFilters] = useState(initialFilters.project)
-  const [freelancerFilters, setFreelancerFilters] = useState(initialFilters.freelancer)
   const { searchTerm, updateSearch } = useContext(SearchContext)
   const [searchInput, setSearchInput] = useState(initialSearch)
   const hasInitializedPageReset = useRef(false)
@@ -218,29 +201,31 @@ const ListingTabs = () => {
     const nextSearch = searchParams.get('search') || ''
     const nextFilters = getFiltersFromSearchParams(searchParams)
 
-    if (nextTab !== activeTab) {
-      setActiveTab(nextTab)
-    }
+    startTransition(() => {
+      if (nextTab !== activeTab) {
+        onActiveTabChange(nextTab)
+      }
 
-    if (nextPage !== currentPage) {
-      setCurrentPage(nextPage)
-    }
+      if (nextPage !== currentPage) {
+        setCurrentPage(nextPage)
+      }
 
-    if (nextSearch !== searchTerm) {
-      updateSearch(nextSearch)
-    }
+      if (nextSearch !== searchTerm) {
+        updateSearch(nextSearch)
+      }
 
-    if (nextSearch !== searchInput) {
-      setSearchInput(nextSearch)
-    }
+      if (nextSearch !== searchInput) {
+        setSearchInput(nextSearch)
+      }
 
-    if (JSON.stringify(nextFilters.project) !== JSON.stringify(projectFilters)) {
-      setProjectFilters(nextFilters.project)
-    }
+      if (JSON.stringify(nextFilters.project) !== JSON.stringify(projectFilters)) {
+        onProjectFiltersChange(nextFilters.project)
+      }
 
-    if (JSON.stringify(nextFilters.freelancer) !== JSON.stringify(freelancerFilters)) {
-      setFreelancerFilters(nextFilters.freelancer)
-    }
+      if (JSON.stringify(nextFilters.freelancer) !== JSON.stringify(freelancerFilters)) {
+        onFreelancerFiltersChange(nextFilters.freelancer)
+      }
+    })
   }, [searchParams, location.state])
 
   useEffect(() => {
@@ -313,6 +298,9 @@ const ListingTabs = () => {
   // Function to filter projects by search term and project-specific filters
   const filterProjects = (projectsList) => {
     const normalizedSearch = searchTerm.toLowerCase()
+    const minBudget = filters.minBudget ? Number(filters.minBudget) : null
+    const maxBudget = filters.maxBudget ? Number(filters.maxBudget) : null
+    const selectedSkills = filters.skills.map((skill) => skill.toLowerCase())
 
     return projectsList.filter((project) => {
       const matchesSearch =
@@ -324,11 +312,16 @@ const ListingTabs = () => {
       const matchesCategory = projectFilters.category === 'all' || project.category === projectFilters.category
       const matchesPriority = projectFilters.priority === 'all' || (project.priority || 'low') === projectFilters.priority
       const matchesBudget = matchesBudgetRange(project.budget, projectFilters.budget)
+      const matchesMinBudget = minBudget === null || Number(project.budget) >= minBudget
+      const matchesMaxBudget = maxBudget === null || Number(project.budget) <= maxBudget
+      const matchesStatus = filters.status.length === 0 || filters.status.includes(project.status)
+      const projectSkills = (project.skills || []).map((skill) => skill.toLowerCase())
+      const matchesSkills = selectedSkills.length === 0 || (filters.matchType === 'all' ? selectedSkills.every((skill) => projectSkills.includes(skill)) : selectedSkills.some((skill) => projectSkills.includes(skill)))
 
       const isApplied = appliedProjectIds.has(project._id)
       const matchesApplied = projectFilters.applied === 'all' || (projectFilters.applied === 'not-applied' && !isApplied) || (projectFilters.applied === 'applied' && isApplied)
 
-      return matchesSearch && matchesCategory && matchesPriority && matchesBudget && matchesApplied
+      return matchesSearch && matchesCategory && matchesPriority && matchesBudget && matchesMinBudget && matchesMaxBudget && matchesStatus && matchesSkills && matchesApplied
     })
   }
 
@@ -497,8 +490,6 @@ const ListingTabs = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const filteredProjects = filterProjects(projects)
   const filteredFreelancers = filterFreelancers(freelancers)
-  const projectCategories = [...new Set(projects.map((project) => project.category).filter(Boolean))].sort((a, b) => a.localeCompare(b))
-
   const currentItems = activeTab === 'projects' ? filteredProjects.slice(indexOfFirstItem, indexOfLastItem) : filteredFreelancers.slice(indexOfFirstItem, indexOfLastItem)
 
   const totalPages = Math.ceil((activeTab === 'projects' ? filteredProjects.length : filteredFreelancers.length) / itemsPerPage)
@@ -515,7 +506,9 @@ const ListingTabs = () => {
           {/* Projects and Freelancers tabs */}
           <div className='flex w-full'>
             <button
-              onClick={() => setActiveTab('projects')}
+              onClick={() => {
+                onActiveTabChange('projects')
+              }}
               className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 border-b-2 transition-all duration-300 hover:shadow-lg ${
                 activeTab === 'projects'
                   ? 'border-accent text-accent dark:bg-light/5 bg-primary/5'
@@ -525,7 +518,9 @@ const ListingTabs = () => {
               <span className='font-medium'>Projects</span>
             </button>
             <button
-              onClick={() => setActiveTab('freelancers')}
+              onClick={() => {
+                onActiveTabChange('freelancers')
+              }}
               className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 border-b-2 transition-all duration-300 hover:shadow-lg ${
                 activeTab === 'freelancers'
                   ? 'border-accent text-accent dark:bg-light/5 bg-primary/5'
@@ -560,18 +555,6 @@ const ListingTabs = () => {
                       </span>
                     )}
                   </div>
-
-                  <button
-                    onClick={() => {
-                      if (activeTab === 'projects') {
-                        setProjectFilters(defaultProjectFilters)
-                      } else {
-                        setFreelancerFilters(defaultFreelancerFilters)
-                      }
-                    }}
-                    className='inline-flex items-center justify-center rounded-full border dark:border-light/10 border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary hover:border-accent hover:text-accent hover:bg-accent/5 transition-all duration-300 hover:shadow-lg'>
-                    Clear filters
-                  </button>
                 </div>
 
                 <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
@@ -605,106 +588,6 @@ const ListingTabs = () => {
                   </div>
                 </div>
               </div>
-
-              {activeTab === 'projects' ? (
-                <div className='grid grid-cols-1 gap-4 p-5 md:grid-cols-2 xl:grid-cols-4 md:p-6'>
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20'>
-                    <span className='mt-1 block text-sm theme-text-secondary'>Match projects by discipline</span>
-                    <select
-                      value={projectFilters.category}
-                      onChange={(event) => setProjectFilters((current) => ({ ...current, category: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20'>
-                      <option value='all'>All categories</option>
-                      {projectCategories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all duration-300 hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20 hover:shadow-lg'>
-                    <span className='mt-1 block text-sm theme-text-secondary'>Surface the urgency level you want</span>
-                    <select
-                      value={projectFilters.priority}
-                      onChange={(event) => setProjectFilters((current) => ({ ...current, priority: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'>
-                      <option value='all'>Any priority</option>
-                      <option value='low'>Low</option>
-                      <option value='medium'>Medium</option>
-                      <option value='high'>High</option>
-                    </select>
-                  </label>
-
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all duration-300 hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20 hover:shadow-lg'>
-                    <span className='mt-1 block text-sm theme-text-secondary'>Screen by commercial fit</span>
-                    <select
-                      value={projectFilters.budget}
-                      onChange={(event) => setProjectFilters((current) => ({ ...current, budget: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'>
-                      <option value='all'>Any budget</option>
-                      <option value='under-500'>Under 500 EUR</option>
-                      <option value='500-2000'>500-2000 EUR</option>
-                      <option value='2000-5000'>2000-5000 EUR</option>
-                      <option value='5000-plus'>5000+ EUR</option>
-                    </select>
-                  </label>
-
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all duration-300 hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20 hover:shadow-lg'>
-                    <span className='mt-1 block text-sm theme-text-secondary'>Hide projects you have already applied to</span>
-                    <select
-                      value={projectFilters.applied}
-                      onChange={(event) => setProjectFilters((current) => ({ ...current, applied: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'>
-                      <option value='all'>All projects</option>
-                      <option value='not-applied'>Hide applied projects</option>
-                      <option value='applied'>Applied only</option>
-                    </select>
-                  </label>
-                </div>
-              ) : (
-                <div className='grid grid-cols-1 gap-4 p-5 md:grid-cols-3 md:p-6'>
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20'>
-                    <span className='mt-1 block text-sm theme-text-secondary'>See who can start sooner</span>
-                    <select
-                      value={freelancerFilters.availability}
-                      onChange={(event) => setFreelancerFilters((current) => ({ ...current, availability: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'>
-                      <option value='all'>Any availability</option>
-                      <option value='available'>Available</option>
-                      <option value='limited'>Limited availability</option>
-                      <option value='unavailable'>Unavailable</option>
-                    </select>
-                  </label>
-
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20'>
-                    <span className='mt-1 block text-sm theme-text-secondary'>Use trust as a quick screening signal</span>
-                    <select
-                      value={freelancerFilters.verified}
-                      onChange={(event) => setFreelancerFilters((current) => ({ ...current, verified: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'>
-                      <option value='all'>All profiles</option>
-                      <option value='verified'>Verified only</option>
-                      <option value='unverified'>Unverified only</option>
-                    </select>
-                  </label>
-
-                  <label className='group rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-4 transition-all hover:border-accent/40 hover:bg-light/20 dark:hover:bg-light/20'>
-                    <span className='mt-1 block text-sm theme-text-secondary'>Keep pricing expectations aligned</span>
-                    <select
-                      value={freelancerFilters.rate}
-                      onChange={(event) => setFreelancerFilters((current) => ({ ...current, rate: event.target.value }))}
-                      className='theme-select mt-4 w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 px-4 py-3 theme-text outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20 hover:scale-[1.02]'>
-                      <option value='all'>Any rate</option>
-                      <option value='under-25'>Under 25 EUR/hr</option>
-                      <option value='25-50'>25-50 EUR/hr</option>
-                      <option value='50-100'>50-100 EUR/hr</option>
-                      <option value='100-plus'>100+ EUR/hr</option>
-                      <option value='unspecified'>Rate on request</option>
-                    </select>
-                  </label>
-                </div>
-              )}
 
               <div className='flex flex-col gap-2 border-t dark:border-light/10 border-primary/10 px-5 py-4 text-sm theme-text-secondary md:flex-row md:items-center md:justify-between md:px-6'>
                 <p>
@@ -794,6 +677,32 @@ const ListingTabs = () => {
       </div>
     </section>
   )
+}
+
+ListingTabs.propTypes = {
+  activeTab: PropTypes.oneOf(['projects', 'freelancers']).isRequired,
+  onActiveTabChange: PropTypes.func.isRequired,
+  filters: PropTypes.shape({
+    minBudget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    maxBudget: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    status: PropTypes.arrayOf(PropTypes.string),
+    skills: PropTypes.arrayOf(PropTypes.string),
+    priority: PropTypes.arrayOf(PropTypes.string),
+    matchType: PropTypes.oneOf(['any', 'all'])
+  }).isRequired,
+  projectFilters: PropTypes.shape({
+    category: PropTypes.string,
+    priority: PropTypes.string,
+    budget: PropTypes.string,
+    applied: PropTypes.string
+  }).isRequired,
+  onProjectFiltersChange: PropTypes.func.isRequired,
+  freelancerFilters: PropTypes.shape({
+    availability: PropTypes.string,
+    verified: PropTypes.string,
+    rate: PropTypes.string
+  }).isRequired,
+  onFreelancerFiltersChange: PropTypes.func.isRequired
 }
 
 export default ListingTabs

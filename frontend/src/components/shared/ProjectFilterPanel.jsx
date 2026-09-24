@@ -2,12 +2,13 @@ import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasActiveFilters }) => {
+export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasActiveFilters, activeTab, projectFilters, onProjectFiltersChange, freelancerFilters, onFreelancerFiltersChange }) => {
   const [expandedSections, setExpandedSections] = useState({
     budget: true,
     status: true,
     skills: true,
-    priority: false
+    priority: false,
+    specific: true
   })
 
   const toggleSection = (section) => {
@@ -39,7 +40,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       </div>
 
       {/* Budget Range */}
-      <div className='border-b theme-border mb-4 pb-4'>
+      <div className='mb-4 pb-4'>
         <button onClick={() => toggleSection('budget')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
           <span>Budget Range</span>
           <span className={`transform transition-transform ${expandedSections.budget ? 'rotate-180' : ''}`}>▼</span>
@@ -150,12 +151,99 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
         </AnimatePresence>
       </div>
 
-      {/* Sort Options - Always Visible */}
-      <div className='pt-4 border-t theme-border mt-4'>
-        <div className='flex items-center justify-between mb-3'>
-          <h4 className='font-medium theme-text'>Sort Results</h4>
-          <div className='flex-1 ml-3 h-0.5 bg-gradient-to-r from-accent to-transparent'></div>
-        </div>
+      {/* Tab-specific filters */}
+      <div className='theme-border'>
+        <button onClick={() => toggleSection('specific')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
+          <span>{activeTab === 'projects' ? 'Project Filters' : 'Freelancer Filters'}</span>
+          <span className={`transform transition-transform ${expandedSections.specific ? 'rotate-180' : ''}`}>▼</span>
+        </button>
+
+        <AnimatePresence>
+          {expandedSections.specific && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className='overflow-hidden'>
+              {activeTab === 'projects' ? (
+                <div className='space-y-3 mt-3'>
+                  <select
+                    value={projectFilters.category}
+                    onChange={(event) => onProjectFiltersChange((current) => ({ ...current, category: event.target.value }))}
+                    className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
+                    <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
+                      All categories
+                    </option>
+                    <option value='Web Development'>Web Development</option>
+                    <option value='Backend Development'>Backend Development</option>
+                    <option value='UI/UX Design'>UI/UX Design</option>
+                    <option value='Mobile Development'>Mobile Development</option>
+                    <option value='DevOps'>DevOps</option>
+                  </select>
+
+                  <select
+                    value={projectFilters.budget}
+                    onChange={(event) => onProjectFiltersChange((current) => ({ ...current, budget: event.target.value }))}
+                    className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
+                    <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
+                      Any budget
+                    </option>
+                    <option value='under-500'>Under 500 EUR</option>
+                    <option value='500-2000'>500-2000 EUR</option>
+                    <option value='2000-5000'>2000-5000 EUR</option>
+                    <option value='5000-plus'>5000+ EUR</option>
+                  </select>
+
+                  <select
+                    value={projectFilters.applied}
+                    onChange={(event) => onProjectFiltersChange((current) => ({ ...current, applied: event.target.value }))}
+                    className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
+                    <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
+                      All projects
+                    </option>
+                    <option value='not-applied'>Hide applied projects</option>
+                    <option value='applied'>Applied only</option>
+                  </select>
+                </div>
+              ) : (
+                <div className='space-y-3 mt-3'>
+                  <select
+                    value={freelancerFilters.availability}
+                    onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, availability: event.target.value }))}
+                    className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
+                    <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
+                      Any availability
+                    </option>
+                    <option value='available'>Available</option>
+                    <option value='limited'>Limited availability</option>
+                    <option value='unavailable'>Unavailable</option>
+                  </select>
+
+                  <select
+                    value={freelancerFilters.verified}
+                    onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, verified: event.target.value }))}
+                    className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
+                    <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
+                      All profiles
+                    </option>
+                    <option value='verified'>Verified only</option>
+                    <option value='unverified'>Unverified only</option>
+                  </select>
+
+                  <select
+                    value={freelancerFilters.rate}
+                    onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, rate: event.target.value }))}
+                    className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
+                    <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
+                      Any rate
+                    </option>
+                    <option value='under-25'>Under 25 EUR/hr</option>
+                    <option value='25-50'>25-50 EUR/hr</option>
+                    <option value='50-100'>50-100 EUR/hr</option>
+                    <option value='100-plus'>100+ EUR/hr</option>
+                    <option value='unspecified'>Rate on request</option>
+                  </select>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
@@ -165,5 +253,19 @@ ProjectFilterPanel.propTypes = {
   filters: PropTypes.object.isRequired,
   onFilterChange: PropTypes.func.isRequired,
   onClearAll: PropTypes.func.isRequired,
-  hasActiveFilters: PropTypes.bool
+  hasActiveFilters: PropTypes.bool,
+  activeTab: PropTypes.oneOf(['projects', 'freelancers']).isRequired,
+  projectFilters: PropTypes.shape({
+    category: PropTypes.string,
+    priority: PropTypes.string,
+    budget: PropTypes.string,
+    applied: PropTypes.string
+  }).isRequired,
+  onProjectFiltersChange: PropTypes.func.isRequired,
+  freelancerFilters: PropTypes.shape({
+    availability: PropTypes.string,
+    verified: PropTypes.string,
+    rate: PropTypes.string
+  }).isRequired,
+  onFreelancerFiltersChange: PropTypes.func.isRequired
 }
