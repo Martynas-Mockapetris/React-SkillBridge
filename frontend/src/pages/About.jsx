@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { getPublicSystemConfig } from '../services/configService'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
 import AboutHero from '../components/About/AboutHero'
