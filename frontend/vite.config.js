@@ -34,15 +34,6 @@ export default defineConfig({
         drop_debugger: true
       }
     },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'react-icons'],
-          'form-vendor': ['react-toastify']
-        }
-      }
-    },
     chunkSizeWarningLimit: 500,
     sourcemap: false,
     reportCompressedSize: false
