@@ -8,6 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "node src/scripts/seedDatabase.js",
     "seed:more": "node src/scripts/seedAdditionalData.js",
+    "seed:analytics": "node src/scripts/seedAnalyticsData.js",
+    "seed:autumn": "node src/scripts/seedAutumn2026Data.js",
     "reset": "node src/scripts/resetDatabase.js"
   },
   "keywords": [],
