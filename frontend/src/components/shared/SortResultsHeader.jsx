@@ -7,7 +7,9 @@ export const SortResultsHeader = ({ totalResults, currentSort, onSortChange }) =
     { value: 'newest', label: 'Newest', icon: null },
     { value: 'oldest', label: 'Oldest', icon: null },
     { value: 'budget-asc', label: 'Budget ↑', icon: <FaArrowUp className='text-xs' /> },
-    { value: 'budget-desc', label: 'Budget ↓', icon: <FaArrowDown className='text-xs' /> }
+    { value: 'budget-desc', label: 'Budget ↓', icon: <FaArrowDown className='text-xs' /> },
+    { value: 'deadline-asc', label: 'Deadline ↑', icon: <FaArrowUp className='text-xs' /> },
+    { value: 'deadline-desc', label: 'Deadline ↓', icon: <FaArrowDown className='text-xs' /> }
   ]
 
   return (

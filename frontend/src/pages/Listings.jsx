@@ -3,8 +3,6 @@ import { motion } from 'framer-motion'
 import { useProjectFilters } from '../hooks/useProjectFilters'
 import { ProjectFilterPanel } from '../components/shared/ProjectFilterPanel'
 import { ActiveFilterChips } from '../components/shared/ActiveFilterChips'
-import { SortResultsHeader } from '../components/shared/SortResultsHeader'
-import { SortIndicatorBadge } from '../components/shared/SortIndicatorBadge'
 import ListingTabs from '../components/Listings/ListingTabs'
 import molecularPattern from '../assets/molecular-pattern.svg'
 import { useEffect } from 'react'
@@ -36,17 +34,11 @@ const Listings = () => {
     if (filterName === 'budget') {
       updateFilter('minBudget', '')
       updateFilter('maxBudget', '')
-    } else if (filterName === 'sort') {
-      updateFilter('sort', 'newest')
     } else if (filterName === 'matchType') {
       updateFilter('matchType', 'any')
     } else {
       removeFilter(filterName, value)
     }
-  }
-
-  const handleSortChange = (sortValue) => {
-    updateFilter('sort', sortValue)
   }
 
   return (
@@ -76,12 +68,6 @@ const Listings = () => {
           {hasActiveFilters() ? (
             <div className='mb-6'>
               <div className='flex items-center justify-between mb-4 p-4 rounded-lg border border-primary/10 dark:border-light/10'>
-                <div className='flex items-center gap-3'>
-                  <div>
-                    <p className='text-xs font-medium theme-text-secondary uppercase tracking-wide'>Sorting</p>
-                    <SortIndicatorBadge currentSort={filters.sort} onSortChange={handleSortChange} />
-                  </div>
-                </div>
                 <div className='text-right'>
                   <p className='text-xs font-medium theme-text-secondary uppercase tracking-wide'>Results</p>
                   <motion.span key={results.pagination?.total} initial={{ scale: 0.8 }} animate={{ scale: 1 }} className='inline-block text-2xl font-bold text-accent'>
@@ -89,7 +75,6 @@ const Listings = () => {
                   </motion.span>
                 </div>
               </div>
-              <SortResultsHeader totalResults={results.pagination?.total || 0} currentSort={filters.sort} onSortChange={handleSortChange} />
               <ListingTabs filteredProjects={results.projects} isFiltered={true} />
             </div>
           ) : (

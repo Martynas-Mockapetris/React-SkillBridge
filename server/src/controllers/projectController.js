@@ -767,16 +767,21 @@ const filterProjects = async (req, res) => {
     const total = await Project.countDocuments(query)
 
     // Determine sort order
-    let sortOrder = { createdAt: -1 }
-    if (sort === 'oldest') sortOrder = { createdAt: 1 }
-    else if (sort === 'budget-asc') sortOrder = { budget: 1 }
-    else if (sort === 'budget-desc') sortOrder = { budget: -1 }
+    const sortOptions = {
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      'budget-asc': { budget: 1 },
+      'budget-desc': { budget: -1 },
+      'deadline-asc': { deadline: 1 },
+      'deadline-desc': { deadline: -1 }
+    }
+
+    const sortOrder = sortOptions[sort] || sortOptions.newest
 
     // Fetch projects
     const projects = await Project.find(query)
-      .populate('owner', 'firstName lastName profileImage skills rating')
-      .populate('category', 'name')
-      .select('title description budget priority deadline status skills category owner createdAt')
+      .populate('user', 'firstName lastName email profilePicture isEmailVerified')
+      .select('title description budget priority deadline status skills category user createdAt')
       .sort(sortOrder)
       .skip(skip)
       .limit(limitNum)

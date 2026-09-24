@@ -55,19 +55,21 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
     })
   }
 
-  // Sort (only show if not default)
-  if (filters.sort !== 'newest') {
-    const sortLabels = {
-      oldest: 'Oldest First',
-      'budget-asc': 'Budget: Low to High',
-      'budget-desc': 'Budget: High to Low'
-    }
-    activeFilters.push({
-      id: 'sort',
-      label: `Sort: ${sortLabels[filters.sort]}`,
-      onRemove: () => onRemoveFilter('sort', null)
-    })
-  }
+  // // Sort (only show if not default)
+  // if (filters.sort !== 'newest') {
+  //   const sortLabels = {
+  //     oldest: 'Oldest First',
+  //     'budget-asc': 'Budget: Low to High',
+  //     'budget-desc': 'Budget: High to Low',
+  //     'deadline-asc': 'Deadline: Soonest First',
+  //     'deadline-desc': 'Deadline: Latest First'
+  //   }
+  //   activeFilters.push({
+  //     id: 'sort',
+  //     label: `Sort: ${sortLabels[filters.sort]}`,
+  //     onRemove: () => onRemoveFilter('sort', null)
+  //   })
+  // }
 
   if (activeFilters.length === 0) {
     return null

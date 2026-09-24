@@ -7,8 +7,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
     budget: true,
     status: true,
     skills: true,
-    priority: false,
-    sort: false
+    priority: false
   })
 
   const toggleSection = (section) => {
@@ -20,12 +19,6 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
 
   const statusOptions = ['draft', 'active', 'assigned', 'in_progress', 'under_review', 'completed', 'cancelled', 'negotiating']
   const priorityOptions = ['low', 'medium', 'high', 'urgent']
-  const sortOptions = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'budget-asc', label: 'Budget: Low to High' },
-    { value: 'budget-desc', label: 'Budget: High to Low' }
-  ]
   const matchTypeOptions = [
     { value: 'any', label: 'Any Skill Match' },
     { value: 'all', label: 'All Skills Match' }
@@ -162,22 +155,6 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
         <div className='flex items-center justify-between mb-3'>
           <h4 className='font-medium theme-text'>Sort Results</h4>
           <div className='flex-1 ml-3 h-0.5 bg-gradient-to-r from-accent to-transparent'></div>
-        </div>
-        <div className='flex flex-col gap-2'>
-          {sortOptions.map((option) => (
-            <motion.label key={option.value} whileHover={{ x: 4 }} className='flex items-center cursor-pointer group'>
-              <input
-                type='radio'
-                name='sort'
-                value={option.value}
-                checked={filters.sort === option.value}
-                onChange={(e) => onFilterChange('sort', e.target.value)}
-                className='w-4 h-4 border-accent text-accent focus:ring-accent'
-              />
-              <span className='ml-2 text-sm theme-text group-hover:text-accent transition-colors'>{option.label}</span>
-              {filters.sort === option.value && <motion.div layoutId='activeSort' className='ml-auto w-2 h-2 bg-accent rounded-full' initial={{ scale: 0 }} animate={{ scale: 1 }} />}
-            </motion.label>
-          ))}
         </div>
       </div>
     </div>
