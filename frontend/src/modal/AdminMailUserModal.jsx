@@ -37,46 +37,46 @@ const AdminMailUserModal = ({ isOpen, onClose, recipient, onSent }) => {
     <AnimatePresence>
       <motion.div className='fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <motion.div
-          className='w-full max-w-xl rounded-2xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-2xl'
+          className='w-full max-w-xl rounded-2xl theme-card border theme-border shadow-2xl'
           initial={{ scale: 0.92, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.92, opacity: 0 }}>
-          <div className='px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between'>
+          <div className='px-6 py-4 border-b theme-border flex items-center justify-between'>
             <div>
-              <p className='text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500'>Admin Mail</p>
-              <h3 className='text-xl font-semibold text-gray-900 dark:text-white'>
+              <p className='text-xs uppercase tracking-wide theme-text-muted'>Admin Mail</p>
+              <h3 className='text-xl font-semibold theme-text'>
                 To {recipient.firstName} {recipient.lastName}
               </h3>
             </div>
-            <button onClick={onClose} className='text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl leading-none'>
+            <button onClick={onClose} className='theme-text-muted hover:theme-text text-2xl leading-none'>
               &times;
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className='px-6 py-6 space-y-4'>
             <div>
-              <label className='block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>Subject</label>
+              <label className='block text-xs font-semibold uppercase tracking-wide theme-text-secondary mb-1'>Subject</label>
               <input
                 type='text'
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder='e.g. Policy reminder'
-                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+                className='w-full rounded-lg border theme-border theme-input theme-text px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
               />
             </div>
             <div>
-              <label className='block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'>Message</label>
+              <label className='block text-xs font-semibold uppercase tracking-wide theme-text-secondary mb-1'>Message</label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows='6'
                 placeholder='Write the notice for this user...'
-                className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
+                className='w-full rounded-lg border theme-border theme-input theme-text px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
                 required
               />
             </div>
-            <div className='flex justify-end gap-3 border-t border-gray-100 dark:border-gray-800 pt-5'>
-              <button type='button' onClick={onClose} className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition'>
+            <div className='flex justify-end gap-3 border-t theme-border pt-5'>
+              <button type='button' onClick={onClose} className='px-4 py-2 rounded-lg border theme-border theme-text-secondary hover:bg-white/50 dark:hover:bg-black/20 transition'>
                 Cancel
               </button>
               <button
