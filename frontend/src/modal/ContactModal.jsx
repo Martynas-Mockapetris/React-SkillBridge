@@ -91,9 +91,7 @@ const ContactModal = ({ isOpen, onClose, project }) => {
                   onChange={(e) => setContent(e.target.value)}
                   placeholder='Introduce yourself, share relevant experience, and explain why you are a good fit for this project...'
                   rows={6}
-                  className='w-full px-4 py-3 rounded-lg border dark:border-light/10 border-primary/20 
-                    dark:bg-light/5 bg-white theme-text focus:outline-none focus:border-accent 
-                    transition-all resize-none'
+                  className='w-full theme-input resize-none'
                   disabled={isSubmitting}
                 />
                 <p className='text-sm theme-text-secondary mt-1'>{content.length} / 500 characters</p>
