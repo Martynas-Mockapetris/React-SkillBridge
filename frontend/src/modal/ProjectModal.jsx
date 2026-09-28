@@ -440,13 +440,13 @@ const ProjectModal = ({ isOpen, onClose, onProjectCreated, mode = 'create', init
           {/* Modal */}
           <motion.div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={(e) => e.stopPropagation()}>
             <motion.div
-              className='bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-3xl max-h-[90vh] overflow-y-auto'
+              className='theme-card rounded-lg shadow-xl border theme-border w-full max-w-3xl max-h-[90vh] overflow-y-auto'
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}>
               {/* Modal Header */}
-              <div className='flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors'>
+              <div className='flex justify-between items-center p-6 border-b border theme-border hover:bg-white/50 dark:hover:bg-black/20 transition-colors'>
                 <h2 className='text-2xl font-bold theme-text'>{isEditMode ? 'Edit Project' : 'Create New Project'}</h2>
                 <button onClick={onClose} className='p-1 rounded-lg theme-text hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-300'>
                   <FaTimes size={24} />
