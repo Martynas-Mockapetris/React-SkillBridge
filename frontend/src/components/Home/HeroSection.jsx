@@ -1,17 +1,19 @@
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import PageBackground from '../shared/PageBackground'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {}, sectionBackground = 'default' }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation('main') // ← ADD THIS LINE
 
-  const heroTitleLead = content.heroTitleLead || 'Find Your Next'
-  const heroTitleAccent = content.heroTitleAccent || 'Opportunity'
-  const heroDescriptionLine1 = content.heroDescriptionLine1 || 'Connect with top talent and clients worldwide on our platform.'
-  const heroDescriptionLine2 = content.heroDescriptionLine2 || 'Start your success story today.'
-  const heroTalentButton = content.heroTalentButton || 'Find Talent'
-  const heroWorkButton = content.heroWorkButton || 'Find Work'
+  const heroTitleLead = t('hero.titleLead')
+  const heroTitleAccent = t('hero.titleAccent')
+  const heroDescriptionLine1 = t('hero.descriptionLine1')
+  const heroDescriptionLine2 = t('hero.descriptionLine2')
+  const heroTalentButton = t('hero.talentButton')
+  const heroWorkButton = t('hero.workButton')
   const layoutPreset = layout.layoutPreset || 'centered'
   const contentAlign = layout.contentAlign || 'center'
   const ctaLayout = layout.ctaLayout || 'stacked-mobile'
