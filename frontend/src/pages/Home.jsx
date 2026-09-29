@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
+import { useLanguage } from '../context/LanguageContext'
 import ContactSection from '../components/Home/ContactSection'
 import FeaturesSection from '../components/Home/FeatureSection'
 import HeroSection from '../components/Home/HeroSection'
@@ -13,8 +14,34 @@ const DEFAULT_HOME_SECTION_ORDER = ['hero', 'features', 'howItWorks', 'testimoni
 const DEFAULT_HOME_SECTION_SPACING = {}
 const DEFAULT_HOME_SECTION_BACKGROUNDS = {}
 
+// Helper: Extract language-specific admin values, falling back to generic keys
+const extractLanguageSpecificContent = (values, language) => {
+  if (!values || !language) return values
+
+  const result = {}
+
+  // For each key in values, check for language-specific version (key_en, key_lt)
+  Object.keys(values).forEach((key) => {
+    // Skip keys that already have language suffix
+    if (key.endsWith('_en') || key.endsWith('_lt')) {
+      return
+    }
+
+    // Try to find language-specific version
+    const langSpecificKey = `${key}_${language}`
+    if (langSpecificKey in values) {
+      result[key] = values[langSpecificKey]
+    } else {
+      result[key] = values[key]
+    }
+  })
+
+  return result
+}
+
 const Home = () => {
   const { isDarkMode } = useTheme()
+  const { currentLanguage } = useLanguage()
   const [publicConfig, setPublicConfig] = useState(null)
 
   useEffect(() => {
@@ -33,8 +60,10 @@ const Home = () => {
 
   const homeValues = useMemo(() => {
     if (!publicConfig?.home?.enabled) return {}
-    return publicConfig.home.values || {}
-  }, [publicConfig])
+    const rawValues = publicConfig.home.values || {}
+    // Extract language-specific admin values
+    return extractLanguageSpecificContent(rawValues, currentLanguage)
+  }, [publicConfig, currentLanguage])
 
   const heroLayoutValues = useMemo(() => {
     if (!publicConfig?.siteBuilder?.enabled) return {}
@@ -73,8 +102,9 @@ const Home = () => {
 
   const contactValues = useMemo(() => {
     if (!publicConfig?.contact?.enabled) return {}
-    return publicConfig.contact.values || {}
-  }, [publicConfig])
+    const rawValues = publicConfig.contact.values || {}
+    return extractLanguageSpecificContent(rawValues, currentLanguage)
+  }, [publicConfig, currentLanguage])
 
   const systemValues = useMemo(() => {
     if (!publicConfig?.system?.enabled) return {}
@@ -84,8 +114,9 @@ const Home = () => {
   const pricingValues = useMemo(() => {
     const pricingSectionValues = publicConfig?.pricing?.enabled ? publicConfig.pricing.values || {} : {}
     const legacyHomeValues = publicConfig?.home?.enabled ? publicConfig.home.values || {} : {}
-    return { ...legacyHomeValues, ...pricingSectionValues }
-  }, [publicConfig])
+    const merged = { ...legacyHomeValues, ...pricingSectionValues }
+    return extractLanguageSpecificContent(merged, currentLanguage)
+  }, [publicConfig, currentLanguage])
 
   const pricingLayoutValues = useMemo(() => {
     const configuredLayout = publicConfig?.pricing?.enabled ? publicConfig.pricing.values?.layout || {} : {}
@@ -98,8 +129,9 @@ const Home = () => {
   const testimonialsValues = useMemo(() => {
     const testimonialsSectionValues = publicConfig?.testimonials?.enabled ? publicConfig.testimonials.values || {} : {}
     const legacyHomeValues = publicConfig?.home?.enabled ? publicConfig.home.values || {} : {}
-    return { ...legacyHomeValues, ...testimonialsSectionValues }
-  }, [publicConfig])
+    const merged = { ...legacyHomeValues, ...testimonialsSectionValues }
+    return extractLanguageSpecificContent(merged, currentLanguage)
+  }, [publicConfig, currentLanguage])
 
   const testimonialsLayoutValues = useMemo(() => {
     const configuredLayout = publicConfig?.testimonials?.enabled ? publicConfig.testimonials.values?.layout || {} : {}

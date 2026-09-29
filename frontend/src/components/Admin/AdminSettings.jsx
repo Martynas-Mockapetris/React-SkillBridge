@@ -319,6 +319,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   const [config, setConfig] = useState(null)
   const [savingSection, setSavingSection] = useState('')
   const [drafts, setDrafts] = useState(() => createDraftsFromConfig())
+  const [homeLanguageTab, setHomeLanguageTab] = useState('en')
 
   const sectionMap = useMemo(() => {
     if (!config) return {}
@@ -770,29 +771,34 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     }))
   }
 
-  const renderInputControl = (sectionId, field, customLabel) => (
-    <div key={field.key}>
-      <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap overflow-hidden text-ellipsis'>{customLabel || field.label}</label>
+  const renderInputControl = (sectionId, field, customLabel) => {
+    // For home section with language tabs, append language suffix to field key
+    const fieldKey = sectionId === 'home' && homeLanguageTab ? `${field.key}_${homeLanguageTab}` : field.key
 
-      {field.type === 'textarea' ? (
-        <textarea
-          rows={3}
-          value={drafts[sectionId]?.values?.[field.key] || ''}
-          onChange={(e) => handleFieldChange(sectionId, field.key, e.target.value)}
-          placeholder={field.placeholder}
-          className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
-        />
-      ) : (
-        <input
-          type={field.type}
-          value={drafts[sectionId]?.values?.[field.key] || ''}
-          onChange={(e) => handleFieldChange(sectionId, field.key, e.target.value)}
-          placeholder={field.placeholder}
-          className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
-        />
-      )}
-    </div>
-  )
+    return (
+      <div key={`${field.key}-${homeLanguageTab}`}>
+        <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap overflow-hidden text-ellipsis'>{customLabel || field.label}</label>
+
+        {field.type === 'textarea' ? (
+          <textarea
+            rows={3}
+            value={drafts[sectionId]?.values?.[fieldKey] || ''}
+            onChange={(e) => handleFieldChange(sectionId, fieldKey, e.target.value)}
+            placeholder={field.placeholder}
+            className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
+          />
+        ) : (
+          <input
+            type={field.type}
+            value={drafts[sectionId]?.values?.[fieldKey] || ''}
+            onChange={(e) => handleFieldChange(sectionId, fieldKey, e.target.value)}
+            placeholder={field.placeholder}
+            className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
+          />
+        )}
+      </div>
+    )
+  }
 
   const getCompactHomeLabel = (field) => {
     if (field.key.endsWith('Subtitle')) return 'Subtitle'
@@ -2002,18 +2008,42 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
   const renderSectionFields = (sectionId, section) => {
     if (sectionId === 'home') {
       return (
-        <div className='mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4'>
-          {HOME_FIELD_GROUPS.map((group) => {
-            const groupFields = section.fields.filter((field) => group.keys.includes(field.key))
-            if (!groupFields.length) return null
+        <div className='mt-4'>
+          {/* Language tabs for multi-language editing */}
+          <div className='flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700'>
+            <button
+              onClick={() => setHomeLanguageTab('en')}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                homeLanguageTab === 'en'
+                  ? 'text-accent border-b-2 border-accent -mb-px'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}>
+              English
+            </button>
+            <button
+              onClick={() => setHomeLanguageTab('lt')}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                homeLanguageTab === 'lt'
+                  ? 'text-accent border-b-2 border-accent -mb-px'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}>
+              Lietuvių (Lithuanian)
+            </button>
+          </div>
 
-            return (
-              <div key={group.title} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
-                <h4 className='text-lg font-bold text-gray-900 dark:text-white mb-3'>{group.title}</h4>
-                {renderHomeGroupFields(sectionId, groupFields)}
-              </div>
-            )
-          })}
+          <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
+            {HOME_FIELD_GROUPS.map((group) => {
+              const groupFields = section.fields.filter((field) => group.keys.includes(field.key))
+              if (!groupFields.length) return null
+
+              return (
+                <div key={group.title} className='rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-4'>
+                  <h4 className='text-lg font-bold text-gray-900 dark:text-white mb-3'>{group.title}</h4>
+                  {renderHomeGroupFields(sectionId, groupFields)}
+                </div>
+              )
+            })}
+          </div>
         </div>
       )
     }
