@@ -18,11 +18,11 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
     checkCircle: <FaCheckCircle size={40} />
   }
 
-  const howTitleLead = t('howItWorks.titleLead')
-  const howTitleAccent = t('howItWorks.titleAccent')
-  const howSubtitle = t('howItWorks.subtitle')
-  const talentTabLabel = t('howItWorks.talentTab')
-  const clientTabLabel = t('howItWorks.clientTab')
+  const howTitleLead = content.howTitleLead || t('howItWorks.titleLead') || 'How'
+  const howTitleAccent = content.howTitleAccent || t('howItWorks.titleAccent') || 'It Works'
+  const howSubtitle = content.howSubtitle || t('howItWorks.subtitle') || 'Choose your path and discover how SkillBridge works for you'
+  const talentTabLabel = content.talentTabLabel || t('howItWorks.talentTab') || 'For Talent'
+  const clientTabLabel = content.clientTabLabel || t('howItWorks.clientTab') || 'For Clients'
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 

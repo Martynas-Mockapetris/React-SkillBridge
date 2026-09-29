@@ -7,9 +7,9 @@ import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSection
 
 const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
   const { t } = useTranslation('main')
-  const contactTitleLead = t('contact.titleLead')
-  const contactTitleAccent = t('contact.titleAccent')
-  const contactSubtitle = t('contact.subtitle')
+  const contactTitleLead = content.contactTitleLead || t('contact.titleLead') || 'Get In'
+  const contactTitleAccent = content.contactTitleAccent || t('contact.titleAccent') || 'Touch'
+  const contactSubtitle = content.contactSubtitle || t('contact.subtitle') || "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon."
 
   const supportEmail = contactValues.supportEmail || ''
   const businessEmail = contactValues.businessEmail || ''

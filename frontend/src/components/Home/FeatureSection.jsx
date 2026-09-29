@@ -17,9 +17,9 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
   }
 
   const platformName = systemValues.platformName || 'SkillBridge'
-  const featuresTitleLead = t('features.titleLead')
-  const featuresTitleAccent = t('features.titleAccent')
-  const featuresSubtitle = t('features.subtitle')
+  const featuresTitleLead = content.featuresTitleLead || t('features.titleLead') || 'Why Choose'
+  const featuresTitleAccent = content.featuresTitleAccent || t('features.titleAccent') || platformName
+  const featuresSubtitle = content.featuresSubtitle || t('features.subtitle') || `Discover the advantages that make ${platformName} the preferred platform for connecting talent with opportunities`
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 

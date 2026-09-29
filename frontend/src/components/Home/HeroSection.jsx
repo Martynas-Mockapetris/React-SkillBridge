@@ -8,12 +8,12 @@ const HeroSection = ({ content = {}, layout = {}, sectionSpacing = {}, sectionBa
   const navigate = useNavigate()
   const { t } = useTranslation('main') // ← ADD THIS LINE
 
-  const heroTitleLead = t('hero.titleLead')
-  const heroTitleAccent = t('hero.titleAccent')
-  const heroDescriptionLine1 = t('hero.descriptionLine1')
-  const heroDescriptionLine2 = t('hero.descriptionLine2')
-  const heroTalentButton = t('hero.talentButton')
-  const heroWorkButton = t('hero.workButton')
+  const heroTitleLead = content.heroTitleLead || t('hero.titleLead') || 'Find Your Next'
+  const heroTitleAccent = content.heroTitleAccent || t('hero.titleAccent') || 'Opportunity'
+  const heroDescriptionLine1 = content.heroDescriptionLine1 || t('hero.descriptionLine1') || 'Connect with top talent and clients worldwide on our platform.'
+  const heroDescriptionLine2 = content.heroDescriptionLine2 || t('hero.descriptionLine2') || 'Start your success story today.'
+  const heroTalentButton = content.heroTalentButton || t('hero.talentButton') || 'Find Talent'
+  const heroWorkButton = content.heroWorkButton || t('hero.workButton') || 'Find Work'
   const layoutPreset = layout.layoutPreset || 'centered'
   const contentAlign = layout.contentAlign || 'center'
   const ctaLayout = layout.ctaLayout || 'stacked-mobile'

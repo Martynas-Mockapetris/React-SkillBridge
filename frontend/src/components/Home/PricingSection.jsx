@@ -8,9 +8,9 @@ import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSection
 
 const PricingSection = ({ content = {}, layout = {} }) => {
   const { t } = useTranslation('main')
-  const pricingTitleLead = t('pricing.titleLead')
-  const pricingTitleAccent = t('pricing.titleAccent')
-  const pricingSubtitle = t('pricing.subtitle')
+  const pricingTitleLead = content.pricingTitleLead || t('pricing.titleLead') || 'Flexible'
+  const pricingTitleAccent = content.pricingTitleAccent || t('pricing.titleAccent') || 'Pricing'
+  const pricingSubtitle = content.pricingSubtitle || t('pricing.subtitle') || 'Choose the perfect plan that suits your needs and budget'
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
   const pricingLayout = { ...DEFAULT_PRICING_LAYOUT, ...layout }

@@ -28,9 +28,9 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
   const { t } = useTranslation('main')
   const [expandedId, setExpandedId] = useState(null)
 
-  const testimonialsTitleLead = t('testimonials.titleLead')
-  const testimonialsTitleAccent = t('testimonials.titleAccent')
-  const testimonialsSubtitle = t('testimonials.subtitle')
+  const testimonialsTitleLead = content.testimonialsTitleLead || t('testimonials.titleLead') || 'What Our'
+  const testimonialsTitleAccent = content.testimonialsTitleAccent || t('testimonials.titleAccent') || 'Clients Say'
+  const testimonialsSubtitle = content.testimonialsSubtitle || t('testimonials.subtitle') || 'Discover how our platform has transformed businesses and careers through real success stories'
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
   const testimonialsLayout = { ...DEFAULT_TESTIMONIALS_LAYOUT, ...layout }
