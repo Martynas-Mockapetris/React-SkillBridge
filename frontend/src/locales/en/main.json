@@ -10,7 +10,31 @@
   "features": {
     "titleLead": "Why Choose",
     "titleAccent": "SkillBridge",
-    "subtitle": "Discover the advantages that make SkillBridge the preferred platform for connecting talent with opportunities"
+    "subtitle": "Discover the advantages that make SkillBridge the preferred platform for connecting talent with opportunities",
+    "feature1": {
+      "title": "Professional Network",
+      "description": "Connect with industry experts and build meaningful professional relationships"
+    },
+    "feature2": {
+      "title": "Quality Projects",
+      "description": "Access hand-picked opportunities that match your expertise"
+    },
+    "feature3": {
+      "title": "Skill Development",
+      "description": "Grow your expertise through real-world projects and experiences"
+    },
+    "feature4": {
+      "title": "Flexible Work",
+      "description": "Choose projects that fit your schedule and work preferences"
+    },
+    "feature5": {
+      "title": "Global Opportunities",
+      "description": "Access projects and talent from around the world"
+    },
+    "feature6": {
+      "title": "Verified Reviews",
+      "description": "Make informed decisions with authentic feedback and ratings"
+    }
   },
   "howItWorks": {
     "titleLead": "How",
@@ -38,7 +62,37 @@
   "testimonials": {
     "titleLead": "What Our",
     "titleAccent": "Clients Say",
-    "subtitle": "Discover how our platform has transformed businesses and careers through real success stories"
+    "subtitle": "Discover how our platform has transformed businesses and careers through real success stories",
+    "testimonial1": {
+      "name": "Emma Wilson",
+      "role": "Project Owner",
+      "content": "Found the perfect developer for my online store project. The platform made it easy to review portfolios and connect with qualified freelancers.",
+      "rating": 5
+    },
+    "testimonial2": {
+      "name": "Michael Chen",
+      "role": "Freelance Developer",
+      "content": "As a freelancer, I love how easy it is to find interesting projects that match my skills. The platform helps me connect with serious clients.",
+      "rating": 4
+    },
+    "testimonial3": {
+      "name": "Sarah Johnson",
+      "role": "Project Owner",
+      "content": "Posted my app project and received proposals from skilled developers within days. The collaboration tools made the whole process smooth.",
+      "rating": 5
+    },
+    "testimonial4": {
+      "name": "David Rodriguez",
+      "role": "Freelance Designer",
+      "content": "The platform connects me with clients who value quality design. The project matching system is spot on with my expertise.",
+      "rating": 4.5
+    },
+    "testimonial5": {
+      "name": "Lisa Chang",
+      "role": "Project Owner",
+      "content": "Within a week, I found an amazing designer who perfectly understood my brand vision. The collaboration features made communication effortless.",
+      "rating": 5
+    }
   },
   "pricing": {
     "titleLead": "Flexible",

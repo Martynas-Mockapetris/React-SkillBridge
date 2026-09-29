@@ -5,11 +5,36 @@
     "descriptionLine1": "Susipažinkite su geriausiais talentais ir klientais iš viso pasaulio mūsų platformoje.",
     "descriptionLine2": "Pradėkite savo sėkmės istoriją šiandien.",
     "talentButton": "Rasti Talentą",
-    "workButton": "Rasti Darbą"  },
+    "workButton": "Rasti Darbą"
+  },
   "features": {
     "titleLead": "Kodėl Pasirinkti",
     "titleAccent": "SkillBridge",
-    "subtitle": "Atraskite privalumus, dėl kurių SkillBridge yra pagrindinė platforma, jungianti talentą su galimybėmis"
+    "subtitle": "Atraskite privalumus, dėl kurių SkillBridge yra pagrindinė platforma, jungianti talentą su galimybėmis",
+    "feature1": {
+      "title": "Profesionalus Tinklas",
+      "description": "Susikonnektuokite su pramonės ekspertais ir kurykite prasmingus profesionalius santykius"
+    },
+    "feature2": {
+      "title": "Kokybės Projektai",
+      "description": "Prieigų prie darinių pasiūlymų, atitinkančių jūsų kompetenciją"
+    },
+    "feature3": {
+      "title": "Įgūdžių Tobulinimas",
+      "description": "Plėskite savo ekspertizę per realius projektus ir patirtis"
+    },
+    "feature4": {
+      "title": "Lankstus Darbas",
+      "description": "Pasirinkite projektus, kurie atitinka jūsų grafiką ir darbo pageidavimus"
+    },
+    "feature5": {
+      "title": "Globalios Galimybės",
+      "description": "Prieiga prie projektų ir talento iš visame pasaulyje"
+    },
+    "feature6": {
+      "title": "Patvirtinti Atsiliepimai",
+      "description": "Priimkite sprendimus remiantis autentiškais atsiliepimais ir vertinimais"
+    }
   },
   "howItWorks": {
     "titleLead": "Kaip",
@@ -37,7 +62,37 @@
   "testimonials": {
     "titleLead": "Ką Sako",
     "titleAccent": "Mūsų Klientai",
-    "subtitle": "Atraskite, kaip mūsų platforma transformavo verslas ir karjeras per tikras sėkmės istorijas"
+    "subtitle": "Atraskite, kaip mūsų platforma transformavo verslas ir karjeras per tikras sėkmės istorijas",
+    "testimonial1": {
+      "name": "Emma Wilson",
+      "role": "Projekto Savininkas",
+      "content": "Radau puikų dizainerį savo internetinės parduotuvės projektui. Platforma palengvino portfelių peržiūrą ir ryšį su kvalifikuotais freelanceriais.",
+      "rating": 5
+    },
+    "testimonial2": {
+      "name": "Michael Chen",
+      "role": "Laisvai Dirbantis Kūrėjas",
+      "content": "Kaip laisvai dirbantis asmuo, man patinka, kaip lengva rasti įdomius projektus, atitinkančius mano įgūdžius. Platforma padeda man susikonnektuoti su rimtais klientais.",
+      "rating": 4
+    },
+    "testimonial3": {
+      "name": "Sarah Johnson",
+      "role": "Projekto Savininkas",
+      "content": "Paskelbaue savo programos projektą ir per kelis dienų gavau pasiūlymus iš kvalifikuotų kūrėjų. Bendradarbiavimo priemonės palengvino visą procesą.",
+      "rating": 5
+    },
+    "testimonial4": {
+      "name": "David Rodriguez",
+      "role": "Laisvai Dirbantis Dizaineris",
+      "content": "Platforma susijungia mane su klientais, kurie vertina kokybės dizainą. Projekto atitikimo sistema puikiai atitinka mano kompetenciją.",
+      "rating": 4.5
+    },
+    "testimonial5": {
+      "name": "Lisa Chang",
+      "role": "Projekto Savininkas",
+      "content": "Per savaitę radau nuostabią dizainerę, kuri puikiai suprato mano prekės ženklą. Bendradarbiavimo funkcijos palengvino komunikaciją.",
+      "rating": 5
+    }
   },
   "pricing": {
     "titleLead": "Lankstūs",
@@ -66,5 +121,6 @@
     "emailRequired": "El. paštas yra būtinas",
     "emailInvalid": "Neteisingas el. pašto formatas",
     "subjectRequired": "Tema yra būtina",
-    "messageRequired": "Žinutė yra būtina"  }
+    "messageRequired": "Žinutė yra būtina"
+  }
 }

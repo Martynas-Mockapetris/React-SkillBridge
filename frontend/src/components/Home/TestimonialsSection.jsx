@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
 import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
+import { DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 // Rating component for displaying star ratings
@@ -40,19 +40,59 @@ const TestimonialsSection = ({ content = {}, layout = {} }) => {
     setExpandedId(expandedId === id ? null : id)
   }
 
+  // Create translated testimonials array
   const testimonialData = useMemo(() => {
-    const configured = Array.isArray(content.testimonials) ? content.testimonials : []
-    const source = configured.length ? [...configured, ...DEFAULT_TESTIMONIALS.slice(configured.length)] : DEFAULT_TESTIMONIALS
+    const testimonials = [
+      {
+        id: 1,
+        nameKey: 'testimonials.testimonial1.name',
+        roleKey: 'testimonials.testimonial1.role',
+        contentKey: 'testimonials.testimonial1.content',
+        rating: t('testimonials.testimonial1.rating', { defaultValue: 5 }),
+        avatarSeed: 'emma-wilson'
+      },
+      {
+        id: 2,
+        nameKey: 'testimonials.testimonial2.name',
+        roleKey: 'testimonials.testimonial2.role',
+        contentKey: 'testimonials.testimonial2.content',
+        rating: t('testimonials.testimonial2.rating', { defaultValue: 4 }),
+        avatarSeed: 'michael-chen'
+      },
+      {
+        id: 3,
+        nameKey: 'testimonials.testimonial3.name',
+        roleKey: 'testimonials.testimonial3.role',
+        contentKey: 'testimonials.testimonial3.content',
+        rating: t('testimonials.testimonial3.rating', { defaultValue: 5 }),
+        avatarSeed: 'sarah-johnson'
+      },
+      {
+        id: 4,
+        nameKey: 'testimonials.testimonial4.name',
+        roleKey: 'testimonials.testimonial4.role',
+        contentKey: 'testimonials.testimonial4.content',
+        rating: t('testimonials.testimonial4.rating', { defaultValue: 4.5 }),
+        avatarSeed: 'david-rodriguez'
+      },
+      {
+        id: 5,
+        nameKey: 'testimonials.testimonial5.name',
+        roleKey: 'testimonials.testimonial5.role',
+        contentKey: 'testimonials.testimonial5.content',
+        rating: t('testimonials.testimonial5.rating', { defaultValue: 5 }),
+        avatarSeed: 'lisa-chang'
+      }
+    ]
 
-    return source.map((item, index) => ({
-      id: index + 1,
-      name: item.name || 'Anonymous',
-      rating: typeof item.rating === 'number' ? Math.min(5, Math.max(1, item.rating)) : 5,
-      role: item.role || '',
-      content: item.content || '',
-      image: `https://i.pravatar.cc/150?u=${encodeURIComponent(item.avatarSeed || item.name || `testimonial-${index + 1}`)}`
+    return testimonials.map((item) => ({
+      ...item,
+      name: t(item.nameKey),
+      role: t(item.roleKey),
+      content: t(item.contentKey),
+      image: `https://i.pravatar.cc/150?u=${encodeURIComponent(item.avatarSeed)}`
     }))
-  }, [content.testimonials])
+  }, [t])
 
   const visibleTestimonials = testimonialData.slice(0, visibleCount)
 

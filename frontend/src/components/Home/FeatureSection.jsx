@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { HOME_FEATURES } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
@@ -23,6 +22,16 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
   const featuresSubtitle = t('features.subtitle')
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
+
+  // Create translated features array
+  const features = [
+    { iconKey: 'handshake', titleKey: 'features.feature1.title', descKey: 'features.feature1.description' },
+    { iconKey: 'rocket', titleKey: 'features.feature2.title', descKey: 'features.feature2.description' },
+    { iconKey: 'chartLine', titleKey: 'features.feature3.title', descKey: 'features.feature3.description' },
+    { iconKey: 'clock', titleKey: 'features.feature4.title', descKey: 'features.feature4.description' },
+    { iconKey: 'globe', titleKey: 'features.feature5.title', descKey: 'features.feature5.description' },
+    { iconKey: 'shieldAlt', titleKey: 'features.feature6.title', descKey: 'features.feature6.description' }
+  ]
 
   return (
     <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
@@ -48,7 +57,7 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
 
         {/* Features grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-          {HOME_FEATURES.map((feature, index) => (
+          {features.map((feature, index) => (
             <motion.div
               key={index}
               className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm p-6 rounded-lg'
@@ -61,8 +70,8 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
               }}
               transition={{ duration: 0.3, delay: index * 0.05 }}>
               <div className='text-accent mb-4'>{featureIcons[feature.iconKey]}</div>
-              <h3 className='theme-text text-xl font-semibold mb-2'>{feature.title}</h3>
-              <p className='theme-text-secondary'>{feature.description}</p>
+              <h3 className='theme-text text-xl font-semibold mb-2'>{t(feature.titleKey)}</h3>
+              <p className='theme-text-secondary'>{t(feature.descKey)}</p>
             </motion.div>
           ))}
         </div>
