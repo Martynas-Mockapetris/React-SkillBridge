@@ -146,7 +146,12 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
 
             <div className='rounded-xl border border-primary/20 dark:border-light/10 bg-primary/5 dark:bg-light/5 p-4 space-y-3'>
               <label className='flex items-center gap-3 text-sm theme-text'>
-                <input type='checkbox' checked={formData.includeAuthor} onChange={(e) => handleIncludeAuthorChange(e.target.checked)} className='h-4 w-4 rounded border-primary/30 dark:border-light/20 text-accent focus:ring-accent' />
+                <input
+                  type='checkbox'
+                  checked={formData.includeAuthor}
+                  onChange={(e) => handleIncludeAuthorChange(e.target.checked)}
+                  className='h-4 w-4 rounded border-primary/30 dark:border-light/20 text-accent focus:ring-accent'
+                />
                 Include author
               </label>
 
@@ -176,7 +181,12 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
             </div>
 
             <label className='flex items-center gap-3 text-sm theme-text'>
-              <input type='checkbox' checked={formData.isPublished} onChange={(e) => handleChange('isPublished', e.target.checked)} className='h-4 w-4 rounded border-primary/30 dark:border-light/20 text-accent focus:ring-accent' />
+              <input
+                type='checkbox'
+                checked={formData.isPublished}
+                onChange={(e) => handleChange('isPublished', e.target.checked)}
+                className='h-4 w-4 rounded border-primary/30 dark:border-light/20 text-accent focus:ring-accent'
+              />
               Mark as published in preview state
             </label>
 
@@ -193,41 +203,46 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
 
               <AnimatePresence>
                 {isPreviewExpanded && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className='rounded-2xl border border-primary/20 dark:border-light/10 overflow-hidden theme-card'>
-                <div className='px-6 py-5 border-b border-primary/20 dark:border-light/10'>
-                  <div className='flex flex-wrap items-center gap-2 mb-4'>
-                    <PublishedBadge isPublished={formData.isPublished} size='sm' />
-                    {previewAuthor && <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>By {previewAuthor}</span>}
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className='rounded-2xl border border-primary/20 dark:border-light/10 overflow-hidden theme-card'>
+                    <div className='px-6 py-5 border-b border-primary/20 dark:border-light/10'>
+                      <div className='flex flex-wrap items-center gap-2 mb-4'>
+                        <PublishedBadge isPublished={formData.isPublished} size='sm' />
+                        {previewAuthor && <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>By {previewAuthor}</span>}
+                      </div>
 
-                  <h5 className='text-3xl font-semibold theme-text leading-tight'>{previewTitle}</h5>
-                  <p className='text-base theme-text-secondary mt-3 max-w-3xl'>{previewExcerpt}</p>
-                </div>
-
-                <div className='p-6 space-y-5'>
-                  <div className='rounded-xl overflow-hidden border border-primary/20 dark:border-light/10 bg-primary/5 dark:bg-light/5'>
-                    {formData.coverImage.trim() ? (
-                      <img src={formData.coverImage} alt={previewTitle} className='w-full h-72 object-cover' />
-                    ) : (
-                      <div className='h-72 flex items-center justify-center text-sm theme-text-muted'>Cover image preview appears here</div>
-                    )}
-                  </div>
-
-                  {previewTags.length > 0 && (
-                    <div className='flex flex-wrap gap-2'>
-                      {previewTags.map((tag) => (
-                        <span key={tag} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-primary/10 dark:bg-light/10 theme-text-secondary'>
-                          #{tag}
-                        </span>
-                      ))}
+                      <h5 className='text-3xl font-semibold theme-text leading-tight'>{previewTitle}</h5>
+                      <p className='text-base theme-text-secondary mt-3 max-w-3xl'>{previewExcerpt}</p>
                     </div>
-                  )}
 
-                  <div className='rounded-xl bg-primary/5 dark:bg-light/5 border border-primary/20 dark:border-light/10 p-5'>
-                    <p className='text-xs font-semibold uppercase tracking-wide theme-text-secondary mb-3'>Content Preview</p>
-                    <div className='text-base leading-8 theme-text whitespace-pre-line min-h-[180px]'>{previewContent}</div>
-                  </div>
-                </div>
+                    <div className='p-6 space-y-5'>
+                      <div className='rounded-xl overflow-hidden border border-primary/20 dark:border-light/10 bg-primary/5 dark:bg-light/5'>
+                        {formData.coverImage.trim() ? (
+                          <img src={formData.coverImage} alt={previewTitle} className='w-full h-72 object-cover' />
+                        ) : (
+                          <div className='h-72 flex items-center justify-center text-sm theme-text-muted'>Cover image preview appears here</div>
+                        )}
+                      </div>
+
+                      {previewTags.length > 0 && (
+                        <div className='flex flex-wrap gap-2'>
+                          {previewTags.map((tag) => (
+                            <span key={tag} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-primary/10 dark:bg-light/10 theme-text-secondary'>
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className='rounded-xl bg-primary/5 dark:bg-light/5 border border-primary/20 dark:border-light/10 p-5'>
+                        <p className='text-xs font-semibold uppercase tracking-wide theme-text-secondary mb-3'>Content Preview</p>
+                        <div className='text-base leading-8 theme-text whitespace-pre-line min-h-[180px]'>{previewContent}</div>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

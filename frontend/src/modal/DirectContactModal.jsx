@@ -112,12 +112,7 @@ const DirectContactModal = ({ isOpen, onClose, freelancer }) => {
                 <h2 className='text-2xl font-bold theme-text'>
                   Contact {freelancer.firstName} {freelancer.lastName}
                 </h2>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleClose}
-                  disabled={loading}
-                  className='theme-text-muted hover:theme-text transition-colors disabled:opacity-50'>
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleClose} disabled={loading} className='theme-text-muted hover:theme-text transition-colors disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
               </div>

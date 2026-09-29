@@ -113,14 +113,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                 {/* New Deadline Input */}
                 <div>
                   <label className='block text-sm font-medium theme-text mb-2'>New Deadline</label>
-                  <input
-                    type='date'
-                    value={newDeadline}
-                    onChange={handleDateChange}
-                    min={minDateStr}
-                    disabled={isSubmitting}
-                    className='w-full theme-input'
-                  />
+                  <input type='date' value={newDeadline} onChange={handleDateChange} min={minDateStr} disabled={isSubmitting} className='w-full theme-input' />
                   {newDeadline && (
                     <p className='text-xs theme-text-secondary mt-2'>
                       {daysUntilNewDeadline} days from today

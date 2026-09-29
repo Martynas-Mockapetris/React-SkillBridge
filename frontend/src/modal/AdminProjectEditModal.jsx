@@ -14,64 +14,32 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='md:col-span-2'>
             <label className='block text-sm theme-text-secondary mb-1'>Title</label>
-            <input
-              type='text'
-              value={form.title || ''}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-              className='w-full theme-input'
-            />
+            <input type='text' value={form.title || ''} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} className='w-full theme-input' />
           </div>
 
           <div className='md:col-span-2'>
             <label className='block text-sm theme-text-secondary mb-1'>Description</label>
-            <textarea
-              rows='4'
-              value={form.description || ''}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              className='w-full theme-input'
-            />
+            <textarea rows='4' value={form.description || ''} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} className='w-full theme-input' />
           </div>
 
           <div>
             <label className='block text-sm theme-text-secondary mb-1'>Category</label>
-            <input
-              type='text'
-              value={form.category || ''}
-              onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
-              className='w-full theme-input'
-            />
+            <input type='text' value={form.category || ''} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))} className='w-full theme-input' />
           </div>
 
           <div>
             <label className='block text-sm theme-text-secondary mb-1'>Budget</label>
-            <input
-              type='number'
-              min='0'
-              step='1'
-              value={form.budget ?? ''}
-              onChange={(e) => setForm((prev) => ({ ...prev, budget: e.target.value }))}
-              className='w-full theme-input'
-              placeholder='e.g. 1200'
-            />
+            <input type='number' min='0' step='1' value={form.budget ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, budget: e.target.value }))} className='w-full theme-input' placeholder='e.g. 1200' />
           </div>
 
           <div className='md:col-span-2'>
             <label className='block text-sm theme-text-secondary mb-1'>Skills (comma separated)</label>
-            <input
-              type='text'
-              value={skillsValue}
-              onChange={(e) => setForm((prev) => ({ ...prev, skills: e.target.value }))}
-              className='w-full theme-input'
-              placeholder='React, Node.js, MongoDB'
-            />
+            <input type='text' value={skillsValue} onChange={(e) => setForm((prev) => ({ ...prev, skills: e.target.value }))} className='w-full theme-input' placeholder='React, Node.js, MongoDB' />
           </div>
 
           <div>
             <label className='block text-sm theme-text-secondary mb-1'>Priority</label>
-            <select
-              value={form.priority || 'low'}
-              onChange={(e) => setForm((prev) => ({ ...prev, priority: e.target.value }))}
-              className='w-full theme-input'>
+            <select value={form.priority || 'low'} onChange={(e) => setForm((prev) => ({ ...prev, priority: e.target.value }))} className='w-full theme-input'>
               <option value='low'>Low</option>
               <option value='medium'>Medium</option>
               <option value='high'>High</option>
@@ -80,20 +48,12 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
 
           <div>
             <label className='block text-sm theme-text-secondary mb-1'>Deadline</label>
-            <input
-              type='date'
-              value={form.deadline || ''}
-              onChange={(e) => setForm((prev) => ({ ...prev, deadline: e.target.value }))}
-              className='w-full theme-input'
-            />
+            <input type='date' value={form.deadline || ''} onChange={(e) => setForm((prev) => ({ ...prev, deadline: e.target.value }))} className='w-full theme-input' />
           </div>
 
           <div className='md:col-span-2'>
             <label className='block text-sm theme-text-secondary mb-1'>Status</label>
-            <select
-              value={form.status || 'active'}
-              onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-              className='w-full theme-input'>
+            <select value={form.status || 'active'} onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))} className='w-full theme-input'>
               <option value='draft'>Draft</option>
               <option value='active'>Active</option>
               <option value='assigned'>Assigned</option>
@@ -133,11 +93,7 @@ const AdminProjectEditModal = ({ isOpen, onClose, onSave, loading, form, setForm
         </div>
 
         <div className='mt-6 flex justify-end gap-3'>
-          <button
-            type='button'
-            onClick={onClose}
-            disabled={loading || removeAssigneeLoading}
-            className='px-4 py-2 rounded-lg border theme-border theme-text hover:bg-white/50 dark:hover:bg-black/20'>
+          <button type='button' onClick={onClose} disabled={loading || removeAssigneeLoading} className='px-4 py-2 rounded-lg border theme-border theme-text hover:bg-white/50 dark:hover:bg-black/20'>
             Cancel
           </button>
           <button type='button' onClick={onSave} disabled={loading || removeAssigneeLoading} className='px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60'>

@@ -66,11 +66,7 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
 
   return (
     <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className='theme-card rounded-lg p-6 max-w-xl w-full mx-4 max-h-[80vh] overflow-y-auto'>
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className='theme-card rounded-lg p-6 max-w-xl w-full mx-4 max-h-[80vh] overflow-y-auto'>
         {/* Header */}
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-2xl font-bold theme-text'>Assign Project</h2>

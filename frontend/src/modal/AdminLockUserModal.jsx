@@ -33,11 +33,7 @@ const AdminLockUserModal = ({ isOpen, onClose, onConfirm, user }) => {
   return (
     <AnimatePresence>
       <motion.div className='fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <motion.div
-          className='w-full max-w-lg rounded-2xl theme-card border theme-border shadow-2xl'
-          initial={{ scale: 0.92, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.92, opacity: 0 }}>
+        <motion.div className='w-full max-w-lg rounded-2xl theme-card border theme-border shadow-2xl' initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}>
           <div className='px-6 py-4 border-b theme-border flex items-center justify-between'>
             <div>
               <p className='text-xs uppercase tracking-wide theme-text-muted'>Lock User</p>
@@ -75,10 +71,7 @@ const AdminLockUserModal = ({ isOpen, onClose, onConfirm, user }) => {
                     {preset.label}
                   </button>
                 ))}
-                <button
-                  type='button'
-                  onClick={() => setDuration('custom')}
-                  className={`py-2 rounded-lg border ${duration === 'custom' ? 'border-accent text-accent bg-accent/10' : 'theme-border theme-text-secondary'}`}>
+                <button type='button' onClick={() => setDuration('custom')} className={`py-2 rounded-lg border ${duration === 'custom' ? 'border-accent text-accent bg-accent/10' : 'theme-border theme-text-secondary'}`}>
                   Custom…
                 </button>
               </div>

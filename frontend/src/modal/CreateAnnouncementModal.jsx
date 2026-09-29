@@ -166,12 +166,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAnnouncementCreated, editi
               {/* Header */}
               <div className='flex items-center justify-between p-6 border-b border-theme-border sticky top-0 bg-inherit rounded-t-lg'>
                 <h2 className='text-2xl font-bold theme-text'>{isEditMode ? 'Edit Announcement' : 'Create Announcement'}</h2>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleClose}
-                  disabled={loading}
-                  className='theme-text-muted hover:theme-text transition-colors disabled:opacity-50'>
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleClose} disabled={loading} className='theme-text-muted hover:theme-text transition-colors disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
               </div>

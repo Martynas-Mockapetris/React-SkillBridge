@@ -36,11 +36,7 @@ const AdminMailUserModal = ({ isOpen, onClose, recipient, onSent }) => {
   return (
     <AnimatePresence>
       <motion.div className='fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <motion.div
-          className='w-full max-w-xl rounded-2xl theme-card border theme-border shadow-2xl'
-          initial={{ scale: 0.92, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.92, opacity: 0 }}>
+        <motion.div className='w-full max-w-xl rounded-2xl theme-card border theme-border shadow-2xl' initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}>
           <div className='px-6 py-4 border-b theme-border flex items-center justify-between'>
             <div>
               <p className='text-xs uppercase tracking-wide theme-text-muted'>Admin Mail</p>
