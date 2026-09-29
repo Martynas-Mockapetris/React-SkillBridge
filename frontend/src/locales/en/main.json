@@ -6,5 +6,67 @@
     "descriptionLine2": "Start your success story today.",
     "talentButton": "Find Talent",
     "workButton": "Find Work"
+  },
+  "features": {
+    "titleLead": "Why Choose",
+    "titleAccent": "SkillBridge",
+    "subtitle": "Discover the advantages that make SkillBridge the preferred platform for connecting talent with opportunities"
+  },
+  "howItWorks": {
+    "titleLead": "How",
+    "titleAccent": "It Works",
+    "subtitle": "Choose your path and discover how SkillBridge works for you",
+    "talentTab": "For Talent",
+    "clientTab": "For Clients"
+  },
+  "talentSteps": {
+    "step1Title": "Create Profile",
+    "step1Desc": "Set up your professional profile highlighting your skills and experience",
+    "step2Title": "Browse Opportunities",
+    "step2Desc": "Explore curated projects that match your expertise and interests",
+    "step3Title": "Start Working",
+    "step3Desc": "Connect with clients and begin your successful collaboration"
+  },
+  "clientSteps": {
+    "step1Title": "Post Project",
+    "step1Desc": "Share your project details and requirements with our talented community",
+    "step2Title": "Review Candidates",
+    "step2Desc": "Browse through qualified professionals and select the perfect match",
+    "step3Title": "Hire Talent",
+    "step3Desc": "Start collaborating with your chosen professional on your project"
+  },
+  "testimonials": {
+    "titleLead": "What Our",
+    "titleAccent": "Clients Say",
+    "subtitle": "Discover how our platform has transformed businesses and careers through real success stories"
+  },
+  "pricing": {
+    "titleLead": "Flexible",
+    "titleAccent": "Pricing",
+    "subtitle": "Choose the perfect plan that suits your needs and budget"
+  },
+  "contact": {
+    "titleLead": "Get In",
+    "titleAccent": "Touch",
+    "subtitle": "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon.",
+    "supportLabel": "Support",
+    "businessLabel": "Business",
+    "phoneLabel": "Phone",
+    "hoursLabel": "Hours",
+    "addressLabel": "Address",
+    "formNameLabel": "Name",
+    "formNamePlaceholder": "Enter your name",
+    "formEmailLabel": "Email",
+    "formEmailPlaceholder": "Enter your email",
+    "formSubjectLabel": "Subject",
+    "formSubjectPlaceholder": "Enter subject",
+    "formMessageLabel": "Message",
+    "formMessagePlaceholder": "Enter your message",
+    "formSubmitButton": "Send Message",
+    "nameRequired": "Name field is required",
+    "emailRequired": "Email field is required",
+    "emailInvalid": "Wrong email format",
+    "subjectRequired": "Subject field is required",
+    "messageRequired": "Message field is required"
   }
 }

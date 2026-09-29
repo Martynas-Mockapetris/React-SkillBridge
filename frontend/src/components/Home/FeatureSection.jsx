@@ -1,11 +1,13 @@
 import { FaHandshake, FaShieldAlt, FaRocket, FaChartLine, FaClock, FaGlobe } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { HOME_FEATURES } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
+  const { t } = useTranslation('main')
   const featureIcons = {
     handshake: <FaHandshake size={24} />,
     shieldAlt: <FaShieldAlt size={24} />,
@@ -16,9 +18,9 @@ const FeaturesSection = ({ content = {}, systemValues = {}, layout = {} }) => {
   }
 
   const platformName = systemValues.platformName || 'SkillBridge'
-  const featuresTitleLead = content.featuresTitleLead || 'Why Choose'
-  const featuresTitleAccent = content.featuresTitleAccent || platformName
-  const featuresSubtitle = content.featuresSubtitle || `Discover the advantages that make ${platformName} the preferred platform for connecting talent with opportunities`
+  const featuresTitleLead = t('features.titleLead')
+  const featuresTitleAccent = t('features.titleAccent')
+  const featuresSubtitle = t('features.subtitle')
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 

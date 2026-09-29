@@ -5,6 +5,66 @@
     "descriptionLine1": "Susipažinkite su geriausiais talentais ir klientais iš viso pasaulio mūsų platformoje.",
     "descriptionLine2": "Pradėkite savo sėkmės istoriją šiandien.",
     "talentButton": "Rasti Talentą",
-    "workButton": "Rasti Darbą"
-  }
+    "workButton": "Rasti Darbą"  },
+  "features": {
+    "titleLead": "Kodėl Pasirinkti",
+    "titleAccent": "SkillBridge",
+    "subtitle": "Atraskite privalumus, dėl kurių SkillBridge yra pagrindinė platforma, jungianti talentą su galimybėmis"
+  },
+  "howItWorks": {
+    "titleLead": "Kaip",
+    "titleAccent": "Tai Veikia",
+    "subtitle": "Pasirinkite savo kelią ir atraskite, kaip SkillBridge veikia jums",
+    "talentTab": "Talentui",
+    "clientTab": "Klientams"
+  },
+  "talentSteps": {
+    "step1Title": "Sukurti Profilį",
+    "step1Desc": "Nustatykite savo profesionalų profilį, paryškinant savo įgūdžius ir patirtį",
+    "step2Title": "Naršyti Galimybes",
+    "step2Desc": "Naršykite kuruotas projekto, kurie atitinka jūsų kompetenciją ir interesus",
+    "step3Title": "Pradėti Dirbti",
+    "step3Desc": "Susikonnektuokite su klientais ir pradėkite sėkmingą bendradarbiavimą"
+  },
+  "clientSteps": {
+    "step1Title": "Paskelbti Projektą",
+    "step1Desc": "Pasidalinkite savo projekto detalėmis ir reikalavimais su mūsų talentų bendruomene",
+    "step2Title": "Peržiūrėti Kandidatus",
+    "step2Desc": "Naršykite pagal kvalifikaciją ir pasirinkite tobulą atitikmenį",
+    "step3Title": "Pasamdyti Talentą",
+    "step3Desc": "Pradėkite bendradarbiauti su pasirinktu profesionalu jūsų projekte"
+  },
+  "testimonials": {
+    "titleLead": "Ką Sako",
+    "titleAccent": "Mūsų Klientai",
+    "subtitle": "Atraskite, kaip mūsų platforma transformavo verslas ir karjeras per tikras sėkmės istorijas"
+  },
+  "pricing": {
+    "titleLead": "Lankstūs",
+    "titleAccent": "Kainos",
+    "subtitle": "Pasirinkite idealų planą, kuris atitinka jūsų poreikius ir biudžetą"
+  },
+  "contact": {
+    "titleLead": "Susisiekite",
+    "titleAccent": "Su Mumis",
+    "subtitle": "Turite klausimą arba norite bendradarbiauti? Mums parašykite, ir mes greitai atsakysime.",
+    "supportLabel": "Pagalba",
+    "businessLabel": "Verslas",
+    "phoneLabel": "Telefonas",
+    "hoursLabel": "Valandos",
+    "addressLabel": "Adresas",
+    "formNameLabel": "Vardas",
+    "formNamePlaceholder": "Įveskite savo vardą",
+    "formEmailLabel": "El. paštas",
+    "formEmailPlaceholder": "Įveskite savo el. paštą",
+    "formSubjectLabel": "Tema",
+    "formSubjectPlaceholder": "Įveskite temą",
+    "formMessageLabel": "Žinutė",
+    "formMessagePlaceholder": "Įveskite savo žinutę",
+    "formSubmitButton": "Siųsti Žinutę",
+    "nameRequired": "Vardas yra būtinas",
+    "emailRequired": "El. paštas yra būtinas",
+    "emailInvalid": "Neteisingas el. pašto formatas",
+    "subjectRequired": "Tema yra būtina",
+    "messageRequired": "Žinutė yra būtina"  }
 }

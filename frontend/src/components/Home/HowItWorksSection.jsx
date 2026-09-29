@@ -2,11 +2,13 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { FaUser, FaBriefcase, FaUserCircle, FaSearch, FaHandshake, FaFileAlt, FaUserCheck, FaCheckCircle } from 'react-icons/fa'
+import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { HOME_CLIENT_STEPS, HOME_TALENT_STEPS } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const HowItWorksSection = ({ content = {}, layout = {} }) => {
+  const { t } = useTranslation('main')
   const [activeTab, setActiveTab] = useState('talent')
   const stepIcons = {
     userCircle: <FaUserCircle size={40} />,
@@ -17,11 +19,11 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
     checkCircle: <FaCheckCircle size={40} />
   }
 
-  const howTitleLead = content.howTitleLead || 'How'
-  const howTitleAccent = content.howTitleAccent || 'It Works'
-  const howSubtitle = content.howSubtitle || 'Choose your path and discover how SkillBridge works for you'
-  const talentTabLabel = content.talentTabLabel || 'For Talent'
-  const clientTabLabel = content.clientTabLabel || 'For Clients'
+  const howTitleLead = t('howItWorks.titleLead')
+  const howTitleAccent = t('howItWorks.titleAccent')
+  const howSubtitle = t('howItWorks.subtitle')
+  const talentTabLabel = t('howItWorks.talentTab')
+  const clientTabLabel = t('howItWorks.clientTab')
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 

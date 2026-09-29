@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
-  const contactTitleLead = content.contactTitleLead || 'Get In'
-  const contactTitleAccent = content.contactTitleAccent || 'Touch'
-  const contactSubtitle = content.contactSubtitle || "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon."
+  const { t } = useTranslation('main')
+  const contactTitleLead = t('contact.titleLead')
+  const contactTitleAccent = t('contact.titleAccent')
+  const contactSubtitle = t('contact.subtitle')
 
   const supportEmail = contactValues.supportEmail || ''
   const businessEmail = contactValues.businessEmail || ''
@@ -18,11 +20,11 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
 
   const infoItems = [
-    supportEmail ? { label: 'Support', value: supportEmail } : null,
-    businessEmail ? { label: 'Business', value: businessEmail } : null,
-    phone ? { label: 'Phone', value: phone } : null,
-    workingHours ? { label: 'Hours', value: workingHours } : null,
-    address ? { label: 'Address', value: address } : null
+    supportEmail ? { label: t('contact.supportLabel'), value: supportEmail } : null,
+    businessEmail ? { label: t('contact.businessLabel'), value: businessEmail } : null,
+    phone ? { label: t('contact.phoneLabel'), value: phone } : null,
+    workingHours ? { label: t('contact.hoursLabel'), value: workingHours } : null,
+    address ? { label: t('contact.addressLabel'), value: address } : null
   ].filter(Boolean)
 
   // Formos duomenys
@@ -41,21 +43,21 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
     const newErrors = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name field is required'
+      newErrors.name = t('contact.nameRequired')
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email field is required'
+      newErrors.email = t('contact.emailRequired')
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Wrong email format'
+      newErrors.email = t('contact.emailInvalid')
     }
 
     if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject field is required'
+      newErrors.subject = t('contact.subjectRequired')
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = 'Message field is required'
+      newErrors.message = t('contact.messageRequired')
     }
 
     setErrors(newErrors)
@@ -124,8 +126,8 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
           <form onSubmit={handleSubmit} className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent p-8 rounded-lg backdrop-blur-sm'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
               <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-                <label className='block theme-text text-sm font-medium mb-2'>Name</label>
-                <input type='text' name='name' value={formData.name} onChange={handleChange} className={inputClasses('name')} placeholder='Enter your name' />
+                <label className='block theme-text text-sm font-medium mb-2'>{t('contact.formNameLabel')}</label>
+                <input type='text' name='name' value={formData.name} onChange={handleChange} className={inputClasses('name')} placeholder={t('contact.formNamePlaceholder')} />
                 {errors.name && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                     {errors.name}
@@ -134,8 +136,8 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
-                <label className='block theme-text text-sm font-medium mb-2'>Email</label>
-                <input type='email' name='email' value={formData.email} onChange={handleChange} className={inputClasses('email')} placeholder='Enter your email' />
+                <label className='block theme-text text-sm font-medium mb-2'>{t('contact.formEmailLabel')}</label>
+                <input type='email' name='email' value={formData.email} onChange={handleChange} className={inputClasses('email')} placeholder={t('contact.formEmailPlaceholder')} />
                 {errors.email && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                     {errors.email}
@@ -145,8 +147,8 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
             </div>
 
             <motion.div className='mb-6' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}>
-              <label className='block theme-text text-sm font-medium mb-2'>Subject</label>
-              <input type='text' name='subject' value={formData.subject} onChange={handleChange} className={inputClasses('subject')} placeholder='Enter subject' />
+              <label className='block theme-text text-sm font-medium mb-2'>{t('contact.formSubjectLabel')}</label>
+              <input type='text' name='subject' value={formData.subject} onChange={handleChange} className={inputClasses('subject')} placeholder={t('contact.formSubjectPlaceholder')} />
               {errors.subject && (
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                   {errors.subject}
@@ -155,8 +157,8 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
             </motion.div>
 
             <motion.div className='mb-6' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.6 }}>
-              <label className='block theme-text text-sm font-medium mb-2'>Message</label>
-              <textarea name='message' value={formData.message} onChange={handleChange} className={`${inputClasses('message')} min-h-[250px] resize-none`} placeholder='Enter your message'></textarea>
+              <label className='block theme-text text-sm font-medium mb-2'>{t('contact.formMessageLabel')}</label>
+              <textarea name='message' value={formData.message} onChange={handleChange} className={`${inputClasses('message')} min-h-[250px] resize-none`} placeholder={t('contact.formMessagePlaceholder')}></textarea>
               {errors.message && (
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='text-red-500 text-sm mt-1'>
                   {errors.message}
@@ -171,7 +173,7 @@ const ContactSection = ({ content = {}, contactValues = {}, layout = {} }) => {
               focus:outline-none focus:ring-2 focus:ring-accent/50'
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}>
-              Send Message
+              {t('contact.formSubmitButton')}
             </motion.button>
           </form>
         </motion.div>

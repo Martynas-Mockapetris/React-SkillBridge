@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { FaQuoteLeft, FaStarHalfAlt, FaStar, FaRegStar } from 'react-icons/fa'
+import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
@@ -24,11 +25,12 @@ Rating.propTypes = {
 }
 
 const TestimonialsSection = ({ content = {}, layout = {} }) => {
+  const { t } = useTranslation('main')
   const [expandedId, setExpandedId] = useState(null)
 
-  const testimonialsTitleLead = content.testimonialsTitleLead || 'What Our'
-  const testimonialsTitleAccent = content.testimonialsTitleAccent || 'Clients Say'
-  const testimonialsSubtitle = content.testimonialsSubtitle || 'Discover how our platform has transformed businesses and careers through real success stories'
+  const testimonialsTitleLead = t('testimonials.titleLead')
+  const testimonialsTitleAccent = t('testimonials.titleAccent')
+  const testimonialsSubtitle = t('testimonials.subtitle')
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
   const testimonialsLayout = { ...DEFAULT_TESTIMONIALS_LAYOUT, ...layout }
