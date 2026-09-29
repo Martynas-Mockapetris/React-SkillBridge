@@ -4,8 +4,72 @@ import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavi
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
 import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
+import enLocale from '../../locales/en/main.json'
+import ltLocale from '../../locales/lt/main.json'
 
 const CONFIG_SECTION_KEYS = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
+
+// Extract and flatten locale values to match admin field keys
+const extractLocaleValues = (locale) => {
+  if (!locale) return {}
+
+  const result = {}
+
+  // Hero section
+  if (locale.hero) {
+    result.heroTitleLead = locale.hero.titleLead
+    result.heroTitleAccent = locale.hero.titleAccent
+    result.heroDescriptionLine1 = locale.hero.descriptionLine1
+    result.heroDescriptionLine2 = locale.hero.descriptionLine2
+    result.heroTalentButton = locale.hero.talentButton
+    result.heroWorkButton = locale.hero.workButton
+  }
+
+  // Features section
+  if (locale.features) {
+    result.featuresTitleLead = locale.features.titleLead
+    result.featuresTitleAccent = locale.features.titleAccent
+    result.featuresSubtitle = locale.features.subtitle
+  }
+
+  // How It Works section
+  if (locale.howItWorks) {
+    result.howTitleLead = locale.howItWorks.titleLead
+    result.howTitleAccent = locale.howItWorks.titleAccent
+    result.howSubtitle = locale.howItWorks.subtitle
+    result.talentTabLabel = locale.howItWorks.talentTab
+    result.clientTabLabel = locale.howItWorks.clientTab
+  }
+
+  // Contact section
+  if (locale.contact) {
+    result.contactTitleLead = locale.contact.titleLead
+    result.contactTitleAccent = locale.contact.titleAccent
+    result.contactSubtitle = locale.contact.subtitle
+  }
+
+  // Pricing section
+  if (locale.pricing) {
+    result.pricingTitleLead = locale.pricing.titleLead
+    result.pricingTitleAccent = locale.pricing.titleAccent
+    result.pricingSubtitle = locale.pricing.subtitle
+  }
+
+  // Testimonials section
+  if (locale.testimonials) {
+    result.testimonialsTitleLead = locale.testimonials.titleLead
+    result.testimonialsTitleAccent = locale.testimonials.titleAccent
+    result.testimonialsSubtitle = locale.testimonials.subtitle
+  }
+
+  return result
+}
+
+// Create locale-based defaults for all languages
+const LOCALE_VALUES = {
+  en: extractLocaleValues(enLocale),
+  lt: extractLocaleValues(ltLocale)
+}
 
 const SECTION_DEFS = {
   home: {
@@ -775,6 +839,14 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
     // For home section with language tabs, append language suffix to field key
     const fieldKey = sectionId === 'home' && homeLanguageTab ? `${field.key}_${homeLanguageTab}` : field.key
 
+    // Get value from database, or fall back to locale value
+    let fieldValue = drafts[sectionId]?.values?.[fieldKey] || ''
+
+    // If home section and no database value, use locale default
+    if (sectionId === 'home' && !fieldValue && homeLanguageTab && LOCALE_VALUES[homeLanguageTab]) {
+      fieldValue = LOCALE_VALUES[homeLanguageTab][field.key] || ''
+    }
+
     return (
       <div key={`${field.key}-${homeLanguageTab}`}>
         <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 whitespace-nowrap overflow-hidden text-ellipsis'>{customLabel || field.label}</label>
@@ -782,7 +854,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         {field.type === 'textarea' ? (
           <textarea
             rows={3}
-            value={drafts[sectionId]?.values?.[fieldKey] || ''}
+            value={fieldValue}
             onChange={(e) => handleFieldChange(sectionId, fieldKey, e.target.value)}
             placeholder={field.placeholder}
             className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent resize-none'
@@ -790,7 +862,7 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
         ) : (
           <input
             type={field.type}
-            value={drafts[sectionId]?.values?.[fieldKey] || ''}
+            value={fieldValue}
             onChange={(e) => handleFieldChange(sectionId, fieldKey, e.target.value)}
             placeholder={field.placeholder}
             className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent'
