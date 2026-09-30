@@ -130,6 +130,7 @@
     "freelancerDiscovery": "Freelancer discovery",
     "results": "result(s)",
     "activeFilters": "active filter(s)",
+    "activeFiltersLabel": "Active Filters",
     "searchProjects": "Search projects",
     "searchFreelancers": "Search freelancers",
     "searchProjectsPlaceholder": "Search by title, description, or skills",

@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { FaTimes } from 'react-icons/fa'
+import { useTranslation } from 'react-i18next'
 
 export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
+  const { t } = useTranslation('main')
   const activeFilters = []
 
   // Budget range
@@ -78,11 +80,11 @@ export const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className='mb-6 p-4 border border-primary/10 dark:border-light/10 rounded-lg'>
       <div className='flex items-center justify-between mb-3'>
-        <h4 className='text-sm font-semibold theme-text-secondary'>Active Filters</h4>
+        <h4 className='text-sm font-semibold theme-text-secondary'>{t('listings.activeFiltersLabel')}</h4>
         <button
           onClick={onClearAll}
           className='text-xs px-2 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-all duration-300 hover:shadow-lg font-medium'>
-          Clear All
+          {t('listings.clearAll')}
         </button>
       </div>
 

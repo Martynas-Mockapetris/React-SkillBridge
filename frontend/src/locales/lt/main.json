@@ -130,6 +130,7 @@
     "freelancerDiscovery": "Laisvalaikio specialistų paieška",
     "results": "rezultat(as/ai)",
     "activeFilters": "aktyvūs filtrai(s)",
+    "activeFiltersLabel": "Aktyvūs filtrai",
     "searchProjects": "Ieškoti projektų",
     "searchFreelancers": "Ieškoti laisvalaikio specialistų",
     "searchProjectsPlaceholder": "Ieškoti pagal pavadinimą, aprašymą ar įgūdžius",
