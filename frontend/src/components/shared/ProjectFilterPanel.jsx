@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasActiveFilters, activeTab, projectFilters, onProjectFiltersChange, freelancerFilters, onFreelancerFiltersChange }) => {
+  const { t } = useTranslation('main')
   const [expandedSections, setExpandedSections] = useState({
     budget: true,
     status: true,
@@ -29,12 +31,12 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
     <div className='rounded-lg p-4 md:p-6 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
       {/* Header with Clear Button */}
       <div className='flex items-center justify-between mb-4'>
-        <h3 className='text-lg font-semibold theme-text'>Filters</h3>
+        <h3 className='text-lg font-semibold theme-text'>{t('listings.filters')}</h3>
         {hasActiveFilters && (
           <button
             onClick={onClearAll}
             className='text-sm px-3 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded-md hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-all duration-300 hover:shadow-lg font-medium'>
-            Clear All
+            {t('listings.clearAll')}
           </button>
         )}
       </div>
@@ -42,7 +44,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Budget Range */}
       <div className='mb-4 pb-4'>
         <button onClick={() => toggleSection('budget')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Budget Range</span>
+          <span>{t('listings.budgetRange')}</span>
           <span className={`transform transition-transform ${expandedSections.budget ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
@@ -51,14 +53,14 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
               <div className='grid grid-cols-2 gap-3 mt-3'>
                 <input
                   type='number'
-                  placeholder='Min Budget'
+                  placeholder={t('listings.minBudget')}
                   value={filters.minBudget}
                   onChange={(e) => onFilterChange('minBudget', e.target.value)}
                   className='px-3 py-2 border theme-border rounded-lg text-sm theme-text focus:outline-none focus:ring-2 focus:ring-accent theme-input'
                 />
                 <input
                   type='number'
-                  placeholder='Max Budget'
+                  placeholder={t('listings.maxBudget')}
                   value={filters.maxBudget}
                   onChange={(e) => onFilterChange('maxBudget', e.target.value)}
                   className='px-3 py-2 border theme-border rounded-lg text-sm theme-text focus:outline-none focus:ring-2 focus:ring-accent theme-input'
@@ -72,7 +74,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Status Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
         <button onClick={() => toggleSection('status')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Status</span>
+          <span>{t('listings.status')}</span>
           <span className={`transform transition-transform ${expandedSections.status ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
@@ -94,14 +96,14 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Skills Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
         <button onClick={() => toggleSection('skills')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Skills</span>
+          <span>{t('listings.skills')}</span>
           <span className={`transform transition-transform ${expandedSections.skills ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
           {expandedSections.skills && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className='overflow-hidden'>
               <textarea
-                placeholder='Enter skills (comma-separated)'
+                placeholder={t('listings.enterSkills')}
                 value={filters.skills.join(', ')}
                 onChange={(e) => {
                   const skills = e.target.value
@@ -120,7 +122,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     key={option.value}
                     onClick={() => onFilterChange('matchType', option.value)}
                     className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-all duration-300 hover:shadow-lg ${filters.matchType === option.value ? 'bg-accent text-white' : 'bg-primary/10 dark:bg-light/10 theme-text-secondary hover:bg-primary/20 dark:hover:bg-light/20'}`}>
-                    {option.label}
+                    {t(`listings.${option.value === 'any' ? 'anySkillMatch' : 'allSkillMatch'}`)}
                   </button>
                 ))}
               </div>
@@ -132,7 +134,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Priority Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
         <button onClick={() => toggleSection('priority')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Priority</span>
+          <span>{t('listings.priority')}</span>
           <span className={`transform transition-transform ${expandedSections.priority ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
@@ -154,7 +156,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Tab-specific filters */}
       <div className='theme-border'>
         <button onClick={() => toggleSection('specific')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>{activeTab === 'projects' ? 'Project Filters' : 'Freelancer Filters'}</span>
+          <span>{activeTab === 'projects' ? t('listings.projectFiltersLabel') : t('listings.freelancerFiltersLabel')}</span>
           <span className={`transform transition-transform ${expandedSections.specific ? 'rotate-180' : ''}`}>▼</span>
         </button>
 

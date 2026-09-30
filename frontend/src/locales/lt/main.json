@@ -159,6 +159,8 @@
     "anySkillMatch": "Bet koks įgūdžio atitikimas",
     "allSkillMatch": "Visi įgūdžiai atitinka",
     "priority": "Prioritetas",
+    "projectFiltersLabel": "Projekto filtrai",
+    "freelancerFiltersLabel": "Laisvų asmenų filtrai",
     "draft": "Juodraštis",
     "active": "Aktyvus",
     "assigned": "Priskirtas",

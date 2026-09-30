@@ -159,6 +159,8 @@
     "anySkillMatch": "Any Skill Match",
     "allSkillMatch": "All Skills Match",
     "priority": "Priority",
+    "projectFiltersLabel": "Project Filters",
+    "freelancerFiltersLabel": "Freelancer Filters",
     "draft": "Draft",
     "active": "Active",
     "assigned": "Assigned",
