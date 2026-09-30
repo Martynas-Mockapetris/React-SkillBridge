@@ -147,6 +147,7 @@
     "broadenCriteria": "Try broadening the category, priority, budget, or search criteria.",
     "noFreelancersMatch": "No freelancers match these filters",
     "adjustFilters": "Adjust availability, verification, rate, or search to widen the results.",
+    "retryButton": "Retry",
     "filters": "Filters",
     "clearAll": "Clear All",
     "budgetRange": "Budget Range",
