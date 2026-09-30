@@ -2086,18 +2086,14 @@ const AdminSettings = ({ activeSectionId = DEFAULT_SETTINGS_SECTION }) => {
             <button
               onClick={() => setHomeLanguageTab('en')}
               className={`px-4 py-2 font-medium text-sm transition-colors ${
-                homeLanguageTab === 'en'
-                  ? 'text-accent border-b-2 border-accent -mb-px'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                homeLanguageTab === 'en' ? 'text-accent border-b-2 border-accent -mb-px' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}>
               English
             </button>
             <button
               onClick={() => setHomeLanguageTab('lt')}
               className={`px-4 py-2 font-medium text-sm transition-colors ${
-                homeLanguageTab === 'lt'
-                  ? 'text-accent border-b-2 border-accent -mb-px'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                homeLanguageTab === 'lt' ? 'text-accent border-b-2 border-accent -mb-px' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}>
               Lietuvių (Lithuanian)
             </button>
