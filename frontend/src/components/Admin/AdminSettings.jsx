@@ -7,7 +7,7 @@ import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS, DE
 import enLocale from '../../locales/en/main.json'
 import ltLocale from '../../locales/lt/main.json'
 
-const CONFIG_SECTION_KEYS = ['home', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
+const CONFIG_SECTION_KEYS = ['home', 'listings', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
 
 // Extract and flatten locale values to match admin field keys
 const extractLocaleValues = (locale) => {
@@ -62,6 +62,14 @@ const extractLocaleValues = (locale) => {
     result.testimonialsSubtitle = locale.testimonials.subtitle
   }
 
+  // Listings section
+  if (locale.listings) {
+    result.listingsProjectsTab = locale.listings.projectsTab
+    result.listingsFreelancersTab = locale.listings.freelancersTab
+    result.listingsProjectDiscovery = locale.listings.projectDiscovery
+    result.listingsFreelancerDiscovery = locale.listings.freelancerDiscovery
+  }
+
   return result
 }
 
@@ -93,6 +101,16 @@ const SECTION_DEFS = {
       { key: 'contactTitleLead', label: 'Contact Title (Lead)', type: 'text', placeholder: 'Get In' },
       { key: 'contactTitleAccent', label: 'Contact Title (Accent)', type: 'text', placeholder: 'Touch' },
       { key: 'contactSubtitle', label: 'Contact Subtitle', type: 'textarea', placeholder: "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon." }
+    ]
+  },
+  listings: {
+    title: 'Listings Page Content',
+    description: 'Manage Listings page section labels and headers. (Phase 2: Additional customization fields coming soon)',
+    fields: [
+      { key: 'listingsProjectsTab', label: 'Projects Tab Label', type: 'text', placeholder: 'Projects' },
+      { key: 'listingsFreelancersTab', label: 'Freelancers Tab Label', type: 'text', placeholder: 'Freelancers' },
+      { key: 'listingsProjectDiscovery', label: 'Project Discovery Badge', type: 'text', placeholder: 'Project discovery' },
+      { key: 'listingsFreelancerDiscovery', label: 'Freelancer Discovery Badge', type: 'text', placeholder: 'Freelancer discovery' }
     ]
   },
   pricing: {
