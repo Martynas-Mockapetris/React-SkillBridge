@@ -2,12 +2,14 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { FaCheckCircle, FaClock, FaEuroSign, FaMapMarkerAlt, FaUser } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import VerificationBadge from '../shared/VerificationBadge'
 import SkillsList from '../shared/SkillsList'
 import RoleTagBadge from '../shared/RoleTagBadge'
 
 const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
+  const { t } = useTranslation('main')
   const navigate = useNavigate()
   const location = useLocation()
   const { currentUser } = useAuth()
@@ -26,17 +28,17 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
   const connectionBadge =
     connectionStatus === 'accepted'
       ? {
-          label: 'Connected',
+          label: t('listings.connected'),
           className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/20'
         }
       : connectionStatus === 'pending'
         ? {
-            label: 'Request Sent',
+            label: t('listings.requestSent'),
             className: 'bg-orange-500/10 text-orange-600 dark:text-orange-300 border border-orange-500/30 dark:border-orange-500/20'
           }
         : connectionStatus === 'incoming'
           ? {
-              label: 'Incoming Request',
+              label: t('listings.incomingRequest'),
               className: 'bg-accent/10 text-accent border border-accent/30 dark:border-accent/20'
             }
           : null
@@ -130,7 +132,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
 
       <div className='flex-1 mb-4'>
         <div className='bg-accent/10 rounded-lg p-4 border-l-2 border-accent h-full flex flex-col'>
-          <p className='text-[11px] uppercase tracking-wide text-accent/80 mb-2'>Current Announcement</p>
+          <p className='text-[11px] uppercase tracking-wide text-accent/80 mb-2'>{t('listings.currentAnnouncement')}</p>
           <h4 className='text-sm font-semibold text-accent mb-2 line-clamp-2'>{announcement.title}</h4>
           <p className='text-xs theme-text-secondary line-clamp-3 mb-4 flex-1'>{truncateText(announcement.background, 120)}</p>
 
@@ -141,10 +143,10 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
       <div className='mt-auto flex items-center justify-between gap-3 border-t border-accent/20 pt-4'>
         <div className='flex items-center gap-2 theme-text-secondary text-sm'>
           <FaCheckCircle className='text-accent' />
-          <span>View Profile</span>
+          <span>{t('listings.viewProfile')}</span>
         </div>
 
-        <span className='text-xs theme-text-muted'>{freelancerInfo.yearsOfExperience > 0 ? `Years of experience: ${freelancerInfo.yearsOfExperience}+` : 'Years of experience: N/A'}</span>
+        <span className='text-xs theme-text-muted'>{freelancerInfo.yearsOfExperience > 0 ? `${t('listings.yearsOfExperience')}: ${freelancerInfo.yearsOfExperience}+` : `${t('listings.yearsOfExperience')}: ${t('listings.noExperience')}`}</span>
       </div>
     </div>
   )
@@ -165,7 +167,7 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
     <CardShell locked>
       <div className='absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center flex-col gap-2 backdrop-blur-sm z-10'>
         <FaUser className='text-accent text-3xl' />
-        <span className='text-sm font-semibold text-white text-center px-4'>Login to View Profile</span>
+        <span className='text-sm font-semibold text-white text-center px-4'>{t('listings.loginToViewProfile')}</span>
       </div>
 
       <CardContent blurred />
