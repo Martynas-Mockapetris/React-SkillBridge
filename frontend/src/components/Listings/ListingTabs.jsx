@@ -610,7 +610,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                 <p>
                   {activeFilterCount > 0
                     ? `Showing ${visibleResultsCount} refined result${visibleResultsCount === 1 ? '' : 's'} for the current filters.`
-                    : `Showing all ${activeTab === 'projects' ? t('listings.showingAllProjects') : t('listings.showingAllFreelancers')}`}
+                    : t(activeTab === 'projects' ? 'listings.showingAllProjects' : 'listings.showingAllFreelancers')}
                 </p>
                 <p className='text-xs uppercase tracking-[0.16em] opacity-70'>{activeTab === 'projects' ? t('listings.discoveryTunedClients') : t('listings.discoveryTunedHiring')}</p>
               </div>
