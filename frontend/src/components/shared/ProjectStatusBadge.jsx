@@ -4,19 +4,20 @@ import { useTranslation } from 'react-i18next'
 
 const ProjectStatusBadge = ({ status, size = 'md' }) => {
   const { t } = useTranslation('main')
-  
-  const statusConfig = {
-    draft: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', label: t('listings.draft') },
-    active: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', label: t('listings.active') },
-    assigned: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400', label: t('listings.assigned') },
-    in_progress: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-600', label: t('listings.in_progress') },
-    under_review: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400', label: t('listings.under_review') },
-    completed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: t('listings.completed') },
-    cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', label: t('listings.cancelled') },
-    negotiating: { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-700 dark:text-indigo-400', label: t('listings.negotiating') }
+
+  const statusColorConfig = {
+    draft: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300' },
+    active: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400' },
+    assigned: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' },
+    in_progress: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-600' },
+    under_review: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400' },
+    completed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' },
+    cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400' },
+    negotiating: { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-700 dark:text-indigo-400' }
   }
 
-  const config = statusConfig[status] || statusConfig.draft
+  const config = statusColorConfig[status] || statusColorConfig.draft
+  const label = t(`listings.${status}`)
 
   const sizeClasses = {
     sm: 'px-2 py-1 text-xs',
@@ -26,7 +27,7 @@ const ProjectStatusBadge = ({ status, size = 'md' }) => {
 
   return (
     <motion.span initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className={`inline-flex items-center rounded-full font-medium ${config.bg} ${config.text} ${sizeClasses[size]}`}>
-      {config.label}
+      {label}
     </motion.span>
   )
 }

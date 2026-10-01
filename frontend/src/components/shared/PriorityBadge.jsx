@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 const PriorityBadge = ({ priority, size = 'md', showIcon = false }) => {
   const { t } = useTranslation('main')
-  
+
   const priorityConfig = {
     high: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
     medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
