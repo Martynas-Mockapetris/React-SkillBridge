@@ -84,7 +84,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                 {statusOptions.map((status) => (
                   <label key={status} className='flex items-center cursor-pointer'>
                     <input type='checkbox' checked={filters.status.includes(status)} onChange={() => onFilterChange('addStatus', status)} className='w-4 h-4 rounded border-accent text-accent focus:ring-accent' />
-                    <span className='ml-2 text-sm theme-text capitalize'>{status.replace('_', ' ')}</span>
+                    <span className='ml-2 text-sm theme-text capitalize'>{t(`listings.${status}`)}</span>
                   </label>
                 ))}
               </div>
@@ -144,7 +144,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                 {priorityOptions.map((priority) => (
                   <label key={priority} className='flex items-center cursor-pointer'>
                     <input type='checkbox' checked={filters.priority.includes(priority)} onChange={() => onFilterChange('addPriority', priority)} className='w-4 h-4 rounded border-accent text-accent focus:ring-accent' />
-                    <span className='ml-2 text-sm theme-text capitalize'>{priority}</span>
+                    <span className='ml-2 text-sm theme-text capitalize'>{t(`listings.${priority}`)}</span>
                   </label>
                 ))}
               </div>
@@ -170,7 +170,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onProjectFiltersChange((current) => ({ ...current, category: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      All categories
+                      {t('listings.allCategories')}
                     </option>
                     <option value='Web Development'>Web Development</option>
                     <option value='Backend Development'>Backend Development</option>
@@ -184,12 +184,12 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onProjectFiltersChange((current) => ({ ...current, budget: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      Any budget
+                      {t('listings.anyBudget')}
                     </option>
-                    <option value='under-500'>Under 500 EUR</option>
-                    <option value='500-2000'>500-2000 EUR</option>
-                    <option value='2000-5000'>2000-5000 EUR</option>
-                    <option value='5000-plus'>5000+ EUR</option>
+                    <option value='under-500'>{t('listings.under500')}</option>
+                    <option value='500-2000'>{t('listings.budget500to2000')}</option>
+                    <option value='2000-5000'>{t('listings.budget2000to5000')}</option>
+                    <option value='5000-plus'>{t('listings.budget5000plus')}</option>
                   </select>
 
                   <select
@@ -197,10 +197,10 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onProjectFiltersChange((current) => ({ ...current, applied: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      All projects
+                      {t('listings.allProjects')}
                     </option>
-                    <option value='not-applied'>Hide applied projects</option>
-                    <option value='applied'>Applied only</option>
+                    <option value='not-applied'>{t('listings.hideAppliedProjects')}</option>
+                    <option value='applied'>{t('listings.appliedOnly')}</option>
                   </select>
                 </div>
               ) : (
@@ -210,11 +210,11 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, availability: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      Any availability
+                      {t('listings.anyAvailability')}
                     </option>
-                    <option value='available'>Available</option>
-                    <option value='limited'>Limited availability</option>
-                    <option value='unavailable'>Unavailable</option>
+                    <option value='available'>{t('listings.availabilityAvailable')}</option>
+                    <option value='limited'>{t('listings.availabilityLimited')}</option>
+                    <option value='unavailable'>{t('listings.availabilityUnavailable')}</option>
                   </select>
 
                   <select
@@ -222,10 +222,10 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, verified: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      All profiles
+                      {t('listings.allVerification')}
                     </option>
-                    <option value='verified'>Verified only</option>
-                    <option value='unverified'>Unverified only</option>
+                    <option value='verified'>{t('listings.verificationVerified')}</option>
+                    <option value='unverified'>{t('listings.verificationUnverified')}</option>
                   </select>
 
                   <select
@@ -233,13 +233,13 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, rate: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      Any rate
+                      {t('listings.anyRate')}
                     </option>
-                    <option value='under-25'>Under 25 EUR/hr</option>
-                    <option value='25-50'>25-50 EUR/hr</option>
-                    <option value='50-100'>50-100 EUR/hr</option>
-                    <option value='100-plus'>100+ EUR/hr</option>
-                    <option value='unspecified'>Rate on request</option>
+                    <option value='under-20'>{t('listings.rateUnder20')}</option>
+                    <option value='20-50'>{t('listings.rate20to50')}</option>
+                    <option value='50-100'>{t('listings.rate50to100')}</option>
+                    <option value='100-plus'>{t('listings.rateOver100')}</option>
+                    <option value='unspecified'>{t('listings.rateOnRequest')}</option>
                   </select>
                 </div>
               )}

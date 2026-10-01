@@ -146,7 +146,9 @@ const FreelancerCard = ({ freelancer, index, connectionStatus = 'none' }) => {
           <span>{t('listings.viewProfile')}</span>
         </div>
 
-        <span className='text-xs theme-text-muted'>{freelancerInfo.yearsOfExperience > 0 ? `${t('listings.yearsOfExperience')}: ${freelancerInfo.yearsOfExperience}+` : `${t('listings.yearsOfExperience')}: ${t('listings.noExperience')}`}</span>
+        <span className='text-xs theme-text-muted'>
+          {freelancerInfo.yearsOfExperience > 0 ? `${t('listings.yearsOfExperience')}: ${freelancerInfo.yearsOfExperience}+` : `${t('listings.yearsOfExperience')}: ${t('listings.noExperience')}`}
+        </span>
       </div>
     </div>
   )
