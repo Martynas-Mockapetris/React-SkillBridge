@@ -210,6 +210,18 @@
     "rate20to50": "20-50 EUR/hr",
     "rate50to100": "50-100 EUR/hr",
     "rateOver100": "100+ EUR/hr",
-    "rateOnRequest": "Rate on request"
+    "rateOnRequest": "Rate on request",
+    "aboutEyebrow": "About SkillBridge",
+    "aboutPlatformDirection": "Platform Direction",
+    "aboutPlatformDirectionHeading": "A practical platform for better freelance collaboration",
+    "aboutCtaButtonPrimary": "Explore Listings",
+    "aboutCtaButtonSecondary": "Join SkillBridge",
+    "aboutDefaultHeadline": "Build your freelance career with confidence",
+    "aboutDefaultSubheadline": "Connect clients and freelancers in one place",
+    "aboutDefaultMission": "SkillBridge helps people find the right collaboration faster. We bring serious clients and capable freelancers into one workflow that feels clear, practical, and trustworthy.",
+    "aboutDefaultVision": "We want project collaboration to feel simpler: fewer dead ends, better matches, stronger communication, and a platform that scales with both independent talent and growing teams.",
+    "aboutDefaultCtaEyebrow": "Next Step",
+    "aboutDefaultCtaHeadline": "Explore the platform or create your account",
+    "aboutDefaultCtaBody": "Whether you are hiring, freelancing, or doing both, SkillBridge is built to make project collaboration easier to start and easier to manage."
   }
 }

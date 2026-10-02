@@ -210,6 +210,18 @@
     "rate20to50": "20-50 EUR/val",
     "rate50to100": "50-100 EUR/val",
     "rateOver100": "100+ EUR/val",
-    "rateOnRequest": "Kaina pagal užklausą"
+    "rateOnRequest": "Kaina pagal užklausą",
+    "aboutEyebrow": "Apie SkillBridge",
+    "aboutPlatformDirection": "Platformos kryptis",
+    "aboutPlatformDirectionHeading": "Praktinė platforma geresiam laisvai samdomai darbuotojų bendradarbiavimui",
+    "aboutCtaButtonPrimary": "Žiūrėti skelbimus",
+    "aboutCtaButtonSecondary": "Prisijungti prie SkillBridge",
+    "aboutDefaultHeadline": "Kurkite savo laisvai samdomų darbuotojų karjerą su pasitikėjimu",
+    "aboutDefaultSubheadline": "Sujunkite klientus ir laisvai samdytus darbuotojus vienoje vietoje",
+    "aboutDefaultMission": "SkillBridge padeda žmonėms greičiau rasti tinkamą bendradarbiavimą. Mes sujungiame rimtus klientus ir gabus laisvai samdytus darbuotojus į vieną darbo eigą, kuri jaučiasi aiški, praktinė ir patikima.",
+    "aboutDefaultVision": "Norime, kad projekto bendradarbiavimas jaustųsi paprastesnis: mažiau aklagatvių, geresnės atitikmens, geresnė komunikacija ir platforma, kuri didėja su nepriklausomais talentais ir augančiais komandomis.",
+    "aboutDefaultCtaEyebrow": "Kitas žingsnis",
+    "aboutDefaultCtaHeadline": "Naršykite platformą arba sukurkite savo paskyrą",
+    "aboutDefaultCtaBody": "Jei samdote, esate laisvai samdomas darbuotojas, arba darote abu, SkillBridge yra sukurta, kad projekto bendradarbiavimą būtų lengviau pradėti ir lengviau valdyti."
   }
 }
