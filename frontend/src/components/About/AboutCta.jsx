@@ -2,8 +2,10 @@ import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { FaArrowRight } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 const AboutCta = ({ eyebrow, headline, body, primaryLabel, primaryHref, secondaryLabel, secondaryHref, layout = {} }) => {
+  const { t } = useTranslation('main')
   const contentAlign = layout.contentAlign || 'left'
   const contentWidth = layout.contentWidth || 'wide'
   const buttonLayout = layout.buttonLayout || 'stacked-mobile'
