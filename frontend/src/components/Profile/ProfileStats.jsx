@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { FaProjectDiagram, FaCheckCircle, FaClock, FaStar, FaWallet, FaBullhorn, FaEnvelopeOpenText, FaUserFriends, FaHistory } from 'react-icons/fa'
 import { getUserStats, getMyConnections } from '../../services/userService'
 import { getUserAnnouncements } from '../../services/announcementService'
@@ -8,6 +9,7 @@ import { getUserMessages } from '../../services/messageService'
 import LoadingSpinner from '../shared/LoadingSpinner'
 
 const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProjects, onOpenMessages, onOpenFreelance, onOpenConnections }) => {
+  const { t } = useTranslation('main')
   const [statsData, setStatsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -38,51 +40,51 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         const formattedStats = [
           {
             icon: <FaProjectDiagram />,
-            label: 'Total Projects',
+            label: t('listings.profileStatTotalProjects'),
             value: stats.totalProjects.toString(),
             trend: stats.totalProjectsTrend >= 0 ? `+${stats.totalProjectsTrend}` : `${stats.totalProjectsTrend}`
           },
           {
             icon: <FaCheckCircle />,
-            label: 'Completed',
+            label: t('listings.profileStatCompleted'),
             value: stats.completed.toString(),
             trend: stats.completedTrend >= 0 ? `+${stats.completedTrend}` : `${stats.completedTrend}`
           },
           {
             icon: <FaClock />,
-            label: 'In Progress',
+            label: t('listings.profileStatInProgress'),
             value: stats.inProgress.toString(),
             trend: stats.inProgressTrend >= 0 ? `+${stats.inProgressTrend}` : `${stats.inProgressTrend}`
           },
           {
             icon: <FaStar />,
-            label: 'Success Rate',
+            label: t('listings.profileStatSuccessRate'),
             value: `${stats.successRate}%`,
             trend: stats.successRateTrend >= 0 ? `+${stats.successRateTrend}%` : `${stats.successRateTrend}%`
           },
           {
             icon: <FaWallet />,
-            label: 'Total Earnings',
+            label: t('listings.profileStatTotalEarnings'),
             value: `€${stats.totalEarnings.toLocaleString()}`,
             trend: stats.totalEarningsTrend >= 0 ? `+€${stats.totalEarningsTrend.toLocaleString()}` : `€${stats.totalEarningsTrend.toLocaleString()}`
           },
           {
             icon: <FaBullhorn />,
-            label: 'Announcements',
+            label: t('listings.profileStatAnnouncements'),
             value: announcementCount.toString(),
-            trend: 'Live'
+            trend: t('listings.profileTrendLive')
           },
           {
             icon: <FaEnvelopeOpenText />,
-            label: 'Unread Messages',
+            label: t('listings.profileStatUnreadMessages'),
             value: unreadMessages.toString(),
-            trend: unreadMessages > 0 ? 'Needs attention' : 'All caught up'
+            trend: unreadMessages > 0 ? t('listings.profileTrendNeedsAttention') : t('listings.profileTrendAllCaughtUp')
           },
           {
             icon: <FaUserFriends />,
-            label: 'Connections',
+            label: t('listings.profileStatConnections'),
             value: connectionsCount.toString(),
-            trend: incomingConnectionsCount > 0 ? `${incomingConnectionsCount} pending` : 'Network active'
+            trend: incomingConnectionsCount > 0 ? t('listings.profileTrendPending', { count: incomingConnectionsCount }) : t('listings.profileTrendNetworkActive')
           }
         ]
 
@@ -101,7 +103,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
   if (loading) {
     return (
       <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-        <motion.h2 className='text-2xl font-bold theme-text'>Dashboard Overview</motion.h2>
+        <motion.h2 className='text-2xl font-bold theme-text'>{t('listings.profileLoadingTitle')}</motion.h2>
         <div className='flex justify-center py-12'>
           <LoadingSpinner />
         </div>
@@ -112,9 +114,9 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
   if (error) {
     return (
       <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-        <motion.h2 className='text-2xl font-bold theme-text'>Dashboard Overview</motion.h2>
+        <motion.h2 className='text-2xl font-bold theme-text'>{t('listings.profileLoadingTitle')}</motion.h2>
         <div className='p-6 bg-red-500/10 border border-red-500 rounded-lg'>
-          <p className='theme-text text-red-500'>Failed to load statistics. Please try again later.</p>
+          <p className='theme-text text-red-500'>{t('listings.profileErrorMessage')}</p>
         </div>
       </motion.div>
     )
@@ -131,40 +133,40 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
     onOpenProjects
       ? {
           key: 'projects',
-          label: 'View Projects',
-          description: 'Open your projects tab',
+          label: t('listings.profileActionViewProjects'),
+          description: t('listings.profileActionViewProjectsDesc'),
           onClick: onOpenProjects
         }
       : null,
     onOpenConnections
       ? {
           key: 'connections',
-          label: 'Open Connections',
-          description: 'Review your network and pending requests',
+          label: t('listings.profileActionOpenConnections'),
+          description: t('listings.profileActionOpenConnectionsDesc'),
           onClick: onOpenConnections
         }
       : null,
     onOpenMessages
       ? {
           key: 'messages',
-          label: 'Open Messages',
-          description: 'Review recent conversations',
+          label: t('listings.profileActionOpenMessages'),
+          description: t('listings.profileActionOpenMessagesDesc'),
           onClick: onOpenMessages
         }
       : null,
     onOpenFreelance
       ? {
           key: 'freelance',
-          label: 'Manage Freelance',
-          description: 'Update your freelancer presence',
+          label: t('listings.profileActionManageFreelance'),
+          description: t('listings.profileActionManageFreelanceDesc'),
           onClick: onOpenFreelance
         }
       : null,
     onOpenSettings
       ? {
           key: 'settings',
-          label: 'Complete Profile',
-          description: 'Update missing profile details',
+          label: t('listings.profileActionCompleteProfile'),
+          description: t('listings.profileActionCompleteProfileDesc'),
           onClick: onOpenSettings
         }
       : null
@@ -194,8 +196,8 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
     .slice(0, 2)
     .map((announcement) => ({
       key: `announcement-${announcement._id}`,
-      title: announcement.title || 'Announcement updated',
-      meta: announcement.isActive ? 'Announcement is live' : 'Announcement is paused',
+      title: announcement.title || t('listings.profileActivitySubtitle'),
+      meta: announcement.isActive ? t('listings.profileTrendLive') : 'Announcement is paused',
       time: formatRelativeDate(announcement.updatedAt || announcement.createdAt)
     }))
 
@@ -206,12 +208,13 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
     .map((message) => {
       const isIncoming = (typeof message.receiver === 'string' ? message.receiver : message.receiver?._id) === user?._id
       const otherUser = isIncoming ? message.sender : message.receiver
-      const otherName = otherUser?.userType === 'admin' ? 'Administrator' : `${otherUser?.firstName || ''} ${otherUser?.lastName || ''}`.trim() || 'User'
+      const otherName = otherUser?.userType === 'admin' ? t('listings.profileMessageAdministrator') : `${otherUser?.firstName || ''} ${otherUser?.lastName || ''}`.trim() || t('listings.profileMessageUser')
+      const direction = isIncoming ? t('listings.profileMessageFrom') : t('listings.profileMessageTo')
 
       return {
         key: `message-${message._id}`,
-        title: message.subject || `Message ${isIncoming ? 'from' : 'to'} ${otherName}`,
-        meta: message.isRead ? 'Read message' : 'Unread message',
+        title: message.subject || t('listings.profileMessageFromTo', { direction, name: otherName }),
+        meta: message.isRead ? t('listings.profileMessageRead') : t('listings.profileMessageUnread'),
         time: formatRelativeDate(message.createdAt)
       }
     })
@@ -221,17 +224,18 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       ? [
           {
             key: 'profile-reminder',
-            title: missingRequired.length > 0 ? 'Profile needs attention' : 'Profile can be improved',
-            meta: missingRequired.length > 0 ? `${missingRequired.length} required field(s) still missing` : `${missingOptional.length} optional field(s) can still be added`,
-            time: 'Action needed'
+            title: missingRequired.length > 0 ? t('listings.profileReminderNeedsAttention') : t('listings.profileReminderCanBeImproved'),
+            meta:
+              missingRequired.length > 0 ? t('listings.profileReminderRequiredFieldsMissing', { count: missingRequired.length }) : t('listings.profileReminderOptionalFieldsMissing', { count: missingOptional.length }),
+            time: t('listings.profileReminderActionNeeded')
           }
         ]
       : [
           {
             key: 'profile-complete',
-            title: 'Profile completion is on track',
-            meta: 'All required profile fields are complete',
-            time: `${completion}% complete`
+            title: t('listings.profileCompleteTitle'),
+            meta: t('listings.profileCompleteDescription'),
+            time: t('listings.profileCompletePercentage', { percentage: completion })
           }
         ]
 
@@ -240,7 +244,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
   return (
     <motion.div className='space-y-8' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
       <motion.h2 className='text-2xl font-bold theme-text' initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        Dashboard Overview
+        {t('listings.dashboardOverviewTitle')}
       </motion.h2>
 
       <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6'>
@@ -281,8 +285,8 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         <div className='flex items-center gap-3 mb-4'>
           <FaHistory className='text-accent' />
           <div>
-            <p className='text-xs uppercase tracking-wide theme-text-secondary'>Recent Activity</p>
-            <h3 className='text-lg font-semibold theme-text mt-1'>Latest account updates</h3>
+            <p className='text-xs uppercase tracking-wide theme-text-secondary'>{t('listings.profileActivityTitle')}</p>
+            <h3 className='text-lg font-semibold theme-text mt-1'>{t('listings.profileActivitySubtitle')}</h3>
           </div>
         </div>
 
@@ -307,8 +311,8 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
           transition={{ duration: 0.35, delay: 0.05 }}>
           <div className='flex items-center justify-between gap-4 mb-4'>
             <div>
-              <p className='text-xs uppercase tracking-wide theme-text-secondary'>Quick Actions</p>
-              <h3 className='text-lg font-semibold theme-text mt-1'>Jump to common tasks</h3>
+              <p className='text-xs uppercase tracking-wide theme-text-secondary'>{t('listings.profileQuickActionsTitle')}</p>
+              <h3 className='text-lg font-semibold theme-text mt-1'>{t('listings.profileQuickActionsSubtitle')}</h3>
             </div>
           </div>
 
@@ -330,13 +334,17 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
       <motion.div className='p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
           <div>
-            <p className='text-sm theme-text-secondary'>Profile Completion</p>
+            <p className='text-sm theme-text-secondary'>{t('listings.profileCompletionLabel')}</p>
             <p className='text-2xl font-bold theme-text mt-1'>{completion}%</p>
           </div>
 
           <div className='text-sm theme-text-secondary'>
-            <p>Missing required: {missingRequired.length}</p>
-            <p>Missing optional: {missingOptional.length}</p>
+            <p>
+              {t('listings.profileCompletionMissingRequired')}: {missingRequired.length}
+            </p>
+            <p>
+              {t('listings.profileCompletionRecommendedNext')}: {missingOptional.length}
+            </p>
           </div>
         </div>
 
@@ -346,7 +354,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
 
         <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-3'>
           <div className='p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
-            <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Missing required</p>
+            <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>{t('listings.profileCompletionMissingRequired')}</p>
             {requiredPreview.length > 0 ? (
               <ul className='space-y-1'>
                 {requiredPreview.map((item) => (
@@ -356,12 +364,12 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
                 ))}
               </ul>
             ) : (
-              <p className='text-sm text-green-500'>All required fields are complete.</p>
+              <p className='text-sm text-green-500'>{t('listings.profileCompletionAllRequiredComplete')}</p>
             )}
           </div>
 
           <div className='p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'>
-            <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>Recommended next</p>
+            <p className='text-xs uppercase tracking-wide theme-text-secondary mb-2'>{t('listings.profileCompletionRecommendedNext')}</p>
             {optionalPreview.length > 0 ? (
               <ul className='space-y-1'>
                 {optionalPreview.map((item) => (
@@ -371,7 +379,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
                 ))}
               </ul>
             ) : (
-              <p className='text-sm text-green-500'>Optional fields are complete.</p>
+              <p className='text-sm text-green-500'>{t('listings.profileCompletionOptionalComplete')}</p>
             )}
           </div>
         </div>
@@ -379,7 +387,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
         {(missingRequired.length > 0 || missingOptional.length > 0) && (
           <div className='mt-4'>
             <button type='button' onClick={() => onOpenSettings?.()} className='px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent/90 hover:shadow-lg transition-all duration-300'>
-              Complete Profile in Settings
+              {t('listings.profileCompletionCompleteButton')}
             </button>
           </div>
         )}
