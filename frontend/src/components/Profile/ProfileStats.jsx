@@ -98,7 +98,7 @@ const ProfileStats = ({ user, profileCompleteness, onOpenSettings, onOpenProject
     }
 
     fetchStats()
-  }, [user?._id])
+  }, [user?._id, t])
 
   if (loading) {
     return (
