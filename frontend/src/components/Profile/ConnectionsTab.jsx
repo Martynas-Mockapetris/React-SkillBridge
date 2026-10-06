@@ -361,10 +361,10 @@ const ConnectionsTab = () => {
   }
 
   const acceptedFilterOptions = [
-    { key: 'all', label: 'All' },
-    { key: 'pinned', label: 'Pinned' },
-    { key: 'available', label: 'Available Now' },
-    { key: 'strongest', label: 'Strongest Profiles' }
+    { key: 'all', label: t('listings.connectionFilterAll') },
+    { key: 'pinned', label: t('listings.connectionFilterPinned') },
+    { key: 'available', label: t('listings.connectionFilterAvailable') },
+    { key: 'strongest', label: t('listings.connectionFilterStrongest') }
   ]
   const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter, pinnedConnectionIds)
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
@@ -376,30 +376,30 @@ const ConnectionsTab = () => {
   const sections = [
     {
       key: 'incoming',
-      title: 'Incoming Requests',
-      description: 'People who want to add you to their professional network.',
+      title: t('listings.connectionSectionTitle_incoming'),
+      description: t('listings.connectionSectionDesc_incoming'),
       items: sortConnections(connections.incomingRequests, 'incoming', pinnedConnectionIds),
-      emptyMessage: 'No incoming requests right now.'
+      emptyMessage: t('listings.connectionEmptyMessage_incoming')
     },
     {
       key: 'outgoing',
-      title: 'Pending Requests',
-      description: 'Requests you already sent and are waiting on.',
+      title: t('listings.connectionSectionTitle_outgoing'),
+      description: t('listings.connectionSectionDesc_outgoing'),
       items: sortConnections(connections.outgoingRequests, 'outgoing', pinnedConnectionIds),
-      emptyMessage: 'No pending requests.'
+      emptyMessage: t('listings.connectionEmptyMessage_outgoing')
     },
     {
       key: 'accepted',
-      title: 'Your Network',
-      description: 'People you are already connected with.',
+      title: t('listings.connectionSectionTitle_accepted'),
+      description: t('listings.connectionSectionDesc_accepted'),
       items: sortConnections(searchedAcceptedConnections, 'accepted', pinnedConnectionIds),
       emptyMessage: acceptedSearch.trim()
-        ? 'No connections match your search right now.'
+        ? t('listings.connectionEmptyMessage_accepted_search')
         : acceptedFilter === 'all'
-          ? 'No accepted connections yet.'
+          ? t('listings.connectionEmptyMessage_accepted_noFilter')
           : acceptedFilter === 'pinned'
-            ? 'No pinned connections yet.'
-            : 'No connections match this filter right now.'
+            ? t('listings.connectionEmptyMessage_accepted_pinned')
+            : t('listings.connectionEmptyMessage_accepted_filter')
     }
   ]
 
@@ -418,7 +418,7 @@ const ConnectionsTab = () => {
           <div className='flex flex-col gap-4 px-4 py-4 sm:px-5 sm:py-5 lg:gap-5 lg:px-6'>
             <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
               <label className='block'>
-                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Search network</span>
+                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{t('listings.connectionSearchLabel')}</span>
                 <div className='relative'>
                   <FaSearch className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-accent/80' size={16} />
                   <input
@@ -426,7 +426,7 @@ const ConnectionsTab = () => {
                     type='text'
                     value={acceptedSearch}
                     onChange={(event) => setAcceptedSearch(event.target.value)}
-                    placeholder='Search by name, skill, service, headline, or location'
+                    placeholder={t('listings.connectionSearchPlaceholder')}
                     className='h-[50px] w-full rounded-lg border theme-border bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text transition-all duration-300 placeholder:text-primary/40 dark:placeholder:text-light/40 focus:bg-light/20 dark:focus:bg-light/20 focus:outline-none focus:ring-2 focus:ring-accent/50 hover:scale-[1.02] hover:shadow-lg'
                   />
                 </div>
@@ -449,7 +449,7 @@ const ConnectionsTab = () => {
 
             <div className='space-y-3 border-t border-primary/10 pt-3 dark:border-light/10'>
               <div className='flex flex-wrap items-center gap-2'>
-                <span className='text-[11px] font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Saved views</span>
+                <span className='text-[11px] font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{t('listings.connectionSavedViews')}</span>
                 {acceptedPresetOptions.map((preset) => (
                   <button
                     key={preset.key}
@@ -479,7 +479,7 @@ const ConnectionsTab = () => {
                     setAcceptedSearch('')
                   }}
                   className='inline-flex w-full items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10 sm:w-auto'>
-                  Clear tools
+                  {t('listings.connectionClearTools')}
                 </button>
               </div>
             </div>
@@ -487,17 +487,17 @@ const ConnectionsTab = () => {
         </div>
 
         <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>{t('listings.connectionStatsConnections')}</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
         </div>
 
         <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>{t('listings.connectionStatsIncoming')}</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
         </div>
 
         <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>{t('listings.connectionStatsPending')}</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
         </div>
       </div>
@@ -523,7 +523,7 @@ const ConnectionsTab = () => {
                     setAcceptedSearch('')
                   }}
                   className='mt-4 inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
-                  Reset Network Tools
+                  {t('listings.connectionResetNetworkTools')}
                 </button>
               )}
             </div>
