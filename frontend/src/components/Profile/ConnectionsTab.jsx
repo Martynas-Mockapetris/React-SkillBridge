@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaRegStickyNote, FaSearch, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
@@ -8,24 +9,24 @@ import VerificationBadge from '../shared/VerificationBadge'
 import DirectContactModal from '../../modal/DirectContactModal'
 import HireFreelancerModal from '../../modal/HireFreelancerModal'
 
-const formatConnectionActivity = (connection, sectionKey) => {
+const formatConnectionActivity = (connection, sectionKey, t) => {
   const requestedDate = connection.requestedAt ? new Date(connection.requestedAt) : null
   const respondedDate = connection.respondedAt ? new Date(connection.respondedAt) : null
 
   if (sectionKey === 'accepted' && respondedDate) {
-    return `Connected since ${respondedDate.toLocaleDateString()}`
+    return t('listings.connectionActivityConnectedSince', { date: respondedDate.toLocaleDateString() })
   }
 
   if (sectionKey === 'incoming' && requestedDate) {
-    return `Requested on ${requestedDate.toLocaleDateString()}`
+    return t('listings.connectionActivityRequestedOn', { date: requestedDate.toLocaleDateString() })
   }
 
   if (sectionKey === 'outgoing' && requestedDate) {
-    return `Sent on ${requestedDate.toLocaleDateString()}`
+    return t('listings.connectionActivitySentOn', { date: requestedDate.toLocaleDateString() })
   }
 
   if (requestedDate) {
-    return `Updated on ${requestedDate.toLocaleDateString()}`
+    return t('listings.connectionActivityUpdatedOn', { date: requestedDate.toLocaleDateString() })
   }
 
   return ''
@@ -120,26 +121,26 @@ const searchAcceptedConnections = (items = [], searchValue = '') => {
   })
 }
 
-const getConnectionSectionBadge = (sectionKey) => {
+const getConnectionSectionBadge = (sectionKey, t) => {
   switch (sectionKey) {
     case 'incoming':
       return {
-        label: 'Incoming Request',
+        label: t('listings.connectionBadgeIncoming'),
         className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
       }
     case 'outgoing':
       return {
-        label: 'Pending Request',
+        label: t('listings.connectionBadgePending'),
         className: 'bg-amber-500/10 text-amber-600 dark:text-amber-300'
       }
     case 'accepted':
       return {
-        label: 'Connected',
+        label: t('listings.connectionBadgeConnected'),
         className: 'bg-accent/10 text-accent'
       }
     default:
       return {
-        label: 'Connection',
+        label: t('listings.connectionBadgeDefault'),
         className: 'bg-primary/10 theme-text-secondary dark:bg-light/10'
       }
   }
@@ -237,6 +238,7 @@ const compactActionClasses = {
 
 const ConnectionsTab = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('main')
   const [connections, setConnections] = useState({
     incomingRequests: [],
     outgoingRequests: [],
@@ -533,10 +535,10 @@ const ConnectionsTab = () => {
                 const locationLabel = otherUser.showLocationPublic && otherUser.location ? otherUser.location : ''
                 const canDirectMessage = otherUser.allowDirectMessages !== false
                 const canInviteToProjects = otherUser.allowProjectInvites !== false
-                const activityLabel = formatConnectionActivity(connection, section.key)
+                const activityLabel = formatConnectionActivity(connection, section.key, t)
                 const isPinned = pinnedConnectionIds.includes(connection._id)
                 const isAcceptedCard = section.key === 'accepted'
-                const sectionBadge = getConnectionSectionBadge(section.key)
+                const sectionBadge = getConnectionSectionBadge(section.key, t)
                 const connectionNote = connectionNotes[connection._id] || ''
                 const isEditingNote = editingConnectionNoteId === connection._id
 
