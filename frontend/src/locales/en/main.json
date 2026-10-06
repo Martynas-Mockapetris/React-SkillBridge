@@ -327,6 +327,13 @@
     "connectionButtonViewProfile": "View Profile",
     "connectionButtonRemove": "Remove",
     "connectionButtonSaveNote": "Save Note",
-    "connectionButtonCancel": "Cancel"
+    "connectionButtonCancel": "Cancel",
+    "connectionSummaryShowing": "Showing",
+    "connectionSummaryOf": "of",
+    "connectionSummaryConnections": "connections",
+    "connectionSummaryPinned": "Pinned",
+    "connectionSummaryView": "View",
+    "connectionSummaryFilter": "Filter",
+    "connectionSummarySearch": "Search"
   }
 }

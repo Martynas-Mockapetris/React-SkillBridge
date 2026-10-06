@@ -147,10 +147,10 @@ const getConnectionSectionBadge = (sectionKey, t) => {
 }
 
 const acceptedPresetOptions = [
-  { key: 'allContacts', label: 'All Contacts', filter: 'all', search: '' },
-  { key: 'pinnedFocus', label: 'Pinned Focus', filter: 'pinned', search: '' },
-  { key: 'availableNow', label: 'Available Now', filter: 'available', search: '' },
-  { key: 'trustedTalent', label: 'Trusted Talent', filter: 'strongest', search: '' }
+  { key: 'allContacts', filter: 'all', search: '' },
+  { key: 'pinnedFocus', filter: 'pinned', search: '' },
+  { key: 'availableNow', filter: 'available', search: '' },
+  { key: 'trustedTalent', filter: 'strongest', search: '' }
 ]
 
 const applyAcceptedPreset = (presetKey, setAcceptedFilter, setAcceptedSearch) => {
@@ -366,12 +366,23 @@ const ConnectionsTab = () => {
     { key: 'available', label: t('listings.connectionFilterAvailable') },
     { key: 'strongest', label: t('listings.connectionFilterStrongest') }
   ]
+  const acceptedPresetOptionsWithLabels = acceptedPresetOptions.map((preset) => ({
+    ...preset,
+    label:
+      preset.key === 'allContacts'
+        ? t('listings.connectionPresetAllContacts')
+        : preset.key === 'pinnedFocus'
+          ? t('listings.connectionPresetPinnedFocus')
+          : preset.key === 'availableNow'
+            ? t('listings.connectionPresetAvailableNow')
+            : t('listings.connectionPresetTrustedTalent')
+  }))
   const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter, pinnedConnectionIds)
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
   const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
   const activeAcceptedPresetKey = resolveAcceptedPresetKey(acceptedFilter, acceptedSearch)
-  const activeAcceptedPresetLabel = acceptedPresetOptions.find((option) => option.key === activeAcceptedPresetKey)?.label || 'Custom'
+  const activeAcceptedPresetLabel = acceptedPresetOptionsWithLabels.find((option) => option.key === activeAcceptedPresetKey)?.label || 'Custom'
 
   const sections = [
     {
@@ -450,7 +461,7 @@ const ConnectionsTab = () => {
             <div className='space-y-3 border-t border-primary/10 pt-3 dark:border-light/10'>
               <div className='flex flex-wrap items-center gap-2'>
                 <span className='text-[11px] font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{t('listings.connectionSavedViews')}</span>
-                {acceptedPresetOptions.map((preset) => (
+                {acceptedPresetOptionsWithLabels.map((preset) => (
                   <button
                     key={preset.key}
                     type='button'
@@ -465,11 +476,11 @@ const ConnectionsTab = () => {
 
               <div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
                 <p className='text-[11px] font-medium uppercase leading-5 tracking-[0.14em] theme-text-secondary sm:text-xs'>
-                  Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
-                  {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
-                  {activeAcceptedPresetKey !== 'custom' ? ` • View: ${activeAcceptedPresetLabel}` : ''}
-                  {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
-                  {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
+                  {t('listings.connectionSummaryShowing')} {filteredAcceptedCount} {t('listings.connectionSummaryOf')} {connections.acceptedConnections.length} {t('listings.connectionSummaryConnections')}
+                  {pinnedAcceptedCount > 0 ? ` • ${t('listings.connectionSummaryPinned')}: ${pinnedAcceptedCount}` : ''}
+                  {activeAcceptedPresetKey !== 'custom' ? ` • ${t('listings.connectionSummaryView')}: ${activeAcceptedPresetLabel}` : ''}
+                  {acceptedFilter !== 'all' ? ` • ${t('listings.connectionSummaryFilter')}: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
+                  {acceptedSearch.trim() ? ` • ${t('listings.connectionSummarySearch')}: ${acceptedSearch.trim()}` : ''}
                 </p>
 
                 <button

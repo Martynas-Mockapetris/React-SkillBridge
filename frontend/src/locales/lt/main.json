@@ -327,6 +327,13 @@
     "connectionButtonViewProfile": "Peržiūrėti profilį",
     "connectionButtonRemove": "Pašalinti",
     "connectionButtonSaveNote": "Išsaugoti pastabą",
-    "connectionButtonCancel": "Atšaukti"
+    "connectionButtonCancel": "Atšaukti",
+    "connectionSummaryShowing": "Rodoma",
+    "connectionSummaryOf": "iš",
+    "connectionSummaryConnections": "ryšiai",
+    "connectionSummaryPinned": "Pritvirtinti",
+    "connectionSummaryView": "Peržiūra",
+    "connectionSummaryFilter": "Filtras",
+    "connectionSummarySearch": "Paieška"
   }
 }
