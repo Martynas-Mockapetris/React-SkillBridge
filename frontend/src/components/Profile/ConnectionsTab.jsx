@@ -559,7 +559,7 @@ const ConnectionsTab = () => {
                             {isAcceptedCard && isPinned && (
                               <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent'>
                                 <FaThumbtack size={10} />
-                                <span>Pinned</span>
+                                <span>{t('listings.connectionCardPinned')}</span>
                               </span>
                             )}
                           </div>
@@ -568,7 +568,7 @@ const ConnectionsTab = () => {
                             <h3 className='text-sm font-semibold theme-text'>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
                             <VerificationBadge isVerified={otherUser.isEmailVerified} />
                           </div>
-                          <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{otherUser.headline || 'Professional profile'}</p>
+                          <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{otherUser.headline || t('listings.connectionCardProfessionalProfile')}</p>
 
                           {activityLabel && (
                             <div className='mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/15 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent'>
@@ -586,7 +586,7 @@ const ConnectionsTab = () => {
                             <div className='mt-2 rounded-xl border border-primary/10 bg-white/70 px-3 py-2 dark:border-light/10 dark:bg-light/[0.05]'>
                               <div className='flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] theme-text-secondary'>
                                 <FaRegStickyNote size={10} />
-                                <span>Private Note</span>
+                                <span>{t('listings.connectionCardPrivateNote')}</span>
                               </div>
 
                               {isEditingNote ? (
@@ -595,15 +595,15 @@ const ConnectionsTab = () => {
                                     value={connectionNoteDraft}
                                     onChange={(event) => setConnectionNoteDraft(event.target.value)}
                                     rows={3}
-                                    placeholder='Add a quick reminder about this connection'
+                                    placeholder={t('listings.connectionCardNotePlaceholder')}
                                     className='w-full resize-none rounded-lg border border-primary/10 bg-white/90 px-3 py-2 text-[12px] leading-5 theme-text outline-none transition-colors focus:border-accent dark:border-light/10 dark:bg-light/[0.08]'
                                   />
                                   <div className='flex flex-wrap gap-2'>
                                     <button type='button' onClick={() => handleSubmitConnectionNote(connection._id)} className={compactActionClasses.accent}>
-                                      Save Note
+                                      {t('listings.connectionButtonSaveNote')}
                                     </button>
                                     <button type='button' onClick={handleCancelEditingConnectionNote} className={compactActionClasses.neutral}>
-                                      Cancel
+                                      {t('listings.connectionButtonCancel')}
                                     </button>
                                   </div>
                                 </div>
@@ -620,11 +620,11 @@ const ConnectionsTab = () => {
                           <>
                             <button type='button' onClick={() => handleAction(connection._id, 'accept')} disabled={actionId === connection._id} className={`${compactActionClasses.success} disabled:opacity-60`}>
                               <FaCheck />
-                              <span>Accept</span>
+                              <span>{t('listings.connectionButtonAccept')}</span>
                             </button>
                             <button type='button' onClick={() => handleAction(connection._id, 'decline')} disabled={actionId === connection._id} className={`${compactActionClasses.danger} disabled:opacity-60`}>
                               <FaTimes />
-                              <span>Decline</span>
+                              <span>{t('listings.connectionButtonDecline')}</span>
                             </button>
                           </>
                         )}
@@ -632,7 +632,7 @@ const ConnectionsTab = () => {
                         {section.key === 'outgoing' && (
                           <button type='button' onClick={() => handleAction(connection._id, 'remove')} disabled={actionId === connection._id} className={compactActionClasses.accent}>
                             <FaClock />
-                            <span>Cancel Request</span>
+                            <span>{t('listings.connectionButtonCancelRequest')}</span>
                           </button>
                         )}
 
@@ -642,21 +642,21 @@ const ConnectionsTab = () => {
                             onClick={() => handleOpenDirectMessage(otherUser)}
                             className='inline-flex items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-accent/90'>
                             <FaEnvelope />
-                            <span>Message</span>
+                            <span>{t('listings.connectionButtonMessage')}</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && canInviteToProjects && (
                           <button type='button' onClick={() => handleOpenProjectInvite(otherUser)} className={compactActionClasses.accentSoft}>
                             <FaBriefcase />
-                            <span>Invite to Project</span>
+                            <span>{t('listings.connectionButtonInviteToProject')}</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && (
                           <button type='button' onClick={() => handleTogglePinnedConnection(connection._id)} className={isPinned ? compactActionClasses.accent : compactActionClasses.subtle}>
                             <FaThumbtack />
-                            <span>{isPinned ? 'Unpin' : 'Pin'}</span>
+                            <span>{isPinned ? t('listings.connectionButtonUnpin') : t('listings.connectionButtonPin')}</span>
                           </button>
                         )}
 
@@ -666,21 +666,21 @@ const ConnectionsTab = () => {
                             onClick={() => (isEditingNote ? handleCancelEditingConnectionNote() : handleStartEditingConnectionNote(connection._id, connectionNote))}
                             className={isEditingNote ? compactActionClasses.neutral : compactActionClasses.subtle}>
                             <FaRegStickyNote />
-                            <span>{isEditingNote ? 'Close Note' : connectionNote ? 'Edit Note' : 'Add Note'}</span>
+                            <span>{isEditingNote ? t('listings.connectionButtonCloseNote') : connectionNote ? t('listings.connectionButtonEditNote') : t('listings.connectionButtonAddNote')}</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && canOpenFreelancerProfile ? (
                           <button type='button' onClick={() => navigate(`/freelancer/${otherUser._id}`, { state: { returnTo: '/profile' } })} className={compactActionClasses.neutral}>
                             <FaArrowRight />
-                            <span>View Profile</span>
+                            <span>{t('listings.connectionButtonViewProfile')}</span>
                           </button>
                         ) : null}
 
                         {section.key === 'accepted' && (
                           <button type='button' onClick={() => handleAction(connection._id, 'remove')} disabled={actionId === connection._id} className={`${compactActionClasses.danger} disabled:opacity-60`}>
                             <FaUserFriends />
-                            <span>Remove</span>
+                            <span>{t('listings.connectionButtonRemove')}</span>
                           </button>
                         )}
                       </div>
