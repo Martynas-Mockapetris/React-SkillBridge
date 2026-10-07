@@ -21,19 +21,19 @@ export const LanguageProvider = ({ children }) => {
     setCurrentLanguage(lang)
   }
 
-  // Keyboard shortcut: Ctrl+L toggles language
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
-        e.preventDefault()
-        const newLang = currentLanguage === 'en' ? 'lt' : 'en'
-        switchLanguage(newLang)
-      }
-    }
+  // Keyboard shortcut: Ctrl+L toggles language (DISABLED FOR NOW)
+  // useEffect(() => {
+  //   const handleKeyPress = (e) => {
+  //     if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+  //       e.preventDefault()
+  //       const newLang = currentLanguage === 'en' ? 'lt' : 'en'
+  //       switchLanguage(newLang)
+  //     }
+  //   }
 
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [currentLanguage])
+  //   window.addEventListener('keydown', handleKeyPress)
+  //   return () => window.removeEventListener('keydown', handleKeyPress)
+  // }, [currentLanguage])
 
   return <LanguageContext.Provider value={{ currentLanguage, switchLanguage }}>{children}</LanguageContext.Provider>
 }
