@@ -1,0 +1,102 @@
+{
+  "hero": {
+    "titleLead": "Raskite savo sekančią",
+    "titleAccent": "galimybę",
+    "descriptionLine1": "Susikontaktuokite su geriausiais talentais ir klientais iš viso pasaulio mūsų platformoje.",
+    "descriptionLine2": "Pradėkite savo sėkmės istoriją šiandien.",
+    "talentButton": "Rasti talentą",
+    "workButton": "Rasti darbą"
+  },
+  "features": {
+    "titleLead": "Kodėl pasirinkti",
+    "titleAccent": "SkillBridge",
+    "subtitle": "Atraskite privalumus, kurie daro SkillBridge pageidaujama platforma talentui ir galimybėms sujungti",
+    "feature1": {
+      "title": "Profesionalus tinklas",
+      "description": "Susikontaktuokite su industriniais ekspertais ir kurkite reikalingus profesionalius ryšius"
+    },
+    "feature2": {
+      "title": "Kokybės projektai",
+      "description": "Prieiga prie atrinktų galimybių, atitinkančių jūsų ekspertizę"
+    },
+    "feature3": {
+      "title": "Kompetencijų plėtojimas",
+      "description": "Plėskite savo ekspertizę per realius projektus ir patirtį"
+    },
+    "feature4": {
+      "title": "Lankstus darbas",
+      "description": "Pasirinkite projektus, kurie tinka jūsų grafikui ir darbo pageidavimams"
+    },
+    "feature5": {
+      "title": "Globalios galimybės",
+      "description": "Prieiga prie projektų ir talento iš viso pasaulio"
+    },
+    "feature6": {
+      "title": "Patikrinti atsiliepimai",
+      "description": "Priimkite informuotus sprendimus su autentiškais atsiliepimais ir vertinimais"
+    }
+  },
+  "howItWorks": {
+    "titleLead": "Kaip",
+    "titleAccent": "tai veikia",
+    "subtitle": "Pasirinkite savo kelią ir atraskite, kaip SkillBridge veikia jums",
+    "talentTab": "Talentui",
+    "clientTab": "Klientams"
+  },
+  "talentSteps": {
+    "step1Title": "Sukurti profilį",
+    "step1Desc": "Nustatykite savo profesionalų profilį, išryškindami savo įgūdžius ir patirtį",
+    "step2Title": "Naršyti galimybes",
+    "step2Desc": "Naršykite kuruotus projektus, kurie atitinka jūsų ekspertizę ir interesus",
+    "step3Title": "Pradėti darbą",
+    "step3Desc": "Susikontaktuokite su klientais ir pradėkite sėkmingą bendradarbiavimą"
+  },
+  "clientSteps": {
+    "step1Title": "Skelbti projektą",
+    "step1Desc": "Pasidalinkite savo projekto detalėmis ir reikalavimais su mūsų talentingą bendruomenę",
+    "step2Title": "Peržiūrėti kandidatus",
+    "step2Desc": "Naršykite per kvalifikuotus profesionalus ir pasirinkite idealų atitikmenį",
+    "step3Title": "Samdyti talentą",
+    "step3Desc": "Pradėkite bendradarbiauti su pasirinktu profesionalu dėl jūsų projekto"
+  },
+  "testimonials": {
+    "titleLead": "Ką sako mūsų",
+    "titleAccent": "klientai",
+    "subtitle": "Atraskite, kaip mūsų platforma transformavo verslas ir karjeras per realias sėkmės istorijas",
+    "testimonial1": {
+      "name": "Emma Wilson",
+      "role": "Projekto savininkas",
+      "content": "Radau tobulą kūrėją mano internetinės parduotuvės projektui. Platforma palengvino portfelių peržiūrą ir susikontaktavimą su kvalifikuotais freelancerininkais.",
+      "rating": 5
+    },
+    "testimonial2": {
+      "name": "Michael Chen",
+      "role": "Laisvas programuotojas",
+      "content": "Kaip laisvas žmogus, man patinka, kaip lengva rasti įdomius projektus, kurie atitinka mano įgūdžius. Platforma padeda man susikontaktuoti su rimtais klientais.",
+      "rating": 4
+    },
+    "testimonial3": {
+      "name": "Sarah Johnson",
+      "role": "Projekto savininkas",
+      "content": "Paskelbus savo programėlės projektą, per kelis dienas gavau pasiūlymus iš labai gabių kūrėjų. Bendradarbiavimo įrankiai padarė visą procesą sklandų.",
+      "rating": 5
+    },
+    "testimonial4": {
+      "name": "David Rodriguez",
+      "role": "Laisvas dizaineris",
+      "content": "Platforma sujungia mane su klientais, kurie vertina kokybės dizainą. Projekto atitikimo sistema tiksliai atitinka mano ekspertizę.",
+      "rating": 4.5
+    },
+    "testimonial5": {
+      "name": "Lisa Chang",
+      "role": "Projekto savininkas",
+      "content": "Per savaitę radau nuostabų dizainerį, kuris puikiai suprato mano prekės ženklo viziją. Bendradarbiavimo funkcijos palengvino komunikaciją.",
+      "rating": 5
+    }
+  },
+  "pricing": {
+    "titleLead": "Lankstus",
+    "titleAccent": "kainos",
+    "subtitle": "Pasirinkite tobulą planą, atitinkantį jūsų poreikius ir biudžetą"
+  }
+}

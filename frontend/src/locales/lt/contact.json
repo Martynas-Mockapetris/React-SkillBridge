@@ -1,0 +1,26 @@
+{
+  "contact": {
+    "titleLead": "Susikontaktuokite",
+    "titleAccent": "su mumis",
+    "subtitle": "Turite klausimą arba norite bendradarbiauti? Pasiųskite mums žinutę, ir greitai atsakysime.",
+    "supportLabel": "Pagalba",
+    "businessLabel": "Verslas",
+    "phoneLabel": "Telefonas",
+    "hoursLabel": "Valandos",
+    "addressLabel": "Adresas",
+    "formNameLabel": "Vardas",
+    "formNamePlaceholder": "Įveskite jūsų vardą",
+    "formEmailLabel": "El. paštas",
+    "formEmailPlaceholder": "Įveskite savo el. paštą",
+    "formSubjectLabel": "Tema",
+    "formSubjectPlaceholder": "Įveskite temą",
+    "formMessageLabel": "Žinutė",
+    "formMessagePlaceholder": "Įveskite savo žinutę",
+    "formSubmitButton": "Siųsti žinutę",
+    "nameRequired": "Vardas yra privalomas",
+    "emailRequired": "El. paštas yra privalomas",
+    "emailInvalid": "Neteisingas el. pašto formatas",
+    "subjectRequired": "Tema yra privaloma",
+    "messageRequired": "Žinutė yra privaloma"
+  }
+}
