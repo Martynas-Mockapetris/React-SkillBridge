@@ -74,7 +74,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
 
           {/* Modal */}
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className='fixed inset-0 flex items-center justify-center z-50 p-4'>
-            <motion.div className='bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-md w-full p-6 border dark:border-gray-800'>
+            <motion.div className='theme-card rounded-lg shadow-2xl max-w-md w-full p-6 border theme-border'>
               {/* Header */}
               <div className='flex items-center justify-between mb-4'>
                 <div className='flex items-center gap-3'>
@@ -83,7 +83,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                   </div>
                   <h2 className='text-xl font-bold theme-text'>Reschedule Project</h2>
                 </div>
-                <motion.button onClick={onClose} disabled={isSubmitting} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50'>
+                <motion.button onClick={onClose} disabled={isSubmitting} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className='theme-text-muted hover:theme-text disabled:opacity-50'>
                   <FaTimes />
                 </motion.button>
               </div>
@@ -96,7 +96,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                 </div>
 
                 {/* Current Deadline */}
-                <div className='p-3 bg-gray-50 dark:bg-gray-800 rounded-lg'>
+                <div className='p-3 theme-card rounded-lg'>
                   <p className='text-xs theme-text-secondary mb-1'>Current Deadline</p>
                   <p className='font-semibold theme-text'>
                     {new Date(project?.deadline).toLocaleDateString('en-US', {
@@ -113,14 +113,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                 {/* New Deadline Input */}
                 <div>
                   <label className='block text-sm font-medium theme-text mb-2'>New Deadline</label>
-                  <input
-                    type='date'
-                    value={newDeadline}
-                    onChange={handleDateChange}
-                    min={minDateStr}
-                    disabled={isSubmitting}
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 theme-text focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50'
-                  />
+                  <input type='date' value={newDeadline} onChange={handleDateChange} min={minDateStr} disabled={isSubmitting} className='w-full theme-input' />
                   {newDeadline && (
                     <p className='text-xs theme-text-secondary mt-2'>
                       {daysUntilNewDeadline} days from today
@@ -138,7 +131,7 @@ const RescheduleModal = ({ isOpen, project, onClose, onReschedule }) => {
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className='flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 theme-text font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-all duration-300 hover:shadow-lg'>
+                  className='flex-1 px-4 py-2 rounded-lg border theme-border theme-text font-medium hover:bg-white/50 dark:hover:bg-black/20 disabled:opacity-50 transition-all duration-300 hover:shadow-lg'>
                   Cancel
                 </motion.button>
                 <motion.button

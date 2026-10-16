@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { FaArrowRight, FaBriefcase, FaCheck, FaClock, FaEnvelope, FaRegStickyNote, FaSearch, FaThumbtack, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { acceptConnectionRequest, declineConnectionRequest, getMyConnections, removeConnection } from '../../services/userService'
@@ -8,24 +9,24 @@ import VerificationBadge from '../shared/VerificationBadge'
 import DirectContactModal from '../../modal/DirectContactModal'
 import HireFreelancerModal from '../../modal/HireFreelancerModal'
 
-const formatConnectionActivity = (connection, sectionKey) => {
+const formatConnectionActivity = (connection, sectionKey, t) => {
   const requestedDate = connection.requestedAt ? new Date(connection.requestedAt) : null
   const respondedDate = connection.respondedAt ? new Date(connection.respondedAt) : null
 
   if (sectionKey === 'accepted' && respondedDate) {
-    return `Connected since ${respondedDate.toLocaleDateString()}`
+    return t('listings.connectionActivityConnectedSince', { date: respondedDate.toLocaleDateString() })
   }
 
   if (sectionKey === 'incoming' && requestedDate) {
-    return `Requested on ${requestedDate.toLocaleDateString()}`
+    return t('listings.connectionActivityRequestedOn', { date: requestedDate.toLocaleDateString() })
   }
 
   if (sectionKey === 'outgoing' && requestedDate) {
-    return `Sent on ${requestedDate.toLocaleDateString()}`
+    return t('listings.connectionActivitySentOn', { date: requestedDate.toLocaleDateString() })
   }
 
   if (requestedDate) {
-    return `Updated on ${requestedDate.toLocaleDateString()}`
+    return t('listings.connectionActivityUpdatedOn', { date: requestedDate.toLocaleDateString() })
   }
 
   return ''
@@ -120,36 +121,36 @@ const searchAcceptedConnections = (items = [], searchValue = '') => {
   })
 }
 
-const getConnectionSectionBadge = (sectionKey) => {
+const getConnectionSectionBadge = (sectionKey, t) => {
   switch (sectionKey) {
     case 'incoming':
       return {
-        label: 'Incoming Request',
+        label: t('listings.connectionBadgeIncoming'),
         className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
       }
     case 'outgoing':
       return {
-        label: 'Pending Request',
+        label: t('listings.connectionBadgePending'),
         className: 'bg-amber-500/10 text-amber-600 dark:text-amber-300'
       }
     case 'accepted':
       return {
-        label: 'Connected',
+        label: t('listings.connectionBadgeConnected'),
         className: 'bg-accent/10 text-accent'
       }
     default:
       return {
-        label: 'Connection',
+        label: t('listings.connectionBadgeDefault'),
         className: 'bg-primary/10 theme-text-secondary dark:bg-light/10'
       }
   }
 }
 
 const acceptedPresetOptions = [
-  { key: 'allContacts', label: 'All Contacts', filter: 'all', search: '' },
-  { key: 'pinnedFocus', label: 'Pinned Focus', filter: 'pinned', search: '' },
-  { key: 'availableNow', label: 'Available Now', filter: 'available', search: '' },
-  { key: 'trustedTalent', label: 'Trusted Talent', filter: 'strongest', search: '' }
+  { key: 'allContacts', filter: 'all', search: '' },
+  { key: 'pinnedFocus', filter: 'pinned', search: '' },
+  { key: 'availableNow', filter: 'available', search: '' },
+  { key: 'trustedTalent', filter: 'strongest', search: '' }
 ]
 
 const applyAcceptedPreset = (presetKey, setAcceptedFilter, setAcceptedSearch) => {
@@ -237,6 +238,7 @@ const compactActionClasses = {
 
 const ConnectionsTab = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('main')
   const [connections, setConnections] = useState({
     incomingRequests: [],
     outgoingRequests: [],
@@ -359,45 +361,56 @@ const ConnectionsTab = () => {
   }
 
   const acceptedFilterOptions = [
-    { key: 'all', label: 'All' },
-    { key: 'pinned', label: 'Pinned' },
-    { key: 'available', label: 'Available Now' },
-    { key: 'strongest', label: 'Strongest Profiles' }
+    { key: 'all', label: t('listings.connectionFilterAll') },
+    { key: 'pinned', label: t('listings.connectionFilterPinned') },
+    { key: 'available', label: t('listings.connectionFilterAvailable') },
+    { key: 'strongest', label: t('listings.connectionFilterStrongest') }
   ]
+  const acceptedPresetOptionsWithLabels = acceptedPresetOptions.map((preset) => ({
+    ...preset,
+    label:
+      preset.key === 'allContacts'
+        ? t('listings.connectionPresetAllContacts')
+        : preset.key === 'pinnedFocus'
+          ? t('listings.connectionPresetPinnedFocus')
+          : preset.key === 'availableNow'
+            ? t('listings.connectionPresetAvailableNow')
+            : t('listings.connectionPresetTrustedTalent')
+  }))
   const filteredAcceptedConnections = filterAcceptedConnections(connections.acceptedConnections, acceptedFilter, pinnedConnectionIds)
   const searchedAcceptedConnections = searchAcceptedConnections(filteredAcceptedConnections, acceptedSearch)
   const filteredAcceptedCount = searchedAcceptedConnections.length
   const pinnedAcceptedCount = connections.acceptedConnections.filter((connection) => pinnedConnectionIds.includes(connection._id)).length
   const activeAcceptedPresetKey = resolveAcceptedPresetKey(acceptedFilter, acceptedSearch)
-  const activeAcceptedPresetLabel = acceptedPresetOptions.find((option) => option.key === activeAcceptedPresetKey)?.label || 'Custom'
+  const activeAcceptedPresetLabel = acceptedPresetOptionsWithLabels.find((option) => option.key === activeAcceptedPresetKey)?.label || 'Custom'
 
   const sections = [
     {
       key: 'incoming',
-      title: 'Incoming Requests',
-      description: 'People who want to add you to their professional network.',
+      title: t('listings.connectionSectionTitle_incoming'),
+      description: t('listings.connectionSectionDesc_incoming'),
       items: sortConnections(connections.incomingRequests, 'incoming', pinnedConnectionIds),
-      emptyMessage: 'No incoming requests right now.'
+      emptyMessage: t('listings.connectionEmptyMessage_incoming')
     },
     {
       key: 'outgoing',
-      title: 'Pending Requests',
-      description: 'Requests you already sent and are waiting on.',
+      title: t('listings.connectionSectionTitle_outgoing'),
+      description: t('listings.connectionSectionDesc_outgoing'),
       items: sortConnections(connections.outgoingRequests, 'outgoing', pinnedConnectionIds),
-      emptyMessage: 'No pending requests.'
+      emptyMessage: t('listings.connectionEmptyMessage_outgoing')
     },
     {
       key: 'accepted',
-      title: 'Your Network',
-      description: 'People you are already connected with.',
+      title: t('listings.connectionSectionTitle_accepted'),
+      description: t('listings.connectionSectionDesc_accepted'),
       items: sortConnections(searchedAcceptedConnections, 'accepted', pinnedConnectionIds),
       emptyMessage: acceptedSearch.trim()
-        ? 'No connections match your search right now.'
+        ? t('listings.connectionEmptyMessage_accepted_search')
         : acceptedFilter === 'all'
-          ? 'No accepted connections yet.'
+          ? t('listings.connectionEmptyMessage_accepted_noFilter')
           : acceptedFilter === 'pinned'
-            ? 'No pinned connections yet.'
-            : 'No connections match this filter right now.'
+            ? t('listings.connectionEmptyMessage_accepted_pinned')
+            : t('listings.connectionEmptyMessage_accepted_filter')
     }
   ]
 
@@ -416,7 +429,7 @@ const ConnectionsTab = () => {
           <div className='flex flex-col gap-4 px-4 py-4 sm:px-5 sm:py-5 lg:gap-5 lg:px-6'>
             <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
               <label className='block'>
-                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Search network</span>
+                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{t('listings.connectionSearchLabel')}</span>
                 <div className='relative'>
                   <FaSearch className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-accent/80' size={16} />
                   <input
@@ -424,7 +437,7 @@ const ConnectionsTab = () => {
                     type='text'
                     value={acceptedSearch}
                     onChange={(event) => setAcceptedSearch(event.target.value)}
-                    placeholder='Search by name, skill, service, headline, or location'
+                    placeholder={t('listings.connectionSearchPlaceholder')}
                     className='h-[50px] w-full rounded-lg border theme-border bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text transition-all duration-300 placeholder:text-primary/40 dark:placeholder:text-light/40 focus:bg-light/20 dark:focus:bg-light/20 focus:outline-none focus:ring-2 focus:ring-accent/50 hover:scale-[1.02] hover:shadow-lg'
                   />
                 </div>
@@ -447,8 +460,8 @@ const ConnectionsTab = () => {
 
             <div className='space-y-3 border-t border-primary/10 pt-3 dark:border-light/10'>
               <div className='flex flex-wrap items-center gap-2'>
-                <span className='text-[11px] font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Saved views</span>
-                {acceptedPresetOptions.map((preset) => (
+                <span className='text-[11px] font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{t('listings.connectionSavedViews')}</span>
+                {acceptedPresetOptionsWithLabels.map((preset) => (
                   <button
                     key={preset.key}
                     type='button'
@@ -463,11 +476,11 @@ const ConnectionsTab = () => {
 
               <div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
                 <p className='text-[11px] font-medium uppercase leading-5 tracking-[0.14em] theme-text-secondary sm:text-xs'>
-                  Showing {filteredAcceptedCount} of {connections.acceptedConnections.length} connections
-                  {pinnedAcceptedCount > 0 ? ` • Pinned: ${pinnedAcceptedCount}` : ''}
-                  {activeAcceptedPresetKey !== 'custom' ? ` • View: ${activeAcceptedPresetLabel}` : ''}
-                  {acceptedFilter !== 'all' ? ` • Filter: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
-                  {acceptedSearch.trim() ? ` • Search: ${acceptedSearch.trim()}` : ''}
+                  {t('listings.connectionSummaryShowing')} {filteredAcceptedCount} {t('listings.connectionSummaryOf')} {connections.acceptedConnections.length} {t('listings.connectionSummaryConnections')}
+                  {pinnedAcceptedCount > 0 ? ` • ${t('listings.connectionSummaryPinned')}: ${pinnedAcceptedCount}` : ''}
+                  {activeAcceptedPresetKey !== 'custom' ? ` • ${t('listings.connectionSummaryView')}: ${activeAcceptedPresetLabel}` : ''}
+                  {acceptedFilter !== 'all' ? ` • ${t('listings.connectionSummaryFilter')}: ${acceptedFilterOptions.find((option) => option.key === acceptedFilter)?.label}` : ''}
+                  {acceptedSearch.trim() ? ` • ${t('listings.connectionSummarySearch')}: ${acceptedSearch.trim()}` : ''}
                 </p>
 
                 <button
@@ -477,7 +490,7 @@ const ConnectionsTab = () => {
                     setAcceptedSearch('')
                   }}
                   className='inline-flex w-full items-center justify-center rounded-full border border-primary/10 px-4 py-2 text-sm font-medium theme-text-secondary transition-all hover:border-accent hover:bg-accent/5 hover:text-accent dark:border-light/10 sm:w-auto'>
-                  Clear tools
+                  {t('listings.connectionClearTools')}
                 </button>
               </div>
             </div>
@@ -485,17 +498,17 @@ const ConnectionsTab = () => {
         </div>
 
         <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Connections</p>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>{t('listings.connectionStatsConnections')}</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.connectionsCount}</p>
         </div>
 
         <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Incoming</p>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>{t('listings.connectionStatsIncoming')}</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.incomingCount}</p>
         </div>
 
         <div className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent flex min-h-[112px] flex-col justify-between rounded-2xl px-5 py-4 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
-          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>Pending</p>
+          <p className='text-xs font-semibold uppercase tracking-[0.14em] theme-text-secondary'>{t('listings.connectionStatsPending')}</p>
           <p className='mt-2 text-3xl font-bold theme-text'>{connections.summary.outgoingCount}</p>
         </div>
       </div>
@@ -521,7 +534,7 @@ const ConnectionsTab = () => {
                     setAcceptedSearch('')
                   }}
                   className='mt-4 inline-flex rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white'>
-                  Reset Network Tools
+                  {t('listings.connectionResetNetworkTools')}
                 </button>
               )}
             </div>
@@ -533,10 +546,10 @@ const ConnectionsTab = () => {
                 const locationLabel = otherUser.showLocationPublic && otherUser.location ? otherUser.location : ''
                 const canDirectMessage = otherUser.allowDirectMessages !== false
                 const canInviteToProjects = otherUser.allowProjectInvites !== false
-                const activityLabel = formatConnectionActivity(connection, section.key)
+                const activityLabel = formatConnectionActivity(connection, section.key, t)
                 const isPinned = pinnedConnectionIds.includes(connection._id)
                 const isAcceptedCard = section.key === 'accepted'
-                const sectionBadge = getConnectionSectionBadge(section.key)
+                const sectionBadge = getConnectionSectionBadge(section.key, t)
                 const connectionNote = connectionNotes[connection._id] || ''
                 const isEditingNote = editingConnectionNoteId === connection._id
 
@@ -557,7 +570,7 @@ const ConnectionsTab = () => {
                             {isAcceptedCard && isPinned && (
                               <span className='inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent'>
                                 <FaThumbtack size={10} />
-                                <span>Pinned</span>
+                                <span>{t('listings.connectionCardPinned')}</span>
                               </span>
                             )}
                           </div>
@@ -566,7 +579,7 @@ const ConnectionsTab = () => {
                             <h3 className='text-sm font-semibold theme-text'>{[otherUser.firstName, otherUser.lastName].filter(Boolean).join(' ') || 'User'}</h3>
                             <VerificationBadge isVerified={otherUser.isEmailVerified} />
                           </div>
-                          <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{otherUser.headline || 'Professional profile'}</p>
+                          <p className='mt-1 text-[11px] leading-5 theme-text-secondary'>{otherUser.headline || t('listings.connectionCardProfessionalProfile')}</p>
 
                           {activityLabel && (
                             <div className='mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/15 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent'>
@@ -584,7 +597,7 @@ const ConnectionsTab = () => {
                             <div className='mt-2 rounded-xl border border-primary/10 bg-white/70 px-3 py-2 dark:border-light/10 dark:bg-light/[0.05]'>
                               <div className='flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] theme-text-secondary'>
                                 <FaRegStickyNote size={10} />
-                                <span>Private Note</span>
+                                <span>{t('listings.connectionCardPrivateNote')}</span>
                               </div>
 
                               {isEditingNote ? (
@@ -593,15 +606,15 @@ const ConnectionsTab = () => {
                                     value={connectionNoteDraft}
                                     onChange={(event) => setConnectionNoteDraft(event.target.value)}
                                     rows={3}
-                                    placeholder='Add a quick reminder about this connection'
+                                    placeholder={t('listings.connectionCardNotePlaceholder')}
                                     className='w-full resize-none rounded-lg border border-primary/10 bg-white/90 px-3 py-2 text-[12px] leading-5 theme-text outline-none transition-colors focus:border-accent dark:border-light/10 dark:bg-light/[0.08]'
                                   />
                                   <div className='flex flex-wrap gap-2'>
                                     <button type='button' onClick={() => handleSubmitConnectionNote(connection._id)} className={compactActionClasses.accent}>
-                                      Save Note
+                                      {t('listings.connectionButtonSaveNote')}
                                     </button>
                                     <button type='button' onClick={handleCancelEditingConnectionNote} className={compactActionClasses.neutral}>
-                                      Cancel
+                                      {t('listings.connectionButtonCancel')}
                                     </button>
                                   </div>
                                 </div>
@@ -618,11 +631,11 @@ const ConnectionsTab = () => {
                           <>
                             <button type='button' onClick={() => handleAction(connection._id, 'accept')} disabled={actionId === connection._id} className={`${compactActionClasses.success} disabled:opacity-60`}>
                               <FaCheck />
-                              <span>Accept</span>
+                              <span>{t('listings.connectionButtonAccept')}</span>
                             </button>
                             <button type='button' onClick={() => handleAction(connection._id, 'decline')} disabled={actionId === connection._id} className={`${compactActionClasses.danger} disabled:opacity-60`}>
                               <FaTimes />
-                              <span>Decline</span>
+                              <span>{t('listings.connectionButtonDecline')}</span>
                             </button>
                           </>
                         )}
@@ -630,7 +643,7 @@ const ConnectionsTab = () => {
                         {section.key === 'outgoing' && (
                           <button type='button' onClick={() => handleAction(connection._id, 'remove')} disabled={actionId === connection._id} className={compactActionClasses.accent}>
                             <FaClock />
-                            <span>Cancel Request</span>
+                            <span>{t('listings.connectionButtonCancelRequest')}</span>
                           </button>
                         )}
 
@@ -640,21 +653,21 @@ const ConnectionsTab = () => {
                             onClick={() => handleOpenDirectMessage(otherUser)}
                             className='inline-flex items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-accent/90'>
                             <FaEnvelope />
-                            <span>Message</span>
+                            <span>{t('listings.connectionButtonMessage')}</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && canInviteToProjects && (
                           <button type='button' onClick={() => handleOpenProjectInvite(otherUser)} className={compactActionClasses.accentSoft}>
                             <FaBriefcase />
-                            <span>Invite to Project</span>
+                            <span>{t('listings.connectionButtonInviteToProject')}</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && (
                           <button type='button' onClick={() => handleTogglePinnedConnection(connection._id)} className={isPinned ? compactActionClasses.accent : compactActionClasses.subtle}>
                             <FaThumbtack />
-                            <span>{isPinned ? 'Unpin' : 'Pin'}</span>
+                            <span>{isPinned ? t('listings.connectionButtonUnpin') : t('listings.connectionButtonPin')}</span>
                           </button>
                         )}
 
@@ -664,21 +677,21 @@ const ConnectionsTab = () => {
                             onClick={() => (isEditingNote ? handleCancelEditingConnectionNote() : handleStartEditingConnectionNote(connection._id, connectionNote))}
                             className={isEditingNote ? compactActionClasses.neutral : compactActionClasses.subtle}>
                             <FaRegStickyNote />
-                            <span>{isEditingNote ? 'Close Note' : connectionNote ? 'Edit Note' : 'Add Note'}</span>
+                            <span>{isEditingNote ? t('listings.connectionButtonCloseNote') : connectionNote ? t('listings.connectionButtonEditNote') : t('listings.connectionButtonAddNote')}</span>
                           </button>
                         )}
 
                         {section.key === 'accepted' && canOpenFreelancerProfile ? (
                           <button type='button' onClick={() => navigate(`/freelancer/${otherUser._id}`, { state: { returnTo: '/profile' } })} className={compactActionClasses.neutral}>
                             <FaArrowRight />
-                            <span>View Profile</span>
+                            <span>{t('listings.connectionButtonViewProfile')}</span>
                           </button>
                         ) : null}
 
                         {section.key === 'accepted' && (
                           <button type='button' onClick={() => handleAction(connection._id, 'remove')} disabled={actionId === connection._id} className={`${compactActionClasses.danger} disabled:opacity-60`}>
                             <FaUserFriends />
-                            <span>Remove</span>
+                            <span>{t('listings.connectionButtonRemove')}</span>
                           </button>
                         )}
                       </div>

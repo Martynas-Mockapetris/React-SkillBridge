@@ -1,0 +1,26 @@
+{
+  "contact": {
+    "titleLead": "Get In",
+    "titleAccent": "Touch",
+    "subtitle": "Have a question or want to collaborate? Drop us a message, and we'll get back to you soon.",
+    "supportLabel": "Support",
+    "businessLabel": "Business",
+    "phoneLabel": "Phone",
+    "hoursLabel": "Hours",
+    "addressLabel": "Address",
+    "formNameLabel": "Name",
+    "formNamePlaceholder": "Enter your name",
+    "formEmailLabel": "Email",
+    "formEmailPlaceholder": "Enter your email",
+    "formSubjectLabel": "Subject",
+    "formSubjectPlaceholder": "Enter subject",
+    "formMessageLabel": "Message",
+    "formMessagePlaceholder": "Enter your message",
+    "formSubmitButton": "Send Message",
+    "nameRequired": "Name field is required",
+    "emailRequired": "Email field is required",
+    "emailInvalid": "Wrong email format",
+    "subjectRequired": "Subject field is required",
+    "messageRequired": "Message field is required"
+  }
+}

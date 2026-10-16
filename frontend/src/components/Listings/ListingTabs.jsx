@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { FaUser, FaBriefcase, FaSearch } from 'react-icons/fa'
 import { useLocation, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { SearchContext } from '../../context/SearchContext'
 import ProjectCard from './ProjectCard'
 import FreelancerCard from './FreelancerCard'
@@ -177,6 +178,7 @@ const buildConnectionStatusMap = (connectionsData) => {
 }
 
 const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, onProjectFiltersChange, freelancerFilters, onFreelancerFiltersChange }) => {
+  const { t } = useTranslation('main')
   const location = useLocation()
   const { currentUser } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -530,7 +532,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                   : 'dark:border-light/10 border-primary/10 dark:text-light/60 text-primary/60 dark:hover:text-light/80 hover:text-primary/80 dark:hover:bg-light/5 hover:bg-primary/5'
               }`}>
               <FaBriefcase className='text-lg' />
-              <span className='font-medium'>Projects</span>
+              <span className='font-medium'>{t('listings.projectsTab')}</span>
             </button>
             <button
               onClick={() => {
@@ -542,7 +544,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                   : 'dark:border-light/10 border-primary/10 dark:text-light/60 text-primary/60 dark:hover:text-light/80 hover:text-primary/80 dark:hover:bg-light/5 hover:bg-primary/5'
               }`}>
               <FaUser className='text-lg' />
-              <span className='font-medium'>Freelancers</span>
+              <span className='font-medium'>{t('listings.freelancersTab')}</span>
             </button>
           </div>
 
@@ -559,14 +561,14 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                 <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
                   <div className='flex flex-wrap items-center gap-2'>
                     <span className='inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent'>
-                      {activeTab === 'projects' ? 'Project discovery' : 'Freelancer discovery'}
+                      {activeTab === 'projects' ? t('listings.projectDiscovery') : t('listings.freelancerDiscovery')}
                     </span>
                     <span className='inline-flex items-center rounded-full dark:bg-light/10 bg-primary/5 px-3 py-1 text-xs font-medium theme-text-secondary'>
-                      {visibleResultsCount} result{visibleResultsCount === 1 ? '' : 's'}
+                      {visibleResultsCount} {t('listings.results')}
                     </span>
                     {activeFilterCount > 0 && (
                       <span className='inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300'>
-                        {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+                        {activeFilterCount} {t('listings.activeFilters')}
                       </span>
                     )}
                   </div>
@@ -574,7 +576,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
 
                 <div className='grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
                   <label className='block'>
-                    <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{activeTab === 'projects' ? 'Search projects' : 'Search freelancers'}</span>
+                    <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{activeTab === 'projects' ? t('listings.searchProjects') : t('listings.searchFreelancers')}</span>
                     <div className='relative'>
                       <FaSearch className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-accent/80' size={16} />
                       <input
@@ -582,7 +584,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                         value={searchInput}
                         onChange={(event) => setSearchInput(event.target.value)}
                         onKeyDown={handleSearchKeyDown}
-                        placeholder={activeTab === 'projects' ? 'Search by title, description, or skills' : 'Search by name, specialty, or skills'}
+                        placeholder={activeTab === 'projects' ? t('listings.searchProjectsPlaceholder') : t('listings.searchFreelancersPlaceholder')}
                         className='h-[50px] w-full rounded-lg border dark:border-light/10 border-primary/10 bg-light/10 dark:bg-light/10 pl-11 pr-4 theme-text outline-none transition-all duration-300 focus:bg-light/20 dark:focus:bg-light/20 focus:border-accent focus:ring-2 focus:ring-accent/20 hover:shadow-lg'
                       />
                     </div>
@@ -592,13 +594,13 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                     <button
                       onClick={handleSearchSubmit}
                       className='inline-flex h-[50px] items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-all duration-300 hover:bg-accent/90 hover:shadow-lg'>
-                      Search
+                      {t('listings.searchButton')}
                     </button>
 
                     <button
                       onClick={handleSearchReset}
                       className='inline-flex h-[50px] items-center justify-center rounded-lg border dark:border-light/10 border-primary/10 px-5 text-sm font-medium theme-text-secondary transition-all duration-300 hover:border-accent hover:text-accent hover:bg-accent/5 hover:shadow-lg'>
-                      Reset search
+                      {t('listings.resetSearch')}
                     </button>
                   </div>
                 </div>
@@ -608,9 +610,9 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
                 <p>
                   {activeFilterCount > 0
                     ? `Showing ${visibleResultsCount} refined result${visibleResultsCount === 1 ? '' : 's'} for the current filters.`
-                    : `Showing all ${activeTab === 'projects' ? 'available projects' : 'available freelancers'} right now.`}
+                    : t(activeTab === 'projects' ? 'listings.showingAllProjects' : 'listings.showingAllFreelancers')}
                 </p>
-                <p className='text-xs uppercase tracking-[0.16em] opacity-70'>{activeTab === 'projects' ? 'Discovery tuned for clients' : 'Discovery tuned for hiring'}</p>
+                <p className='text-xs uppercase tracking-[0.16em] opacity-70'>{activeTab === 'projects' ? t('listings.discoveryTunedClients') : t('listings.discoveryTunedHiring')}</p>
               </div>
             </div>
 
@@ -619,7 +621,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
               <div className='text-center py-8'>
                 <p className='text-red-500 mb-4'>{error}</p>
                 <button onClick={() => window.location.reload()} className='px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all'>
-                  Retry
+                  {t('listings.retryButton')}
                 </button>
               </div>
             )}
@@ -628,24 +630,24 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
             {!isLoading && !error && activeTab === 'projects' && projects.length === 0 && (
               <div className='text-center py-12'>
                 <FaBriefcase className='text-6xl theme-text-secondary mx-auto mb-4 opacity-50' />
-                <h3 className='text-xl font-semibold theme-text mb-2'>No projects available</h3>
-                <p className='theme-text-secondary'>Check back later for new opportunities!</p>
+                <h3 className='text-xl font-semibold theme-text mb-2'>{t('listings.noProjectsAvailable')}</h3>
+                <p className='theme-text-secondary'>{t('listings.checkBackLater')}</p>
               </div>
             )}
 
             {!isLoading && !error && activeTab === 'projects' && projects.length > 0 && filteredProjects.length === 0 && (
               <div className='text-center py-12'>
                 <FaBriefcase className='text-6xl theme-text-secondary mx-auto mb-4 opacity-50' />
-                <h3 className='text-xl font-semibold theme-text mb-2'>No projects match these filters</h3>
-                <p className='theme-text-secondary'>Try broadening the category, priority, budget, or search criteria.</p>
+                <h3 className='text-xl font-semibold theme-text mb-2'>{t('listings.noProjectsMatch')}</h3>
+                <p className='theme-text-secondary'>{t('listings.broadenCriteria')}</p>
               </div>
             )}
 
             {!isLoading && activeTab === 'freelancers' && filteredFreelancers.length === 0 && (
               <div className='text-center py-12'>
                 <FaUser className='text-6xl theme-text-secondary mx-auto mb-4 opacity-50' />
-                <h3 className='text-xl font-semibold theme-text mb-2'>No freelancers match these filters</h3>
-                <p className='theme-text-secondary'>Adjust availability, verification, rate, or search to widen the results.</p>
+                <h3 className='text-xl font-semibold theme-text mb-2'>{t('listings.noFreelancersMatch')}</h3>
+                <p className='theme-text-secondary'>{t('listings.adjustFilters')}</p>
               </div>
             )}
 
@@ -676,7 +678,7 @@ const ListingTabs = ({ activeTab, onActiveTabChange, filters, projectFilters, on
 
             <div className='mt-8 flex justify-end'>
               <label className='block w-full min-w-[150px] sm:w-auto'>
-                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>Cards per page</span>
+                <span className='mb-2 block text-xs font-semibold uppercase tracking-[0.16em] theme-text-secondary'>{t('listings.cardsPerPage')}</span>
                 <select
                   value={itemsPerPage}
                   onChange={(event) => {

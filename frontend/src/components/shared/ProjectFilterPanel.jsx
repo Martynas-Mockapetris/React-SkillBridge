@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasActiveFilters, activeTab, projectFilters, onProjectFiltersChange, freelancerFilters, onFreelancerFiltersChange }) => {
+  const { t } = useTranslation('main')
   const [expandedSections, setExpandedSections] = useState({
     budget: true,
     status: true,
@@ -29,12 +31,12 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
     <div className='rounded-lg p-4 md:p-6 border border-primary/10 dark:border-light/10 backdrop-blur-sm'>
       {/* Header with Clear Button */}
       <div className='flex items-center justify-between mb-4'>
-        <h3 className='text-lg font-semibold theme-text'>Filters</h3>
+        <h3 className='text-lg font-semibold theme-text'>{t('listings.filters')}</h3>
         {hasActiveFilters && (
           <button
             onClick={onClearAll}
             className='text-sm px-3 py-1 bg-primary/10 dark:bg-light/10 text-primary/60 dark:text-light/60 rounded-md hover:bg-primary/20 dark:hover:bg-light/20 hover:text-primary dark:hover:text-light transition-all duration-300 hover:shadow-lg font-medium'>
-            Clear All
+            {t('listings.clearAll')}
           </button>
         )}
       </div>
@@ -42,7 +44,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Budget Range */}
       <div className='mb-4 pb-4'>
         <button onClick={() => toggleSection('budget')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Budget Range</span>
+          <span>{t('listings.budgetRange')}</span>
           <span className={`transform transition-transform ${expandedSections.budget ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
@@ -51,14 +53,14 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
               <div className='grid grid-cols-2 gap-3 mt-3'>
                 <input
                   type='number'
-                  placeholder='Min Budget'
+                  placeholder={t('listings.minBudget')}
                   value={filters.minBudget}
                   onChange={(e) => onFilterChange('minBudget', e.target.value)}
                   className='px-3 py-2 border theme-border rounded-lg text-sm theme-text focus:outline-none focus:ring-2 focus:ring-accent theme-input'
                 />
                 <input
                   type='number'
-                  placeholder='Max Budget'
+                  placeholder={t('listings.maxBudget')}
                   value={filters.maxBudget}
                   onChange={(e) => onFilterChange('maxBudget', e.target.value)}
                   className='px-3 py-2 border theme-border rounded-lg text-sm theme-text focus:outline-none focus:ring-2 focus:ring-accent theme-input'
@@ -72,7 +74,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Status Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
         <button onClick={() => toggleSection('status')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Status</span>
+          <span>{t('listings.status')}</span>
           <span className={`transform transition-transform ${expandedSections.status ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
@@ -82,7 +84,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                 {statusOptions.map((status) => (
                   <label key={status} className='flex items-center cursor-pointer'>
                     <input type='checkbox' checked={filters.status.includes(status)} onChange={() => onFilterChange('addStatus', status)} className='w-4 h-4 rounded border-accent text-accent focus:ring-accent' />
-                    <span className='ml-2 text-sm theme-text capitalize'>{status.replace('_', ' ')}</span>
+                    <span className='ml-2 text-sm theme-text capitalize'>{t(`listings.${status}`)}</span>
                   </label>
                 ))}
               </div>
@@ -94,14 +96,14 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Skills Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
         <button onClick={() => toggleSection('skills')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Skills</span>
+          <span>{t('listings.skills')}</span>
           <span className={`transform transition-transform ${expandedSections.skills ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
           {expandedSections.skills && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className='overflow-hidden'>
               <textarea
-                placeholder='Enter skills (comma-separated)'
+                placeholder={t('listings.enterSkills')}
                 value={filters.skills.join(', ')}
                 onChange={(e) => {
                   const skills = e.target.value
@@ -120,7 +122,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     key={option.value}
                     onClick={() => onFilterChange('matchType', option.value)}
                     className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-all duration-300 hover:shadow-lg ${filters.matchType === option.value ? 'bg-accent text-white' : 'bg-primary/10 dark:bg-light/10 theme-text-secondary hover:bg-primary/20 dark:hover:bg-light/20'}`}>
-                    {option.label}
+                    {t(`listings.${option.value === 'any' ? 'anySkillMatch' : 'allSkillMatch'}`)}
                   </button>
                 ))}
               </div>
@@ -132,7 +134,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Priority Filter */}
       <div className='border-b theme-border mb-4 pb-4'>
         <button onClick={() => toggleSection('priority')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>Priority</span>
+          <span>{t('listings.priority')}</span>
           <span className={`transform transition-transform ${expandedSections.priority ? 'rotate-180' : ''}`}>▼</span>
         </button>
         <AnimatePresence>
@@ -142,7 +144,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                 {priorityOptions.map((priority) => (
                   <label key={priority} className='flex items-center cursor-pointer'>
                     <input type='checkbox' checked={filters.priority.includes(priority)} onChange={() => onFilterChange('addPriority', priority)} className='w-4 h-4 rounded border-accent text-accent focus:ring-accent' />
-                    <span className='ml-2 text-sm theme-text capitalize'>{priority}</span>
+                    <span className='ml-2 text-sm theme-text capitalize'>{t(`listings.${priority}`)}</span>
                   </label>
                 ))}
               </div>
@@ -154,7 +156,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
       {/* Tab-specific filters */}
       <div className='theme-border'>
         <button onClick={() => toggleSection('specific')} className='w-full flex items-center justify-between py-2 text-left font-medium theme-text hover:theme-text-secondary transition-all duration-300'>
-          <span>{activeTab === 'projects' ? 'Project Filters' : 'Freelancer Filters'}</span>
+          <span>{activeTab === 'projects' ? t('listings.projectFiltersLabel') : t('listings.freelancerFiltersLabel')}</span>
           <span className={`transform transition-transform ${expandedSections.specific ? 'rotate-180' : ''}`}>▼</span>
         </button>
 
@@ -168,7 +170,7 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onProjectFiltersChange((current) => ({ ...current, category: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      All categories
+                      {t('listings.allCategories')}
                     </option>
                     <option value='Web Development'>Web Development</option>
                     <option value='Backend Development'>Backend Development</option>
@@ -182,12 +184,12 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onProjectFiltersChange((current) => ({ ...current, budget: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      Any budget
+                      {t('listings.anyBudget')}
                     </option>
-                    <option value='under-500'>Under 500 EUR</option>
-                    <option value='500-2000'>500-2000 EUR</option>
-                    <option value='2000-5000'>2000-5000 EUR</option>
-                    <option value='5000-plus'>5000+ EUR</option>
+                    <option value='under-500'>{t('listings.under500')}</option>
+                    <option value='500-2000'>{t('listings.budget500to2000')}</option>
+                    <option value='2000-5000'>{t('listings.budget2000to5000')}</option>
+                    <option value='5000-plus'>{t('listings.budget5000plus')}</option>
                   </select>
 
                   <select
@@ -195,10 +197,10 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onProjectFiltersChange((current) => ({ ...current, applied: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      All projects
+                      {t('listings.allProjects')}
                     </option>
-                    <option value='not-applied'>Hide applied projects</option>
-                    <option value='applied'>Applied only</option>
+                    <option value='not-applied'>{t('listings.hideAppliedProjects')}</option>
+                    <option value='applied'>{t('listings.appliedOnly')}</option>
                   </select>
                 </div>
               ) : (
@@ -208,11 +210,11 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, availability: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      Any availability
+                      {t('listings.anyAvailability')}
                     </option>
-                    <option value='available'>Available</option>
-                    <option value='limited'>Limited availability</option>
-                    <option value='unavailable'>Unavailable</option>
+                    <option value='available'>{t('listings.availabilityAvailable')}</option>
+                    <option value='limited'>{t('listings.availabilityLimited')}</option>
+                    <option value='unavailable'>{t('listings.availabilityUnavailable')}</option>
                   </select>
 
                   <select
@@ -220,10 +222,10 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, verified: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      All profiles
+                      {t('listings.allVerification')}
                     </option>
-                    <option value='verified'>Verified only</option>
-                    <option value='unverified'>Unverified only</option>
+                    <option value='verified'>{t('listings.verificationVerified')}</option>
+                    <option value='unverified'>{t('listings.verificationUnverified')}</option>
                   </select>
 
                   <select
@@ -231,13 +233,13 @@ export const ProjectFilterPanel = ({ filters, onFilterChange, onClearAll, hasAct
                     onChange={(event) => onFreelancerFiltersChange((current) => ({ ...current, rate: event.target.value }))}
                     className='w-full rounded-lg border theme-border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-primary dark:text-light theme-select'>
                     <option value='all' className='bg-white text-primary dark:bg-gray-800 dark:text-light'>
-                      Any rate
+                      {t('listings.anyRate')}
                     </option>
-                    <option value='under-25'>Under 25 EUR/hr</option>
-                    <option value='25-50'>25-50 EUR/hr</option>
-                    <option value='50-100'>50-100 EUR/hr</option>
-                    <option value='100-plus'>100+ EUR/hr</option>
-                    <option value='unspecified'>Rate on request</option>
+                    <option value='under-20'>{t('listings.rateUnder20')}</option>
+                    <option value='20-50'>{t('listings.rate20to50')}</option>
+                    <option value='50-100'>{t('listings.rate50to100')}</option>
+                    <option value='100-plus'>{t('listings.rateOver100')}</option>
+                    <option value='unspecified'>{t('listings.rateOnRequest')}</option>
                   </select>
                 </div>
               )}

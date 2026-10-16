@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FaChevronDown } from 'react-icons/fa'
 import PublishedBadge from '../components/shared/PublishedBadge'
 
-const inputClasses = 'w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 text-gray-900 dark:text-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent transition'
-const labelClasses = 'block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1'
+const inputClasses = 'w-full rounded-lg border border-primary/20 dark:border-light/10 bg-white dark:bg-light/5 theme-text px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent transition'
+const labelClasses = 'block text-xs font-semibold uppercase tracking-wide theme-text-secondary mb-1'
 
 const emptyForm = {
   title: '',
@@ -41,6 +42,7 @@ const getExistingAuthorValue = (post) => {
 
 const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubmitting = false, onClose, onSubmit }) => {
   const [formData, setFormData] = useState(emptyForm)
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(true)
 
   const loggedInAuthorValue = useMemo(() => getLoggedInAuthorValue(currentUser), [currentUser])
 
@@ -115,21 +117,21 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
     <AnimatePresence>
       <motion.div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <motion.div
-          className='w-full max-w-5xl rounded-2xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col'
+          className='w-full max-w-5xl rounded-2xl theme-card border border-primary/20 dark:border-light/10 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col'
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}>
-          <div className='px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between'>
+          <div className='px-6 py-4 border-b border-primary/20 dark:border-light/10 flex items-center justify-between'>
             <div>
-              <p className='text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500'>Admin Blog Editor</p>
-              <h3 className='text-xl font-semibold text-gray-900 dark:text-white'>{mode === 'edit' ? 'Edit Blog Post' : 'Create Blog Post'}</h3>
+              <p className='text-xs uppercase tracking-wide theme-text-secondary'>Admin Blog Editor</p>
+              <h3 className='text-xl font-semibold theme-text'>{mode === 'edit' ? 'Edit Blog Post' : 'Create Blog Post'}</h3>
             </div>
-            <button onClick={onClose} className='text-gray-400 hover:text-gray-700 dark:hover:text-gray-100 text-2xl leading-none'>
+            <button onClick={onClose} className='theme-text-secondary hover:text-accent text-2xl leading-none transition'>
               &times;
             </button>
           </div>
 
-          <div className='px-6 py-6 overflow-y-auto bg-white dark:bg-transparent space-y-6'>
+          <div className='px-6 py-6 overflow-y-auto bg-transparent space-y-6'>
             <div className='grid md:grid-cols-2 gap-6'>
               <div>
                 <label className={labelClasses}>Title</label>
@@ -142,9 +144,14 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
               </div>
             </div>
 
-            <div className='rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 p-4 space-y-3'>
-              <label className='flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300'>
-                <input type='checkbox' checked={formData.includeAuthor} onChange={(e) => handleIncludeAuthorChange(e.target.checked)} className='h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent' />
+            <div className='rounded-xl border border-primary/20 dark:border-light/10 bg-primary/5 dark:bg-light/5 p-4 space-y-3'>
+              <label className='flex items-center gap-3 text-sm theme-text'>
+                <input
+                  type='checkbox'
+                  checked={formData.includeAuthor}
+                  onChange={(e) => handleIncludeAuthorChange(e.target.checked)}
+                  className='h-4 w-4 rounded border-primary/30 dark:border-light/20 text-accent focus:ring-accent'
+                />
                 Include author
               </label>
 
@@ -152,7 +159,7 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
                 <div>
                   <label className={labelClasses}>Author</label>
                   <input value={formData.author} onChange={(e) => handleChange('author', e.target.value)} className={inputClasses} placeholder={loggedInAuthorValue || 'Enter author name'} />
-                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>Checking the box inserts the logged-in user details. You can delete that text and type a custom author manually.</p>
+                  <p className='text-xs theme-text-muted mt-2'>Checking the box inserts the logged-in user details. You can delete that text and type a custom author manually.</p>
                 </div>
               )}
             </div>
@@ -165,7 +172,7 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
             <div>
               <label className={labelClasses}>Tags</label>
               <input value={formData.tags} onChange={(e) => handleChange('tags', e.target.value)} className={inputClasses} placeholder='react, freelance, platform' />
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>Separate tags with commas.</p>
+              <p className='text-xs theme-text-muted mt-2'>Separate tags with commas.</p>
             </div>
 
             <div>
@@ -173,73 +180,95 @@ const AdminBlogPostModal = ({ isOpen, mode = 'create', post, currentUser, isSubm
               <textarea rows='12' value={formData.content} onChange={(e) => handleChange('content', e.target.value)} className={`${inputClasses} resize-none`} placeholder='Write the full blog post content here...' />
             </div>
 
-            <label className='flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300'>
-              <input type='checkbox' checked={formData.isPublished} onChange={(e) => handleChange('isPublished', e.target.checked)} className='h-4 w-4 rounded border-gray-300 text-accent focus:ring-accent' />
+            <label className='flex items-center gap-3 text-sm theme-text'>
+              <input
+                type='checkbox'
+                checked={formData.isPublished}
+                onChange={(e) => handleChange('isPublished', e.target.checked)}
+                className='h-4 w-4 rounded border-primary/30 dark:border-light/20 text-accent focus:ring-accent'
+              />
               Mark as published in preview state
             </label>
 
-            <div className='border-t border-gray-200 dark:border-gray-800 pt-6'>
-              <h4 className='text-xl font-semibold text-gray-900 dark:text-white mb-4'>Blog Post Preview</h4>
+            <div className='border-t border-primary/20 dark:border-light/10 pt-6'>
+              <button
+                type='button'
+                onClick={() => setIsPreviewExpanded(!isPreviewExpanded)}
+                className='w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-primary/5 dark:hover:bg-light/5 transition group mb-4'>
+                <h4 className='text-xl font-semibold theme-text'>Blog Post Preview</h4>
+                <motion.div animate={{ rotate: isPreviewExpanded ? 0 : -90 }} transition={{ duration: 0.2 }}>
+                  <FaChevronDown className='theme-text-secondary group-hover:text-accent transition' />
+                </motion.div>
+              </button>
 
-              <div className='rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900/40'>
-                <div className='px-6 py-5 border-b border-gray-100 dark:border-gray-800'>
-                  <div className='flex flex-wrap items-center gap-2 mb-4'>
-                    <PublishedBadge isPublished={formData.isPublished} size='sm' />
-                    {previewAuthor && <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'>By {previewAuthor}</span>}
-                  </div>
+              <AnimatePresence>
+                {isPreviewExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className='rounded-2xl border border-primary/20 dark:border-light/10 overflow-hidden theme-card'>
+                    <div className='px-6 py-5 border-b border-primary/20 dark:border-light/10'>
+                      <div className='flex flex-wrap items-center gap-2 mb-4'>
+                        <PublishedBadge isPublished={formData.isPublished} size='sm' />
+                        {previewAuthor && <span className='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-accent/10 text-accent'>By {previewAuthor}</span>}
+                      </div>
 
-                  <h5 className='text-3xl font-semibold text-gray-900 dark:text-white leading-tight'>{previewTitle}</h5>
-                  <p className='text-base text-gray-500 dark:text-gray-400 mt-3 max-w-3xl'>{previewExcerpt}</p>
-                </div>
-
-                <div className='p-6 space-y-5'>
-                  <div className='rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900'>
-                    {formData.coverImage.trim() ? (
-                      <img src={formData.coverImage} alt={previewTitle} className='w-full h-72 object-cover' />
-                    ) : (
-                      <div className='h-72 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500'>Cover image preview appears here</div>
-                    )}
-                  </div>
-
-                  {previewTags.length > 0 && (
-                    <div className='flex flex-wrap gap-2'>
-                      {previewTags.map((tag) => (
-                        <span key={tag} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'>
-                          #{tag}
-                        </span>
-                      ))}
+                      <h5 className='text-3xl font-semibold theme-text leading-tight'>{previewTitle}</h5>
+                      <p className='text-base theme-text-secondary mt-3 max-w-3xl'>{previewExcerpt}</p>
                     </div>
-                  )}
 
-                  <div className='rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 p-5'>
-                    <p className='text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3'>Content Preview</p>
-                    <div className='text-base leading-8 text-gray-700 dark:text-gray-300 whitespace-pre-line min-h-[180px]'>{previewContent}</div>
-                  </div>
-                </div>
-              </div>
+                    <div className='p-6 space-y-5'>
+                      <div className='rounded-xl overflow-hidden border border-primary/20 dark:border-light/10 bg-primary/5 dark:bg-light/5'>
+                        {formData.coverImage.trim() ? (
+                          <img src={formData.coverImage} alt={previewTitle} className='w-full h-72 object-cover' />
+                        ) : (
+                          <div className='h-72 flex items-center justify-center text-sm theme-text-muted'>Cover image preview appears here</div>
+                        )}
+                      </div>
+
+                      {previewTags.length > 0 && (
+                        <div className='flex flex-wrap gap-2'>
+                          {previewTags.map((tag) => (
+                            <span key={tag} className='inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-primary/10 dark:bg-light/10 theme-text-secondary'>
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className='rounded-xl bg-primary/5 dark:bg-light/5 border border-primary/20 dark:border-light/10 p-5'>
+                        <p className='text-xs font-semibold uppercase tracking-wide theme-text-secondary mb-3'>Content Preview</p>
+                        <div className='text-base leading-8 theme-text whitespace-pre-line min-h-[180px]'>{previewContent}</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
-          <div className='flex justify-end gap-3 border-t border-gray-100 dark:border-gray-800 px-6 py-5 bg-white dark:bg-gray-950'>
+          <div className='flex justify-end gap-3 border-t border-primary/20 dark:border-light/10 px-6 py-5'>
             <button
               type='button'
               onClick={onClose}
               disabled={isSubmitting}
-              className='px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed'>
+              className='px-4 py-2 rounded-lg border border-primary/30 dark:border-light/20 theme-text hover:bg-primary/10 dark:hover:bg-light/10 transition disabled:opacity-60 disabled:cursor-not-allowed'>
               Cancel
             </button>
             <button
               type='button'
               onClick={() => handleSubmit('draft')}
               disabled={isSubmitting}
-              className='px-5 py-2 rounded-lg bg-gray-900 text-white dark:bg-gray-700 font-semibold hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed'>
+              className='px-5 py-2 rounded-lg bg-primary/20 dark:bg-light/20 theme-text font-semibold hover:bg-primary/30 dark:hover:bg-light/30 disabled:opacity-60 disabled:cursor-not-allowed transition'>
               {isSubmitting ? 'Saving...' : 'Save Draft'}
             </button>
             <button
               type='button'
               onClick={() => handleSubmit('publish')}
               disabled={isSubmitting}
-              className='px-5 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-accent/90 disabled:opacity-60 disabled:cursor-not-allowed'>
+              className='px-5 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-accent/90 disabled:opacity-60 disabled:cursor-not-allowed transition'>
               {isSubmitting ? 'Publishing...' : 'Publish'}
             </button>
           </div>

@@ -153,17 +153,17 @@ const HireFreelancerModal = ({ isOpen, onClose, freelancer, onSuccess }) => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40' />
           <motion.div className='fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={(e) => e.stopPropagation()}>
             <motion.div
-              className='bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto'
+              className='theme-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto'
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}>
-              <div className='flex items-center justify-between p-6 border-b dark:border-light/10 border-primary/10 sticky top-0 bg-inherit rounded-t-lg'>
+              <div className='flex items-center justify-between p-6 border-b border theme-border sticky top-0 bg-inherit rounded-t-lg'>
                 <h2 className='text-2xl font-bold theme-text'>
                   Hire {freelancer.firstName} {freelancer.lastName}
                 </h2>
-                <motion.button onClick={onClose} disabled={loading} className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-50'>
+                <motion.button onClick={onClose} disabled={loading} className='theme-text-muted hover:theme-text transition-colors disabled:opacity-50'>
                   <FaTimes size={24} />
                 </motion.button>
               </div>

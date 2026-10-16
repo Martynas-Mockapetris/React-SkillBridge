@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { FaBullseye, FaCompass, FaUsers } from 'react-icons/fa'
+import { useTranslation } from 'react-i18next'
 
 const AboutHighlights = ({ mission, vision, layout = {} }) => {
+  const { t } = useTranslation('main')
   const contentAlign = layout.contentAlign || 'left'
   const contentWidth = layout.contentWidth || 'wide'
   const cardLayout = layout.cardLayout || 'stacked'
@@ -50,8 +52,8 @@ const AboutHighlights = ({ mission, vision, layout = {} }) => {
     <div className={wrapperClass}>
       <motion.div className={introCardClass} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.08 }}>
         <div className={introAlignClass}>
-          <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-3'>Platform Direction</p>
-          <h2 className='text-2xl md:text-3xl font-semibold theme-text leading-snug'>A practical platform for better freelance collaboration</h2>
+          <p className='text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-3'>{t('listings.aboutPlatformDirection')}</p>
+          <h2 className='text-2xl md:text-3xl font-semibold theme-text leading-snug'>{t('listings.aboutPlatformDirectionHeading')}</h2>
           <div className={`mt-5 space-y-4 theme-text-secondary leading-relaxed ${alignClass}`}>
             <p>{mission}</p>
             <p>{vision}</p>

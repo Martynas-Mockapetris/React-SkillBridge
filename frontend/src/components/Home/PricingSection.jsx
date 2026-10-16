@@ -1,14 +1,16 @@
 import { motion } from 'framer-motion'
 import { FaCheck } from 'react-icons/fa'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
 import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const PricingSection = ({ content = {}, layout = {} }) => {
-  const pricingTitleLead = content.pricingTitleLead || 'Flexible'
-  const pricingTitleAccent = content.pricingTitleAccent || 'Pricing'
-  const pricingSubtitle = content.pricingSubtitle || 'Choose the perfect plan that suits your needs and budget'
+  const { t } = useTranslation('main')
+  const pricingTitleLead = content.pricingTitleLead || t('pricing.titleLead') || 'Flexible'
+  const pricingTitleAccent = content.pricingTitleAccent || t('pricing.titleAccent') || 'Pricing'
+  const pricingSubtitle = content.pricingSubtitle || t('pricing.subtitle') || 'Choose the perfect plan that suits your needs and budget'
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
   const pricingLayout = { ...DEFAULT_PRICING_LAYOUT, ...layout }

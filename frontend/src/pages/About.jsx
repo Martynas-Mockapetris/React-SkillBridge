@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getPublicSystemConfig } from '../services/configService'
 import PageBackground from '../components/shared/PageBackground'
 import LoadingSpinner from '../components/shared/LoadingSpinner'
@@ -9,6 +10,7 @@ import AboutCta from '../components/About/AboutCta'
 const DEFAULT_ABOUT_SECTION_ORDER = ['hero', 'highlights', 'cta']
 
 const About = () => {
+  const { t } = useTranslation('main')
   const [publicConfig, setPublicConfig] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -70,16 +72,16 @@ const About = () => {
     return [...sanitizedOrder, ...missingKeys]
   }, [publicConfig])
 
-  const headline = aboutContent.headline || 'Build your freelance career with confidence'
-  const subheadline = aboutContent.subheadline || 'Connect clients and freelancers in one place'
-  const mission = aboutContent.mission || 'SkillBridge helps people find the right collaboration faster. We bring serious clients and capable freelancers into one workflow that feels clear, practical, and trustworthy.'
-  const vision = aboutContent.vision || 'We want project collaboration to feel simpler: fewer dead ends, better matches, stronger communication, and a platform that scales with both independent talent and growing teams.'
-  const ctaEyebrow = aboutContent.ctaEyebrow || 'Next Step'
-  const ctaHeadline = aboutContent.ctaHeadline || 'Explore the platform or create your account'
-  const ctaBody = aboutContent.ctaBody || 'Whether you are hiring, freelancing, or doing both, SkillBridge is built to make project collaboration easier to start and easier to manage.'
-  const ctaPrimaryLabel = aboutContent.ctaPrimaryLabel || 'Explore Listings'
+  const headline = aboutContent.headline || t('listings.aboutDefaultHeadline')
+  const subheadline = aboutContent.subheadline || t('listings.aboutDefaultSubheadline')
+  const mission = aboutContent.mission || t('listings.aboutDefaultMission')
+  const vision = aboutContent.vision || t('listings.aboutDefaultVision')
+  const ctaEyebrow = aboutContent.ctaEyebrow || t('listings.aboutDefaultCtaEyebrow')
+  const ctaHeadline = aboutContent.ctaHeadline || t('listings.aboutDefaultCtaHeadline')
+  const ctaBody = aboutContent.ctaBody || t('listings.aboutDefaultCtaBody')
+  const ctaPrimaryLabel = aboutContent.ctaPrimaryLabel || t('listings.aboutCtaButtonPrimary')
   const ctaPrimaryHref = aboutContent.ctaPrimaryHref || '/listings'
-  const ctaSecondaryLabel = aboutContent.ctaSecondaryLabel || 'Join SkillBridge'
+  const ctaSecondaryLabel = aboutContent.ctaSecondaryLabel || t('listings.aboutCtaButtonSecondary')
   const ctaSecondaryHref = aboutContent.ctaSecondaryHref || '/register'
   const showHero = aboutSectionVisibility.showHero ?? true
   const showHighlights = aboutSectionVisibility.showHighlights ?? true
@@ -112,7 +114,7 @@ const About = () => {
                   return showHero ? (
                     <section key='hero' className='relative z-10'>
                       <div className='container mx-auto px-4'>
-                        <AboutHero eyebrow='About SkillBridge' headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
+                        <AboutHero eyebrow={t('listings.aboutEyebrow')} headline={headline} subheadline={subheadline} layout={aboutHeroBuilder} />
                       </div>
                     </section>
                   ) : null

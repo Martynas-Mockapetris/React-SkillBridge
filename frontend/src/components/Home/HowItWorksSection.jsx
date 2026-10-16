@@ -2,11 +2,12 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { FaUser, FaBriefcase, FaUserCircle, FaSearch, FaHandshake, FaFileAlt, FaUserCheck, FaCheckCircle } from 'react-icons/fa'
+import { useTranslation } from 'react-i18next'
 import molecularPattern from '../../assets/molecular-pattern.svg'
-import { HOME_CLIENT_STEPS, HOME_TALENT_STEPS } from '../../constants/homePageData'
 import { getSectionBackgroundClass, getSectionSpacingClass } from './homeSectionLayout'
 
 const HowItWorksSection = ({ content = {}, layout = {} }) => {
+  const { t } = useTranslation('main')
   const [activeTab, setActiveTab] = useState('talent')
   const stepIcons = {
     userCircle: <FaUserCircle size={40} />,
@@ -17,13 +18,26 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
     checkCircle: <FaCheckCircle size={40} />
   }
 
-  const howTitleLead = content.howTitleLead || 'How'
-  const howTitleAccent = content.howTitleAccent || 'It Works'
-  const howSubtitle = content.howSubtitle || 'Choose your path and discover how SkillBridge works for you'
-  const talentTabLabel = content.talentTabLabel || 'For Talent'
-  const clientTabLabel = content.clientTabLabel || 'For Clients'
+  const howTitleLead = content.howTitleLead || t('howItWorks.titleLead') || 'How'
+  const howTitleAccent = content.howTitleAccent || t('howItWorks.titleAccent') || 'It Works'
+  const howSubtitle = content.howSubtitle || t('howItWorks.subtitle') || 'Choose your path and discover how SkillBridge works for you'
+  const talentTabLabel = content.talentTabLabel || t('howItWorks.talentTab') || 'For Talent'
+  const clientTabLabel = content.clientTabLabel || t('howItWorks.clientTab') || 'For Clients'
   const sectionSpacingClass = getSectionSpacingClass(layout.spacing || {})
   const sectionBackgroundClass = getSectionBackgroundClass(layout.background || 'default')
+
+  // Create translated steps arrays
+  const talentSteps = [
+    { number: '01', titleKey: 'talentSteps.step1Title', descKey: 'talentSteps.step1Desc', iconKey: 'userCircle' },
+    { number: '02', titleKey: 'talentSteps.step2Title', descKey: 'talentSteps.step2Desc', iconKey: 'search' },
+    { number: '03', titleKey: 'talentSteps.step3Title', descKey: 'talentSteps.step3Desc', iconKey: 'handshake' }
+  ]
+
+  const clientSteps = [
+    { number: '01', titleKey: 'clientSteps.step1Title', descKey: 'clientSteps.step1Desc', iconKey: 'fileAlt' },
+    { number: '02', titleKey: 'clientSteps.step2Title', descKey: 'clientSteps.step2Desc', iconKey: 'userCheck' },
+    { number: '03', titleKey: 'clientSteps.step3Title', descKey: 'clientSteps.step3Desc', iconKey: 'checkCircle' }
+  ]
 
   return (
     <section className={`w-full ${sectionSpacingClass} ${sectionBackgroundClass} relative z-[1]`}>
@@ -94,7 +108,7 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
               transition={{ duration: 0.4, ease: 'easeOut' }}
               className='bg-gradient-to-br dark:from-light/5 dark:via-light/[0.02] from-primary/5 via-primary/[0.02] to-transparent backdrop-blur-sm rounded-b-lg p-12'>
               <motion.div key={activeTab} className='grid grid-cols-1 md:grid-cols-3 gap-12 relative'>
-                {(activeTab === 'talent' ? HOME_TALENT_STEPS : HOME_CLIENT_STEPS).map((step, index) => (
+                {(activeTab === 'talent' ? talentSteps : clientSteps).map((step, index) => (
                   <motion.div key={index} className='relative' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                     <div className='hidden md:block absolute top-28 left-0 w-full h-[1px] bg-accent/20' />
 
@@ -109,9 +123,9 @@ const HowItWorksSection = ({ content = {}, layout = {} }) => {
                     <div className='text-center'>
                       <h3 className='text-xl font-semibold theme-text mb-2'>
                         <span className='text-3xl font-bold text-accent mr-2'>{step.number}</span>
-                        {step.title}
+                        {t(step.titleKey)}
                       </h3>
-                      <p className='theme-text-secondary'>{step.description}</p>
+                      <p className='theme-text-secondary'>{t(step.descKey)}</p>
                     </div>
                   </motion.div>
                 ))}

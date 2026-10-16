@@ -66,15 +66,11 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
 
   return (
     <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className='bg-white dark:bg-gray-900 rounded-lg p-6 max-w-xl w-full mx-4 max-h-[80vh] overflow-y-auto'>
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className='theme-card rounded-lg p-6 max-w-xl w-full mx-4 max-h-[80vh] overflow-y-auto'>
         {/* Header */}
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-2xl font-bold theme-text'>Assign Project</h2>
-          <button onClick={onClose} className='text-gray-500 hover:text-gray-700'>
+          <button onClick={onClose} className='theme-text-secondary hover:theme-text'>
             <FaTimes size={20} />
           </button>
         </div>
@@ -97,7 +93,7 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
                 <motion.button
                   key={interested.userId._id}
                   onClick={() => setSelectedUserId(interested.userId._id)}
-                  className={`w-full p-3 rounded-lg text-left transition-all ${selectedUserId === interested.userId._id ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-800 theme-text hover:bg-accent/10'}`}
+                  className={`w-full p-3 rounded-lg text-left transition-all ${selectedUserId === interested.userId._id ? 'bg-accent text-white' : 'theme-card theme-text hover:bg-accent/10 border border-transparent hover:border-accent/30'}`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}>
                   <div className='flex items-start gap-3'>
@@ -160,7 +156,7 @@ const AssignModal = ({ isOpen, onClose, project, onAssignSuccess }) => {
           )}
         </div>
         <div className='flex gap-3'>
-          <motion.button onClick={onClose} className='flex-1 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-all' whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.button onClick={onClose} className='flex-1 py-2 border theme-border theme-text rounded hover:bg-white/50 dark:hover:bg-black/20 transition-all' whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             Cancel
           </motion.button>
           <motion.button
