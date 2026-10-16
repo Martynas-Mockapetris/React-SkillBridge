@@ -4,8 +4,8 @@ import { DEFAULT_SETTINGS_SECTION, SETTINGS_VIEW_REGISTRY } from './settingsNavi
 import { toast } from 'react-toastify'
 import { getSystemConfig, updateSystemConfigSection } from '../../services/configService'
 import { DEFAULT_PRICING_LAYOUT, DEFAULT_PRICING_PLANS, DEFAULT_TESTIMONIALS, DEFAULT_TESTIMONIALS_LAYOUT } from '../../constants/homePageData'
-import enLocale from '../../locales/en/main.json'
-import ltLocale from '../../locales/lt/main.json'
+import enLocales from '../../locales/en'
+import ltLocales from '../../locales/lt'
 
 const CONFIG_SECTION_KEYS = ['home', 'listings', 'pricing', 'testimonials', 'blog', 'about', 'contact', 'mail', 'system', 'siteBuilder', 'sharedBlocks', 'designSystem', 'navigation']
 
@@ -75,8 +75,8 @@ const extractLocaleValues = (locale) => {
 
 // Create locale-based defaults for all languages
 const LOCALE_VALUES = {
-  en: extractLocaleValues(enLocale),
-  lt: extractLocaleValues(ltLocale)
+  en: extractLocaleValues(enLocales),
+  lt: extractLocaleValues(ltLocales)
 }
 
 const SECTION_DEFS = {
